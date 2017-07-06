@@ -187,12 +187,16 @@
                 <TabControl view:Helper.Accent="{StaticResource A2Brush}">
                     <TabItem Header="Color">
                         <Grid DataContext="{Binding ColorPicker}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}" Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" />
-                            <Grid Grid.Column="1" Height="160" >
+                            <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="*"/>
@@ -230,6 +234,12 @@
                                 <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
                                 <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
                             </Grid>
+
+                            <DockPanel Grid.ColumnSpan="2" Margin="10,5" Grid.Row="1" Height="26.67">
+                                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0">A</TextBlock>
+                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Blue, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <Slider Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            </DockPanel>
                         </Grid>
                     </TabItem>
                     <TabItem Header="Swatches"/>

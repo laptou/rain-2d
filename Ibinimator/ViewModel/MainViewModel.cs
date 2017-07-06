@@ -69,13 +69,23 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        public double Alpha
+        {
+            get => Get<double>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(Color));
+            }
+        }
+
         public double Red { get => Color.R / 255f; set => Color = ColorUtils.RgbToColor(value, Green, Blue); }
         public double Green { get => Color.G / 255f; set => Color = ColorUtils.RgbToColor(Red, value, Blue); }
         public double Blue { get => Color.B / 255f; set => Color = ColorUtils.RgbToColor(Red, Green, value); }
 
         public Color Color
         {
-            get => ColorUtils.HslToColor(Hue, Saturation, Lightness);
+            get => ColorUtils.HslaToColor(Hue, Saturation, Lightness, Alpha);
             set
             {
                 (Hue, Saturation, Lightness) = ColorUtils.RgbToHsl(value.R / 255f, value.G / 255f, value.B / 255f);

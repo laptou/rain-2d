@@ -7,7 +7,19 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <local:AlphaHitTestImage x:Name="PART_ring" RenderOptions.BitmapScalingMode="HighQuality"/>
+        <Path Stroke="{StaticResource T2Brush}" StrokeThickness="1" x:Name="PART_ring" Stretch="Uniform">
+            <Path.Data>
+                <CombinedGeometry GeometryCombineMode="Exclude">
+                    <CombinedGeometry.Geometry1>
+                        <EllipseGeometry Center="100, 100" RadiusX="100" RadiusY="100" />
+                    </CombinedGeometry.Geometry1>
+                    <CombinedGeometry.Geometry2>
+                        <EllipseGeometry Center="100, 100" RadiusX="75" RadiusY="75" />
+                    </CombinedGeometry.Geometry2>
+                </CombinedGeometry>
+            </Path.Data>
+        </Path>
+        
         <Grid RenderTransformOrigin="0.5,0.5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="7*" />
@@ -19,13 +31,16 @@
                 <RotateTransform Angle="{Binding Hue, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:HSLWheel}}}"/>
             </Grid.RenderTransform>
         </Grid>
-        <local:AlphaHitTestImage x:Name="PART_triangle" Stretch="Uniform" 
-               HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"
-               RenderOptions.BitmapScalingMode="HighQuality">
-            <local:AlphaHitTestImage.RenderTransform>
+
+        <Path x:Name="PART_triangle" Stretch="Uniform" Data="M0,64.95191 L75,64.95191 37.5,0 Z M75,86.60254"
+              Stroke="{StaticResource T2Brush}" StrokeThickness="1" 
+              HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+            <Path.RenderTransform>
+                
                 <RotateTransform Angle="90"/>
-            </local:AlphaHitTestImage.RenderTransform>
-        </local:AlphaHitTestImage>
+            </Path.RenderTransform>
+        </Path>
+        
         <Canvas>
             <Ellipse Stroke="Black" x:Name="triangleHandle" 
                      Height="10" Width="10"

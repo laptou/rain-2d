@@ -66,5 +66,22 @@ namespace Ibinimator.Shared
                 B = (byte)(b * 255f)
             };
         }
+
+        public static Color RgbaToColor(double r, double g, double b, double a)
+        {
+            return new Color()
+            {
+                A = (byte)(a * 255f),
+                R = (byte)(r * 255f),
+                G = (byte)(g * 255f),
+                B = (byte)(b * 255f)
+            };
+        }
+
+        public static Color HslaToColor(double h, double s, double l, double alpha)
+        {
+            (double r, double g, double b) = HslToRgb(h, s, l);
+            return RgbaToColor(r, g, b, alpha);
+        }
     }
 }

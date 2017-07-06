@@ -30,7 +30,7 @@ namespace Ibinimator.View
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var fraction = decimal.Parse(value.ToString());
+            var fraction = System.Convert.ToDecimal(value);
             return fraction.ToString("P0", culture);
         }
         

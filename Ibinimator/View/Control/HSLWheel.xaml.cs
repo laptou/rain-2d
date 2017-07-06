@@ -76,7 +76,6 @@ namespace Ibinimator.View.Control
                 var x = ColorUtils.RgbToHsl(value.R / 255.0, value.G / 255.0, value.B / 255.0);
                 Hue = x.h; Saturation = x.s; Lightness = x.l;
                 SetValue(ColorProperty, value);
-                RaisePropertyChanged(nameof(Color));
             }
         }
 
@@ -120,6 +119,8 @@ namespace Ibinimator.View.Control
             base.OnLostFocus(e);
 
             draggingRing = draggingTriangle = false;
+
+            RaisePropertyChanged(nameof(Color));
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -178,6 +179,8 @@ namespace Ibinimator.View.Control
             draggingTriangle = draggingRing = false;
 
             ReleaseMouseCapture();
+
+            RaisePropertyChanged(nameof(Color));
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -198,6 +201,9 @@ namespace Ibinimator.View.Control
 
                 if (e.Property == HueProperty)
                     hslWheel.UpdateTriangle();
+
+                if (e.Property == LightnessProperty)
+                    hslWheel.Saturation = hslWheel.Saturation;
             }
         }
 
@@ -211,8 +217,8 @@ namespace Ibinimator.View.Control
             triangle = new WriteableBitmap(size, (int)(size / MathUtils.SQRT3_2), dpi.x, dpi.y, PixelFormats.Bgra32, null);
             ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
 
-            PART_triangle.Source = triangle;
-            PART_ring.Source = ring;
+            PART_triangle.Fill = new ImageBrush(triangle);
+            PART_ring.Fill = new ImageBrush(ring);
 
             UpdateTriangle();
             UpdateRing();
@@ -307,6 +313,7 @@ namespace Ibinimator.View.Control
                         *(pStart + currentPixel * 4 + 0) = (byte)(b * 255.0); //Blue
                     }
                 }
+                
                 triangle.AddDirtyRect(new Int32Rect(0, 0,
                        triangle.PixelWidth, height));
                 triangle.Unlock();
