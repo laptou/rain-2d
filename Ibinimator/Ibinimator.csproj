@@ -13,6 +13,22 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -23,6 +39,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,9 +51,42 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>834B661A3ECD07B447E3E65B93406878060A478A</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Ibinimator_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationFramework.Aero2" />
+    <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct2D1, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D9.4.0.1\lib\net45\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -58,12 +109,24 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
+    <Compile Include="Shared\ColorUtils.cs" />
+    <Compile Include="Shared\MathUtils.cs" />
+    <Compile Include="Shared\ScreenExtensions.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
-    <Compile Include="View\Window\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="View\Control\AlphaHitTestImage.cs" />
+    <Compile Include="View\Control\D2DImage.cs" />
+    <Compile Include="View\Control\HSLWheel.xaml.cs">
+      <DependentUpon>HSLWheel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Control\TestD2DImage.cs" />
+    <Compile Include="View\Helper.cs" />
+    <Compile Include="View\MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -84,23 +147,100 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Ibinimator_TemporaryKey.pfx" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="Resources\Fonts\ROBOTO-BLACK.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-BLACKITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-BOLD.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-BOLDITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-ITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-LIGHT.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-LIGHTITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-MEDIUM.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-MEDIUMITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-REGULAR.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-THIN.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTO-THINITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-BOLD.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-BOLDITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-ITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-LIGHT.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-LIGHTITALIC.TTF" />
+    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-REGULAR.TTF" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Service\" />
-    <Folder Include="Shared\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="View\Window\MainWindow.xaml">
+    <Page Include="View\Control\HSLWheel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\MainView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\align bottom.png" />
+    <Resource Include="Resources\Icon\align center horizontally.png" />
+    <Resource Include="Resources\Icon\align center vertically.png" />
+    <Resource Include="Resources\Icon\align left.png" />
+    <Resource Include="Resources\Icon\align right.png" />
+    <Resource Include="Resources\Icon\align top.png" />
+    <Resource Include="Resources\Icon\backward.png" />
+    <Resource Include="Resources\Icon\bucket.png" />
+    <Resource Include="Resources\Icon\combine.png" />
+    <Resource Include="Resources\Icon\cursor.png" />
+    <Resource Include="Resources\Icon\difference.png" />
+    <Resource Include="Resources\Icon\divide.png" />
+    <Resource Include="Resources\Icon\expander.png" />
+    <Resource Include="Resources\Icon\eyedropper.png" />
+    <Resource Include="Resources\Icon\flip horizontally.png" />
+    <Resource Include="Resources\Icon\flip vertically.png" />
+    <Resource Include="Resources\Icon\forward.png" />
+    <Resource Include="Resources\Icon\grid.png" />
+    <Resource Include="Resources\Icon\intersection.png" />
+    <Resource Include="Resources\Icon\keyframe.png" />
+    <Resource Include="Resources\Icon\mask.png" />
+    <Resource Include="Resources\Icon\pen.png" />
+    <Resource Include="Resources\Icon\pencil.png" />
+    <Resource Include="Resources\Icon\pointer.png" />
+    <Resource Include="Resources\Icon\rotate ccw.png" />
+    <Resource Include="Resources\Icon\rotate cw.png" />
+    <Resource Include="Resources\Icon\snap.png" />
+    <Resource Include="Resources\Icon\text.png" />
+    <Resource Include="Resources\Icon\to back.png" />
+    <Resource Include="Resources\Icon\to front.png" />
+    <Resource Include="Resources\Icon\union.png" />
+    <Resource Include="Resources\Icon\zoom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\close.png" />
+    <Resource Include="Resources\Icon\minimize.png" />
+    <Resource Include="Resources\Icon\restore.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
