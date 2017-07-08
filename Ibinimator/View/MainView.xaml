@@ -6,7 +6,9 @@
         xmlns:control="clr-namespace:Ibinimator.View.Control"
         xmlns:view="clr-namespace:Ibinimator.View"
         xmlns:model="clr-namespace:Ibinimator.Model"
-        xmlns:ViewModel="clr-namespace:Ibinimator.ViewModel" x:Class="Ibinimator.View.MainView"
+        xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel" 
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        x:Class="Ibinimator.View.MainView"
         mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" Width="1920" Icon="/Ibinimator;component/Resources/logo.png">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="50" />
@@ -21,7 +23,7 @@
         </Style>
     </Window.Style>
     <Window.DataContext>
-        <ViewModel:MainViewModel/>
+        <viewmodel:MainViewModel/>
     </Window.DataContext>
     <Window.Resources>
         <view:PercentageConverter x:Key="PercentageConverter" />
@@ -235,10 +237,10 @@
                                 <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
                             </Grid>
 
-                            <DockPanel Grid.ColumnSpan="2" Margin="10,5" Grid.Row="1" Height="26.67">
+                            <DockPanel Grid.ColumnSpan="2" Margin="20,5,10,5" Grid.Row="1" Height="25">
                                 <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0">A</TextBlock>
-                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Blue, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
-                                <Slider Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <Slider Value="{Binding Alpha, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
                             </DockPanel>
                         </Grid>
                     </TabItem>
@@ -247,18 +249,8 @@
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A1Brush}" Grid.Row="1">
                     <TabItem Header="Layers">
-                        <TreeView ItemsSource="{Binding Root.SubLayers}" BorderThickness="0" Padding="0" Background="{DynamicResource L3Brush}">
-                            <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type model:Layer}" ItemsSource="{Binding SubLayers}">
-                                    <TextBlock x:Name="layerName" Text="{Binding Name}" FontWeight="Normal" />
-                                    <HierarchicalDataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
-                                            <Setter TargetName="layerName" Property="Text" Value="(layer)" />
-                                            <Setter TargetName="layerName" Property="Opacity" Value="0.56" />
-                                        </DataTrigger>
-                                    </HierarchicalDataTemplate.Triggers>
-                                </HierarchicalDataTemplate>
-                            </TreeView.ItemTemplate>
+                        <TreeView ItemsSource="{Binding Root.SubLayers}" BorderThickness="0" Padding="0" 
+                                  Background="{DynamicResource L3Brush}">
                             <TreeView.Resources>
                                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                                     <Setter Property="Focusable" Value="False"/>
@@ -290,7 +282,21 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
+                            </TreeView.Resources>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate DataType="{x:Type model:Layer}" ItemsSource="{Binding SubLayers}">
+                                    <TextBlock x:Name="layerName" Text="{Binding Name}" FontWeight="Normal" />
+                                    <HierarchicalDataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
+                                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat={}({0})}" />
+                                            <Setter TargetName="layerName" Property="Opacity" Value="0.56" />
+                                        </DataTrigger>
+                                    </HierarchicalDataTemplate.Triggers>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}">
+                                    <Setter Property="IsSelected" Value="{Binding Selected}" />
                                     <Setter Property="Background" Value="{StaticResource L1Brush}"/>
                                     <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
                                     <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
@@ -327,7 +333,7 @@
                                                     <Trigger Property="HasItems" Value="false">
                                                         <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
                                                     </Trigger>
-                                                    <Trigger Property="IsSelected" Value="true">
+                                                    <Trigger Property="view:TreeViewMultipleSelectionBehavior.IsItemSelected" Value="true">
                                                         <Setter Property="Background" TargetName="Bd" Value="{StaticResource L2Brush}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
@@ -346,13 +352,37 @@
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TreeView.Resources>
+                            </TreeView.ItemContainerStyle>
+                            <i:Interaction.Behaviors>
+                                <view:TreeViewMultipleSelectionBehavior SelectedItems="{Binding Selection}" />
+                            </i:Interaction.Behaviors>
                         </TreeView>
                     </TabItem>
                     <TabItem Header="Effects"/>
                 </TabControl>
             </Grid>
-            <control:TestD2DImage SnapsToDevicePixels="True" />
+            <TabControl>
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0:P2} ({1:P2}) {2} FPS">
+                                    <Binding Path="Zoom" />
+                                    <Binding Path="Zoom" />
+                                    <Binding Path="FPS" ElementName="artView" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </TabItem.Header>
+                    <Border Background="White">
+                        <control:ArtView 
+                            x:Name="artView" 
+                            Zoom="{Binding Zoom, Mode=TwoWay}" 
+                            Root="{Binding Root}" 
+                            Selection="{Binding Selection}" />
+                    </Border>
+                </TabItem>
+            </TabControl>
         </DockPanel>
     </Grid>
 </Window>

@@ -53,7 +53,7 @@ namespace Ibinimator.View.Control
             }
         }
 
-        public override void Render(RenderTarget target)
+        protected override void Render(RenderTarget target)
         {
             target.DrawEllipse(ellipse, Brushes["A1"]);
         }

@@ -50,6 +50,14 @@ namespace Ibinimator.Model
             });
         }
 
+        public void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                PropertyChanged?.Invoke(sender, args);
+            });
+        }
+
         public void RaisePropertyChanging(string propertyName)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -95,8 +103,7 @@ namespace Ibinimator.Model
             RaisePropertyChanged(propertyName);
         }
 
-        private PropertyInfo GetPropertyInfo<TProperty>(
-                                                                            Expression<Func<TProperty>> propertyLambda)
+        private PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
         {
             MemberExpression member = propertyLambda.Body as MemberExpression;
             if (member == null)

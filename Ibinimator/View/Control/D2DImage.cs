@@ -28,7 +28,24 @@ namespace Ibinimator.View.Control
            );
 
         public static readonly DependencyProperty FPSProperty = FPSPropertyKey.DependencyProperty;
+
+        public RenderMode RenderMode
+        {
+            get { return (RenderMode)GetValue(RenderModeProperty); }
+            set { SetValue(RenderModeProperty, value); }
+        }
         
+        public static readonly DependencyProperty RenderModeProperty =
+            DependencyProperty.Register("RenderMode", typeof(RenderMode), typeof(D2DImage), new PropertyMetadata(RenderMode.Constant, OnRenderModeChanged));
+
+        private static void OnRenderModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if(d is D2DImage image)
+            {
+                if (e.NewValue != e.OldValue && (RenderMode)e.NewValue == RenderMode.Manual)
+                    CompositionTarget.Rendering -= image.OnRendering;
+            }
+        }
 
         private readonly Stopwatch renderTimer = new Stopwatch();
         private D2D.Factory d2DFactory;
@@ -50,6 +67,7 @@ namespace Ibinimator.View.Control
         {
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+
             Stretch = Stretch.Fill;
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
@@ -79,12 +97,21 @@ namespace Ibinimator.View.Control
 
         #region Methods
 
-        public abstract void Render(D2D.RenderTarget target);
+        protected void InvalidateSurface(Int32Rect? rect = null)
+        {
+            PrepareAndCallRender();
+            surface.InvalidateD3DImage(rect);
+        }
+
+        protected abstract void Render(D2D.RenderTarget target);
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            CreateAndBindTargets();
             base.OnRenderSizeChanged(sizeInfo);
+            
+            CreateAndBindTargets();
+            PrepareAndCallRender();
+            surface.InvalidateD3DImage();
         }
 
         private void CalcFps()
@@ -182,6 +209,8 @@ namespace Ibinimator.View.Control
             if (App.IsDesigner) return;
 
             StartD3D();
+            PrepareAndCallRender();
+            surface.InvalidateD3DImage();
         }
 
         private void OnRendering(object sender, EventArgs e)
@@ -240,7 +269,9 @@ namespace Ibinimator.View.Control
                 return;
             }
 
-            System.Windows.Media.CompositionTarget.Rendering += OnRendering;
+            if(RenderMode == RenderMode.Constant)
+                CompositionTarget.Rendering += OnRendering;
+
             renderTimer.Start();
         }
 
@@ -250,9 +281,15 @@ namespace Ibinimator.View.Control
             {
                 return;
             }
+            
+            CompositionTarget.Rendering -= OnRendering;
 
-            System.Windows.Media.CompositionTarget.Rendering -= OnRendering;
             renderTimer.Stop();
+        }
+
+        public void Invalidate()
+        {
+            OnRendering(this, null);
         }
 
         #endregion Methods
@@ -292,12 +329,12 @@ namespace Ibinimator.View.Control
             EndD3D();
         }
 
-        public void InvalidateD3DImage()
+        public void InvalidateD3DImage(Int32Rect? rect = null)
         {
             if (renderTarget != null)
             {
                 Lock();
-                AddDirtyRect(new Int32Rect(0, 0, PixelWidth, PixelHeight));
+                AddDirtyRect(rect ?? new Int32Rect(0, 0, PixelWidth, PixelHeight));
                 Unlock();
             }
         }
@@ -436,6 +473,11 @@ namespace Ibinimator.View.Control
         }
 
         #endregion Classes
+    }
+
+    public enum RenderMode
+    {
+        Constant, Manual
     }
 
     internal static class Disposer
