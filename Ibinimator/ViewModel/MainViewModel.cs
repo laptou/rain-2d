@@ -26,7 +26,7 @@ namespace Ibinimator.ViewModel
         {
             Root = new Layer();
 
-            var l = new Layer();
+            var l = new Group();
 
             var e = new Ellipse();
             e.X = 100;
@@ -193,7 +193,9 @@ namespace Ibinimator.ViewModel
         }
 
         public double Red { get => Color.R / 255f; set => Color = ColorUtils.RgbToColor(value, Green, Blue); }
+
         public double Green { get => Color.G / 255f; set => Color = ColorUtils.RgbToColor(Red, value, Blue); }
+
         public double Blue { get => Color.B / 255f; set => Color = ColorUtils.RgbToColor(Red, Green, value); }
 
         public Color Color

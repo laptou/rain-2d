@@ -13,6 +13,29 @@ namespace Ibinimator.Model
     public class Group : Layer
     {
         public override String DefaultName => "Group";
+
+        public override float X { get => GetBounds().X; }
+
+        public override float Y { get => GetBounds().Y; }
+
+        public override RectangleF GetBounds()
+        {
+            RectangleF start = SubLayers.FirstOrDefault()?.GetBounds() ?? RectangleF.Empty;
+
+            float x1 = start.X, y1 = start.Y, x2 = start.Right, y2 = start.Bottom;
+
+            Parallel.ForEach(SubLayers.Skip(1), layer =>
+            {
+                var bounds = layer.GetBounds();
+
+                if (bounds.Left < x1) x1 = bounds.Left;
+                if (bounds.Top < y1) y1 = bounds.Top;
+                if (bounds.Right > x2) x2 = bounds.Right;
+                if (bounds.Bottom > y2) y2 = bounds.Bottom;
+            });
+
+            return new RectangleF(x1, y1, x2, y2);
+        }
     }
 
     public class Layer : Model
@@ -51,9 +74,9 @@ namespace Ibinimator.Model
 
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        public float X { get => Get<float>(); set => Set(value); }
+        public virtual float X { get => Get<float>(); set => Set(value); }
 
-        public float Y { get => Get<float>(); set => Set(value); }
+        public virtual float Y { get => Get<float>(); set => Set(value); }
 
         public virtual float Width { get => GetBounds().Width; set { } }
 

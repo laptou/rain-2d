@@ -59,7 +59,6 @@ namespace Ibinimator.View.Control
         private long lastFrameTime = 0;
         private long lastRenderTime = 0;
         private bool invalidated = false;
-        private bool allDirty = false;
         private List<Rectangle> dirty = new List<Rectangle>();
         private Texture2D renderTarget;
         private DX11ImageSource surface;
@@ -287,7 +286,7 @@ namespace Ibinimator.View.Control
             renderTimer.Stop();
         }
 
-        protected virtual void InvalidateSurface(Rectangle? area)
+        public virtual void InvalidateSurface(Rectangle? area)
         {
             invalidated = true;
 
@@ -297,11 +296,12 @@ namespace Ibinimator.View.Control
             var whole = new Rectangle(0, 0, surface.PixelWidth, surface.PixelHeight);
 
             var rect = area ?? whole;
+            var dpi = new Vector2(x: d2DRenderTarget.DotsPerInch.Width, y: d2DRenderTarget.DotsPerInch.Height) / new Vector2(96);
 
-            rect.Top = MathUtils.Clamp(0, surface.PixelHeight, rect.Top);
-            rect.Bottom = MathUtils.Clamp(0, surface.PixelHeight, rect.Bottom);
-            rect.Left = MathUtils.Clamp(0, surface.PixelWidth, rect.Left);
-            rect.Right = MathUtils.Clamp(0, surface.PixelWidth, rect.Right);
+            rect.Top = (int)MathUtils.Clamp(0, surface.PixelHeight, rect.Top * dpi.Y);
+            rect.Bottom = (int)MathUtils.Clamp(0, surface.PixelHeight, rect.Bottom * dpi.Y);
+            rect.Left = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Left * dpi.X);
+            rect.Right = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Right * dpi.X);
 
             surface.InvalidateD3DImage(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
         }

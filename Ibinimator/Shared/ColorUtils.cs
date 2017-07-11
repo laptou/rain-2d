@@ -82,5 +82,8 @@ namespace Ibinimator.Shared
             (double r, double g, double b) = HslToRgb(h, s, l);
             return RgbaToColor(r, g, b, alpha);
         }
+
+        public static Color ToWPF(this SharpDX.Color4 color) 
+            => RgbaToColor(color.Red, color.Green, color.Blue, color.Alpha);
     }
 }

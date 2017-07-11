@@ -21,6 +21,12 @@ namespace Ibinimator.Shared
 
         public static T Min<T>(params T[] x) => x.Min();
 
+        public static double AbsMax(double min, double x) =>
+            Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
+
+        public static float AbsMax(float min, float x) =>
+            Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
+
         public const double PI2 = Math.PI * 2;
 
         public static readonly double SQRT2 = Math.Sqrt(2);

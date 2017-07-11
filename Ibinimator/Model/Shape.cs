@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using SharpDX.Direct2D1;
 using System;
+using System.Diagnostics;
 
 namespace Ibinimator.Model
 {
@@ -8,11 +9,11 @@ namespace Ibinimator.Model
     {
         #region Properties
 
+        public override String DefaultName => "Ellipse";
         public float CenterX { get => X + RadiusX; }
         public float CenterY { get => Y + RadiusY; }
-        public override String DefaultName => "Ellipse";
-        public float RadiusX { get => Get<float>(); set => Set(value); }
-        public float RadiusY { get => Get<float>(); set => Set(value); }
+        public float RadiusX { get => Width / 2; set => Width = value * 2; }
+        public float RadiusY { get => Height / 2; set => Height = value * 2; }
 
         #endregion Properties
 
@@ -20,13 +21,7 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds()
         {
-            return new RectangleF()
-            {
-                Left = CenterX - RadiusX,
-                Top = CenterY - RadiusY,
-                Right = CenterX + RadiusX,
-                Bottom = CenterY + RadiusY
-            };
+            return new RectangleF(X, Y, Width, Height);
         }
 
         public override Geometry GetGeometry(Factory factory)
@@ -42,8 +37,24 @@ namespace Ibinimator.Model
         public override void Transform(Matrix3x2 mat)
         {
             base.Transform(mat);
-            RadiusX = RadiusX * mat.ScaleVector.X;
-            RadiusY = RadiusY * mat.ScaleVector.Y;
+
+            Width *= mat.ScaleVector.X;
+            Height *= mat.ScaleVector.Y;
+
+            if (Height == 0)
+                Debugger.Break();
+
+            if (Width < 0)
+            {
+                Width = -Width;
+                X = X - Width;
+            }
+
+            if (Height < 0)
+            {
+                Height = -Height;
+                Y = Y - Height;
+            }
         }
 
         #endregion Methods
@@ -54,8 +65,6 @@ namespace Ibinimator.Model
         #region Properties
 
         public override String DefaultName => "Rectangle";
-        public override float Height { get => Get<float>(); set => Set(value); }
-        public override float Width { get => Get<float>(); set => Set(value); }
 
         #endregion Properties
 
@@ -105,6 +114,8 @@ namespace Ibinimator.Model
         public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
         public StrokeStyleProperties StrokeStyle { get => Get<StrokeStyleProperties>(); set => Set(value); }
         public float StrokeWidth { get => Get<float>(); set => Set(value); }
+        public override float Height { get => Get<float>(); set => Set(value); }
+        public override float Width { get => Get<float>(); set => Set(value); }
 
         #endregion Properties
 
@@ -118,15 +129,16 @@ namespace Ibinimator.Model
 
             if (hit != null) return hit;
 
-            var geometry = GetGeometry(factory);
+            using (var geometry = GetGeometry(factory))
+            {
+                if (FillBrush != null && geometry.FillContainsPoint(point))
+                    return this;
 
-            if (FillBrush != null && geometry.FillContainsPoint(point))
-                return this;
+                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth))
+                    return this;
 
-            if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth))
-                return this;
-
-            return null;
+                return null;
+            }
         }
 
         #endregion Methods
