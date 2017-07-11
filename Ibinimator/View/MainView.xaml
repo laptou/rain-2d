@@ -6,10 +6,14 @@
         xmlns:control="clr-namespace:Ibinimator.View.Control"
         xmlns:view="clr-namespace:Ibinimator.View"
         xmlns:model="clr-namespace:Ibinimator.Model"
-        xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel" 
+        xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         x:Class="Ibinimator.View.MainView"
         mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" Width="1920" Icon="/Ibinimator;component/Resources/logo.png">
+    <Window.Resources>
+        <view:PercentageConverter x:Key="PercentageConverter" />
+    </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="50" />
     </WindowChrome.WindowChrome>
@@ -17,17 +21,14 @@
         <Style TargetType="{x:Type Window}">
             <Style.Triggers>
                 <Trigger Property="WindowState" Value="Maximized">
-                    <Setter Property="BorderThickness" Value="{Binding Source={x:Static SystemParameters.WindowResizeBorderThickness}}"/>
+                    <Setter Property="BorderThickness" Value="{Binding Source={x:Static SystemParameters.WindowResizeBorderThickness}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Style>
     <Window.DataContext>
-        <viewmodel:MainViewModel/>
+        <viewmodel:MainViewModel />
     </Window.DataContext>
-    <Window.Resources>
-        <view:PercentageConverter x:Key="PercentageConverter" />
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -41,23 +42,23 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Image Source="/Ibinimator;component/Resources/logo.png" Width="30" Margin="8,0,0,0"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
                 <StackPanel Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="1">
-                    <Menu FontFamily="/Ibinimator;component/Resources/Fonts/#Roboto" FontSize="16" VerticalAlignment="Center" 
+                    <Menu FontFamily="/Ibinimator;component/Resources/Fonts/#Roboto" FontSize="16" VerticalAlignment="Center"
                       Background="{x:Null}" Margin="16,0,0,0">
-                        <MenuItem Header="_File"/>
-                        <MenuItem Header="_Edit"/>
-                        <MenuItem Header="_Time"/>
-                        <MenuItem Header="Te_xt"/>
+                        <MenuItem Header="_File" />
+                        <MenuItem Header="_Edit" />
+                        <MenuItem Header="_Time" />
+                        <MenuItem Header="Te_xt" />
                     </Menu>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="1">
                     <Button Style="{StaticResource ToolbarButton}" Command="{x:Static SystemCommands.MinimizeWindowCommand}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/minimize.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/minimize.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" Command="{x:Static SystemCommands.RestoreWindowCommand}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/restore.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/restore.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" Command="{x:Static SystemCommands.CloseWindowCommand}">
                         <Image Source="/Ibinimator;component/Resources/Icon/close.png" Style="{DynamicResource Icon}" />
@@ -69,82 +70,82 @@
             <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="50,0,0,0" Padding="0" UseLayoutRounding="True">
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/to back.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/to back.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/backward.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/backward.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/forward.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/forward.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/to front.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                </StackPanel>
-                <Border Width="50" />
-                <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/flip horizontally.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/flip vertically.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/to front.png" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/grid.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/flip horizontally.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/snap.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                </StackPanel>
-                <Border Width="50" />
-                <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align left.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/flip vertically.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align center horizontally.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align right.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align top.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align center vertically.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align bottom.png" Style="{DynamicResource Icon}"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/expander.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/union.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/grid.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/difference.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/snap.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                </StackPanel>
+                <Border Width="50" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/align left.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/intersection.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/align center horizontally.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/divide.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/align right.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/combine.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/align top.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/align center vertically.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/align bottom.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/expander.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                </StackPanel>
+                <Border Width="50" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/union.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/difference.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/intersection.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/divide.png" Style="{DynamicResource Icon}" />
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/combine.png" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
             </ToolBar>
@@ -153,116 +154,116 @@
             <ToolBarTray DockPanel.Dock="Left" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0" VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" IsChecked="True">
-                        <Image Source="/Ibinimator;component/Resources/Icon/cursor.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/cursor.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pointer.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/pointer.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pencil.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/pencil.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pen.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/pen.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/eyedropper.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/eyedropper.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/bucket.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/bucket.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/keyframe.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/keyframe.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/mask.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/mask.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/zoom.png" Style="{DynamicResource Icon}"/>
+                        <Image Source="/Ibinimator;component/Resources/Icon/zoom.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                 </ToolBar>
             </ToolBarTray>
             <Grid DockPanel.Dock="Right" Width="384">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <TabControl view:Helper.Accent="{StaticResource A2Brush}">
                     <TabItem Header="Color">
                         <Grid DataContext="{Binding ColorPicker}">
                             <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}" Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" />
                             <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="50" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center" Margin="0,0,5,0">H</TextBlock>
-                                <Slider Grid.Column="1" Value="{Binding Hue, Mode=TwoWay}" Maximum="360" LargeChange="10" SmallChange="1" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat={}{0:F0}°}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBlock VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="H"/></TextBlock>
+                                <Slider Grid.Column="1" Value="{Binding Hue, Mode=TwoWay}" Maximum="360" LargeChange="10" SmallChange="1" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat=\{0:F0\}°}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                                <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,0,5,0">S</TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Saturation, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Mode=TwoWay, Converter={StaticResource PercentageConverter}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="S"/></TextBlock>
+                                <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Saturation, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                                <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0">L</TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Lightness, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Mode=TwoWay, Converter={StaticResource PercentageConverter}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="L"/></TextBlock>
+                                <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Lightness, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                                <TextBlock Grid.Row="3" VerticalAlignment="Center" Margin="0,0,5,0">R</TextBlock>
+                                <TextBlock Grid.Row="3" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="R"/></TextBlock>
                                 <Slider Grid.Column="1" Grid.Row="3" Value="{Binding Red, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                                <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,5,0">G</TextBlock>
+                                <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="G"/></TextBlock>
                                 <Slider Grid.Column="1" Grid.Row="4" Value="{Binding Green, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                                <TextBlock Grid.Row="5" VerticalAlignment="Center" Margin="0,0,5,0">B</TextBlock>
+                                <TextBlock Grid.Row="5" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="B"/></TextBlock>
                                 <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
                             </Grid>
 
                             <DockPanel Grid.ColumnSpan="2" Margin="20,5,10,5" Grid.Row="1" Height="25">
-                                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0">A</TextBlock>
-                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat={}{0:F2}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1"/>
+                                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="A"/></TextBlock>
+                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
                                 <Slider Value="{Binding Alpha, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
                             </DockPanel>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="Swatches"/>
-                    <TabItem Header="Stroke"/>
+                    <TabItem Header="Swatches" />
+                    <TabItem Header="Stroke" />
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A1Brush}" Grid.Row="1">
                     <TabItem Header="Layers">
-                        <TreeView ItemsSource="{Binding Root.SubLayers}" BorderThickness="0" Padding="0" 
+                        <TreeView x:Name="layerTree" ItemsSource="{Binding Root.SubLayers}" BorderThickness="0" Padding="0"
                                   Background="{DynamicResource L3Brush}">
                             <TreeView.Resources>
                                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
-                                    <Setter Property="Focusable" Value="False"/>
-                                    <Setter Property="Width" Value="16"/>
-                                    <Setter Property="Height" Value="16"/>
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="Width" Value="16" />
+                                    <Setter Property="Height" Value="16" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ToggleButton}">
                                                 <Border Background="Transparent" Height="16" Width="16">
-                                                    <Image x:Name="ExpandPath" Source="/Ibinimator;component/Resources/Icon/expander.png" Cursor="Hand" 
+                                                    <Image x:Name="ExpandPath" Source="/Ibinimator;component/Resources/Icon/expander.png" Cursor="Hand"
                                                            Style="{StaticResource Icon}" RenderTransformOrigin="0.5,0.5">
                                                         <Image.RenderTransform>
                                                             <RotateTransform Angle="-90" />
@@ -283,12 +284,18 @@
                                     </Setter>
                                 </Style>
                             </TreeView.Resources>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectedItemChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}" 
+                                                           CommandParameter="{Binding SelectedValue, ElementName=layerTree, Mode=OneWay}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
                                 <HierarchicalDataTemplate DataType="{x:Type model:Layer}" ItemsSource="{Binding SubLayers}">
                                     <TextBlock x:Name="layerName" Text="{Binding Name}" FontWeight="Normal" />
                                     <HierarchicalDataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
-                                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat={}({0})}" />
+                                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat=(\{0\})}" />
                                             <Setter TargetName="layerName" Property="Opacity" Value="0.56" />
                                         </DataTrigger>
                                     </HierarchicalDataTemplate.Triggers>
@@ -296,46 +303,47 @@
                             </TreeView.ItemTemplate>
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}">
-                                    <Setter Property="IsSelected" Value="{Binding Selected}" />
-                                    <Setter Property="Background" Value="{StaticResource L1Brush}"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                                    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                                    <Setter Property="Padding" Value="0,10,0,0"/>
-                                    <Setter Property="Foreground" Value="{StaticResource T1Brush}"/>
+                                    <Setter Property="Background" Value="{StaticResource L1Brush}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                    <Setter Property="Padding" Value="0,10,0,0" />
+                                    <Setter Property="Foreground" Value="{StaticResource T1Brush}" />
+                                    <!--<Setter Property="view:TreeViewMultipleSelectionBehavior.IsItemSelected" 
+                                            Value="{Binding Selected, Mode=TwoWay}" />-->
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type TreeViewItem}">
-                                                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" 
+                                                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}"
                                                         BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"
                                                         Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true"
                                                         Margin="-19,0,0,0">
                                                     <Grid VerticalAlignment="Center" Margin="19,0,0,0">
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition MinWidth="19" Width="Auto"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition MinWidth="19" Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition/>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition />
                                                         </Grid.RowDefinitions>
-                                                        <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Style="{StaticResource ExpandCollapseToggleStyle}"/>
-                                                        <ContentPresenter x:Name="PART_Header" Grid.Column="1" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                                        <ItemsPresenter x:Name="ItemsHost" Grid.ColumnSpan="3" Grid.Column="1" Grid.Row="1" Margin="0,10,0,0"/>
+                                                        <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Style="{StaticResource ExpandCollapseToggleStyle}" />
+                                                        <ContentPresenter x:Name="PART_Header" Grid.Column="1" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                        <ItemsPresenter x:Name="ItemsHost" Grid.ColumnSpan="3" Grid.Column="1" Grid.Row="1" Margin="0,10,0,0" />
                                                     </Grid>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsExpanded" Value="false">
-                                                        <Setter Property="Padding" Value="0,10"/>
-                                                        <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed"/>
-                                                        <Setter Property="Margin" TargetName="ItemsHost" Value="0"/>
+                                                        <Setter Property="Padding" Value="0,10" />
+                                                        <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed" />
+                                                        <Setter Property="Margin" TargetName="ItemsHost" Value="0" />
                                                     </Trigger>
                                                     <Trigger Property="HasItems" Value="false">
-                                                        <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
+                                                        <Setter Property="Visibility" TargetName="Expander" Value="Hidden" />
                                                     </Trigger>
-                                                    <Trigger Property="view:TreeViewMultipleSelectionBehavior.IsItemSelected" Value="true">
-                                                        <Setter Property="Background" TargetName="Bd" Value="{StaticResource L2Brush}"/>
-                                                    </Trigger>
+                                                    <DataTrigger Binding="{Binding Selected}" Value="true">
+                                                        <Setter Property="Background" TargetName="Bd" Value="{StaticResource L2Brush}" />
+                                                    </DataTrigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
@@ -345,7 +353,7 @@
                                             <Setter Property="ItemsPanel">
                                                 <Setter.Value>
                                                     <ItemsPanelTemplate>
-                                                        <VirtualizingStackPanel/>
+                                                        <VirtualizingStackPanel />
                                                     </ItemsPanelTemplate>
                                                 </Setter.Value>
                                             </Setter>
@@ -353,12 +361,12 @@
                                     </Style.Triggers>
                                 </Style>
                             </TreeView.ItemContainerStyle>
-                            <i:Interaction.Behaviors>
+                            <!--<i:Interaction.Behaviors>
                                 <view:TreeViewMultipleSelectionBehavior SelectedItems="{Binding Selection}" />
-                            </i:Interaction.Behaviors>
+                            </i:Interaction.Behaviors>-->
                         </TreeView>
                     </TabItem>
-                    <TabItem Header="Effects"/>
+                    <TabItem Header="Effects" />
                 </TabControl>
             </Grid>
             <TabControl>
@@ -375,10 +383,10 @@
                         </TextBlock>
                     </TabItem.Header>
                     <Border Background="White">
-                        <control:ArtView 
-                            x:Name="artView" 
-                            Zoom="{Binding Zoom, Mode=TwoWay}" 
-                            Root="{Binding Root}" 
+                        <control:ArtView
+                            x:Name="artView"
+                            Zoom="{Binding Zoom, Mode=OneWayToSource}"
+                            Root="{Binding Root}"
                             Selection="{Binding Selection}" />
                     </Border>
                 </TabItem>

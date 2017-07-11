@@ -2,8 +2,8 @@
 using System;
 using System.Linq;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -313,7 +313,7 @@ namespace Ibinimator.View.Control
                         *(pStart + currentPixel * 4 + 0) = (byte)(b * 255.0); //Blue
                     }
                 }
-                
+
                 triangle.AddDirtyRect(new Int32Rect(0, 0,
                        triangle.PixelWidth, height));
                 triangle.Unlock();

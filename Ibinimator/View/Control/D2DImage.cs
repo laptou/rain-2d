@@ -1,4 +1,5 @@
-﻿using SharpDX.Direct3D;
+﻿using Ibinimator.Shared;
+using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
@@ -9,17 +10,18 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
 using Screen = System.Windows.Forms.Screen;
-using Ibinimator.Shared;
-using System.Windows.Media;
+using SharpDX;
 
 namespace Ibinimator.View.Control
 {
     public abstract class D2DImage : Image
     {
         #region Fields
+
         private static readonly DependencyPropertyKey FPSPropertyKey = DependencyProperty.RegisterReadOnly(
            "FPS",
            typeof(int),
@@ -34,13 +36,13 @@ namespace Ibinimator.View.Control
             get { return (RenderMode)GetValue(RenderModeProperty); }
             set { SetValue(RenderModeProperty, value); }
         }
-        
+
         public static readonly DependencyProperty RenderModeProperty =
             DependencyProperty.Register("RenderMode", typeof(RenderMode), typeof(D2DImage), new PropertyMetadata(RenderMode.Constant, OnRenderModeChanged));
 
         private static void OnRenderModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if(d is D2DImage image)
+            if (d is D2DImage image)
             {
                 if (e.NewValue != e.OldValue && (RenderMode)e.NewValue == RenderMode.Manual)
                     CompositionTarget.Rendering -= image.OnRendering;
@@ -56,6 +58,9 @@ namespace Ibinimator.View.Control
         private int frameCountHistTotal = 0;
         private long lastFrameTime = 0;
         private long lastRenderTime = 0;
+        private bool invalidated = false;
+        private bool allDirty = false;
+        private List<Rectangle> dirty = new List<Rectangle>();
         private Texture2D renderTarget;
         private DX11ImageSource surface;
 
@@ -97,18 +102,12 @@ namespace Ibinimator.View.Control
 
         #region Methods
 
-        protected void InvalidateSurface(Int32Rect? rect = null)
-        {
-            PrepareAndCallRender();
-            surface.InvalidateD3DImage(rect);
-        }
-
         protected abstract void Render(D2D.RenderTarget target);
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
-            
+
             CreateAndBindTargets();
             PrepareAndCallRender();
             surface.InvalidateD3DImage();
@@ -141,10 +140,9 @@ namespace Ibinimator.View.Control
             Disposer.SafeDispose(ref d2DFactory);
             Disposer.SafeDispose(ref renderTarget);
 
-            var pt = PointToScreen(new Point());
+            var pt = PointToScreen(new System.Windows.Point());
             Screen screen = Screen.FromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y));
             var dpi = screen.GetDpiForMonitor(DpiType.Effective);
-
 
             var width = Math.Max((int)(ActualWidth * dpi.x / 96f), 100);
             var height = Math.Max((int)(ActualHeight * dpi.y / 96f), 100);
@@ -220,10 +218,13 @@ namespace Ibinimator.View.Control
                 return;
             }
 
-            PrepareAndCallRender();
-            surface.InvalidateD3DImage();
+            if (RenderMode == RenderMode.Constant || invalidated)
+            {
+                PrepareAndCallRender();
 
-            lastRenderTime = renderTimer.ElapsedMilliseconds;
+                lastRenderTime = renderTimer.ElapsedMilliseconds;
+                invalidated = false;
+            }
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -257,9 +258,9 @@ namespace Ibinimator.View.Control
             surface = new DX11ImageSource();
             surface.IsFrontBufferAvailableChanged += OnIsFrontBufferAvailableChanged;
 
-            CreateAndBindTargets();
-
             Source = surface;
+
+            CreateAndBindTargets();
         }
 
         private void StartRendering()
@@ -269,8 +270,7 @@ namespace Ibinimator.View.Control
                 return;
             }
 
-            if(RenderMode == RenderMode.Constant)
-                CompositionTarget.Rendering += OnRendering;
+            CompositionTarget.Rendering += OnRendering;
 
             renderTimer.Start();
         }
@@ -281,15 +281,29 @@ namespace Ibinimator.View.Control
             {
                 return;
             }
-            
+
             CompositionTarget.Rendering -= OnRendering;
 
             renderTimer.Stop();
         }
 
-        public void Invalidate()
+        protected virtual void InvalidateSurface(Rectangle? area)
         {
-            OnRendering(this, null);
+            invalidated = true;
+
+            if(surface == null)
+                return;
+
+            var whole = new Rectangle(0, 0, surface.PixelWidth, surface.PixelHeight);
+
+            var rect = area ?? whole;
+
+            rect.Top = MathUtils.Clamp(0, surface.PixelHeight, rect.Top);
+            rect.Bottom = MathUtils.Clamp(0, surface.PixelHeight, rect.Bottom);
+            rect.Left = MathUtils.Clamp(0, surface.PixelWidth, rect.Left);
+            rect.Right = MathUtils.Clamp(0, surface.PixelWidth, rect.Right);
+
+            surface.InvalidateD3DImage(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
         }
 
         #endregion Methods
@@ -333,9 +347,12 @@ namespace Ibinimator.View.Control
         {
             if (renderTarget != null)
             {
-                Lock();
-                AddDirtyRect(rect ?? new Int32Rect(0, 0, PixelWidth, PixelHeight));
-                Unlock();
+                lock (this)
+                {
+                    Lock();
+                    AddDirtyRect(rect ?? new Int32Rect(0, 0, PixelWidth, PixelHeight));
+                    Unlock();
+                }
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -41,8 +40,8 @@ namespace Ibinimator.Shared
                 var d = max - min;
                 s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
                 if (max == r) h = (g - b) / d + (g < b ? 6 : 0);
-                else if (max == g) h = (b - r) / d + 2; 
-                else h = (r - g) / d + 4; 
+                else if (max == g) h = (b - r) / d + 2;
+                else h = (r - g) / d + 4;
 
                 h /= 6;
             }

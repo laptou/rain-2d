@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -33,7 +32,7 @@ namespace Ibinimator.View
             var fraction = System.Convert.ToDecimal(value);
             return fraction.ToString("P0", culture);
         }
-        
+
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             decimal.TryParse(value.ToString().Trim(culture.NumberFormat.PercentSymbol[0]), NumberStyles.Any, culture.NumberFormat, out decimal d);

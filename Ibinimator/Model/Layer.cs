@@ -1,117 +1,15 @@
-﻿using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
+﻿using SharpDX;
+using SharpDX.Direct2D1;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using SharpDX;
+using System.Collections.Generic;
 
 namespace Ibinimator.Model
 {
-    public enum BrushType
-    {
-        Color, Bitmap, Image, LinearGradient, RadialGradient
-    }
-
-    public class BezierNode : PathNode
-    {
-        #region Properties
-
-        public float X1 { get => Get<float>(); set => Set(value); }
-        public float X2 { get => Get<float>(); set => Set(value); }
-        public float Y1 { get => Get<float>(); set => Set(value); }
-        public float Y2 { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
-    }
-
-    public class BrushInfo : Model
-    {
-        #region Constructors
-
-        public BrushInfo(BrushType brushType)
-        {
-            BrushType = brushType;
-
-            Opacity = 1;
-
-            if (IsGradient)
-                Stops = new List<GradientStop>();
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public RawVector2 StartPoint
-        {
-            get => Get<RawVector2>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
-        public byte[] Bitmap { get; set; }
-
-        public BrushType BrushType { get => Get<BrushType>(); private set => Set(value); }
-
-        public RawMatrix3x2 Transform { get => Get<RawMatrix3x2>(); set => Set(value); }
-
-        public RawColor4 Color
-        {
-            get => Get<RawColor4>();
-            set { if (!IsGradient && !IsImage) Set(value); else throw new InvalidOperationException("Not a color brush."); }
-        }
-
-        public RawVector2 EndPoint
-        {
-            get => Get<RawVector2>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
-        public float Opacity { get => Get<float>(); set => Set(value); }
-
-        public List<GradientStop> Stops
-        {
-            get => Get<List<GradientStop>>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
-        private bool IsGradient => BrushType == BrushType.LinearGradient || BrushType == BrushType.RadialGradient;
-        private bool IsImage => BrushType == BrushType.Image || BrushType == BrushType.Bitmap;
-
-        #endregion Properties
-    }
-
-    public class Ellipse : Shape
-    {
-        #region Properties
-
-        public float CenterX { get => X + RadiusX; }
-        public float CenterY { get => Y + RadiusY; }
-        public float RadiusX { get => Get<float>(); set => Set(value); }
-        public float RadiusY { get => Get<float>(); set => Set(value); }
-        public override String DefaultName => "Ellipse";
-
-        #endregion Properties
-
-        #region Methods
-
-        public override RectangleF GetBounds()
-        {
-            return new RectangleF()
-            {
-                Left = CenterX - RadiusX,
-                Top = CenterY - RadiusY,
-                Right = CenterX + RadiusX,
-                Bottom = CenterY + RadiusY
-            };
-        }
-
-        #endregion Methods
-    }
-
     public class Group : Layer
     {
         public override String DefaultName => "Group";
@@ -131,7 +29,7 @@ namespace Ibinimator.Model
             foreach (Layer layer in e.NewItems)
                 layer.PropertyChanged += OnSubLayerChanged;
 
-            if(e.Action == NotifyCollectionChangedAction.Remove)
+            if (e.Action == NotifyCollectionChangedAction.Remove)
                 foreach (Layer layer in e.OldItems)
                     layer.PropertyChanged -= OnSubLayerChanged;
         }
@@ -151,15 +49,19 @@ namespace Ibinimator.Model
 
         public float Opacity { get => Get<float>(); set => Set(value); }
 
-        public Matrix3x2 Transform { get => Get<RawMatrix3x2>(); set => Set(value); }
-
-        public ObservableCollection<Layer> SubLayers { get; set; } = new ObservableCollection<Layer>();
+        public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
         public float X { get => Get<float>(); set => Set(value); }
 
         public float Y { get => Get<float>(); set => Set(value); }
 
+        public virtual float Width { get => GetBounds().Width; set { } }
+
+        public virtual float Height { get => GetBounds().Height; set { } }
+
         public bool Selected { get => Get<bool>(); set => Set(value); }
+
+        public Layer Parent { get => Get<Layer>(); set => Set(value); }
 
         #endregion Properties
 
@@ -167,7 +69,7 @@ namespace Ibinimator.Model
 
         public virtual RectangleF GetBounds()
         {
-            float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            float x1 = X, y1 = Y, x2 = X, y2 = Y;
 
             Parallel.ForEach(SubLayers, layer =>
             {
@@ -182,80 +84,57 @@ namespace Ibinimator.Model
             return new RectangleF(x1, y1, x2, y2);
         }
 
-        #endregion Methods
-    }
-
-    public class Path : Shape
-    {
-        #region Properties
-
-        public override String DefaultName => "Path";
-        public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
-
-        #endregion Properties
-
-        #region Methods
-
-        public override RectangleF GetBounds()
+        public virtual void Transform(Matrix3x2 mat)
         {
-            float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            X = X * mat.ScaleVector.X + mat.TranslationVector.X;
+            Y = Y * mat.ScaleVector.Y + mat.TranslationVector.Y;
+            foreach (var l in SubLayers) l.Transform(mat);
+        }
 
-            Parallel.ForEach(Nodes, node =>
+        public virtual Layer Hit(Factory factory, Vector2 point)
+        {
+            foreach (var layer in SubLayers)
             {
-                if (node.X < x1) x1 = node.X;
-                if (node.Y < y1) y1 = node.Y;
-                if (node.X > x2) x2 = node.X;
-                if (node.Y > y2) y2 = node.Y;
-            });
+                var result = layer.Hit(factory, point);
+                if (result != null) return result;
+            }
 
-            return new RectangleF(x1, y1, x2, y2);
+            return null;
         }
 
-        #endregion Methods
-    }
-
-    public class PathNode : Model
-    {
-        #region Properties
-
-        public float X { get => Get<float>(); set => Set(value); }
-        public float Y { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
-    }
-
-    public class Rectangle : Shape
-    {
-        #region Properties
-
-        public override String DefaultName => "Rectangle";
-        public float X1 { get => Get<float>(); set => Set(value); }
-        public float X2 { get => Get<float>(); set => Set(value); }
-        public float Y1 { get => Get<float>(); set => Set(value); }
-        public float Y2 { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
-
-        #region Methods
-
-        public override RectangleF GetBounds()
+        public void Add(Layer child)
         {
-            return new RectangleF(X1, Y1, X2, Y2);
+            child.Parent = this;
+            SubLayers.Add(child);
+        }
+
+        public void Remove(Layer child)
+        {
+            child.Parent = null;
+            SubLayers.Remove(child);
+        }
+
+        /// <summary>
+        /// Returns the entire layer graph starting at this layer,
+        /// as a list.
+        /// </summary>
+        /// <returns>
+        /// The entire layer graph starting at this layer,
+        /// as a list.
+        /// </returns>
+        public IEnumerable<Layer> Flatten()
+        {
+            yield return this;
+
+            foreach (var layer in SubLayers)
+            {
+                var graph = layer.Flatten();
+
+                foreach (var child in graph)
+                    yield return child;
+            }
         }
 
         #endregion Methods
-    }
-
-    public abstract class Shape : Layer
-    {
-        #region Properties
-
-        public override String DefaultName => "Shape";
-        public BrushInfo FillBrush { get => Get<BrushInfo>(); set => Set(value); }
-        public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
-        public StrokeStyleProperties StrokeStyle { get => Get<StrokeStyleProperties>(); set => Set(value); }
-        public float StrokeWidth { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
     }
 }

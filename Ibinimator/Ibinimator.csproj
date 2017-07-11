@@ -120,8 +120,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\BrushInfo.cs" />
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
+    <Compile Include="Model\Path.cs" />
+    <Compile Include="Model\Shape.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />

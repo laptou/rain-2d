@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,99 +15,90 @@ namespace Ibinimator.View
     /// <summary>
     /// A behavior that extends a <see cref="TreeView"/> with multiple selection capabilities.
     /// </summary>
- 
- 
+
     /// <remarks>
     /// Largely based on http://chrigas.blogspot.com/2014/08/wpf-treeview-with-multiple-selection.html
     /// </remarks>
     public class TreeViewMultipleSelectionBehavior : Behavior<TreeView>
     {
         #region SelectedItems (Public Dependency Property)
- 
+
         /// <summary>
         /// The dependency property definition for the SelectedItems property.
         /// </summary>
- 
- 
+
         public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
             "SelectedItems", typeof(IList), typeof(TreeViewMultipleSelectionBehavior));
- 
+
         /// <summary>
         /// Gets or sets the selected items.
         /// </summary>
- 
- 
+
         public IList SelectedItems
         {
             get { return (IList)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
- 
+
         #endregion SelectedItems (Public Dependency Property)
- 
+
         #region AnchorItem (Private Dependency Property)
- 
+
         /// <summary>
         /// The dependency property definition for the AnchorItem property.
         /// </summary>
- 
- 
+
         private static readonly DependencyProperty AnchorItemProperty = DependencyProperty.Register(
             "AnchorItem", typeof(TreeViewItem), typeof(TreeViewMultipleSelectionBehavior));
- 
+
         /// <summary>
         /// Gets or sets the anchor item.
         /// </summary>
- 
- 
+
         private TreeViewItem AnchorItem
         {
             get { return (TreeViewItem)GetValue(AnchorItemProperty); }
             set { SetValue(AnchorItemProperty, value); }
         }
- 
+
         #endregion AnchorItem (Private Dependency Property)
- 
+
         #region IsItemSelected (TreeViewItem Attached Property)
- 
+
         /// <summary>
         /// The dependency property definition for the IsItemSelected attached property.
         /// </summary>
- 
- 
+
         public static readonly DependencyProperty IsItemSelectedProperty = DependencyProperty.RegisterAttached(
             "IsItemSelected", typeof(bool), typeof(TreeViewMultipleSelectionBehavior),
             new FrameworkPropertyMetadata(OnIsItemSelectedChanged));
- 
+
         /// <summary>
         /// Gets the IsItemSelected value from the specified target.
         /// </summary>
- 
- 
+
         /// <param name="target">The target.</param>
         /// <returns>The value.</returns>
         public static bool GetIsItemSelected(TreeViewItem target)
         {
             return (bool)target.GetValue(IsItemSelectedProperty);
         }
- 
+
         /// <summary>
         /// Sets the IsItemSelected value on the specified target.
         /// </summary>
- 
- 
+
         /// <param name="target">The target.</param>
         /// <param name="value">The value.</param>
         public static void SetIsItemSelected(TreeViewItem target, bool value)
         {
             target.SetValue(IsItemSelectedProperty, value);
         }
- 
+
         /// <summary>
         /// Called when the IsItemSelected dependency property has changed.
         /// </summary>
- 
- 
+
         /// <param name="obj">The dependency object where the value has changed.</param>
         /// <param name="e">The <see cref="System.Windows.DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnIsItemSelectedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
@@ -132,16 +122,15 @@ namespace Ibinimator.View
                 }
             }
         }
- 
+
         #endregion IsItemSelected (TreeViewItem Attached Property)
- 
+
         #region Behavior
- 
+
         /// <summary>
         /// Called after the behavior is attached to an AssociatedObject.
         /// </summary>
- 
- 
+
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -149,13 +138,12 @@ namespace Ibinimator.View
             AssociatedObject.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown), true);
             AssociatedObject.AddHandler(UIElement.MouseLeftButtonUpEvent, new MouseButtonEventHandler(OnTreeViewItemMouseUp), true);
         }
- 
+
         /// <summary>
         /// Called when the behavior is being detached from its AssociatedObject, but before it has
         /// actually occurred.
         /// </summary>
- 
- 
+
         protected override void OnDetaching()
         {
             base.OnDetaching();
@@ -163,16 +151,15 @@ namespace Ibinimator.View
             AssociatedObject.RemoveHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown));
             AssociatedObject.RemoveHandler(UIElement.MouseLeftButtonUpEvent, new MouseButtonEventHandler(OnTreeViewItemMouseUp));
         }
- 
+
         #endregion Behavior
- 
+
         #region Event Handlers
- 
+
         /// <summary>
         /// Called when a TreeViewItem receives a key down event.
         /// </summary>
- 
- 
+
         /// <param name="sender">The sender.</param>
         /// <param name="e">
         /// The <see cref="System.Windows.Input.KeyEventArgs"/> instance containing the event data.
@@ -221,12 +208,11 @@ namespace Ibinimator.View
                 }
             }
         }
- 
+
         /// <summary>
         /// Called when a TreeViewItem receives a mouse up event.
         /// </summary>
- 
- 
+
         /// <param name="sender">The sender.</param>
         /// <param name="e">
         /// The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the
@@ -253,16 +239,15 @@ namespace Ibinimator.View
                 }
             }
         }
- 
+
         #endregion Event Handlers
- 
+
         #region Methods
- 
+
         /// <summary>
         /// Selects a range of consecutive items from the specified tree view item to the anchor (if exists).
         /// </summary>
- 
- 
+
         /// <param name="treeViewItem">The triggering tree view item.</param>
         public void SelectMultipleItemsContinuously(TreeViewItem treeViewItem)
         {
@@ -293,12 +278,11 @@ namespace Ibinimator.View
                 }
             }
         }
- 
+
         /// <summary>
         /// Selects the specified tree view item, removing any other selections.
         /// </summary>
- 
- 
+
         /// <param name="treeViewItem">The triggering tree view item.</param>
         public void SelectSingleItem(TreeViewItem treeViewItem)
         {
@@ -306,12 +290,11 @@ namespace Ibinimator.View
             SetIsItemSelected(treeViewItem, true);
             AnchorItem = treeViewItem;
         }
- 
+
         /// <summary>
         /// Toggles the selection state of the specified tree view item.
         /// </summary>
- 
- 
+
         /// <param name="treeViewItem">The triggering tree view item.</param>
         public void ToggleSingleItem(TreeViewItem treeViewItem)
         {
@@ -329,12 +312,11 @@ namespace Ibinimator.View
                 AnchorItem = null;
             }
         }
- 
+
         /// <summary>
         /// Clears all selections.
         /// </summary>
- 
- 
+
         /// <remarks>
         /// The list of all items is returned as a convenience to avoid multiple iterations.
         /// </remarks>
@@ -349,12 +331,11 @@ namespace Ibinimator.View
 
             return items;
         }
- 
+
         /// <summary>
         /// Attempts to find the parent TreeViewItem from the specified event source.
         /// </summary>
- 
- 
+
         /// <param name="eventSource">The event source.</param>
         /// <returns>The parent TreeViewItem, otherwise null.</returns>
         private static TreeViewItem FindParentTreeViewItem(object eventSource)
@@ -365,12 +346,11 @@ namespace Ibinimator.View
 
             return treeViewItem;
         }
- 
+
         /// <summary>
         /// Gets items of the specified type recursively from the specified parent item.
         /// </summary>
- 
- 
+
         /// <typeparam name="T">The type of item to retrieve.</typeparam>
         /// <param name="parentItem">The parent item.</param>
         /// <returns>The list of items within the parent item, may be empty.</returns>
@@ -396,12 +376,11 @@ namespace Ibinimator.View
 
             return items;
         }
- 
+
         /// <summary>
         /// Gets an item with a relative position (e.g. +1, -1) to the specified item.
         /// </summary>
- 
- 
+
         /// <remarks>This deliberately works against a flattened collection (i.e. no hierarchy).</remarks>
         /// <typeparam name="T">The type of item to retrieve.</typeparam>
         /// <param name="item">The item.</param>

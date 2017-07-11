@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Markup;
 
 namespace Ibinimator.View.Control
 {
@@ -35,7 +32,7 @@ namespace Ibinimator.View.Control
             get { return (Uri)GetValue(IconPathProperty); }
             set { SetValue(IconPathProperty, value); }
         }
-        
+
         public static readonly DependencyProperty IconPathProperty =
             DependencyProperty.Register("IconPath", typeof(Uri), typeof(VectorIcon), new PropertyMetadata(null));
     }

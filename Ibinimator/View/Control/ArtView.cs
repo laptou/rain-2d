@@ -11,9 +11,17 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Shared;
+using System.Diagnostics;
 
 namespace Ibinimator.View.Control
 {
+    internal enum ArtViewHandle
+    {
+        TopLeft, Top, TopRight,
+        Left, Center, Right,
+        BottomLeft, Bottom, BottomRight
+    }
+
     public class ArtView : D2DImage
     {
         #region Fields
@@ -29,21 +37,23 @@ namespace Ibinimator.View.Control
 
         private Dictionary<Model.Layer, RectangleF> bounds = new Dictionary<Model.Layer, RectangleF>();
 
-        private RectangleF selectionBounds = new RectangleF();
-
         private Dictionary<string, Brush> brushes = new Dictionary<string, Brush>();
-
         private ArtViewHandle? currentHandle;
+        private Factory factory;
+        private RenderTarget renderTarget;
 
         private Dictionary<Model.Layer, Brush> fills = new Dictionary<Model.Layer, Brush>();
-
         private Dictionary<Model.Layer, Geometry> geometries = new Dictionary<Model.Layer, Geometry>();
+        private Vector2? lastPosition;
+        private bool moved;
+        private RectangleF selectionBounds = new RectangleF();
+        private Matrix3x2 selectionTransform = Matrix3x2.Identity;
+        private object renderLock = new object();
 
-        private Dictionary<Model.Layer, (Brush, float, StrokeStyle)> strokes =
-            new Dictionary<Model.Layer, (Brush, float, StrokeStyle)>();
+        private Dictionary<Model.Layer, (Brush brush, float width, StrokeStyle style)> strokes =
+                    new Dictionary<Model.Layer, (Brush, float, StrokeStyle)>();
 
         private Matrix3x2 viewTransform = Matrix3x2.Identity;
-        private Matrix3x2 selectionTransform = Matrix3x2.Identity;
 
         #endregion Fields
 
@@ -66,9 +76,9 @@ namespace Ibinimator.View.Control
         }
 
         [Bindable(true)]
-        public IEnumerable<Model.Layer> Selection
+        public IList<Model.Layer> Selection
         {
-            get { return (IEnumerable<Model.Layer>)GetValue(SelectionProperty); }
+            get { return (IList<Model.Layer>)GetValue(SelectionProperty); }
             set { SetValue(SelectionProperty, value); }
         }
 
@@ -82,11 +92,26 @@ namespace Ibinimator.View.Control
 
         #region Methods
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        public void ClearSelection()
+        {
+            while (Selection.Count > 0)
+                Selection[0].Selected = false;
+        }
+
+        protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
+
+            moved = false;
+
             var pos1 = e.GetPosition(this);
             var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+
+            var root = Root;
+            var hit = await Task.Run(() => root.Hit(factory, pos));
+
+            if (hit == null)
+                ClearSelection();
 
             if (Selection.Count() > 0)
             {
@@ -106,27 +131,182 @@ namespace Ibinimator.View.Control
 
                 foreach (var h in handles)
                 {
-                    if((h.pos.X - pos.X) * (h.pos.X - pos.X) + 
+                    if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
                         (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
+                    {
                         currentHandle = h.handle;
+                        return;
+                    }
+                }
+
+                foreach (var l in Selection)
+                {
+                    if (hit != null)
+                        currentHandle = ArtViewHandle.Center;
                 }
             }
+
+            lastPosition = pos;
+
+            UpdateSelectionBounds();
         }
 
-        protected override void OnMouseMove(MouseEventArgs e)
+        protected override void OnPreviewMouseMove(MouseEventArgs e)
         {
+            moved = true;
+
             var pos1 = e.GetPosition(this);
             var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+
+            lastPosition = lastPosition ?? pos;
+
+            float width = Math.Max(1f, selectionBounds.Width),
+                height = Math.Max(1f, selectionBounds.Height);
+
+            if (currentHandle != null)
+            {
+                switch (currentHandle)
+                {
+                    case ArtViewHandle.TopLeft:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                -(pos.X - selectionBounds.Right) / width,
+                                -(pos.Y - selectionBounds.Bottom) / height,
+                                selectionBounds.BottomRight);
+                        // if (selectionTransform.ScaleVector.Y < 0) Debugger.Break();
+                        break;
+
+                    case ArtViewHandle.Top:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                1,
+                                -(pos.Y - selectionBounds.Bottom) / height,
+                                new Vector2(selectionBounds.Center.X, selectionBounds.Bottom));
+                        break;
+
+                    case ArtViewHandle.TopRight:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                (pos.X - selectionBounds.Left) / width,
+                                -(pos.Y - selectionBounds.Bottom) / height,
+                                selectionBounds.BottomLeft);
+                        break;
+
+                    case ArtViewHandle.Left:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                -(pos.X - selectionBounds.Left) / width,
+                                1,
+                                new Vector2(selectionBounds.Right, selectionBounds.Center.Y));
+                        break;
+
+                    case ArtViewHandle.Center:
+                        selectionTransform = Matrix3x2.Translation(pos - lastPosition.Value);
+                        break;
+
+                    case ArtViewHandle.Right:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                (pos.X - selectionBounds.Left) / width,
+                                1,
+                                new Vector2(selectionBounds.Left, selectionBounds.Center.Y));
+                        break;
+
+                    case ArtViewHandle.BottomLeft:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                -(pos.X - selectionBounds.Right) / width,
+                                (pos.Y - selectionBounds.Top) / height,
+                                selectionBounds.TopRight);
+                        break;
+
+                    case ArtViewHandle.Bottom:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                1,
+                                (pos.Y - selectionBounds.Top) / height,
+                                new Vector2(selectionBounds.Center.X, selectionBounds.Top));
+                        break;
+
+                    case ArtViewHandle.BottomRight:
+                        selectionTransform =
+                            Matrix3x2.Scaling(
+                                (pos.X - selectionBounds.Left) / width,
+                                (pos.Y - selectionBounds.Top) / height,
+                                selectionBounds.TopLeft);
+                        break;
+                }
+
+                if (selectionTransform.ScaleVector.X < 0)
+                {
+                    switch (currentHandle)
+                    {
+                        case ArtViewHandle.TopLeft:
+                            currentHandle = ArtViewHandle.TopRight;
+                            break;
+                        case ArtViewHandle.TopRight:
+                            currentHandle = ArtViewHandle.TopLeft;
+                            break;
+                        case ArtViewHandle.Left:
+                            currentHandle = ArtViewHandle.Right;
+                            break;
+                        case ArtViewHandle.Right:
+                            currentHandle = ArtViewHandle.Left;
+                            break;
+                        case ArtViewHandle.BottomLeft:
+                            currentHandle = ArtViewHandle.BottomRight;
+                            break;
+                        case ArtViewHandle.BottomRight:
+                            currentHandle = ArtViewHandle.BottomLeft;
+                            break;
+                    }
+                }
+
+                if (selectionTransform.ScaleVector.Y < 0)
+                {
+                    switch (currentHandle)
+                    {
+                        case ArtViewHandle.TopLeft:
+                            currentHandle = ArtViewHandle.BottomLeft;
+                            break;
+                        case ArtViewHandle.TopRight:
+                            currentHandle = ArtViewHandle.BottomRight;
+                            break;
+                        case ArtViewHandle.Top:
+                            currentHandle = ArtViewHandle.Bottom;
+                            break;
+                        case ArtViewHandle.Bottom:
+                            currentHandle = ArtViewHandle.Top;
+                            break;
+                        case ArtViewHandle.BottomLeft:
+                            currentHandle = ArtViewHandle.TopLeft;
+                            break;
+                        case ArtViewHandle.BottomRight:
+                            currentHandle = ArtViewHandle.TopRight;
+                            break;
+                    }
+                }
+
+                if (Selection.Count() > 0)
+                    foreach (var layer in Selection)
+                        layer.Transform(selectionTransform);
+
+                Debug.Print($"bounds: {selectionBounds} transform: {selectionTransform} pos: {pos}");
+
+                selectionTransform = Matrix.Identity;
+
+                UpdateSelectionBounds();
+            }
 
             if (Selection.Count() > 0)
             {
                 List<(Vector2 pos, Cursor cur)> handles = new List<(Vector2, Cursor)>();
 
-                Vector2 tl = MathUtils.Transform2D(selectionBounds.TopLeft, selectionTransform), 
-                    br = MathUtils.Transform2D(selectionBounds.BottomRight, selectionTransform);
+                Vector2 tl = selectionBounds.TopLeft,
+                    br = selectionBounds.BottomRight;
 
                 float x1 = tl.X, y1 = tl.Y,
-                    x2 = br.X, y2 = br.X;
+                    x2 = br.X, y2 = br.Y;
 
                 handles.Add((new Vector2(x1, y1), Cursors.SizeNWSE));
                 handles.Add((new Vector2(x2, y1), Cursors.SizeNESW));
@@ -137,136 +317,84 @@ namespace Ibinimator.View.Control
                 handles.Add((new Vector2(x2, (y1 + y2) / 2), Cursors.SizeWE));
                 handles.Add((new Vector2((x1 + x2) / 2, y2), Cursors.SizeNS));
 
-                var handle = handles.FirstOrDefault(
-                    h => (h.pos.X - pos.X) * (h.pos.X - pos.X) +
-                            (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25);
+                foreach (var h in handles)
+                {
+                    if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
+                        (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
+                    {
+                        Cursor = h.cur;
+                        break;
+                    }
+                    else Cursor = Cursors.Arrow;
+                }
+            }
 
-                if (handle.pos != null)
-                    Cursor = handle.cur;
-                else
-                    Cursor = Cursors.Arrow;
-            }
-            
-            switch (currentHandle)
-            {
-                case ArtViewHandle.TopLeft:
-                    selectionTransform =
-                        Matrix3x2.Scaling(
-                            1 + (pos.X - selectionBounds.Right) / selectionBounds.Width,
-                            1 + (pos.Y - selectionBounds.Bottom) / selectionBounds.Height,
-                            selectionBounds.BottomRight);
-                    break;
-                case ArtViewHandle.Top:
-                    selectionTransform =
-                        Matrix3x2.Scaling(
-                            1,
-                            (pos.Y - selectionBounds.Bottom) / selectionBounds.Height,
-                            new Vector2(selectionBounds.Center.X, selectionBounds.Bottom));
-                    break;
-                case ArtViewHandle.TopRight:
-                    selectionTransform =
-                        Matrix3x2.Scaling(
-                            1 + (pos.X - selectionBounds.Left) / selectionBounds.Width,
-                            1 + (pos.Y - selectionBounds.Bottom) / selectionBounds.Height,
-                            selectionBounds.BottomLeft);
-                    break;
-                case ArtViewHandle.Left:
-                    break;
-                case ArtViewHandle.Center:
-                    break;
-                case ArtViewHandle.Right:
-                    break;
-                case ArtViewHandle.BottomLeft:
-                    break;
-                case ArtViewHandle.Bottom:
-                    break;
-                case ArtViewHandle.BottomRight:
-                    break;
-            }
+            lastPosition = pos;
 
             base.OnMouseMove(e);
         }
 
-        protected override void OnMouseUp(MouseButtonEventArgs e)
+        protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
 
+            var pos1 = e.GetPosition(this);
+            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+
+            await OnMouseUp(pos);
+        }
+
+        private async Task OnMouseUp(Vector2 pos)
+        {
             currentHandle = null;
 
             selectionTransform = Matrix3x2.Identity;
+
+            if (!moved)
+            {
+
+                var root = Root;
+                var hit = await Task.Run(() => root.Hit(factory, pos));
+
+                if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                    ClearSelection();
+
+                if (hit != null)
+                    hit.Selected = true;
+            }
+
+            UpdateSelectionBounds();
         }
 
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
         {
-            Zoom *= (1 + e.Delta / 500f);
+            float scale = 1 + e.Delta / 500f;
+            var pos1 = e.GetPosition(this);
+            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                viewTransform *= Matrix3x2.Scaling(scale, scale, pos);
+
+            InvalidateSurface(null);
 
             base.OnMouseWheel(e);
         }
 
+        protected override async void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            await OnMouseUp(lastPosition ?? Vector2.Zero);
+        }
+
         protected void OnRenderTargetBound(object sender, RenderTarget target)
         {
-            Brush BindBrush(Model.BrushInfo brush)
-            {
-                Brush fill = null;
-                BrushProperties props = new BrushProperties()
-                {
-                    Opacity = brush.Opacity,
-                    Transform = brush.Transform
-                };
-
-                switch (brush.BrushType)
-                {
-                    case Model.BrushType.Color:
-                        fill = new SolidColorBrush(target, brush.Color, props);
-                        break;
-
-                    case Model.BrushType.LinearGradient:
-                        fill = new LinearGradientBrush(
-                            target,
-                            new LinearGradientBrushProperties()
-                            {
-                                StartPoint = brush.StartPoint,
-                                EndPoint = brush.EndPoint
-                            },
-                            props,
-                            new GradientStopCollection(target, brush.Stops.ToArray()));
-                        break;
-
-                    case Model.BrushType.RadialGradient:
-                        fill = new RadialGradientBrush(
-                            target,
-                            new RadialGradientBrushProperties()
-                            {
-                                Center = brush.StartPoint,
-                                RadiusX = brush.EndPoint.X - brush.StartPoint.X,
-                                RadiusY = brush.EndPoint.Y - brush.StartPoint.Y
-                            },
-                            props,
-                            new GradientStopCollection(target, brush.Stops.ToArray()));
-                        break;
-                }
-
-                return fill;
-            }
-
-            void BindLayer(Model.Layer layer)
-            {
-                if (layer is Model.Shape shape)
-                {
-                    if (shape.FillBrush != null)
-                        fills[shape] = BindBrush(shape.FillBrush);
-                    if (shape.StrokeBrush != null)
-                        strokes[shape] =
-                            (BindBrush(shape.StrokeBrush), shape.StrokeWidth, new StrokeStyle(target.Factory, shape.StrokeStyle));
-                }
-
-                foreach (var subLayer in layer.SubLayers)
-                    BindLayer(subLayer);
-            }
+            factory = target.Factory;
+            renderTarget = target;
 
             LoadBrushes(target);
 
-            BindLayer(Root);
+            BindLayer(Root, target);
         }
 
         protected override void Render(RenderTarget target)
@@ -276,76 +404,31 @@ namespace Ibinimator.View.Control
                 if (layer is Model.Shape shape)
                 {
                     if (shape.FillBrush != null)
-                    {
-                        switch (shape)
-                        {
-                            case Model.Ellipse ellipse:
-                                target.FillEllipse(
-                                    new Ellipse(
-                                        new Vector2(ellipse.CenterX, ellipse.CenterY),
-                                        ellipse.RadiusX,
-                                        ellipse.RadiusY),
-                                    fills[layer]);
-                                break;
-
-                            case Model.Rectangle rect:
-                                target.FillRectangle(
-                                    new RawRectangleF(rect.X1, rect.Y1, rect.X2, rect.Y2),
-                                    fills[layer]);
-                                break;
-                        }
-                    }
+                        target.FillGeometry(shape.GetGeometry(target.Factory), fills[layer]);
 
                     if (shape.StrokeBrush != null)
-                    {
-                        switch (shape)
-                        {
-                            case Model.Ellipse ellipse:
-                                target.DrawEllipse(
-                                    new Ellipse(
-                                        new Vector2(ellipse.CenterX, ellipse.CenterY),
-                                        ellipse.RadiusX,
-                                        ellipse.RadiusY),
-                                    strokes[layer].Item1,
-                                    strokes[layer].Item2,
-                                    strokes[layer].Item3);
-                                break;
-
-                            case Model.Rectangle rect:
-                                target.DrawRectangle(
-                                    new RawRectangleF(rect.X1, rect.Y1, rect.X2, rect.Y2),
-                                    strokes[layer].Item1,
-                                    strokes[layer].Item2,
-                                    strokes[layer].Item3);
-                                break;
-                        }
-                    }
+                        target.DrawGeometry(
+                            shape.GetGeometry(target.Factory),
+                            strokes[layer].Item1,
+                            strokes[layer].Item2,
+                            strokes[layer].Item3);
                 }
 
-                foreach (var subLayer in layer.SubLayers)
-                {
-                    if (subLayer.Selected)
-                        target.Transform = viewTransform * selectionTransform;
-                    else
-                        target.Transform = viewTransform;
-
+                foreach (var subLayer in layer.SubLayers.Reverse())
                     RenderLayer(subLayer);
-                }
             }
 
-            target.Clear(null);
+            target.Clear(Color4.White);
 
             target.Transform = viewTransform;
 
             RenderLayer(Root);
 
-            target.Transform = viewTransform * selectionTransform;
-
             if (Selection.Count() > 0)
             {
                 // draw selection outline
-                // we want the selection box to be the same size no matter what
-                target.DrawRectangle(selectionBounds, brushes["A1"], 1f / Zoom);
+                // var bounds = MathUtils.Transform2D(selectionBounds, selectionTransform);
+                target.DrawRectangle(selectionBounds, brushes["A1"], 1f / viewTransform.ScaleVector.X);
 
                 // draw handles
                 List<Vector2> handles = new List<Vector2>();
@@ -362,7 +445,7 @@ namespace Ibinimator.View.Control
                 handles.Add(new Vector2(x2, (y1 + y2) / 2));
                 handles.Add(new Vector2((x1 + x2) / 2, y2));
 
-                float handleSize = 5f / Zoom;
+                float handleSize = 5f / viewTransform.ScaleVector.X;
 
                 foreach (Vector2 v in handles)
                 {
@@ -376,7 +459,7 @@ namespace Ibinimator.View.Control
         private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var av = d as ArtView;
-            av.Root.PropertyChanged += av.OnRootChanged;
+            av.Root.PropertyChanged += av.OnRootPropertyChanged;
         }
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -387,15 +470,92 @@ namespace Ibinimator.View.Control
             if (e.NewValue is INotifyCollectionChanged incc)
                 incc.CollectionChanged += av.OnSelectionUpdated;
 
-            av.Invalidate();
+            av.UpdateSelectionBounds();
         }
 
         private static void OnZoomChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ArtView av = d as ArtView;
             av.viewTransform.ScaleVector = new Vector2(av.Zoom);
+        }
 
-            av.Invalidate();
+        private Brush BindBrush(Model.Shape shape, Model.BrushInfo brush, RenderTarget target)
+        {
+            if (brush == null) return null;
+
+            Brush fill = null;
+            BrushProperties props = new BrushProperties()
+            {
+                Opacity = brush.Opacity,
+                Transform = brush.Transform
+            };
+
+            switch (brush.BrushType)
+            {
+                case Model.BrushType.Color:
+                    fill = new SolidColorBrush(target, brush.Color, props);
+
+                    brush.PropertyChanged += (s, e) =>
+                    {
+                        var bi = s as Model.BrushInfo;
+
+                        switch (e.PropertyName)
+                        {
+                            case "Opacity":
+                                fill.Opacity = brush.Opacity;
+                                break;
+
+                            case "Color":
+                                ((SolidColorBrush)fill).Color = bi.Color;
+                                break;
+                        }
+
+                        InvalidateSurface((Rectangle)shape.GetBounds());
+                    };
+                    break;
+
+                case Model.BrushType.LinearGradient:
+                    fill = new LinearGradientBrush(
+                        target,
+                        new LinearGradientBrushProperties()
+                        {
+                            StartPoint = brush.StartPoint,
+                            EndPoint = brush.EndPoint
+                        },
+                        props,
+                        new GradientStopCollection(target, brush.Stops.ToArray()));
+                    break;
+
+                case Model.BrushType.RadialGradient:
+                    fill = new RadialGradientBrush(
+                        target,
+                        new RadialGradientBrushProperties()
+                        {
+                            Center = brush.StartPoint,
+                            RadiusX = brush.EndPoint.X - brush.StartPoint.X,
+                            RadiusY = brush.EndPoint.Y - brush.StartPoint.Y
+                        },
+                        props,
+                        new GradientStopCollection(target, brush.Stops.ToArray()));
+                    break;
+            }
+
+            return fill;
+        }
+
+        private void BindLayer(Model.Layer layer, RenderTarget target)
+        {
+            if (layer is Model.Shape shape)
+            {
+                if (shape.FillBrush != null)
+                    fills[shape] = BindBrush(shape, shape.FillBrush, target);
+                if (shape.StrokeBrush != null)
+                    strokes[shape] =
+                        (BindBrush(shape, shape.StrokeBrush, target), shape.StrokeWidth, new StrokeStyle(target.Factory, shape.StrokeStyle));
+            }
+
+            foreach (var subLayer in layer.SubLayers)
+                BindLayer(subLayer, target);
         }
 
         private RectangleF GetBounds(Model.Layer layer)
@@ -421,16 +581,61 @@ namespace Ibinimator.View.Control
             }
         }
 
-        private void OnRootChanged(object sender, PropertyChangedEventArgs e)
+        private void OnRootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // this event fires whenever any of the layers changes anything, not just the root layer
             var layer = sender as Model.Layer;
             bounds[layer] = layer.GetBounds();
+
+            if (layer is Model.Shape shape)
+            {
+                if (e.PropertyName == nameof(shape.FillBrush))
+                {
+                    fills[layer].Dispose();
+                    fills[layer] = BindBrush(shape, shape.FillBrush, renderTarget);
+                }
+
+                if (e.PropertyName == nameof(shape.StrokeBrush))
+                {
+                    strokes[layer].brush.Dispose();
+                    strokes[layer] = (BindBrush(shape, shape.StrokeBrush, renderTarget), strokes[layer].width, strokes[layer].style);
+                }
+
+                if (e.PropertyName == nameof(shape.StrokeWidth))
+                {
+                    strokes[layer] = (strokes[layer].brush, shape.StrokeWidth, strokes[layer].style);
+                }
+
+                if (e.PropertyName == nameof(shape.StrokeStyle))
+                {
+                    strokes[layer].style.Dispose();
+                    strokes[layer] = (strokes[layer].brush, strokes[layer].width, new StrokeStyle(factory, shape.StrokeStyle));
+                }
+            }
+
+            UpdateSelectionBounds();
         }
 
         private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
-            (float x1, float y1, float x2, float y2) = (0, 0, 0, 0);
+            UpdateSelectionBounds();
+        }
+
+        private void UpdateSelectionBounds()
+        {
+            var dirty = (Rectangle)selectionBounds;
+            dirty.Inflate(10, 10);
+
+            InvalidateSurface(dirty);
+
+            if (Selection.Count == 0)
+            {
+                selectionBounds = RectangleF.Empty;
+                return;
+            }
+
+            Model.Layer first = Selection.FirstOrDefault();
+            (float x1, float y1, float x2, float y2) = (first?.X ?? 0, first?.Y ?? 0, first?.X ?? 1, first?.Y ?? 1);
 
             Parallel.ForEach(Selection, l =>
             {
@@ -444,16 +649,28 @@ namespace Ibinimator.View.Control
 
             selectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
 
-            Invalidate();
+            // can't be smaller than 1x1 or else we get division by zero
+            // in other places
+            //selectionBounds.Width = Math.Max(1, selectionBounds.Width);
+            //selectionBounds.Height = Math.Max(1, selectionBounds.Height);
+
+            dirty = (Rectangle)selectionBounds;
+            dirty.Inflate(10, 10);
+            InvalidateSurface(dirty);
+        }
+
+        protected override void InvalidateSurface(Rectangle? area)
+        {
+            //var rect = MathUtils.Transform2D(
+            //    new RectangleF(
+            //        area?.X ?? 0, 
+            //        area?.Y ?? 0, 
+            //        area?.Width ?? 0, 
+            //        area?.Height ?? 0), 
+            //    viewTransform);
+            base.InvalidateSurface(null);
         }
 
         #endregion Methods
-    }
-
-    internal enum ArtViewHandle
-    {
-        TopLeft, Top, TopRight,
-        Left, Center, Right,
-        BottomLeft, Bottom, BottomRight
     }
 }

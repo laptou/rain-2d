@@ -1,21 +1,18 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+using System;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
-using System.Reflection;
-using System.IO;
-using System.Resources;
 using System.Collections;
+
+using System.Windows;
 
 namespace Ibinimator.View.Control
 {
     public class TestD2DImage : D2DImage
     {
-        Ellipse ellipse;
+        private Ellipse ellipse;
 
         public TestD2DImage() : base()
         {
@@ -41,13 +38,13 @@ namespace Ibinimator.View.Control
             {
                 if (entry.Value is System.Windows.Media.Color color)
                 {
-                    Brushes[entry.Key as string] = 
+                    Brushes[entry.Key as string] =
                         new SolidColorBrush(
-                            target, 
+                            target,
                             new RawColor4(
                                 color.R / 255f,
-                                color.G / 255f, 
-                                color.B / 255f, 
+                                color.G / 255f,
+                                color.B / 255f,
                                 color.A / 255f));
                 }
             }
