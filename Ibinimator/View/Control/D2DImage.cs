@@ -72,6 +72,10 @@ namespace Ibinimator.View.Control
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
 
+            if (App.IsDesigner) return;
+
+            StartD3D();
+
             Stretch = Stretch.Fill;
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
@@ -139,12 +143,10 @@ namespace Ibinimator.View.Control
             Disposer.SafeDispose(ref d2DFactory);
             Disposer.SafeDispose(ref renderTarget);
 
-            var pt = PointToScreen(new System.Windows.Point());
-            Screen screen = Screen.FromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y));
-            var dpi = screen.GetDpiForMonitor(DpiType.Effective);
+            d2DFactory = new D2D.Factory();
 
-            var width = Math.Max((int)(ActualWidth * dpi.x / 96f), 100);
-            var height = Math.Max((int)(ActualHeight * dpi.y / 96f), 100);
+            var width = (int)Math.Max(1, ActualWidth * d2DFactory.DesktopDpi.Width / 96.0);
+            var height = (int)Math.Max(1, ActualHeight * d2DFactory.DesktopDpi.Height / 96.0);
 
             var renderDesc = new Texture2DDescription
             {
@@ -164,11 +166,10 @@ namespace Ibinimator.View.Control
 
             var surface = renderTarget.QueryInterface<SharpDX.DXGI.Surface>();
 
-            d2DFactory = new D2D.Factory();
             var rtp = new D2D.RenderTargetProperties(new D2D.PixelFormat(SharpDX.DXGI.Format.Unknown, D2D.AlphaMode.Premultiplied));
             d2DRenderTarget = new D2D.RenderTarget(d2DFactory, surface, rtp);
 
-            d2DRenderTarget.DotsPerInch = new SharpDX.Size2F(dpi.x, dpi.y);
+            d2DRenderTarget.DotsPerInch = d2DFactory.DesktopDpi;
 
             this.surface.SetRenderTarget(renderTarget);
 
@@ -203,9 +204,6 @@ namespace Ibinimator.View.Control
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (App.IsDesigner) return;
-
-            StartD3D();
             PrepareAndCallRender();
             surface.InvalidateD3DImage();
         }

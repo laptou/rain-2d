@@ -38,16 +38,7 @@ namespace Ibinimator.Shared
 
         public static Vector2 Transform2D(Vector2 v, Matrix3x2 m)
         {
-            return v * m.ScaleVector + m.TranslationVector;
-        }
-
-        public static RectangleF Transform2D(RectangleF r, Matrix3x2 m)
-        {
-            return new RectangleF(
-                r.X * m.ScaleVector.X + m.TranslationVector.X,
-                r.Y * m.ScaleVector.Y + m.TranslationVector.Y,
-                r.Width * m.ScaleVector.X,
-                r.Height * m.ScaleVector.Y);
+            return Matrix3x2.TransformPoint(m, v);
         }
     }
 }

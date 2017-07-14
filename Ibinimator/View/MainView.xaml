@@ -189,60 +189,97 @@
                 </Grid.RowDefinitions>
                 <TabControl view:Helper.Accent="{StaticResource A2Brush}">
                     <TabItem Header="Color">
-                        <Grid DataContext="{Binding ColorPicker}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}" Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" />
-                            <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
+                        <Grid>
+
+
+                            <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Height="50" Margin="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="2*"/>
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="50" />
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="H"/></TextBlock>
-                                <Slider Grid.Column="1" Value="{Binding Hue, Mode=TwoWay}" Maximum="360" LargeChange="10" SmallChange="1" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat=\{0:F0\}°}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-
-                                <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="S"/></TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Saturation, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-
-                                <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="L"/></TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Lightness, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-
-                                <TextBlock Grid.Row="3" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="R"/></TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="3" Value="{Binding Red, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-
-                                <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="G"/></TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="4" Value="{Binding Green, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-
-                                <TextBlock Grid.Row="5" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="B"/></TextBlock>
-                                <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                <Path Stroke="{StaticResource T2Brush}" StrokeThickness="1" Stretch="Uniform"
+                                      Grid.ColumnSpan="2" Grid.RowSpan="2"
+                                      Fill="{Binding StrokeBrush, Mode=OneWay}">
+                                    <Path.Data>
+                                        <CombinedGeometry GeometryCombineMode="Exclude">
+                                            <CombinedGeometry.Geometry1>
+                                                <EllipseGeometry Center="100, 100" RadiusX="100" RadiusY="100" />
+                                            </CombinedGeometry.Geometry1>
+                                            <CombinedGeometry.Geometry2>
+                                                <EllipseGeometry Center="100, 100" RadiusX="75" RadiusY="75" />
+                                            </CombinedGeometry.Geometry2>
+                                        </CombinedGeometry>
+                                    </Path.Data>
+                                </Path>
+                                <Ellipse Stroke="{StaticResource T2Brush}" StrokeThickness="1" Stretch="Uniform"
+                                         Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2"
+                                         Fill="{Binding FillBrush, Mode=OneWay}">
+                                </Ellipse>
                             </Grid>
+                            
+                            <Grid DataContext="{Binding ColorPicker}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                            
+                                <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}"
+                                                  Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" Grid.RowSpan="2" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+                                <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="50" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="H"/></TextBlock>
+                                    <Slider Grid.Column="1" Value="{Binding Hue, Mode=TwoWay}" Maximum="360" LargeChange="10" SmallChange="1" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat=\{0:F0\}°}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
 
-                            <DockPanel Grid.ColumnSpan="2" Margin="20,5,10,5" Grid.Row="1" Height="25">
-                                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="A"/></TextBlock>
-                                <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
-                                <Slider Value="{Binding Alpha, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                            </DockPanel>
+                                    <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="S"/></TextBlock>
+                                    <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Saturation, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+
+                                    <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="L"/></TextBlock>
+                                    <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Lightness, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+
+                                    <TextBlock Grid.Row="3" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="R"/></TextBlock>
+                                    <Slider Grid.Column="1" Grid.Row="3" Value="{Binding Red, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+
+                                    <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="G"/></TextBlock>
+                                    <Slider Grid.Column="1" Grid.Row="4" Value="{Binding Green, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+
+                                    <TextBlock Grid.Row="5" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="B"/></TextBlock>
+                                    <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                </Grid>
+
+                                <DockPanel Margin="0,5,10,5" Grid.Row="1" Height="25" Grid.Column="1">
+                                    <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="A"/></TextBlock>
+                                    <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <Slider Value="{Binding Alpha, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                </DockPanel>
+                            </Grid>
                         </Grid>
                     </TabItem>
                     <TabItem Header="Swatches" />

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Ibinimator.Shared;
 using SharpDX;
 using System.Collections.Generic;
 using SharpDX.Direct2D1;
@@ -8,10 +9,9 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
-using Ibinimator.Shared;
+using System.Diagnostics;
 
 namespace Ibinimator.View.Control
 {
@@ -24,6 +24,7 @@ namespace Ibinimator.View.Control
 
     public class ArtView : D2DImage
     {
+
         #region Fields
 
         public static readonly DependencyProperty RootProperty =
@@ -35,19 +36,11 @@ namespace Ibinimator.View.Control
         public static readonly DependencyProperty ZoomProperty =
             DependencyProperty.Register("Zoom", typeof(float), typeof(ArtView), new PropertyMetadata(1f, OnZoomChanged));
 
-        internal Factory factory;
-        private Dictionary<Model.Layer, RectangleF> bounds = new Dictionary<Model.Layer, RectangleF>();
-
-        private Dictionary<string, Brush> brushes = new Dictionary<string, Brush>();
-        private Dictionary<Model.Layer, Brush> fills = new Dictionary<Model.Layer, Brush>();
-        private Dictionary<Model.Layer, Geometry> geometries = new Dictionary<Model.Layer, Geometry>();
-
+        internal CacheHelper cacheHelper;
+        internal SelectionHelper selectionHelper;
+        internal SynchronizationHelper syncHelper;
+        private Factory factory;
         private RenderTarget renderTarget;
-        private SelectionHelper selectionHelper;
-
-        private Dictionary<Model.Layer, (Brush brush, float width, StrokeStyle style)> strokes =
-                            new Dictionary<Model.Layer, (Brush, float, StrokeStyle)>();
-
         private Matrix3x2 viewTransform = Matrix3x2.Identity;
 
         #endregion Fields
@@ -85,9 +78,27 @@ namespace Ibinimator.View.Control
             set { SetValue(ZoomProperty, value); }
         }
 
+        internal RenderTarget RenderTarget => renderTarget;
+
         #endregion Properties
 
         #region Methods
+
+        public override void InvalidateSurface(Rectangle? area)
+        {
+            if (area == null)
+                base.InvalidateSurface(area);
+            else
+            {
+                Rectangle rect = area.Value;
+                rect.X = (int)(rect.X * viewTransform.ScaleVector.X + viewTransform.TranslationVector.X);
+                rect.Y = (int)(rect.Y * viewTransform.ScaleVector.Y + viewTransform.TranslationVector.Y);
+                rect.Width = (int)(rect.Width * viewTransform.ScaleVector.X);
+                rect.Height = (int)(rect.Height * viewTransform.ScaleVector.Y);
+
+                base.InvalidateSurface(rect);
+            }
+        }
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
@@ -101,7 +112,7 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseDown(e);
 
             var pos1 = e.GetPosition(this);
-            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
             selectionHelper.OnMouseDown(pos, factory);
         }
@@ -111,7 +122,7 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseMove(e);
 
             var pos1 = e.GetPosition(this);
-            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
             selectionHelper.OnMouseMove(pos, factory);
         }
@@ -121,7 +132,7 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseUp(e);
 
             var pos1 = e.GetPosition(this);
-            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
             selectionHelper.OnMouseUp(pos, factory);
         }
@@ -130,7 +141,7 @@ namespace Ibinimator.View.Control
         {
             float scale = 1 + e.Delta / 500f;
             var pos1 = e.GetPosition(this);
-            var pos = new Vector2((float)pos1.X, (float)pos1.Y) / viewTransform.ScaleVector - viewTransform.TranslationVector;
+            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                 viewTransform *= Matrix3x2.Scaling(scale, scale, pos);
@@ -144,10 +155,12 @@ namespace Ibinimator.View.Control
         {
             factory = target.Factory;
             renderTarget = target;
+            
+            cacheHelper = new CacheHelper(this);
 
-            LoadBrushes(target);
+            cacheHelper.LoadBrushes(target);
 
-            BindLayer(Root, target);
+            cacheHelper.BindLayer(Root);
         }
 
         protected override void Render(RenderTarget target)
@@ -157,14 +170,18 @@ namespace Ibinimator.View.Control
                 if (layer is Model.Shape shape)
                 {
                     if (shape.FillBrush != null)
-                        target.FillGeometry(shape.GetGeometry(target.Factory), fills[layer]);
+                        target.FillGeometry(cacheHelper.GetGeometry(shape), cacheHelper.GetFill(shape));
 
                     if (shape.StrokeBrush != null)
+                    {
+                        var stroke = cacheHelper.GetStroke(shape, target);
+
                         target.DrawGeometry(
-                            shape.GetGeometry(target.Factory),
-                            strokes[layer].Item1,
-                            strokes[layer].Item2,
-                            strokes[layer].Item3);
+                          cacheHelper.GetGeometry(shape),
+                          stroke.brush,
+                          stroke.width,
+                          stroke.style);
+                    }
                 }
 
                 foreach (var subLayer in layer.SubLayers.Reverse())
@@ -177,7 +194,7 @@ namespace Ibinimator.View.Control
 
             RenderLayer(Root);
 
-            selectionHelper.Render(target, brushes["A1"], brushes["L1"], 1f / viewTransform.ScaleVector.X);
+            selectionHelper.Render(target, cacheHelper.GetBrush("A1"), cacheHelper.GetBrush("L1"), 1f / viewTransform.ScaleVector.X);
         }
 
         private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -204,9 +221,65 @@ namespace Ibinimator.View.Control
             av.viewTransform.ScaleVector = new Vector2(av.Zoom);
         }
 
-        private Brush BindBrush(Model.Shape shape, Model.BrushInfo brush, RenderTarget target)
+        private void OnRootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // this event fires whenever any of the layers changes anything, not just the root layer
+            var layer = sender as Model.Layer;
+
+            cacheHelper.UpdateLayer(layer, e.PropertyName);
+            selectionHelper.UpdateSelection();
+        }
+
+        private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            selectionHelper.UpdateSelection();
+        }
+
+        #endregion Methods
+
+    }
+
+    internal class SynchronizationHelper
+    {
+    }
+
+    internal class CacheHelper : Model.Model
+    {
+
+        #region Fields
+
+        private Dictionary<Model.Layer, RectangleF> bounds = new Dictionary<Model.Layer, RectangleF>();
+        private Dictionary<string, Brush> brushes = new Dictionary<string, Brush>();
+        private Dictionary<Model.Layer, Brush> fills = new Dictionary<Model.Layer, Brush>();
+        private Dictionary<Model.Layer, Geometry> geometries = new Dictionary<Model.Layer, Geometry>();
+
+        private Dictionary<Model.Layer, (Brush brush, float width, StrokeStyle style)> strokes =
+                            new Dictionary<Model.Layer, (Brush, float, StrokeStyle)>();
+
+        #endregion Fields
+
+        #region Constructors
+
+        public CacheHelper(ArtView artView)
+        {
+            ArtView = artView;
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public ArtView ArtView { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public Brush BindBrush(Model.Shape shape, Model.BrushInfo brush)
         {
             if (brush == null) return null;
+
+            RenderTarget target = ArtView.RenderTarget;
 
             Brush fill = brush.ToDirectX(target);
 
@@ -228,7 +301,7 @@ namespace Ibinimator.View.Control
                                 break;
                         }
 
-                        InvalidateSurface((Rectangle)shape.GetBounds());
+                        ArtView.InvalidateSurface((Rectangle)shape.GetBounds());
                     };
                     break;
 
@@ -242,27 +315,41 @@ namespace Ibinimator.View.Control
             return fill;
         }
 
-        private void BindLayer(Model.Layer layer, RenderTarget target)
+        public void BindLayer(Model.Layer layer)
         {
+            RenderTarget target = ArtView.RenderTarget;
+
             if (layer is Model.Shape shape)
             {
                 if (shape.FillBrush != null)
-                    fills[shape] = BindBrush(shape, shape.FillBrush, target);
+                    fills[shape] = BindBrush(shape, shape.FillBrush);
                 if (shape.StrokeBrush != null)
                     strokes[shape] =
-                        (BindBrush(shape, shape.StrokeBrush, target), shape.StrokeWidth, new StrokeStyle(target.Factory, shape.StrokeStyle));
+                        (BindBrush(shape, shape.StrokeBrush), shape.StrokeWidth, new StrokeStyle(target.Factory, shape.StrokeStyle));
             }
 
             foreach (var subLayer in layer.SubLayers)
-                BindLayer(subLayer, target);
+                BindLayer(subLayer);
         }
 
-        private RectangleF GetBounds(Model.Layer layer)
-        {
-            return bounds[layer] = bounds.ContainsKey(layer) ? bounds[layer] : layer.GetBounds();
-        }
+        public RectangleF GetBounds(Model.Layer layer) =>
+            bounds.ContainsKey(layer) ? bounds[layer] : bounds[layer] = layer.GetBounds();
 
-        private void LoadBrushes(RenderTarget target)
+        public Brush GetBrush(string key) => brushes[key];
+
+        public Brush GetFill(Model.Shape layer) =>
+            fills.ContainsKey(layer) ? fills[layer] : fills[layer] = layer.FillBrush.ToDirectX(ArtView.RenderTarget);
+
+        public Geometry GetGeometry(Model.Shape layer) =>
+            geometries.ContainsKey(layer) ? geometries[layer] : geometries[layer] = layer.GetGeometry(ArtView.RenderTarget.Factory);
+
+        public (Brush brush, float width, StrokeStyle style) GetStroke(Model.Shape layer, RenderTarget target) =>
+            strokes.ContainsKey(layer) ? strokes[layer] : strokes[layer] = (
+                    layer.StrokeBrush.ToDirectX(target),
+                    layer.StrokeWidth,
+                    new StrokeStyle(target.Factory, layer.StrokeStyle));
+
+        public void LoadBrushes(RenderTarget target)
         {
             foreach (DictionaryEntry entry in Application.Current.Resources)
             {
@@ -280,53 +367,56 @@ namespace Ibinimator.View.Control
             }
         }
 
-        private void OnRootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void UpdateLayer(Model.Layer layer, string property)
         {
-            // this event fires whenever any of the layers changes anything, not just the root layer
-            var layer = sender as Model.Layer;
-            bounds[layer] = layer.GetBounds();
-
-            if (layer is Model.Shape shape)
+            lock (layer)
             {
-                if (e.PropertyName == nameof(shape.FillBrush))
-                {
-                    fills[layer].Dispose();
-                    fills[layer] = BindBrush(shape, shape.FillBrush, renderTarget);
-                }
+                Model.Shape shape = layer as Model.Shape;
 
-                if (e.PropertyName == nameof(shape.StrokeBrush))
+                switch (property)
                 {
-                    strokes[layer].brush.Dispose();
-                    strokes[layer] = (BindBrush(shape, shape.StrokeBrush, renderTarget), strokes[layer].width, strokes[layer].style);
-                }
+                    case nameof(Model.Layer.X):
+                    case nameof(Model.Layer.Y):
+                    case nameof(Model.Layer.Width):
+                    case nameof(Model.Layer.Height):
+                        bounds[layer] = layer.GetBounds();
 
-                if (e.PropertyName == nameof(shape.StrokeWidth))
-                {
-                    strokes[layer] = (strokes[layer].brush, shape.StrokeWidth, strokes[layer].style);
-                }
+                        ArtView.InvalidateSurface((Rectangle)bounds[layer]);
 
-                if (e.PropertyName == nameof(shape.StrokeStyle))
-                {
-                    strokes[layer].style.Dispose();
-                    strokes[layer] = (strokes[layer].brush, strokes[layer].width, new StrokeStyle(factory, shape.StrokeStyle));
+                        if (shape != null)
+                            geometries[layer] = shape.GetGeometry(ArtView.RenderTarget.Factory);
+                        break;
+
+                    case nameof(Model.Shape.FillBrush):
+                        fills[layer]?.Dispose();
+                        fills[layer] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
+                        break;
+
+                    case nameof(Model.Shape.StrokeBrush):
+                        strokes[layer].brush?.Dispose();
+                        strokes[layer] = (
+                           shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget),
+                           shape.StrokeWidth,
+                           new StrokeStyle(ArtView.RenderTarget.Factory, shape.StrokeStyle));
+                        break;
+
+                    default:
+                        break;
                 }
             }
-
-            selectionHelper.UpdateSelection();
-        }
-
-        private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            selectionHelper.UpdateSelection();
         }
 
         #endregion Methods
+
     }
 
     internal class SelectionHelper : Model.Model
     {
+
         #region Fields
 
+        public RectangleF SelectionBounds;
+        public Matrix3x2 SelectionTransform;
         private Vector2? lastPosition;
         private bool moved;
 
@@ -347,8 +437,6 @@ namespace Ibinimator.View.Control
         public Cursor Cursor { get => ArtView.Cursor; set => ArtView.Cursor = value; }
         public ArtViewHandle? ResizingHandle { get; set; }
         public IList<Model.Layer> Selection { get; set; }
-        public RectangleF SelectionBounds;
-        public Matrix3x2 SelectionTransform;
 
         #endregion Properties
 
@@ -428,6 +516,8 @@ namespace Ibinimator.View.Control
 
             if (ResizingHandle != null)
             {
+                InvalidateSurface();
+
                 switch (ResizingHandle)
                 {
                     case ArtViewHandle.TopLeft:
@@ -604,7 +694,7 @@ namespace Ibinimator.View.Control
 
             lastPosition = pos;
         }
-            
+
         public void OnMouseUp(Vector2 pos, Factory factory)
         {
             ResizingHandle = null;
@@ -663,38 +753,43 @@ namespace Ibinimator.View.Control
 
         public void UpdateSelection()
         {
+            lock (this)
+            {
+                InvalidateSurface();
+
+                if (Selection.Count == 0)
+                {
+                    SelectionBounds = RectangleF.Empty;
+                    return;
+                }
+
+                Model.Layer first = Selection.FirstOrDefault();
+                (float x1, float y1, float x2, float y2) = (first?.X ?? 0, first?.Y ?? 0, first?.X ?? 0, first?.Y ?? 0);
+
+                Parallel.ForEach(Selection, l =>
+                {
+                    var b = ArtView.cacheHelper.GetBounds(l);
+
+                    if (b.Left < x1) x1 = b.Left;
+                    if (b.Top < y1) y1 = b.Top;
+                    if (b.Right > x2) x2 = b.Right;
+                    if (b.Bottom > y2) y2 = b.Bottom;
+                });
+
+                SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
+
+                InvalidateSurface();
+            }
+        }
+
+        private void InvalidateSurface()
+        {
             Rectangle old = (Rectangle)SelectionBounds;
             old.Inflate(7, 7);
-
             ArtView.InvalidateSurface(old);
-
-            if (Selection.Count == 0)
-            {
-                SelectionBounds = RectangleF.Empty;
-                return;
-            }
-
-            Model.Layer first = Selection.FirstOrDefault();
-            (float x1, float y1, float x2, float y2) = (first?.X ?? 0, first?.Y ?? 0, first?.X ?? 0, first?.Y ?? 0);
-
-            Parallel.ForEach(Selection, l =>
-            {
-                var b = l.GetBounds();
-
-                if (b.Left < x1) x1 = b.Left;
-                if (b.Top < y1) y1 = b.Top;
-                if (b.Right > x2) x2 = b.Right;
-                if (b.Bottom > y2) y2 = b.Bottom;
-            });
-
-            SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
-
-            Rectangle rect = (Rectangle)SelectionBounds;
-            rect.Inflate(7, 7);
-
-            ArtView.InvalidateSurface(rect);
         }
 
         #endregion Methods
+
     }
 }
