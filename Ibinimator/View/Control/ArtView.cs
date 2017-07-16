@@ -11,7 +11,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using System.Diagnostics;
 
 namespace Ibinimator.View.Control
 {
@@ -38,7 +37,6 @@ namespace Ibinimator.View.Control
 
         internal CacheHelper cacheHelper;
         internal SelectionHelper selectionHelper;
-        internal SynchronizationHelper syncHelper;
         private Factory factory;
         private RenderTarget renderTarget;
         private Matrix3x2 viewTransform = Matrix3x2.Identity;
@@ -84,57 +82,64 @@ namespace Ibinimator.View.Control
 
         #region Methods
 
-        public override void InvalidateSurface(Rectangle? area)
+        public void InvalidateSurface(RectangleF? area)
         {
-            if (area == null)
-                base.InvalidateSurface(area);
-            else
+            Dispatcher.Invoke(() =>
             {
-                Rectangle rect = area.Value;
-                rect.X = (int)(rect.X * viewTransform.ScaleVector.X + viewTransform.TranslationVector.X);
-                rect.Y = (int)(rect.Y * viewTransform.ScaleVector.Y + viewTransform.TranslationVector.Y);
-                rect.Width = (int)(rect.Width * viewTransform.ScaleVector.X);
-                rect.Height = (int)(rect.Height * viewTransform.ScaleVector.Y);
+                if (area == null)
+                    base.InvalidateSurface(null);
+                else
+                {
+                    Rectangle rect = area.Value.Round();
+                    rect.X = (int)(rect.X * viewTransform.ScaleVector.X + viewTransform.TranslationVector.X);
+                    rect.Y = (int)(rect.Y * viewTransform.ScaleVector.Y + viewTransform.TranslationVector.Y);
+                    rect.Width = (int)(rect.Width * viewTransform.ScaleVector.X);
+                    rect.Height = (int)(rect.Height * viewTransform.ScaleVector.Y);
 
-                base.InvalidateSurface(rect);
-            }
+                    base.InvalidateSurface(rect);
+                }
+            });
         }
 
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override async void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
 
-            selectionHelper.OnMouseUp(-Vector2.One, factory);
+            await Task.Run(() => selectionHelper.OnMouseUp(-Vector2.One, factory));
         }
 
-        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
+
+            CaptureMouse();
 
             var pos1 = e.GetPosition(this);
             var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
-            selectionHelper.OnMouseDown(pos, factory);
+            await Task.Run(() => selectionHelper.OnMouseDown(pos, factory));
         }
 
-        protected override void OnPreviewMouseMove(MouseEventArgs e)
+        protected override async void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
 
             var pos1 = e.GetPosition(this);
             var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
-            selectionHelper.OnMouseMove(pos, factory);
+            await Task.Run(() => selectionHelper.OnMouseMove(pos, factory));
         }
 
-        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+        protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseUp(e);
+
+            ReleaseMouseCapture();
 
             var pos1 = e.GetPosition(this);
             var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
 
-            selectionHelper.OnMouseUp(pos, factory);
+            await Task.Run(() => selectionHelper.OnMouseUp(pos, factory));
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
@@ -155,7 +160,7 @@ namespace Ibinimator.View.Control
         {
             factory = target.Factory;
             renderTarget = target;
-            
+
             cacheHelper = new CacheHelper(this);
 
             cacheHelper.LoadBrushes(target);
@@ -239,10 +244,6 @@ namespace Ibinimator.View.Control
 
     }
 
-    internal class SynchronizationHelper
-    {
-    }
-
     internal class CacheHelper : Model.Model
     {
 
@@ -301,7 +302,7 @@ namespace Ibinimator.View.Control
                                 break;
                         }
 
-                        ArtView.InvalidateSurface((Rectangle)shape.GetBounds());
+                        InvalidateLayer(shape);
                     };
                     break;
 
@@ -369,41 +370,48 @@ namespace Ibinimator.View.Control
 
         public void UpdateLayer(Model.Layer layer, string property)
         {
-            lock (layer)
+            Model.Shape shape = layer as Model.Shape;
+
+            switch (property)
             {
-                Model.Shape shape = layer as Model.Shape;
+                case nameof(Model.Layer.X):
+                case nameof(Model.Layer.Y):
+                case nameof(Model.Layer.Width):
+                case nameof(Model.Layer.Height):
+                    bounds[layer] = layer.GetBounds();
 
-                switch (property)
-                {
-                    case nameof(Model.Layer.X):
-                    case nameof(Model.Layer.Y):
-                    case nameof(Model.Layer.Width):
-                    case nameof(Model.Layer.Height):
-                        bounds[layer] = layer.GetBounds();
+                    if (shape != null)
+                        geometries[layer] = shape.GetGeometry(ArtView.RenderTarget.Factory);
 
-                        ArtView.InvalidateSurface((Rectangle)bounds[layer]);
+                    if (layer.Parent != null)
+                        UpdateLayer(layer.Parent, property);
 
-                        if (shape != null)
-                            geometries[layer] = shape.GetGeometry(ArtView.RenderTarget.Factory);
-                        break;
+                    InvalidateLayer(layer);
+                    break;
 
-                    case nameof(Model.Shape.FillBrush):
-                        fills[layer]?.Dispose();
-                        fills[layer] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
-                        break;
+                case nameof(Model.Shape.FillBrush):
+                    fills[layer]?.Dispose();
+                    fills[layer] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
+                    InvalidateLayer(layer);
+                    break;
 
-                    case nameof(Model.Shape.StrokeBrush):
-                        strokes[layer].brush?.Dispose();
-                        strokes[layer] = (
-                           shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget),
-                           shape.StrokeWidth,
-                           new StrokeStyle(ArtView.RenderTarget.Factory, shape.StrokeStyle));
-                        break;
+                case nameof(Model.Shape.StrokeBrush):
+                    strokes[layer].brush?.Dispose();
+                    strokes[layer] = (
+                       shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget),
+                       shape.StrokeWidth,
+                       new StrokeStyle(ArtView.RenderTarget.Factory, shape.StrokeStyle));
+                    InvalidateLayer(layer);
+                    break;
 
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
+        }
+
+        private void InvalidateLayer(Model.Layer layer)
+        {
+            ArtView.InvalidateSurface(GetBounds(layer));
         }
 
         #endregion Methods
@@ -416,9 +424,11 @@ namespace Ibinimator.View.Control
         #region Fields
 
         public RectangleF SelectionBounds;
+        public RectangleF SelectionBox;
         public Matrix3x2 SelectionTransform;
         private Vector2? lastPosition;
         private bool moved;
+        private bool selecting;
 
         #endregion Fields
 
@@ -434,8 +444,13 @@ namespace Ibinimator.View.Control
         #region Properties
 
         public ArtView ArtView { get; set; }
-        public Cursor Cursor { get => ArtView.Cursor; set => ArtView.Cursor = value; }
+        public Cursor Cursor
+        {
+            get => ArtView?.Dispatcher.Invoke(() => ArtView.Cursor);
+            set => ArtView?.Dispatcher.Invoke(() => ArtView.Cursor = value);
+        }
         public ArtViewHandle? ResizingHandle { get; set; }
+        public Model.Layer Root => ArtView?.Dispatcher.Invoke(() => ArtView.Root);
         public IList<Model.Layer> Selection { get; set; }
 
         #endregion Properties
@@ -451,8 +466,6 @@ namespace Ibinimator.View.Control
         public void OnMouseDown(Vector2 pos, Factory factory)
         {
             moved = false;
-
-            ArtView.CaptureMouse();
 
             if (Selection.Count > 0)
             {
@@ -496,8 +509,14 @@ namespace Ibinimator.View.Control
                     }
                 }
 
-                if (!hit && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                if (!hit && !ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
                     ClearSelection();
+            }
+
+            if (Selection.Count == 0)
+            {
+                SelectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
+                selecting = true;
             }
 
             lastPosition = pos;
@@ -516,8 +535,6 @@ namespace Ibinimator.View.Control
 
             if (ResizingHandle != null)
             {
-                InvalidateSurface();
-
                 switch (ResizingHandle)
                 {
                     case ArtViewHandle.TopLeft:
@@ -692,26 +709,55 @@ namespace Ibinimator.View.Control
                 }
             }
 
+            if (selecting && Selection.Count == 0)
+            {
+                ArtView.InvalidateSurface(SelectionBox.Inflate(2));
+
+                if (pos.X < SelectionBox.Left)
+                    SelectionBox.Left = pos.X;
+                else
+                    SelectionBox.Right = pos.X;
+
+                if (pos.Y < SelectionBox.Top)
+                    SelectionBox.Top = pos.Y;
+                else
+                    SelectionBox.Bottom = pos.Y;
+
+                ArtView.InvalidateSurface(SelectionBox.Inflate(2));
+            }
+
             lastPosition = pos;
         }
 
         public void OnMouseUp(Vector2 pos, Factory factory)
         {
             ResizingHandle = null;
-
-            ArtView.ReleaseMouseCapture();
-
             SelectionTransform = Matrix3x2.Identity;
+            selecting = false;
 
             if (!moved)
             {
-                var hit = ArtView.Root.Hit(factory, pos);
+                var hit = Root.Hit(factory, pos);
 
                 if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                     ClearSelection();
 
                 if (hit != null)
                     hit.Selected = true;
+            }
+
+            if(!SelectionBox.IsEmpty)
+            {
+                Parallel.ForEach(Root.Flatten(), layer =>
+                {
+                    var bounds = ArtView.cacheHelper.GetBounds(layer);
+                    SelectionBox.Contains(ref bounds, out bool contains);
+                    layer.Selected = layer.Selected || contains;
+                });
+
+                ArtView.InvalidateSurface(SelectionBox.Inflate(1));
+
+                SelectionBox = RectangleF.Empty;
             }
 
             UpdateSelection();
@@ -722,8 +768,12 @@ namespace Ibinimator.View.Control
             if (Selection.Count > 0)
             {
                 // draw selection outline
-                // var bounds = MathUtils.Transform2D(selectionBounds, selectionTransform);
                 target.DrawRectangle(SelectionBounds, fill, strokeWidth);
+
+                foreach (var layer in Selection)
+                    if (layer is Model.Shape shape)
+                        target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, strokeWidth);
+                
 
                 // draw handles
                 List<Vector2> handles = new List<Vector2>();
@@ -748,6 +798,14 @@ namespace Ibinimator.View.Control
                     target.FillEllipse(e, fill);
                     target.DrawEllipse(e, stroke, strokeWidth * 2);
                 }
+            }
+
+            if (!SelectionBox.IsEmpty)
+            {
+                target.DrawRectangle(SelectionBox, fill, strokeWidth);
+                fill.Opacity = 0.25f;
+                target.FillRectangle(SelectionBox, fill);
+                fill.Opacity = 1.0f;
             }
         }
 
@@ -778,14 +836,15 @@ namespace Ibinimator.View.Control
 
                 SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
 
-                InvalidateSurface();
+                //InvalidateSurface();
             }
         }
 
         private void InvalidateSurface()
         {
-            Rectangle old = (Rectangle)SelectionBounds;
+            var old = SelectionBounds;
             old.Inflate(7, 7);
+
             ArtView.InvalidateSurface(old);
         }
 

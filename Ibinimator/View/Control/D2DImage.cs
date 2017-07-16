@@ -59,7 +59,7 @@ namespace Ibinimator.View.Control
         private long lastFrameTime = 0;
         private long lastRenderTime = 0;
         private bool invalidated = false;
-        private List<Rectangle> dirty = new List<Rectangle>();
+        private Stack<Int32Rect> dirty = new Stack<Int32Rect>();
         private Texture2D renderTarget;
         private DX11ImageSource surface;
 
@@ -204,6 +204,8 @@ namespace Ibinimator.View.Control
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            if(App.IsDesigner) return;
+
             PrepareAndCallRender();
             surface.InvalidateD3DImage();
         }
@@ -218,6 +220,11 @@ namespace Ibinimator.View.Control
             if (RenderMode == RenderMode.Constant || invalidated)
             {
                 PrepareAndCallRender();
+
+                surface.Lock();
+                while (dirty.Count > 0)
+                    surface.AddDirtyRect(dirty.Pop());
+                surface.Unlock();
 
                 lastRenderTime = renderTimer.ElapsedMilliseconds;
                 invalidated = false;
@@ -239,6 +246,7 @@ namespace Ibinimator.View.Control
             {
                 return;
             }
+
             d2DRenderTarget.BeginDraw();
             Render(d2DRenderTarget);
             d2DRenderTarget.EndDraw();
@@ -301,7 +309,9 @@ namespace Ibinimator.View.Control
             rect.Left = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Left * dpi.X);
             rect.Right = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Right * dpi.X);
 
-            surface.InvalidateD3DImage(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
+            if (rect.Width < 0) Debugger.Break();
+
+            dirty.Push(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
         }
 
         #endregion Methods

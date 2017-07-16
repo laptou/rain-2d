@@ -38,23 +38,14 @@ namespace Ibinimator.Model
         {
             base.Transform(mat);
 
-            Width *= mat.ScaleVector.X;
-            Height *= mat.ScaleVector.Y;
+            Width *= Math.Abs(mat.ScaleVector.X);
+            Height *= Math.Abs(mat.ScaleVector.Y);
 
-            if (Height == 0)
-                Debugger.Break();
-
-            if (Width < 0)
-            {
-                Width = -Width;
+            if (mat.ScaleVector.X < 0)
                 X = X - Width;
-            }
 
-            if (Height < 0)
-            {
-                Height = -Height;
+            if (mat.ScaleVector.Y < 0)
                 Y = Y - Height;
-            }
         }
 
         #endregion Methods
@@ -86,20 +77,14 @@ namespace Ibinimator.Model
         {
             base.Transform(mat);
 
-            Height *= mat.ScaleVector.Y;
-            Width *= mat.ScaleVector.X;
+            Width *= Math.Abs(mat.ScaleVector.X);
+            Height *= Math.Abs(mat.ScaleVector.Y);
 
-            if(Width < 0)
-            {
-                Width = -Width;
+            if (mat.ScaleVector.X < 0)
                 X = X - Width;
-            }
 
-            if (Height < 0)
-            {
-                Height = -Height;
+            if (mat.ScaleVector.Y < 0)
                 Y = Y - Height;
-            }
         }
 
         #endregion Methods

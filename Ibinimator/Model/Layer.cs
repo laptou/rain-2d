@@ -34,7 +34,12 @@ namespace Ibinimator.Model
                 if (bounds.Bottom > y2) y2 = bounds.Bottom;
             });
 
-            return new RectangleF(x1, y1, x2, y2);
+            return new RectangleF(x1, y1, x2 - x1, y2 - y1);
+        }
+
+        public override IEnumerable<Layer> Flatten()
+        {
+            yield return this;
         }
     }
 
@@ -69,6 +74,8 @@ namespace Ibinimator.Model
         public string Name { get => Get<string>(); set => Set(value); }
 
         public virtual String DefaultName => "Layer";
+
+        public Guid ID { get; } = Guid.NewGuid();
 
         public float Opacity { get => Get<float>(); set => Set(value); }
 
@@ -145,7 +152,7 @@ namespace Ibinimator.Model
         /// The entire layer graph starting at this layer,
         /// as a list.
         /// </returns>
-        public IEnumerable<Layer> Flatten()
+        public virtual IEnumerable<Layer> Flatten()
         {
             yield return this;
 
