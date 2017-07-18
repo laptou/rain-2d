@@ -2,6 +2,8 @@
 using SharpDX.Direct2D1;
 using System;
 using System.Diagnostics;
+using Ibinimator.View.Control;
+using Ibinimator.Shared;
 
 namespace Ibinimator.Model
 {
@@ -10,8 +12,6 @@ namespace Ibinimator.Model
         #region Properties
 
         public override String DefaultName => "Ellipse";
-        public float CenterX { get => X + RadiusX; }
-        public float CenterY { get => Y + RadiusY; }
         public float RadiusX { get => Width / 2; set => Width = value * 2; }
         public float RadiusY { get => Height / 2; set => Height = value * 2; }
 
@@ -19,33 +19,14 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public override RectangleF GetBounds()
-        {
-            return new RectangleF(X, Y, Width, Height);
-        }
-
         public override Geometry GetGeometry(Factory factory)
         {
             return new EllipseGeometry(
                 factory,
                 new SharpDX.Direct2D1.Ellipse(
-                    new Vector2(CenterX, CenterY),
+                    new Vector2(RadiusX, RadiusY),
                     RadiusX,
                     RadiusY));
-        }
-
-        public override void Transform(Matrix3x2 mat)
-        {
-            base.Transform(mat);
-
-            Width *= Math.Abs(mat.ScaleVector.X);
-            Height *= Math.Abs(mat.ScaleVector.Y);
-
-            if (mat.ScaleVector.X < 0)
-                X = X - Width;
-
-            if (mat.ScaleVector.Y < 0)
-                Y = Y - Height;
         }
 
         #endregion Methods
@@ -61,30 +42,11 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public override RectangleF GetBounds()
-        {
-            return new RectangleF(X, Y, Width, Height);
-        }
-
         public override Geometry GetGeometry(Factory factory)
         {
             return new RectangleGeometry(
                 factory,
-                GetBounds());
-        }
-
-        public override void Transform(Matrix3x2 mat)
-        {
-            base.Transform(mat);
-
-            Width *= Math.Abs(mat.ScaleVector.X);
-            Height *= Math.Abs(mat.ScaleVector.Y);
-
-            if (mat.ScaleVector.X < 0)
-                X = X - Width;
-
-            if (mat.ScaleVector.Y < 0)
-                Y = Y - Height;
+                new RectangleF(0, 0, Width, Height));
         }
 
         #endregion Methods
@@ -106,24 +68,56 @@ namespace Ibinimator.Model
 
         #region Methods
 
+        public RectangleF GetTransformedBounds(Factory factory)
+        {
+            using (var geom = GetTransformedGeometry(factory))
+                return RectangleF.Union(base.GetTransformedBounds(), geom.GetBounds().Convert());
+        }
+
         public abstract Geometry GetGeometry(Factory factory);
 
-        public override Layer Hit(Factory factory, Vector2 point)
+        public virtual TransformedGeometry GetTransformedGeometry(Factory factory)
         {
-            var hit = base.Hit(factory, point);
+            return new TransformedGeometry(factory, GetGeometry(factory), Transform);
+        }
+
+        public override Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        {
+            var hit = base.Hit(factory, point, world);
 
             if (hit != null) return hit;
 
+            world *= Transform;
+
             using (var geometry = GetGeometry(factory))
             {
-                if (FillBrush != null && geometry.FillContainsPoint(point))
+                if (FillBrush != null && geometry.FillContainsPoint(point, world, geometry.FlatteningTolerance))
                     return this;
 
-                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth))
+                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, world, geometry.FlatteningTolerance))
                     return this;
 
                 return null;
             }
+        }
+
+        public override void Render(RenderTarget target, CacheHelper cacheHelper)
+        {
+            if (FillBrush != null)
+                target.FillGeometry(cacheHelper.GetGeometry(this), cacheHelper.GetFill(this));
+
+            if (StrokeBrush != null)
+            {
+                var stroke = cacheHelper.GetStroke(this, target);
+
+                target.DrawGeometry(
+                  cacheHelper.GetGeometry(this),
+                  stroke.brush,
+                  stroke.width,
+                  stroke.style);
+            }
+
+            base.Render(target, cacheHelper);
         }
 
         #endregion Methods

@@ -11,6 +11,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Ibinimator.View.Control
 {
@@ -115,7 +117,7 @@ namespace Ibinimator.View.Control
             CaptureMouse();
 
             var pos1 = e.GetPosition(this);
-            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
+            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => selectionHelper.OnMouseDown(pos, factory));
         }
@@ -125,7 +127,7 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseMove(e);
 
             var pos1 = e.GetPosition(this);
-            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
+            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => selectionHelper.OnMouseMove(pos, factory));
         }
@@ -137,7 +139,7 @@ namespace Ibinimator.View.Control
             ReleaseMouseCapture();
 
             var pos1 = e.GetPosition(this);
-            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
+            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => selectionHelper.OnMouseUp(pos, factory));
         }
@@ -170,34 +172,11 @@ namespace Ibinimator.View.Control
 
         protected override void Render(RenderTarget target)
         {
-            void RenderLayer(Model.Layer layer)
-            {
-                if (layer is Model.Shape shape)
-                {
-                    if (shape.FillBrush != null)
-                        target.FillGeometry(cacheHelper.GetGeometry(shape), cacheHelper.GetFill(shape));
-
-                    if (shape.StrokeBrush != null)
-                    {
-                        var stroke = cacheHelper.GetStroke(shape, target);
-
-                        target.DrawGeometry(
-                          cacheHelper.GetGeometry(shape),
-                          stroke.brush,
-                          stroke.width,
-                          stroke.style);
-                    }
-                }
-
-                foreach (var subLayer in layer.SubLayers.Reverse())
-                    RenderLayer(subLayer);
-            }
-
             target.Clear(Color4.White);
 
             target.Transform = viewTransform;
 
-            RenderLayer(Root);
+            Root.Render(target, cacheHelper);
 
             selectionHelper.Render(target, cacheHelper.GetBrush("A1"), cacheHelper.GetBrush("L1"), 1f / viewTransform.ScaleVector.X);
         }
@@ -244,15 +223,14 @@ namespace Ibinimator.View.Control
 
     }
 
-    internal class CacheHelper : Model.Model
+    public class CacheHelper : Model.Model
     {
-
         #region Fields
 
         private Dictionary<Model.Layer, RectangleF> bounds = new Dictionary<Model.Layer, RectangleF>();
         private Dictionary<string, Brush> brushes = new Dictionary<string, Brush>();
         private Dictionary<Model.Layer, Brush> fills = new Dictionary<Model.Layer, Brush>();
-        private Dictionary<Model.Layer, Geometry> geometries = new Dictionary<Model.Layer, Geometry>();
+        private Dictionary<Model.Layer, TransformedGeometry> geometries = new Dictionary<Model.Layer, TransformedGeometry>();
 
         private Dictionary<Model.Layer, (Brush brush, float width, StrokeStyle style)> strokes =
                             new Dictionary<Model.Layer, (Brush, float, StrokeStyle)>();
@@ -334,7 +312,7 @@ namespace Ibinimator.View.Control
         }
 
         public RectangleF GetBounds(Model.Layer layer) =>
-            bounds.ContainsKey(layer) ? bounds[layer] : bounds[layer] = layer.GetBounds();
+            bounds.ContainsKey(layer) ? bounds[layer] : bounds[layer] = layer.GetTransformedBounds();
 
         public Brush GetBrush(string key) => brushes[key];
 
@@ -342,7 +320,7 @@ namespace Ibinimator.View.Control
             fills.ContainsKey(layer) ? fills[layer] : fills[layer] = layer.FillBrush.ToDirectX(ArtView.RenderTarget);
 
         public Geometry GetGeometry(Model.Shape layer) =>
-            geometries.ContainsKey(layer) ? geometries[layer] : geometries[layer] = layer.GetGeometry(ArtView.RenderTarget.Factory);
+            geometries.ContainsKey(layer) ? geometries[layer] : geometries[layer] = layer.GetTransformedGeometry(ArtView.RenderTarget.Factory);
 
         public (Brush brush, float width, StrokeStyle style) GetStroke(Model.Shape layer, RenderTarget target) =>
             strokes.ContainsKey(layer) ? strokes[layer] : strokes[layer] = (
@@ -374,14 +352,16 @@ namespace Ibinimator.View.Control
 
             switch (property)
             {
-                case nameof(Model.Layer.X):
-                case nameof(Model.Layer.Y):
+                case nameof(Model.Layer.Transform):
                 case nameof(Model.Layer.Width):
                 case nameof(Model.Layer.Height):
-                    bounds[layer] = layer.GetBounds();
+                    bounds[layer] = layer.GetTransformedBounds();
+
+                    geometries.TryGetValue(layer, out TransformedGeometry geometry);
+                    geometry?.Dispose();
 
                     if (shape != null)
-                        geometries[layer] = shape.GetGeometry(ArtView.RenderTarget.Factory);
+                        geometries[layer] = shape.GetTransformedGeometry(ArtView.RenderTarget.Factory);
 
                     if (layer.Parent != null)
                         UpdateLayer(layer.Parent, property);
@@ -390,17 +370,16 @@ namespace Ibinimator.View.Control
                     break;
 
                 case nameof(Model.Shape.FillBrush):
-                    fills[layer]?.Dispose();
-                    fills[layer] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
+                    fills.TryGetValue(layer, out Brush fill);
+                    fill?.Dispose();
+                    fills[layer] = shape.FillBrush?.ToDirectX(ArtView.RenderTarget);
                     InvalidateLayer(layer);
                     break;
 
                 case nameof(Model.Shape.StrokeBrush):
-                    strokes[layer].brush?.Dispose();
-                    strokes[layer] = (
-                       shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget),
-                       shape.StrokeWidth,
-                       new StrokeStyle(ArtView.RenderTarget.Factory, shape.StrokeStyle));
+                    strokes.TryGetValue(layer, out (Brush brush, float, StrokeStyle) stroke);
+                    stroke.brush?.Dispose();
+                    stroke.brush = shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget);
                     InvalidateLayer(layer);
                     break;
 
@@ -420,7 +399,6 @@ namespace Ibinimator.View.Control
 
     internal class SelectionHelper : Model.Model
     {
-
         #region Fields
 
         public RectangleF SelectionBounds;
@@ -429,6 +407,7 @@ namespace Ibinimator.View.Control
         private Vector2? lastPosition;
         private bool moved;
         private bool selecting;
+        private object sync = new object();
 
         #endregion Fields
 
@@ -457,6 +436,9 @@ namespace Ibinimator.View.Control
 
         #region Methods
 
+        private void UI(Action a) => ArtView.Dispatcher.Invoke(a);
+        private T UI<T>(Func<T> a) => ArtView.Dispatcher.Invoke<T>(a);
+
         public void ClearSelection()
         {
             while (Selection.Count > 0)
@@ -465,321 +447,324 @@ namespace Ibinimator.View.Control
 
         public void OnMouseDown(Vector2 pos, Factory factory)
         {
-            moved = false;
-
-            if (Selection.Count > 0)
+            lock (sync)
             {
-                List<(Vector2 pos, ArtViewHandle handle)> handles = new List<(Vector2, ArtViewHandle)>();
+                moved = false;
 
-                float x1 = SelectionBounds.Left, y1 = SelectionBounds.Top,
-                    x2 = SelectionBounds.Right, y2 = SelectionBounds.Bottom;
-
-                handles.Add((new Vector2(x1, y1), ArtViewHandle.TopLeft));
-                handles.Add((new Vector2(x2, y1), ArtViewHandle.TopRight));
-                handles.Add((new Vector2(x2, y2), ArtViewHandle.BottomRight));
-                handles.Add((new Vector2(x1, y2), ArtViewHandle.BottomLeft));
-                handles.Add((new Vector2((x1 + x2) / 2, y1), ArtViewHandle.Top));
-                handles.Add((new Vector2(x1, (y1 + y2) / 2), ArtViewHandle.Left));
-                handles.Add((new Vector2(x2, (y1 + y2) / 2), ArtViewHandle.Right));
-                handles.Add((new Vector2((x1 + x2) / 2, y2), ArtViewHandle.Bottom));
-
-                bool hit = false;
-
-                foreach (var h in handles)
+                if (Selection.Count > 0)
                 {
-                    if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
-                        (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
-                    {
-                        ResizingHandle = h.handle;
-                        hit = true;
-                        break;
-                    }
-                }
+                    List<(Vector2 pos, ArtViewHandle handle)> handles = new List<(Vector2, ArtViewHandle)>();
 
-                if (!hit)
-                {
-                    foreach (var l in Selection)
+                    float x1 = SelectionBounds.Left, y1 = SelectionBounds.Top,
+                        x2 = SelectionBounds.Right, y2 = SelectionBounds.Bottom;
+
+                    handles.Add((new Vector2(x1, y1), ArtViewHandle.TopLeft));
+                    handles.Add((new Vector2(x2, y1), ArtViewHandle.TopRight));
+                    handles.Add((new Vector2(x2, y2), ArtViewHandle.BottomRight));
+                    handles.Add((new Vector2(x1, y2), ArtViewHandle.BottomLeft));
+                    handles.Add((new Vector2((x1 + x2) / 2, y1), ArtViewHandle.Top));
+                    handles.Add((new Vector2(x1, (y1 + y2) / 2), ArtViewHandle.Left));
+                    handles.Add((new Vector2(x2, (y1 + y2) / 2), ArtViewHandle.Right));
+                    handles.Add((new Vector2((x1 + x2) / 2, y2), ArtViewHandle.Bottom));
+
+                    bool hit = false;
+
+                    foreach (var h in handles)
                     {
-                        if (l.Hit(factory, pos) != null)
+                        if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
+                            (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
                         {
-                            ResizingHandle = ArtViewHandle.Center;
+                            ResizingHandle = h.handle;
                             hit = true;
                             break;
                         }
                     }
+
+                    if (!hit)
+                    {
+                        foreach (var l in Selection)
+                        {
+                            if (l.Hit(factory, pos, l.Parent.AbsoluteTransform) != null)
+                            {
+                                ResizingHandle = ArtViewHandle.Center;
+                                hit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!hit && !ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
+                        ClearSelection();
                 }
 
-                if (!hit && !ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
-                    ClearSelection();
+                if (Selection.Count == 0)
+                {
+                    SelectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
+                    selecting = true;
+                }
+
+                lastPosition = pos;
+
+                UpdateSelection();
             }
-
-            if (Selection.Count == 0)
-            {
-                SelectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
-                selecting = true;
-            }
-
-            lastPosition = pos;
-
-            UpdateSelection();
         }
 
         public void OnMouseMove(Vector2 pos, Factory factory)
         {
-            moved = true;
-
-            lastPosition = lastPosition ?? pos;
-
-            float width = Math.Max(1f, SelectionBounds.Width),
-                height = Math.Max(1f, SelectionBounds.Height);
-
-            if (ResizingHandle != null)
+            lock (sync)
             {
-                switch (ResizingHandle)
-                {
-                    case ArtViewHandle.TopLeft:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                -(pos.X - SelectionBounds.Right) / width,
-                                -(pos.Y - SelectionBounds.Bottom) / height,
-                                SelectionBounds.BottomRight);
-                        break;
+                moved = true;
 
-                    case ArtViewHandle.Top:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                1,
-                                -(pos.Y - SelectionBounds.Bottom) / height,
-                                new Vector2(SelectionBounds.Center.X, SelectionBounds.Bottom));
-                        break;
+                lastPosition = lastPosition ?? pos;
 
-                    case ArtViewHandle.TopRight:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                (pos.X - SelectionBounds.Left) / width,
-                                -(pos.Y - SelectionBounds.Bottom) / height,
-                                SelectionBounds.BottomLeft);
-                        break;
+                float width = Math.Max(1f, SelectionBounds.Width),
+                    height = Math.Max(1f, SelectionBounds.Height);
 
-                    case ArtViewHandle.Left:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                -(pos.X - SelectionBounds.Left) / width,
-                                1,
-                                new Vector2(SelectionBounds.Right, SelectionBounds.Center.Y));
-                        break;
-
-                    case ArtViewHandle.Center:
-                        SelectionTransform = Matrix3x2.Translation(pos - lastPosition.Value);
-                        break;
-
-                    case ArtViewHandle.Right:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                (pos.X - SelectionBounds.Left) / width,
-                                1,
-                                new Vector2(SelectionBounds.Left, SelectionBounds.Center.Y));
-                        break;
-
-                    case ArtViewHandle.BottomLeft:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                -(pos.X - SelectionBounds.Right) / width,
-                                (pos.Y - SelectionBounds.Top) / height,
-                                SelectionBounds.TopRight);
-                        break;
-
-                    case ArtViewHandle.Bottom:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                1,
-                                (pos.Y - SelectionBounds.Top) / height,
-                                new Vector2(SelectionBounds.Center.X, SelectionBounds.Top));
-                        break;
-
-                    case ArtViewHandle.BottomRight:
-                        SelectionTransform =
-                            Matrix3x2.Scaling(
-                                (pos.X - SelectionBounds.Left) / width,
-                                (pos.Y - SelectionBounds.Top) / height,
-                                SelectionBounds.TopLeft);
-                        break;
-                }
-
-                if (SelectionTransform.ScaleVector.X < 0)
+                if (ResizingHandle != null)
                 {
                     switch (ResizingHandle)
                     {
                         case ArtViewHandle.TopLeft:
-                            ResizingHandle = ArtViewHandle.TopRight;
-                            break;
-
-                        case ArtViewHandle.TopRight:
-                            ResizingHandle = ArtViewHandle.TopLeft;
-                            break;
-
-                        case ArtViewHandle.Left:
-                            ResizingHandle = ArtViewHandle.Right;
-                            break;
-
-                        case ArtViewHandle.Right:
-                            ResizingHandle = ArtViewHandle.Left;
-                            break;
-
-                        case ArtViewHandle.BottomLeft:
-                            ResizingHandle = ArtViewHandle.BottomRight;
-                            break;
-
-                        case ArtViewHandle.BottomRight:
-                            ResizingHandle = ArtViewHandle.BottomLeft;
-                            break;
-                    }
-                }
-
-                if (SelectionTransform.ScaleVector.Y < 0)
-                {
-                    switch (ResizingHandle)
-                    {
-                        case ArtViewHandle.TopLeft:
-                            ResizingHandle = ArtViewHandle.BottomLeft;
-                            break;
-
-                        case ArtViewHandle.TopRight:
-                            ResizingHandle = ArtViewHandle.BottomRight;
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    -(pos.X - SelectionBounds.Right) / width,
+                                    -(pos.Y - SelectionBounds.Bottom) / height,
+                                    SelectionBounds.BottomRight);
                             break;
 
                         case ArtViewHandle.Top:
-                            ResizingHandle = ArtViewHandle.Bottom;
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    1,
+                                    -(pos.Y - SelectionBounds.Bottom) / height,
+                                    new Vector2(SelectionBounds.Center.X, SelectionBounds.Bottom));
                             break;
 
-                        case ArtViewHandle.Bottom:
-                            ResizingHandle = ArtViewHandle.Top;
+                        case ArtViewHandle.TopRight:
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    (pos.X - SelectionBounds.Left) / width,
+                                    -(pos.Y - SelectionBounds.Bottom) / height,
+                                    SelectionBounds.BottomLeft);
+                            break;
+
+                        case ArtViewHandle.Left:
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    -(pos.X - SelectionBounds.Left) / width,
+                                    1,
+                                    new Vector2(SelectionBounds.Right, SelectionBounds.Center.Y));
+                            break;
+
+                        case ArtViewHandle.Center:
+                            SelectionTransform = Matrix3x2.Translation(pos - lastPosition.Value);
+                            break;
+
+                        case ArtViewHandle.Right:
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    (pos.X - SelectionBounds.Left) / width,
+                                    1,
+                                    new Vector2(SelectionBounds.Left, SelectionBounds.Center.Y));
                             break;
 
                         case ArtViewHandle.BottomLeft:
-                            ResizingHandle = ArtViewHandle.TopLeft;
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    -(pos.X - SelectionBounds.Right) / width,
+                                    (pos.Y - SelectionBounds.Top) / height,
+                                    SelectionBounds.TopRight);
+                            break;
+
+                        case ArtViewHandle.Bottom:
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    1,
+                                    (pos.Y - SelectionBounds.Top) / height,
+                                    new Vector2(SelectionBounds.Center.X, SelectionBounds.Top));
                             break;
 
                         case ArtViewHandle.BottomRight:
-                            ResizingHandle = ArtViewHandle.TopRight;
+                            SelectionTransform =
+                                Matrix3x2.Scaling(
+                                    (pos.X - SelectionBounds.Left) / width,
+                                    (pos.Y - SelectionBounds.Top) / height,
+                                    SelectionBounds.TopLeft);
                             break;
                     }
-                }
 
-                SelectionTransform.M11 = MathUtils.AbsMax(0.001f, SelectionTransform.ScaleVector.X);
-                SelectionTransform.M22 = MathUtils.AbsMax(0.001f, SelectionTransform.ScaleVector.Y);
+                    if (SelectionTransform.ScaleVector.X < 0)
+                    {
+                        switch (ResizingHandle)
+                        {
+                            case ArtViewHandle.TopLeft:
+                                ResizingHandle = ArtViewHandle.TopRight;
+                                break;
+
+                            case ArtViewHandle.TopRight:
+                                ResizingHandle = ArtViewHandle.TopLeft;
+                                break;
+
+                            case ArtViewHandle.Left:
+                                ResizingHandle = ArtViewHandle.Right;
+                                break;
+
+                            case ArtViewHandle.Right:
+                                ResizingHandle = ArtViewHandle.Left;
+                                break;
+
+                            case ArtViewHandle.BottomLeft:
+                                ResizingHandle = ArtViewHandle.BottomRight;
+                                break;
+
+                            case ArtViewHandle.BottomRight:
+                                ResizingHandle = ArtViewHandle.BottomLeft;
+                                break;
+                        }
+                    }
+
+                    if (SelectionTransform.ScaleVector.Y < 0)
+                    {
+                        switch (ResizingHandle)
+                        {
+                            case ArtViewHandle.TopLeft:
+                                ResizingHandle = ArtViewHandle.BottomLeft;
+                                break;
+
+                            case ArtViewHandle.TopRight:
+                                ResizingHandle = ArtViewHandle.BottomRight;
+                                break;
+
+                            case ArtViewHandle.Top:
+                                ResizingHandle = ArtViewHandle.Bottom;
+                                break;
+
+                            case ArtViewHandle.Bottom:
+                                ResizingHandle = ArtViewHandle.Top;
+                                break;
+
+                            case ArtViewHandle.BottomLeft:
+                                ResizingHandle = ArtViewHandle.TopLeft;
+                                break;
+
+                            case ArtViewHandle.BottomRight:
+                                ResizingHandle = ArtViewHandle.TopRight;
+                                break;
+                        }
+                    }
+
+                    SelectionTransform.M11 = MathUtils.AbsMax(0.001f, SelectionTransform.M11);
+                    SelectionTransform.M22 = MathUtils.AbsMax(0.001f, SelectionTransform.M22);
+
+                    foreach (var layer in Selection)
+                    {
+                        var x = layer.Position;
+                        layer.Transform *= SelectionTransform;
+                    }
+
+                    SelectionTransform = Matrix.Identity;
+
+                    UpdateSelection();
+                }
 
                 if (Selection.Count > 0)
-                    foreach (var layer in Selection)
-                        layer.Transform(SelectionTransform);
-
-                SelectionTransform = Matrix.Identity;
-
-                UpdateSelection();
-            }
-
-            if (Selection.Count > 0)
-            {
-                List<(Vector2 pos, Cursor cur)> handles = new List<(Vector2, Cursor)>();
-
-                Vector2 tl = SelectionBounds.TopLeft,
-                    br = SelectionBounds.BottomRight;
-
-                float x1 = tl.X, y1 = tl.Y,
-                    x2 = br.X, y2 = br.Y;
-
-                handles.Add((new Vector2(x1, y1), Cursors.SizeNWSE));
-                handles.Add((new Vector2(x2, y1), Cursors.SizeNESW));
-                handles.Add((new Vector2(x2, y2), Cursors.SizeNWSE));
-                handles.Add((new Vector2(x1, y2), Cursors.SizeNESW));
-                handles.Add((new Vector2((x1 + x2) / 2, y1), Cursors.SizeNS));
-                handles.Add((new Vector2(x1, (y1 + y2) / 2), Cursors.SizeWE));
-                handles.Add((new Vector2(x2, (y1 + y2) / 2), Cursors.SizeWE));
-                handles.Add((new Vector2((x1 + x2) / 2, y2), Cursors.SizeNS));
-
-                foreach (var h in handles)
                 {
-                    if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
-                        (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
+                    List<(Vector2 pos, Cursor cur)> handles = new List<(Vector2, Cursor)>();
+
+                    Vector2 tl = SelectionBounds.TopLeft,
+                        br = SelectionBounds.BottomRight;
+
+                    float x1 = tl.X, y1 = tl.Y,
+                        x2 = br.X, y2 = br.Y;
+
+                    handles.Add((new Vector2(x1, y1), Cursors.SizeNWSE));
+                    handles.Add((new Vector2(x2, y1), Cursors.SizeNESW));
+                    handles.Add((new Vector2(x2, y2), Cursors.SizeNWSE));
+                    handles.Add((new Vector2(x1, y2), Cursors.SizeNESW));
+                    handles.Add((new Vector2((x1 + x2) / 2, y1), Cursors.SizeNS));
+                    handles.Add((new Vector2(x1, (y1 + y2) / 2), Cursors.SizeWE));
+                    handles.Add((new Vector2(x2, (y1 + y2) / 2), Cursors.SizeWE));
+                    handles.Add((new Vector2((x1 + x2) / 2, y2), Cursors.SizeNS));
+
+                    foreach (var h in handles)
                     {
-                        Cursor = h.cur;
-                        break;
+                        if ((h.pos.X - pos.X) * (h.pos.X - pos.X) +
+                            (h.pos.Y - pos.Y) * (h.pos.Y - pos.Y) < 6.25)
+                        {
+                            Cursor = h.cur;
+                            break;
+                        }
+                        else Cursor = Cursors.Arrow;
                     }
-                    else Cursor = Cursors.Arrow;
                 }
+
+                if (selecting && Selection.Count == 0)
+                {
+                    ArtView.InvalidateSurface(SelectionBox.Inflate(2));
+
+                    if (pos.X < SelectionBox.Left)
+                        SelectionBox.Left = pos.X;
+                    else
+                        SelectionBox.Right = pos.X;
+
+                    if (pos.Y < SelectionBox.Top)
+                        SelectionBox.Top = pos.Y;
+                    else
+                        SelectionBox.Bottom = pos.Y;
+
+                    ArtView.InvalidateSurface(SelectionBox.Inflate(2));
+                }
+
+                lastPosition = pos;
             }
-
-            if (selecting && Selection.Count == 0)
-            {
-                ArtView.InvalidateSurface(SelectionBox.Inflate(2));
-
-                if (pos.X < SelectionBox.Left)
-                    SelectionBox.Left = pos.X;
-                else
-                    SelectionBox.Right = pos.X;
-
-                if (pos.Y < SelectionBox.Top)
-                    SelectionBox.Top = pos.Y;
-                else
-                    SelectionBox.Bottom = pos.Y;
-
-                ArtView.InvalidateSurface(SelectionBox.Inflate(2));
-            }
-
-            lastPosition = pos;
         }
 
         public void OnMouseUp(Vector2 pos, Factory factory)
         {
-            ResizingHandle = null;
-            SelectionTransform = Matrix3x2.Identity;
-            selecting = false;
-
-            if (!moved)
+            lock (sync)
             {
-                var hit = Root.Hit(factory, pos);
+                ResizingHandle = null;
+                SelectionTransform = Matrix3x2.Identity;
 
-                if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                    ClearSelection();
-
-                if (hit != null)
-                    hit.Selected = true;
-            }
-
-            if(!SelectionBox.IsEmpty)
-            {
-                Parallel.ForEach(Root.Flatten(), layer =>
+                if (!moved)
                 {
-                    var bounds = ArtView.cacheHelper.GetBounds(layer);
-                    SelectionBox.Contains(ref bounds, out bool contains);
-                    layer.Selected = layer.Selected || contains;
-                });
+                    var hit = Root.Hit(factory, pos, Matrix3x2.Identity);
 
-                ArtView.InvalidateSurface(SelectionBox.Inflate(1));
+                    if (!UI(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
+                        ClearSelection();
 
-                SelectionBox = RectangleF.Empty;
+                    if (hit != null)
+                        hit.Selected = true;
+                }
+
+                if (selecting)
+                {
+                    Parallel.ForEach(Root.Flatten(), layer =>
+                    {
+                        var bounds = ArtView.cacheHelper.GetBounds(layer);
+                        SelectionBox.Contains(ref bounds, out bool contains);
+                        layer.Selected = layer.Selected || contains;
+                    });
+
+                    ArtView.InvalidateSurface(SelectionBox.Inflate(1));
+                    SelectionBox = RectangleF.Empty;
+
+                    selecting = false;
+                }
+
+                UpdateSelection();
             }
-
-            UpdateSelection();
         }
 
         public void Render(RenderTarget target, Brush fill, Brush stroke, float strokeWidth)
         {
-            if (Selection.Count > 0)
+            void RenderHandles(RectangleF rect)
             {
-                // draw selection outline
-                target.DrawRectangle(SelectionBounds, fill, strokeWidth);
-
-                foreach (var layer in Selection)
-                    if (layer is Model.Shape shape)
-                        target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, strokeWidth);
-                
-
                 // draw handles
                 List<Vector2> handles = new List<Vector2>();
 
-                float x1 = SelectionBounds.Left, y1 = SelectionBounds.Top,
-                    x2 = SelectionBounds.Right, y2 = SelectionBounds.Bottom;
+                float x1 = rect.Left, y1 = rect.Top,
+                    x2 = rect.Right, y2 = rect.Bottom;
 
                 handles.Add(new Vector2(x1, y1));
                 handles.Add(new Vector2(x2, y1));
@@ -790,54 +775,80 @@ namespace Ibinimator.View.Control
                 handles.Add(new Vector2(x2, (y1 + y2) / 2));
                 handles.Add(new Vector2((x1 + x2) / 2, y2));
 
-                float handleSize = strokeWidth * 5;
-
                 foreach (Vector2 v in handles)
                 {
-                    Ellipse e = new Ellipse(v, handleSize, handleSize);
+                    Ellipse e = new Ellipse(v, 5f / target.Transform.M11, 5f / target.Transform.M22);
                     target.FillEllipse(e, fill);
-                    target.DrawEllipse(e, stroke, strokeWidth * 2);
+                    target.DrawEllipse(e, stroke, 2f / target.Transform.M11);
                 }
+            }
+            
+            if (Selection.Count == 1)
+            {
+                var layer = Selection[0];
+
+                target.Transform *= layer.AbsoluteTransform;
+
+                RectangleF rect = layer.GetBounds();
+
+                target.DrawRectangle(rect, fill, strokeWidth);
+
+                if (layer is Model.Shape shape)
+                    target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, 1f / target.Transform.M11);
+
+                RenderHandles(rect);
+
+                target.Transform *= Matrix3x2.Invert(layer.AbsoluteTransform);
+            }
+            else if (Selection.Count > 1)
+            {
+                // draw selection outline
+                target.DrawRectangle(SelectionBounds, fill, strokeWidth);
+
+                foreach (var layer in Selection)
+                    if (layer is Model.Shape shape)
+                    {
+                        target.Transform *= shape.AbsoluteTransform;
+                        target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, 1f / target.Transform.M11);
+                        target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
+                    }
+
+                RenderHandles(SelectionBounds);
             }
 
             if (!SelectionBox.IsEmpty)
-            {
-                target.DrawRectangle(SelectionBox, fill, strokeWidth);
-                fill.Opacity = 0.25f;
-                target.FillRectangle(SelectionBox, fill);
-                fill.Opacity = 1.0f;
-            }
+                {
+                    target.DrawRectangle(SelectionBox, fill, strokeWidth);
+                    fill.Opacity = 0.25f;
+                    target.FillRectangle(SelectionBox, fill);
+                    fill.Opacity = 1.0f;
+                }
         }
 
         public void UpdateSelection()
-        {
-            lock (this)
+        {   
+            InvalidateSurface();
+
+            if (Selection.Count == 0)
             {
-                InvalidateSurface();
-
-                if (Selection.Count == 0)
-                {
-                    SelectionBounds = RectangleF.Empty;
-                    return;
-                }
-
-                Model.Layer first = Selection.FirstOrDefault();
-                (float x1, float y1, float x2, float y2) = (first?.X ?? 0, first?.Y ?? 0, first?.X ?? 0, first?.Y ?? 0);
-
-                Parallel.ForEach(Selection, l =>
-                {
-                    var b = ArtView.cacheHelper.GetBounds(l);
-
-                    if (b.Left < x1) x1 = b.Left;
-                    if (b.Top < y1) y1 = b.Top;
-                    if (b.Right > x2) x2 = b.Right;
-                    if (b.Bottom > y2) y2 = b.Bottom;
-                });
-
-                SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
-
-                //InvalidateSurface();
+                SelectionBounds = RectangleF.Empty;
+                return;
             }
+
+            Model.Layer first = Selection.FirstOrDefault();
+            (float x1, float y1, float x2, float y2) = (first?.X ?? 0, first?.Y ?? 0, first?.X ?? 0, first?.Y ?? 0);
+
+            Parallel.ForEach(Selection, l =>
+            {
+                var b = MathUtils.Bounds(l.GetBounds(), l.AbsoluteTransform);
+
+                if (b.Left < x1) x1 = b.Left;
+                if (b.Top < y1) y1 = b.Top;
+                if (b.Right > x2) x2 = b.Right;
+                if (b.Bottom > y2) y2 = b.Bottom;
+            });
+
+            SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
         }
 
         private void InvalidateSurface()
