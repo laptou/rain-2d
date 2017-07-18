@@ -14,6 +14,7 @@ namespace Ibinimator.Model
 {
     public class Group : Layer
     {
+
         #region Properties
 
         public override String DefaultName => "Group";
@@ -57,16 +58,18 @@ namespace Ibinimator.Model
         }
 
         #endregion Methods
+
     }
 
     public class Layer : Model
     {
+
         #region Constructors
 
         public Layer()
         {
             Opacity = 1;
-            Transform = Matrix.Identity;
+            Transform = Matrix3x2.Identity;
 
             SubLayers.CollectionChanged += OnCollectionChanged;
         }
@@ -75,6 +78,7 @@ namespace Ibinimator.Model
 
         #region Properties
 
+        public Matrix3x2 AbsoluteTransform => (Parent?.Transform ?? Matrix.Identity) * Transform;
         public virtual String DefaultName => "Layer";
 
         public virtual float Height { get => Get<float>(); set => Set(value); }
@@ -100,30 +104,41 @@ namespace Ibinimator.Model
             }
         }
 
+        public float Rotation { get => Transform.Decompose().rotation; set => Transform *= Matrix3x2.Rotation(value - Rotation); }
+
+        public Vector2 Scale
+        {
+            get => Transform.ScaleVector;
+
+            set => Transform *= Matrix3x2.Scaling(value);
+        }
+
         public bool Selected { get => Get<bool>(); set => Set(value); }
 
-        public Size2F Size
-        {
-            get => new Size2F(Width, Height);
-
-            set
-            {
-                Width = value.Width;
-                Height = value.Height;
-            }
-        }
+        public float Skew { get => Transform.Decompose().skew; set => Transform *= Matrix3x2.Skew(value - Skew, value - Skew); }
 
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        public Matrix3x2 Transform { get => Get<Matrix3x2>(); set => Set(value); }
-
-        public Matrix3x2 AbsoluteTransform => (Parent?.Transform ?? Matrix.Identity) * Transform;
+        public Matrix3x2 Transform
+        {
+            get => Get<Matrix3x2>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(X));
+                RaisePropertyChanged(nameof(Y));
+                RaisePropertyChanged(nameof(Position));
+                RaisePropertyChanged(nameof(Skew));
+                RaisePropertyChanged(nameof(Rotation));
+                RaisePropertyChanged(nameof(Scale));
+            }
+        }
 
         public virtual float Width { get => Get<float>(); set => Set(value); }
 
-        public virtual float X { get => Transform.TranslationVector.X; set => Transform *= Matrix3x2.Translation(value - X, 0); }
+        public float X { get => Transform.M31; set => Transform *= Matrix3x2.Translation(value - X, 0); }
 
-        public virtual float Y { get => Transform.TranslationVector.Y; set => Transform *= Matrix3x2.Translation(0, value - Y); }
+        public float Y { get => Transform.M32; set => Transform *= Matrix3x2.Translation(0, value - Y); }
 
         #endregion Properties
 
@@ -199,6 +214,14 @@ namespace Ibinimator.Model
             SubLayers.Remove(child);
         }
 
+        public virtual void Render(RenderTarget target, View.Control.CacheHelper helper)
+        {
+            foreach (var layer in SubLayers)
+            {
+                layer.Render(target, helper);
+            }
+        }
+
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             foreach (Layer layer in e.NewItems)
@@ -212,14 +235,6 @@ namespace Ibinimator.Model
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
-        }
-
-        public virtual void Render(RenderTarget target, View.Control.CacheHelper helper)
-        {
-            foreach (var layer in SubLayers)
-            {
-                layer.Render(target, helper);
-            }
         }
 
         #endregion Methods

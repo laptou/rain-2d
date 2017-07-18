@@ -87,9 +87,7 @@ namespace Ibinimator.Model
 
             if (hit != null) return hit;
 
-            world *= Transform;
-
-            using (var geometry = GetGeometry(factory))
+            using (var geometry = GetTransformedGeometry(factory))
             {
                 if (FillBrush != null && geometry.FillContainsPoint(point, world, geometry.FlatteningTolerance))
                     return this;

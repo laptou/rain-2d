@@ -319,7 +319,7 @@ namespace Ibinimator.View.Control
         public Brush GetFill(Model.Shape layer) =>
             fills.ContainsKey(layer) ? fills[layer] : fills[layer] = layer.FillBrush.ToDirectX(ArtView.RenderTarget);
 
-        public Geometry GetGeometry(Model.Shape layer) =>
+        public TransformedGeometry GetGeometry(Model.Shape layer) =>
             geometries.ContainsKey(layer) ? geometries[layer] : geometries[layer] = layer.GetTransformedGeometry(ArtView.RenderTarget.Factory);
 
         public (Brush brush, float width, StrokeStyle style) GetStroke(Model.Shape layer, RenderTarget target) =>
@@ -346,15 +346,13 @@ namespace Ibinimator.View.Control
             }
         }
 
-        public void UpdateLayer(Model.Layer layer, string property)
+        public void UpdateLayer(Model.Layer layer, string property, bool? bubble = null)
         {
             Model.Shape shape = layer as Model.Shape;
 
             switch (property)
             {
                 case nameof(Model.Layer.Transform):
-                case nameof(Model.Layer.Width):
-                case nameof(Model.Layer.Height):
                     bounds[layer] = layer.GetTransformedBounds();
 
                     geometries.TryGetValue(layer, out TransformedGeometry geometry);
@@ -363,8 +361,12 @@ namespace Ibinimator.View.Control
                     if (shape != null)
                         geometries[layer] = shape.GetTransformedGeometry(ArtView.RenderTarget.Factory);
 
-                    if (layer.Parent != null)
-                        UpdateLayer(layer.Parent, property);
+                    if (bubble != false && layer.Parent != null)
+                        UpdateLayer(layer.Parent, property, true);
+
+                    if(bubble != true)
+                        foreach (var subLayer in layer.SubLayers)
+                            UpdateLayer(subLayer, property, false);
 
                     InvalidateLayer(layer);
                     break;
@@ -497,7 +499,7 @@ namespace Ibinimator.View.Control
                         ClearSelection();
                 }
 
-                if (Selection.Count == 0)
+                if (Selection.Count == 0 && !selecting)
                 {
                     SelectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
                     selecting = true;
@@ -658,7 +660,6 @@ namespace Ibinimator.View.Control
 
                     foreach (var layer in Selection)
                     {
-                        var x = layer.Position;
                         layer.Transform *= SelectionTransform;
                     }
 
@@ -746,7 +747,7 @@ namespace Ibinimator.View.Control
                         layer.Selected = layer.Selected || contains;
                     });
 
-                    ArtView.InvalidateSurface(SelectionBox.Inflate(1));
+                    ArtView.InvalidateSurface(SelectionBox.Inflate(2));
                     SelectionBox = RectangleF.Empty;
 
                     selecting = false;
@@ -787,18 +788,20 @@ namespace Ibinimator.View.Control
             {
                 var layer = Selection[0];
 
-                target.Transform *= layer.AbsoluteTransform;
+                RectangleF rect = ArtView.cacheHelper.GetBounds(layer);
 
-                RectangleF rect = layer.GetBounds();
-
-                target.DrawRectangle(rect, fill, strokeWidth);
+                using (RectangleGeometry rg = new RectangleGeometry(target.Factory, rect))
+                    using(TransformedGeometry tg = new TransformedGeometry(target.Factory, rg, layer.Parent.AbsoluteTransform))
+                        target.DrawGeometry(tg, fill, 1f / target.Transform.M11);
 
                 if (layer is Model.Shape shape)
+                {
+                    target.Transform *= shape.Parent.AbsoluteTransform;
                     target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, 1f / target.Transform.M11);
+                    target.Transform *= Matrix3x2.Invert(shape.Parent.AbsoluteTransform);
+                }
 
                 RenderHandles(rect);
-
-                target.Transform *= Matrix3x2.Invert(layer.AbsoluteTransform);
             }
             else if (Selection.Count > 1)
             {
@@ -808,9 +811,9 @@ namespace Ibinimator.View.Control
                 foreach (var layer in Selection)
                     if (layer is Model.Shape shape)
                     {
-                        target.Transform *= shape.AbsoluteTransform;
+                        target.Transform *= shape.Parent.AbsoluteTransform;
                         target.DrawGeometry(ArtView.cacheHelper.GetGeometry(shape), fill, 1f / target.Transform.M11);
-                        target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
+                        target.Transform *= Matrix3x2.Invert(shape.Parent.AbsoluteTransform);
                     }
 
                 RenderHandles(SelectionBounds);
@@ -849,14 +852,13 @@ namespace Ibinimator.View.Control
             });
 
             SelectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
+
+            InvalidateSurface();
         }
 
         private void InvalidateSurface()
         {
-            var old = SelectionBounds;
-            old.Inflate(7, 7);
-
-            ArtView.InvalidateSurface(old);
+            ArtView.InvalidateSurface(SelectionBounds.Inflate(7));
         }
 
         #endregion Methods
