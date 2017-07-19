@@ -56,10 +56,10 @@ namespace Ibinimator.Shared
 
         public static RectangleF Bounds(RectangleF rect, Matrix3x2 m)
         {
-            Vector2 p0 = Transform2D(rect.TopLeft, m),
-                p1 = Transform2D(rect.TopRight, m),
-                p2 = Transform2D(rect.BottomRight, m),
-                p3 = Transform2D(rect.BottomLeft, m);
+            Vector2 p0 = Matrix3x2.TransformPoint(m, rect.TopLeft),
+                p1 = Matrix3x2.TransformPoint(m, rect.TopRight),
+                p2 = Matrix3x2.TransformPoint(m, rect.BottomRight),
+                p3 = Matrix3x2.TransformPoint(m, rect.BottomLeft);
 
             float l = Min(p0.X, p1.X, p2.X, p3.X),
                 t = Min(p0.Y, p1.Y, p2.Y, p3.Y),
