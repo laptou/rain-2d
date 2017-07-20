@@ -117,7 +117,7 @@ namespace Ibinimator.Model
 
         public Matrix3x2 Transform
         {
-            get => ScaleTranslate * RotationSkew;
+            get => Matrix3x2.Scaling(Scale) * RotationSkew * Matrix3x2.Translation(Position);
         }
 
         public Matrix3x2 ScaleTranslate { get => Get<Matrix3x2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }

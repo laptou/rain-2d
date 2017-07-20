@@ -99,6 +99,8 @@ namespace Ibinimator.View.Control
 
         public DX11ImageSource Surface => surface;
 
+        public Device Device => device;
+
         #endregion Properties
 
         public event EventHandler<D2D.RenderTarget> RenderTargetBound;

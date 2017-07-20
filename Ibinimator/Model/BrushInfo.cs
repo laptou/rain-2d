@@ -72,7 +72,7 @@ namespace Ibinimator.Model
             set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
         }
 
-        public Matrix3x2 Transform { get => Get<RawMatrix3x2>(); set => Set(value); }
+        public Matrix3x2 Transform { get => Get<Matrix3x2>(); set => Set(value); }
 
         private bool IsGradient => BrushType == BrushType.LinearGradient || BrushType == BrushType.RadialGradient;
 

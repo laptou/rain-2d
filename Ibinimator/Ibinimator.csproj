@@ -263,5 +263,12 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\resize-ew.png" />
+    <Resource Include="Resources\Icon\resize-nesw.png" />
+    <Resource Include="Resources\Icon\resize-ns.png" />
+    <Resource Include="Resources\Icon\resize-nwse.png" />
+    <Resource Include="Resources\Icon\rotate.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
