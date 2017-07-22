@@ -77,11 +77,13 @@ namespace Ibinimator.Shared
         public static (Vector2 scale, float rotation, Vector2 translation, float skew) Decompose(this Matrix3x2 m)
         {
             Vector2 scale = new Vector2(m.Row1.Length(), m.Row2.Length());
-            float rotation = (float)Math.Atan2(m.M12, m.M21);
+            float rotation = (float)Math.Atan2(m.M12, m.M11);
             Vector2 translation = m.Row3;
             float skew = (float)(Math.Acos(m.M11 * m.M21 + m.M12 * m.M22) - PI_2);
 
             return (scale, rotation, translation, skew);
         }
+
+        public static float GetRotation(this Matrix3x2 m) => (float)Math.Atan2(m.M12, m.M11);
     }
 }
