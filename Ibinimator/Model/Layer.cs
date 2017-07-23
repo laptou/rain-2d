@@ -63,13 +63,12 @@ namespace Ibinimator.Model
 
     public class Layer : Model
     {
-
         #region Constructors
 
         public Layer()
         {
             Opacity = 1;
-            ScaleTranslate = RotationSkew = Matrix3x2.Identity;
+            Scale = Vector2.One;
 
             SubLayers.CollectionChanged += OnCollectionChanged;
         }
@@ -96,37 +95,26 @@ namespace Ibinimator.Model
 
         public Layer Parent { get => Get<Layer>(); set => Set(value); }
 
-        public Vector2 Position
-        {
-            get => new Vector2(X, Y);
+        public Vector2 Position { get => Get<Vector2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
 
-            set
-            {
-                X = value.X;
-                Y = value.Y;
-            }
-        }
-
-        public Matrix3x2 RotationSkew { get => Get<Matrix3x2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
-
-        public Vector2 Scale { get => ScaleTranslate.ScaleVector; set => ScaleTranslate *= Matrix3x2.Scaling(value / Scale); }
+        public float Rotation { get => Get<float>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
 
         public bool Selected { get => Get<bool>(); set => Set(value); }
 
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        public Matrix3x2 Transform
-        {
-            get => Matrix3x2.Scaling(Scale) * RotationSkew * Matrix3x2.Translation(Position);
-        }
+        public Matrix3x2 Transform => 
+            Matrix3x2.Scaling(Scale) * 
+            Matrix3x2.Rotation(Rotation) * 
+            Matrix3x2.Translation(Position);
 
-        public Matrix3x2 ScaleTranslate { get => Get<Matrix3x2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
+        public Vector2 Scale { get => Get<Vector2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
 
         public virtual float Width { get => Get<float>(); set => Set(value); }
 
-        public float X { get => ScaleTranslate.M31; set => ScaleTranslate *= Matrix3x2.Translation(value - X, 0); }
+        public float X { get => Position.X; set => Position = new Vector2(value, Y); }
 
-        public float Y { get => ScaleTranslate.M32; set => ScaleTranslate *= Matrix3x2.Translation(0, value - Y); }
+        public float Y { get => Position.Y; set => Position = new Vector2(X, value); }
 
         #endregion Properties
 
@@ -176,12 +164,20 @@ namespace Ibinimator.Model
             return new RectangleF(x1, y1, x2 - x1, y2 - y1);
         }
 
-        public virtual RectangleF GetTransformedBounds()
+        public RectangleF GetTransformedBounds()
         {
             var r = MathUtils.Bounds(GetBounds(), Transform);
 
             return r;
         }
+
+        public RectangleF GetUnrotatedBounds()
+        {
+            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(Scale) * Matrix3x2.Translation(Position));
+
+            return r;
+        }
+
 
         public virtual Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
         {
@@ -202,7 +198,7 @@ namespace Ibinimator.Model
             SubLayers.Remove(child);
         }
 
-        public virtual void Render(RenderTarget target, View.Control.CacheHelper helper)
+        public virtual void Render(RenderTarget target, CacheHelper helper)
         {
             foreach (var layer in SubLayers)
             {
