@@ -28,6 +28,8 @@ namespace Ibinimator.Shared
         public static float AbsMax(float min, float x) =>
             Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
 
+        public static float AbsSqrt(float f) => (float)Math.Sqrt(Math.Abs(f)) * Math.Sign(f);
+
         public static RectangleF Inflate(this RectangleF rect, float amount)
         {
             RectangleF r = rect; // this should copy by value, since RectangleF is struct
@@ -85,5 +87,28 @@ namespace Ibinimator.Shared
         }
 
         public static float GetRotation(this Matrix3x2 m) => (float)Math.Atan2(m.M12, m.M11);
+
+        public static Vector2 GetScale(this Matrix3x2 m) => new Vector2(m.Row1.Length(), m.Row2.Length());
+
+        public static Vector2 Rotate(Vector2 v, float theta)
+        {
+            var cs = (float)Math.Cos(theta);
+            var sn = (float)Math.Sin(theta);
+
+            var px = v.X * cs - v.Y * sn;
+            var py = v.X * sn + v.Y * cs;
+
+            return new Vector2(px, py);
+        }
+
+        public static Vector2 Rotate(Vector2 v, Vector2 c, float theta) => Rotate(v - c, theta) + c;
+
+        public static Vector2 Scale(Vector2 v, Vector2 c, Vector2 s) => (v - c) * s + c;
+
+        public static Vector2 UnitVector(float angle) => new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+
+        public static Vector2 Sqrt(Vector2 v) => new Vector2(AbsSqrt(v.X), AbsSqrt(v.Y));
+
+        public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
     }
 }
