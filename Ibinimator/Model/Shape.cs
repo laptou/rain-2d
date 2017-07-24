@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using Ibinimator.View.Control;
 using Ibinimator.Shared;
+using System.ComponentModel;
 
 namespace Ibinimator.Model
 {
@@ -34,6 +35,9 @@ namespace Ibinimator.Model
 
     public class Rectangle : Shape
     {
+        public override float Width { get => base.Width; set { base.Width = value; RaisePropertyChanged("Geometry"); } }
+        public override float Height { get => base.Height; set { base.Height = value; RaisePropertyChanged("Geometry"); } }
+
         #region Properties
 
         public override String DefaultName => "Rectangle";
@@ -54,13 +58,22 @@ namespace Ibinimator.Model
 
     public abstract class Shape : Layer
     {
+        public Shape()
+        {
+            StrokeStyle = new StrokeStyleProperties1()
+            {
+                TransformType = StrokeTransformType.Fixed
+            };
+        }
+
         #region Properties
 
         public override String DefaultName => "Shape";
         public BrushInfo FillBrush { get => Get<BrushInfo>(); set => Set(value); }
         public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
-        public StrokeStyleProperties StrokeStyle { get => Get<StrokeStyleProperties>(); set => Set(value); }
+        public StrokeStyleProperties1 StrokeStyle { get => Get<StrokeStyleProperties1>(); set => Set(value); }
         public float StrokeWidth { get => Get<float>(); set => Set(value); }
+
         public override float Height { get => Get<float>(); set => Set(value); }
         public override float Width { get => Get<float>(); set => Set(value); }
 
@@ -68,18 +81,7 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public RectangleF GetTransformedBounds(Factory factory)
-        {
-            using (var geom = GetTransformedGeometry(factory))
-                return RectangleF.Union(base.GetTransformedBounds(), geom.GetBounds().Convert());
-        }
-
         public abstract Geometry GetGeometry(Factory factory);
-
-        public virtual TransformedGeometry GetTransformedGeometry(Factory factory)
-        {
-            return new TransformedGeometry(factory, GetGeometry(factory), Transform);
-        }
 
         public override Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
         {
@@ -87,12 +89,12 @@ namespace Ibinimator.Model
 
             if (hit != null) return hit;
 
-            using (var geometry = GetTransformedGeometry(factory))
+            using (var geometry = GetGeometry(factory))
             {
-                if (FillBrush != null && geometry.FillContainsPoint(point, world, geometry.FlatteningTolerance))
+                if (FillBrush != null && geometry.FillContainsPoint(point, AbsoluteTransform, geometry.FlatteningTolerance))
                     return this;
 
-                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, world, geometry.FlatteningTolerance))
+                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, AbsoluteTransform, geometry.FlatteningTolerance))
                     return this;
 
                 return null;
@@ -101,6 +103,8 @@ namespace Ibinimator.Model
 
         public override void Render(RenderTarget target, CacheHelper cacheHelper)
         {
+            target.Transform *= AbsoluteTransform;
+
             if (FillBrush != null)
                 target.FillGeometry(cacheHelper.GetGeometry(this), cacheHelper.GetFill(this));
 
@@ -114,6 +118,8 @@ namespace Ibinimator.Model
                   stroke.width,
                   stroke.style);
             }
+
+            target.Transform *= Matrix3x2.Invert(AbsoluteTransform);
 
             base.Render(target, cacheHelper);
         }

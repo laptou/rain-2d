@@ -48,15 +48,6 @@ namespace Ibinimator.Model
 
         }
 
-        public override void Render(RenderTarget target, CacheHelper helper)
-        {
-            target.Transform *= Transform;
-
-            base.Render(target, helper);
-
-            target.Transform *= Matrix3x2.Invert(Transform);
-        }
-
         #endregion Methods
 
     }
@@ -77,9 +68,9 @@ namespace Ibinimator.Model
 
         #region Properties
 
-        public Matrix3x2 AbsoluteTransform => WorldTransform * Transform;
+        public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        public Matrix3x2 WorldTransform => (Parent?.Transform ?? Matrix.Identity);
+        public Matrix3x2 WorldTransform => (Parent?.AbsoluteTransform ?? Matrix.Identity);
 
         public virtual String DefaultName => "Layer";
 
@@ -166,18 +157,17 @@ namespace Ibinimator.Model
 
         public RectangleF GetTransformedBounds()
         {
-            var r = MathUtils.Bounds(GetBounds(), Transform);
+            var r = MathUtils.Bounds(GetBounds(), AbsoluteTransform);
 
             return r;
         }
 
         public RectangleF GetUnrotatedBounds()
         {
-            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(Scale) * Matrix3x2.Translation(Position));
+            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(Scale) * Matrix3x2.Translation(Position) * WorldTransform);
 
             return r;
         }
-
 
         public virtual Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
         {

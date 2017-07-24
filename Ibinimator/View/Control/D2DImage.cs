@@ -130,7 +130,7 @@ namespace Ibinimator.View.Control
                     frameCountHistTotal -= frameCountHist.Dequeue();
                 }
 
-                FPS = frameCountHistTotal / frameCountHist.Count;
+                Dispatcher.InvokeAsync(() => FPS = frameCountHistTotal / frameCountHist.Count);
 
                 frameCount = 0;
                 lastFrameTime = renderTimer.ElapsedMilliseconds;
@@ -145,7 +145,7 @@ namespace Ibinimator.View.Control
             Disposer.SafeDispose(ref d2DFactory);
             Disposer.SafeDispose(ref renderTarget);
 
-            d2DFactory = new D2D.Factory();
+            d2DFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
 
             var width = (int)Math.Max(1, ActualWidth * d2DFactory.DesktopDpi.Width / 96.0);
             var height = (int)Math.Max(1, ActualHeight * d2DFactory.DesktopDpi.Height / 96.0);
@@ -212,7 +212,7 @@ namespace Ibinimator.View.Control
             surface.InvalidateD3DImage();
         }
 
-        private void OnRendering(object sender, EventArgs e)
+        private async void OnRendering(object sender, EventArgs e)
         {
             if (!renderTimer.IsRunning)
             {
@@ -221,8 +221,8 @@ namespace Ibinimator.View.Control
 
             if (RenderMode == RenderMode.Constant || invalidated)
             {
-                PrepareAndCallRender();
-
+                await Task.Run((Action)PrepareAndCallRender);
+                
                 surface.Lock();
                 while (dirty.Count > 0)
                     surface.AddDirtyRect(dirty.Pop());
@@ -249,9 +249,12 @@ namespace Ibinimator.View.Control
                 return;
             }
 
-            d2DRenderTarget.BeginDraw();
-            Render(d2DRenderTarget);
-            d2DRenderTarget.EndDraw();
+            lock (d2DRenderTarget)
+            {
+                d2DRenderTarget.BeginDraw();
+                Render(d2DRenderTarget);
+                d2DRenderTarget.EndDraw();
+            }
 
             CalcFps();
 
@@ -301,15 +304,15 @@ namespace Ibinimator.View.Control
             if(surface == null)
                 return;
 
-            var whole = new Rectangle(0, 0, surface.PixelWidth, surface.PixelHeight);
+            var whole = new Rectangle(0, 0, d2DRenderTarget.PixelSize.Width, d2DRenderTarget.PixelSize.Height);
 
             var rect = area ?? whole;
             var dpi = new Vector2(x: d2DRenderTarget.DotsPerInch.Width, y: d2DRenderTarget.DotsPerInch.Height) / new Vector2(96);
 
-            rect.Top = (int)MathUtils.Clamp(0, surface.PixelHeight, rect.Top * dpi.Y);
-            rect.Bottom = (int)MathUtils.Clamp(0, surface.PixelHeight, rect.Bottom * dpi.Y);
-            rect.Left = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Left * dpi.X);
-            rect.Right = (int)MathUtils.Clamp(0, surface.PixelWidth, rect.Right * dpi.X);
+            rect.Top = (int)MathUtils.Clamp(0, whole.Height, rect.Top * dpi.Y);
+            rect.Bottom = (int)MathUtils.Clamp(0, whole.Height, rect.Bottom * dpi.Y);
+            rect.Left = (int)MathUtils.Clamp(0, whole.Width, rect.Left * dpi.X);
+            rect.Right = (int)MathUtils.Clamp(0, whole.Width, rect.Right * dpi.X);
 
             if (rect.Width < 0) Debugger.Break();
 

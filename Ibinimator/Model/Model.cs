@@ -5,7 +5,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Windows;
 
 namespace Ibinimator.Model
 {
@@ -35,45 +34,30 @@ namespace Ibinimator.Model
 
         public void RaisePropertyChanged(string propertyName)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void RaisePropertyChanged<T>(Expression<Func<T>> propertyLambda)
         {
             string propertyName = GetPropertyInfo(propertyLambda).Name;
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            });
+            RaisePropertyChanged(propertyName);
         }
 
         public void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanged?.Invoke(sender, args);
-            });
+            PropertyChanged?.Invoke(sender, args);
         }
 
         public void RaisePropertyChanging(string propertyName)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
-            });
+            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
         }
 
         public void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
         {
             string propertyName = GetPropertyInfo(propertyLambda).Name;
 
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
-            });
+            RaisePropertyChanging(propertyName);
         }
 
         public void Set<T>(T value, [CallerMemberName] string propertyName = "")

@@ -139,7 +139,7 @@ namespace Ibinimator.ViewModel
             r.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 1f, 1f) };
             r.StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 1f, 1f, 1f) };
             r.StrokeWidth = 5;
-            r.Rotation = SharpDX.MathUtil.Pi/3;
+            //r.Rotation = SharpDX.MathUtil.Pi/3;
 
             var r2 = new Rectangle();
             r2.X = 200;
@@ -148,6 +148,8 @@ namespace Ibinimator.ViewModel
             r2.Height = 100;
             r2.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 0.5f, 1f, 1f) };
             r2.Rotation = SharpDX.MathUtil.Pi / 2;
+
+            l.Position = new SharpDX.Vector2(100, 100);
 
             Root.Add(l);
 

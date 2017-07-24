@@ -129,16 +129,19 @@
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
+    <Compile Include="Shared\TupleUtils.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\Control\AlphaHitTestImage.cs" />
     <Compile Include="View\Control\ArtView.cs" />
+    <Compile Include="View\Control\CacheHelper.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
     <Compile Include="View\Control\HSLWheel.xaml.cs">
       <DependentUpon>HSLWheel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Control\SelectionHelper.cs" />
     <Compile Include="View\Control\TestD2DImage.cs" />
     <Compile Include="View\Control\VectorIcon.cs" />
     <Compile Include="View\Helper.cs" />
