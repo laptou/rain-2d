@@ -5,14 +5,7 @@ using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
-
-using System;
-
 using System.Collections;
-
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using System.Windows;
 using System.Diagnostics;
 using System.ComponentModel;
@@ -107,7 +100,7 @@ namespace Ibinimator.View.Control
         public Bitmap GetBitmap(string key) => bitmaps[key];
 
         public RectangleF GetBounds(Model.Layer layer) =>
-            Get(bounds, layer, l => l.GetTransformedBounds());
+            Get(bounds, layer, l => l.GetAbsoluteBounds());
 
         public Brush GetBrush(string key) => brushes[key];
 
@@ -216,7 +209,7 @@ namespace Ibinimator.View.Control
                             break;
 
                         case nameof(Model.Layer.Transform):
-                            bounds[layer] = layer.GetTransformedBounds();
+                            bounds[layer] = layer.GetAbsoluteBounds();
 
                             InvalidateLayer(layer);
                             break;

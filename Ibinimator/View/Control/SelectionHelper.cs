@@ -168,7 +168,6 @@ namespace Ibinimator.View.Control
                     // because 0 x 0 = 0
                     scale.X = MathUtils.AbsMax(0.001f, scale.X);
                     scale.Y = MathUtils.AbsMax(0.001f, scale.Y);
-                    // scale = new Vector2(1.1f, 1.2f);
 
                     if (scale.X < 0)
                     {
@@ -241,16 +240,22 @@ namespace Ibinimator.View.Control
                             if (rotate != 0)
                                 layer.Rotation += rotate;
 
-                            var localScale = MathUtils.Rotate(scale, layer.Rotation - selectionRotation);
+                            var localScale = MathUtils.Rotate(scale, Vector2.One, selectionRotation - layer.Rotation);
 
-                            var offset = MathUtils.Rotate((bounds.Center - origin) * (Vector2.One - localScale), layer.Rotation);
+                            var offset = -MathUtils.Rotate((bounds.Center - origin) * (Vector2.One - scale), layer.Rotation);
 
                             if (localScale != Vector2.One)
                                 layer.Scale *= localScale;
 
-                            var newBounds = layer.GetTransformedBounds();
+                            layer.UpdateTransform();
 
-                            layer.Position += translate - offset + (bounds.Center - newBounds.Center);
+                            var newBounds = layer.GetAbsoluteBounds();
+
+                            var roffset = MathUtils.Rotate(bounds.Center, origin, rotate) - newBounds.Center;
+
+                            layer.Position += translate + offset + roffset;
+
+                            layer.UpdateTransform();
                         }
                     }
 
@@ -364,7 +369,7 @@ namespace Ibinimator.View.Control
                     target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
                 }
 
-                RectangleF rect = layer.GetUnrotatedBounds();
+                RectangleF rect = layer.GetBounds();
 
                 target.Transform *= rotation;
 
@@ -380,15 +385,15 @@ namespace Ibinimator.View.Control
                 foreach (var layer in Selection)
                     if (layer is Model.Shape shape)
                     {
-                        target.Transform *= shape.Parent.AbsoluteTransform;
-                        target.DrawGeometry(ArtView.Cache.GetGeometry(shape), fill, 1f / target.Transform.M11);
-                        target.Transform *= Matrix3x2.Invert(shape.Parent.AbsoluteTransform);
+                        target.Transform *= shape.AbsoluteTransform;
+                        target.DrawGeometry(ArtView.Cache.GetGeometry(shape), fill, 1f, selectionStroke);
+                        target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
                     }
 
                 target.Transform *= rotation;
 
                 // draw selection outline
-                target.DrawRectangle(selectionBounds, fill, 1f / MathUtils.GetScale(target.Transform).Length());
+                target.DrawRectangle(selectionBounds, fill, 1f, selectionStroke);
 
                 target.Transform *= Matrix3x2.Invert(rotation);
 

@@ -30,22 +30,29 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds()
         {
-            RectangleF first = SubLayers.FirstOrDefault()?.GetTransformedBounds() ?? RectangleF.Empty;
-
-            float x1 = first.Left, y1 = first.Top, x2 = first.Right, y2 = first.Bottom;
-
-            Parallel.ForEach(SubLayers.Skip(1), layer =>
+            switch (SubLayers.Count)
             {
-                var bounds = layer.GetTransformedBounds();
+                case 0:
+                    return RectangleF.Empty;
+                case 1:
+                    return SubLayers[0].GetAbsoluteBounds();
+                default:
+                    RectangleF first = SubLayers[0].GetRelativeBounds();
 
-                if (bounds.Left < x1) x1 = bounds.Left;
-                if (bounds.Top < y1) y1 = bounds.Top;
-                if (bounds.Right > x2) x2 = bounds.Right;
-                if (bounds.Bottom > y2) y2 = bounds.Bottom;
-            });
+                    float x1 = first.Left, y1 = first.Top, x2 = first.Right, y2 = first.Bottom;
 
-            return new RectangleF(x1, y1, x2 - x1, y2 - y1);
+                    Parallel.ForEach(SubLayers.Skip(1), layer =>
+                    {
+                        var bounds = layer.GetRelativeBounds();
 
+                        if (bounds.Left < x1) x1 = bounds.Left;
+                        if (bounds.Top < y1) y1 = bounds.Top;
+                        if (bounds.Right > x2) x2 = bounds.Right;
+                        if (bounds.Bottom > y2) y2 = bounds.Bottom;
+                    });
+
+                    return new RectangleF(x1, y1, x2 - x1, y2 - y1);
+            }
         }
 
         #endregion Methods
@@ -60,6 +67,7 @@ namespace Ibinimator.Model
         {
             Opacity = 1;
             Scale = Vector2.One;
+            UpdateTransform();
 
             SubLayers.CollectionChanged += OnCollectionChanged;
         }
@@ -94,10 +102,7 @@ namespace Ibinimator.Model
 
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        public Matrix3x2 Transform => 
-            Matrix3x2.Scaling(Scale) * 
-            Matrix3x2.Rotation(Rotation) * 
-            Matrix3x2.Translation(Position);
+        public Matrix3x2 Transform { get => Get<Matrix3x2>(); private set => Set(value); }
 
         public Vector2 Scale { get => Get<Vector2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
 
@@ -144,7 +149,7 @@ namespace Ibinimator.Model
 
             Parallel.ForEach(SubLayers, layer =>
             {
-                var bounds = layer.GetTransformedBounds();
+                var bounds = layer.GetAbsoluteBounds();
 
                 if (bounds.Left < x1) x1 = bounds.Left;
                 if (bounds.Top < y1) y1 = bounds.Top;
@@ -155,7 +160,7 @@ namespace Ibinimator.Model
             return new RectangleF(x1, y1, x2 - x1, y2 - y1);
         }
 
-        public RectangleF GetTransformedBounds()
+        public RectangleF GetAbsoluteBounds()
         {
             var r = MathUtils.Bounds(GetBounds(), AbsoluteTransform);
 
@@ -168,6 +173,14 @@ namespace Ibinimator.Model
 
             return r;
         }
+
+        public RectangleF GetRelativeBounds()
+        {
+            var r = MathUtils.Bounds(GetBounds(), Transform);
+
+            return r;
+        }
+
 
         public virtual Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
         {
@@ -194,6 +207,14 @@ namespace Ibinimator.Model
             {
                 layer.Render(target, helper);
             }
+        }
+
+        public virtual void UpdateTransform()
+        {
+            Transform =
+                Matrix3x2.Scaling(Scale) *
+                Matrix3x2.Rotation(Rotation) *
+                Matrix3x2.Translation(Position);
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

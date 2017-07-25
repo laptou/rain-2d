@@ -110,5 +110,7 @@ namespace Ibinimator.Shared
         public static Vector2 Sqrt(Vector2 v) => new Vector2(AbsSqrt(v.X), AbsSqrt(v.Y));
 
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
+
+        public static Vector2 Sign(Vector2 v) => new Vector2(Math.Sign(v.X), Math.Sign(v.Y));
     }
 }
