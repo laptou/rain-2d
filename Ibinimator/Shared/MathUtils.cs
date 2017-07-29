@@ -109,6 +109,10 @@ namespace Ibinimator.Shared
 
         public static Vector2 Rotate(Vector2 v, Vector2 c, float theta) => Rotate(v - c, theta) + c;
 
+        public static Vector2 ShearX(Vector2 v, float theta) => new Vector2(v.X + (float)Math.Tan(theta) * v.Y, v.Y);
+
+        public static Vector2 ShearX(Vector2 v, Vector2 o, float theta) => ShearX(v - o, theta) + o;
+
         public static Vector2 Scale(Vector2 v, Vector2 c, Vector2 s) => (v - c) * s + c;
 
         public static Vector2 UnitVector(float angle) => new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));

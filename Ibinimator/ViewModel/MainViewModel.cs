@@ -121,34 +121,40 @@ namespace Ibinimator.ViewModel
 
             var l = new Group();
 
-            var e = new Ellipse();
-            e.X = 100;
-            e.Y = 100;
-            e.RadiusX = 50;
-            e.RadiusY = 50;
-            e.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 1f, 0, 1f) };
-            e.StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 0, 1f) };
-            e.StrokeWidth = 5;
-            e.Rotation = SharpDX.MathUtil.Pi;
+            var e = new Ellipse()
+            {
+                X = 100,
+                Y = 100,
+                RadiusX = 50,
+                RadiusY = 50,
+                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 1f, 0, 1f) },
+                StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 0, 1f) },
+                StrokeWidth = 5,
+                Rotation = SharpDX.MathUtil.Pi
+            };
             e.UpdateTransform();
 
-            var r = new Rectangle();
-            r.X = 150;
-            r.Y = 150;
-            r.Width = 100;
-            r.Height = 100;
-            r.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 1f, 1f) };
-            r.StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 1f, 1f, 1f) };
-            r.StrokeWidth = 5;
+            var r = new Rectangle()
+            {
+                X = 150,
+                Y = 150,
+                Width = 100,
+                Height = 100,
+                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 1f, 1f) },
+                StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 1f, 1f, 1f) },
+                StrokeWidth = 5
+            };
             r.UpdateTransform();
 
-            var r2 = new Rectangle();
-            r2.X = 200;
-            r2.Y = 200;
-            r2.Width = 100;
-            r2.Height = 100;
-            r2.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 0.5f, 1f, 1f) };
-            r2.Rotation = SharpDX.MathUtil.Pi / 4;
+            var r2 = new Rectangle()
+            {
+                X = 200,
+                Y = 200,
+                Width = 100,
+                Height = 100,
+                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 0.5f, 1f, 1f) },
+                Rotation = SharpDX.MathUtil.Pi / 4
+            };
             r2.UpdateTransform();
 
             l.Position = new SharpDX.Vector2(100, 100);

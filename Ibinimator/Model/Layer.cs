@@ -169,7 +169,7 @@ namespace Ibinimator.Model
             return r;
         }
 
-        public RectangleF GetUnrotatedBounds()
+        public RectangleF GetAxisAlignedBounds()
         {
             var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(Scale) * Matrix3x2.Translation(Position) * WorldTransform);
 
