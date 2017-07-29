@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator", "Ibinimator\Ibinimator.csproj", "{60561D00-30FE-4CE1-B598-D7CAEA9DC388}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Test", "Ibinimator.Test\Ibinimator.Test.csproj", "{7314B044-4843-4F01-9CBF-31E6F84CF7B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{60561D00-30FE-4CE1-B598-D7CAEA9DC388}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60561D00-30FE-4CE1-B598-D7CAEA9DC388}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60561D00-30FE-4CE1-B598-D7CAEA9DC388}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7314B044-4843-4F01-9CBF-31E6F84CF7B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7314B044-4843-4F01-9CBF-31E6F84CF7B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7314B044-4843-4F01-9CBF-31E6F84CF7B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7314B044-4843-4F01-9CBF-31E6F84CF7B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

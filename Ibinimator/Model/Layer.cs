@@ -94,9 +94,9 @@ namespace Ibinimator.Model
 
         public Layer Parent { get => Get<Layer>(); set => Set(value); }
 
-        public Vector2 Position { get => Get<Vector2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
+        public Vector2 Position { get => Get<Vector2>(); set { Set(value); } }
 
-        public float Rotation { get => Get<float>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
+        public float Rotation { get => Get<float>(); set { Set(value); } }
 
         public bool Selected { get => Get<bool>(); set => Set(value); }
 
@@ -104,7 +104,9 @@ namespace Ibinimator.Model
 
         public Matrix3x2 Transform { get => Get<Matrix3x2>(); private set => Set(value); }
 
-        public Vector2 Scale { get => Get<Vector2>(); set { Set(value); RaisePropertyChanged(nameof(Transform)); } }
+        public Vector2 Scale { get => Get<Vector2>(); set { Set(value); } }
+
+        public float Shear { get => Get<float>(); set { Set(value); } }
 
         public virtual float Width { get => Get<float>(); set => Set(value); }
 
@@ -213,6 +215,7 @@ namespace Ibinimator.Model
         {
             Transform =
                 Matrix3x2.Scaling(Scale) *
+                Matrix3x2.Skew(0, Shear) *
                 Matrix3x2.Rotation(Rotation) *
                 Matrix3x2.Translation(Position);
         }

@@ -148,7 +148,7 @@ namespace Ibinimator.ViewModel
             r2.Width = 100;
             r2.Height = 100;
             r2.FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 0.5f, 1f, 1f) };
-            r2.Rotation = SharpDX.MathUtil.Pi / 2;
+            r2.Rotation = SharpDX.MathUtil.Pi / 4;
             r2.UpdateTransform();
 
             l.Position = new SharpDX.Vector2(100, 100);

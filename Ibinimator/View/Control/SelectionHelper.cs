@@ -17,6 +17,7 @@ namespace Ibinimator.View.Control
         public RectangleF selectionBounds;
         public RectangleF selectionBox;
         public float selectionRotation;
+        public float selectionShear;
         private Vector2? lastPosition;
         private bool moved;
         private bool selecting;
@@ -115,6 +116,7 @@ namespace Ibinimator.View.Control
                 {
                     Vector2 scale = Vector2.One;
                     Vector2 origin = Vector2.Zero;
+                    Vector2 axis = Vector2.Zero;
                     Vector2 translate = Vector2.Zero;
                     float rotate = 0;
                     Vector2 rpos = Matrix3x2.TransformPoint(Matrix3x2.Rotation(-selectionRotation, selectionBounds.Center), pos);
@@ -122,33 +124,33 @@ namespace Ibinimator.View.Control
                     switch (ResizingHandle)
                     {
                         case ArtViewHandle.Top:
-                            scale = new Vector2(1, -(rpos.Y - selectionBounds.Bottom) / height);
                             origin = new Vector2(selectionBounds.Center.X, selectionBounds.Bottom);
+                            axis = new Vector2(0, 1);
                             break;
 
                         case ArtViewHandle.Bottom:
-                            scale = new Vector2(1, (rpos.Y - selectionBounds.Top) / height);
                             origin = new Vector2(selectionBounds.Center.X, selectionBounds.Top);
+                            axis = new Vector2(0, -1);
                             break;
 
                         case ArtViewHandle.Left:
-                            scale = new Vector2(-(rpos.X - selectionBounds.Right) / width, 1);
                             origin = new Vector2(selectionBounds.Right, selectionBounds.Center.Y);
+                            axis = new Vector2(1, 0);
                             break;
 
                         case ArtViewHandle.Right:
-                            scale = new Vector2((rpos.X - selectionBounds.Left) / width, 1);
                             origin = new Vector2(selectionBounds.Left, selectionBounds.Center.Y);
+                            axis = new Vector2(-1, 0);
                             break;
 
                         case ArtViewHandle.TopRight:
-                            scale = new Vector2((rpos.X - selectionBounds.Left) / width, -(rpos.Y - selectionBounds.Bottom) / height);
                             origin = selectionBounds.BottomLeft;
+                            axis = new Vector2(-1, 1);
                             break;
 
                         case ArtViewHandle.TopLeft:
-                            scale = new Vector2(-(rpos.X - selectionBounds.Right), (rpos.X - selectionBounds.Left) / width);
                             origin = selectionBounds.BottomRight;
+                            axis = new Vector2(-1, 1);
                             break;
 
                         case ArtViewHandle.Translation:
@@ -164,96 +166,103 @@ namespace Ibinimator.View.Control
                             break;
                     }
 
-                    // don't let them scale to 0, otherwise we can't scale back
-                    // because 0 x 0 = 0
-                    scale.X = MathUtils.AbsMax(0.001f, scale.X);
-                    scale.Y = MathUtils.AbsMax(0.001f, scale.Y);
-
-                    if (scale.X < 0)
+                    if (axis != Vector2.Zero)
                     {
-                        switch (ResizingHandle)
+                        origin = MathUtils.Rotate(origin, selectionBounds.Center, selectionRotation);
+                        var crossSection = MathUtils.CrossSection(axis, origin, selectionBounds);
+                        var c = 
+                            crossSection.Item2 - crossSection.Item1 +
+                            Vector2.One - MathUtils.Abs(axis);
+                        axis = Vector2.Normalize(MathUtils.Rotate(axis, selectionRotation));
+                        scale = 
+                            MathUtils.Project(MathUtils.Abs(rpos - origin) * axis, axis) / c +
+                            Vector2.One - MathUtils.Abs(axis);
+
+                        if (float.IsNaN(scale.X) || float.IsNaN(scale.Y)) Debugger.Break();
+
+                        // don't let them scale to 0, otherwise we can't scale back
+                        // because 0 x 0 = 0
+                        scale.X = MathUtils.AbsMax(0.001f, scale.X);
+                        scale.Y = MathUtils.AbsMax(0.001f, scale.Y);
+
+                        if (scale.X < 0)
                         {
-                            case ArtViewHandle.TopLeft:
-                                ResizingHandle = ArtViewHandle.TopRight;
-                                break;
+                            switch (ResizingHandle)
+                            {
+                                case ArtViewHandle.TopLeft:
+                                    ResizingHandle = ArtViewHandle.TopRight;
+                                    break;
 
-                            case ArtViewHandle.TopRight:
-                                ResizingHandle = ArtViewHandle.TopLeft;
-                                break;
+                                case ArtViewHandle.TopRight:
+                                    ResizingHandle = ArtViewHandle.TopLeft;
+                                    break;
 
-                            case ArtViewHandle.Left:
-                                ResizingHandle = ArtViewHandle.Right;
-                                break;
+                                case ArtViewHandle.Left:
+                                    ResizingHandle = ArtViewHandle.Right;
+                                    break;
 
-                            case ArtViewHandle.Right:
-                                ResizingHandle = ArtViewHandle.Left;
-                                break;
+                                case ArtViewHandle.Right:
+                                    ResizingHandle = ArtViewHandle.Left;
+                                    break;
 
-                            case ArtViewHandle.BottomLeft:
-                                ResizingHandle = ArtViewHandle.BottomRight;
-                                break;
+                                case ArtViewHandle.BottomLeft:
+                                    ResizingHandle = ArtViewHandle.BottomRight;
+                                    break;
 
-                            case ArtViewHandle.BottomRight:
-                                ResizingHandle = ArtViewHandle.BottomLeft;
-                                break;
+                                case ArtViewHandle.BottomRight:
+                                    ResizingHandle = ArtViewHandle.BottomLeft;
+                                    break;
+                            }
+                        }
+
+                        if (scale.Y < 0)
+                        {
+                            switch (ResizingHandle)
+                            {
+                                case ArtViewHandle.TopLeft:
+                                    ResizingHandle = ArtViewHandle.BottomLeft;
+                                    break;
+
+                                case ArtViewHandle.TopRight:
+                                    ResizingHandle = ArtViewHandle.BottomRight;
+                                    break;
+
+                                case ArtViewHandle.Top:
+                                    ResizingHandle = ArtViewHandle.Bottom;
+                                    break;
+
+                                case ArtViewHandle.Bottom:
+                                    ResizingHandle = ArtViewHandle.Top;
+                                    break;
+
+                                case ArtViewHandle.BottomLeft:
+                                    ResizingHandle = ArtViewHandle.TopLeft;
+                                    break;
+
+                                case ArtViewHandle.BottomRight:
+                                    ResizingHandle = ArtViewHandle.TopRight;
+                                    break;
+                            }
                         }
                     }
+                    // if (scale.X > 2 || scale.Y > 2) Debugger.Break();
 
-                    if (scale.Y < 0)
-                    {
-                        switch (ResizingHandle)
-                        {
-                            case ArtViewHandle.TopLeft:
-                                ResizingHandle = ArtViewHandle.BottomLeft;
-                                break;
-
-                            case ArtViewHandle.TopRight:
-                                ResizingHandle = ArtViewHandle.BottomRight;
-                                break;
-
-                            case ArtViewHandle.Top:
-                                ResizingHandle = ArtViewHandle.Bottom;
-                                break;
-
-                            case ArtViewHandle.Bottom:
-                                ResizingHandle = ArtViewHandle.Top;
-                                break;
-
-                            case ArtViewHandle.BottomLeft:
-                                ResizingHandle = ArtViewHandle.TopLeft;
-                                break;
-
-                            case ArtViewHandle.BottomRight:
-                                ResizingHandle = ArtViewHandle.TopRight;
-                                break;
-                        }
-                    }
-
-                    Matrix3x2 translateMat = Matrix3x2.Translation(translate);
+                    Matrix3x2 transform = 
+                        Matrix3x2.Scaling(scale.X, scale.Y, origin) * 
+                        Matrix3x2.Rotation(rotate, origin) *
+                        Matrix3x2.Translation(translate);
 
                     foreach (var layer in Selection)
                     {
                         lock (layer)
                         {
-                            var bounds = ArtView.Cache.GetBounds(layer);
+                            var layerTransform = layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
+                            var delta = layerTransform.Decompose();
 
-                            if (rotate != 0)
-                                layer.Rotation += rotate;
-
-                            var localScale = MathUtils.Rotate(scale, Vector2.One, selectionRotation - layer.Rotation);
-
-                            var offset = -MathUtils.Rotate((bounds.Center - origin) * (Vector2.One - scale), layer.Rotation);
-
-                            if (localScale != Vector2.One)
-                                layer.Scale *= localScale;
-
-                            layer.UpdateTransform();
-
-                            var newBounds = layer.GetAbsoluteBounds();
-
-                            var roffset = MathUtils.Rotate(bounds.Center, origin, rotate) - newBounds.Center;
-
-                            layer.Position += translate + offset + roffset;
+                            layer.Scale = delta.scale;
+                            layer.Rotation = delta.rotation;
+                            layer.Position = delta.translation;
+                            layer.Shear = delta.skew;
 
                             layer.UpdateTransform();
                         }
@@ -431,11 +440,12 @@ namespace Ibinimator.View.Control
                     selectionBounds = Selection[0].GetUnrotatedBounds();
 
                     if (reset)
+                    {
                         selectionRotation = Selection[0].Rotation;
+                        selectionShear = Selection[0].Shear;
+                    }
 
-                    var delta =
-                        ArtView.Cache.GetBounds(Selection[0]).Center -
-                        selectionBounds.Center;
+                    var delta = MathUtils.Rotate(selectionBounds.Center, selectionBounds.TopLeft, selectionRotation) - selectionBounds.Center;
 
                     selectionBounds.Offset(delta);
                     break;
@@ -457,7 +467,10 @@ namespace Ibinimator.View.Control
                     selectionBounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
 
                     if (reset)
+                    {
                         selectionRotation = 0;
+                        selectionShear = 0;
+                    }
                     break;
             }
 

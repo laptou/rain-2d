@@ -222,10 +222,11 @@ namespace Ibinimator.View.Control
             if (RenderMode == RenderMode.Constant || invalidated)
             {
                 await Task.Run((Action)PrepareAndCallRender);
-                
+
+                Int32Rect rect;
                 surface.Lock();
                 while (dirty.Count > 0)
-                    surface.AddDirtyRect(dirty.Pop());
+                    surface.AddDirtyRect(rect = dirty.Pop());
                 surface.Unlock();
 
                 lastRenderTime = renderTimer.ElapsedMilliseconds;
@@ -310,9 +311,9 @@ namespace Ibinimator.View.Control
             var dpi = new Vector2(x: d2DRenderTarget.DotsPerInch.Width, y: d2DRenderTarget.DotsPerInch.Height) / new Vector2(96);
 
             rect.Top = (int)MathUtils.Clamp(0, whole.Height, rect.Top * dpi.Y);
-            rect.Bottom = (int)MathUtils.Clamp(0, whole.Height, rect.Bottom * dpi.Y);
+            rect.Bottom = (int)MathUtils.Clamp(rect.Top, whole.Height, rect.Bottom * dpi.Y);
             rect.Left = (int)MathUtils.Clamp(0, whole.Width, rect.Left * dpi.X);
-            rect.Right = (int)MathUtils.Clamp(0, whole.Width, rect.Right * dpi.X);
+            rect.Right = (int)MathUtils.Clamp(rect.Left, whole.Width, rect.Right * dpi.X);
 
             if (rect.Width < 0) Debugger.Break();
 
