@@ -250,27 +250,27 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="H"/></TextBlock>
                                     <Slider Grid.Column="1" Value="{Binding Hue, Mode=TwoWay}" Maximum="360" LargeChange="10" SmallChange="1" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat=\{0:F0\}°}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Text="{Binding Hue, Mode=TwoWay, StringFormat=\{0:F0\}°}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
 
                                     <TextBlock Grid.Row="1" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="S"/></TextBlock>
                                     <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Saturation, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Saturation, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
 
                                     <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="L"/></TextBlock>
                                     <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Lightness, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding Lightness, Converter={StaticResource PercentageConverter}, Mode=TwoWay}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
 
                                     <TextBlock Grid.Row="3" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="R"/></TextBlock>
                                     <Slider Grid.Column="1" Grid.Row="3" Value="{Binding Red, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Red, Mode=TwoWay, StringFormat=\{0:F2\}}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
 
                                     <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="G"/></TextBlock>
                                     <Slider Grid.Column="1" Grid.Row="4" Value="{Binding Green, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding Green, Mode=TwoWay, StringFormat=\{0:F2\}}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
 
                                     <TextBlock Grid.Row="5" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="B"/></TextBlock>
                                     <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Blue, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                    <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Blue, Mode=TwoWay, StringFormat=\{0:F2\}}" Background="Transparent" BorderThickness="0,0,0,1" Margin="0" />
                                 </Grid>
 
                                 <DockPanel Margin="0,5,10,5" Grid.Row="1" Height="25" Grid.Column="1">
@@ -406,7 +406,7 @@
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A3Brush}" Grid.Row="2">
                     <TabItem Header="Transform" DataContext="{Binding TransformPicker}">
-                        <Grid Margin="8,0">
+                        <Grid Margin="8,0,8,8">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*"/>
                                 <RowDefinition Height="1*"/>
@@ -419,19 +419,19 @@
                                 <ColumnDefinition Width="3*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">X:</TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="1" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding X, StringFormat={}{0:N1} px}"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">Y:</TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="1" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Y, StringFormat={}{0:N1} px}"/>
 
                             <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">W:</TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="3" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Width, StringFormat={}{0:N1} px}"/>
                             <TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">H:</TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="3" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Height, StringFormat={}{0:N1} px}"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">R:</TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="1" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Rotation, StringFormat={}{0:N1}&#176;}"/>
                             <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">S:</TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="3" Background="Transparent" Margin="0,8" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Height="25" />
+                            <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding Shear, StringFormat={}{0:N1}&#176;}"/>
                         </Grid>
                     </TabItem>
                     <TabItem Header="History" />

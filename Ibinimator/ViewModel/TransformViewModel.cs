@@ -17,32 +17,21 @@ namespace Ibinimator.ViewModel
 
                 parent.PropertyChanged += (s, e) =>
                 {
-                    if(e.PropertyName == nameof(SelectionManager) && parent.SelectionManager != null)
-                        parent.SelectionManager.PropertyChanged += SelectionManagerPropertyChanged;
+                    if (e.PropertyName == nameof(SelectionManager) && parent.SelectionManager != null)
+                    {
+                        parent.SelectionManager.Updated += (t, f) =>
+                        {
+                            RaisePropertyChanged(nameof(X));
+                            RaisePropertyChanged(nameof(Y));
+                            RaisePropertyChanged(nameof(Width));
+                            RaisePropertyChanged(nameof(Height));
+                            RaisePropertyChanged(nameof(Rotation));
+                            RaisePropertyChanged(nameof(Shear));
+                        };
+                    }
                 };
             }
-
-            private void SelectionManagerPropertyChanged(object sender, PropertyChangedEventArgs e)
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(ISelectionManager.SelectionBounds):
-                        RaisePropertyChanged(nameof(X));
-                        RaisePropertyChanged(nameof(Y));
-                        RaisePropertyChanged(nameof(Width));
-                        RaisePropertyChanged(nameof(Height));
-                        break;
-
-                    case nameof(ISelectionManager.SelectionRotation):
-                        RaisePropertyChanged(nameof(Rotation));
-                        break;
-
-                    case nameof(ISelectionManager.SelectionShear):
-                        RaisePropertyChanged(nameof(Shear));
-                        break;
-                }
-            }
-
+            
             public float X
             {
                 get => parent.SelectionManager?.SelectionBounds.X ?? 0;
@@ -89,23 +78,23 @@ namespace Ibinimator.ViewModel
 
             public float Rotation
             {
-                get => parent.SelectionManager?.SelectionRotation ?? 0;
+                get => MathUtil.RadiansToDegrees(parent.SelectionManager?.SelectionRotation ?? 0);
                 set => parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
-                    value - Rotation,
+                    MathUtil.DegreesToRadians(value - Rotation),
                     0,
                     Vector2.Zero);
             }
 
             public float Shear
             {
-                get => parent.SelectionManager?.SelectionShear ?? 0;
+                get => MathUtil.RadiansToDegrees(parent.SelectionManager?.SelectionShear ?? 0);
                 set => parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
                     0,
-                    value - Shear,
+                    MathUtil.DegreesToRadians(value - Shear),
                     Vector2.Zero);
             }
         }

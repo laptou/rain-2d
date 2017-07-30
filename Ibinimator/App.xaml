@@ -37,6 +37,14 @@
         <SolidColorBrush x:Key="A3Brush" Color="{StaticResource A3}" />
         <SolidColorBrush x:Key="A4Brush" Color="{StaticResource A4}" />
         <SolidColorBrush x:Key="A5Brush" Color="{StaticResource A5}" />
+        <Style x:Key="Icon" TargetType="{x:Type Image}">
+            <Setter Property="Height" Value="19.2" />
+            <Setter Property="Width" Value="19.2" />
+            <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="Fant" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="UseLayoutRounding" Value="True" />
+        </Style>
         <!--#endregion-->
         <!--#endregion-->
 
@@ -74,21 +82,24 @@
         </Style>
         <!--#endregion-->
 
-        <Style x:Key="Icon" TargetType="{x:Type Image}">
-            <Setter Property="Height" Value="19.2" />
-            <Setter Property="Width" Value="19.2" />
-            <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
-            <Setter Property="RenderOptions.BitmapScalingMode" Value="Fant" />
-            <Setter Property="SnapsToDevicePixels" Value="True" />
-            <Setter Property="UseLayoutRounding" Value="True" />
-        </Style>
-
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="{StaticResource T1Brush}" />
         </Style>
 
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="FontFamily" Value="/Ibinimator;component/Resources/Font/#Roboto" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource T2Brush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="Height" Value="25.6" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="{Binding (view:Helper.Accent)}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type ToolBar}">
@@ -163,7 +174,7 @@
                                     BorderThickness="0,0,0,2" Background="{TemplateBinding Background}" Margin="0" Cursor="Hand" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter x:Name="contentPresenter" Content="{TemplateBinding Header}" Focusable="False"
                                                   HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" TextBlock.Foreground="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabPanel}}}"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" TextBlock.Foreground="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}"
                                                   VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
                             </Border>
                         </Grid>
@@ -176,7 +187,7 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                                 <Setter Property="TextBlock.FontWeight" Value="Bold" TargetName="contentPresenter" />
-                                <Setter Property="TextElement.Foreground" Value="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabPanel}}}" />
+                                <Setter Property="TextElement.Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="False">
                                 <Setter Property="BorderThickness" TargetName="mainBorder" Value="0" />

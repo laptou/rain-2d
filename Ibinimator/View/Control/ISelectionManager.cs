@@ -3,6 +3,7 @@ using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 using System.ComponentModel;
+using System;
 
 namespace Ibinimator.View.Control
 {
@@ -15,6 +16,7 @@ namespace Ibinimator.View.Control
         RectangleF SelectionBounds { get; }
         float SelectionRotation { get;}
         float SelectionShear { get; }
+        event EventHandler Updated;
 
         void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin);
         void OnMouseDown(Vector2 pos, Factory factory);

@@ -93,8 +93,24 @@ namespace Ibinimator.View.Control
                         );
             }
 
+            layer.PropertyChanged += OnLayerPropertyChanged;
+
             foreach (var subLayer in layer.SubLayers)
                 BindLayer(subLayer);
+        }
+
+        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var layer = sender as Model.Layer;
+
+            switch (e.PropertyName)
+            {
+                case nameof(Model.Layer.Transform):
+                    bounds[layer] = layer.GetAbsoluteBounds();
+                    break;
+                default:
+                    break;
+            }
         }
 
         public Bitmap GetBitmap(string key) => bitmaps[key];
