@@ -134,14 +134,21 @@
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
+    <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
+    <Compile Include="View\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="View\Control\CacheManager.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
     <Compile Include="View\Control\HSLWheel.xaml.cs">
       <DependentUpon>HSLWheel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Control\ICacheManager.cs" />
+    <Compile Include="View\Control\ISelectionManager.cs" />
+    <Compile Include="View\Control\IViewManager.cs" />
     <Compile Include="View\Control\SelectionManager.cs" />
+    <Compile Include="View\Control\ViewManager.cs" />
+    <Compile Include="View\DataBinder.cs" />
     <Compile Include="View\Helper.cs" />
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
@@ -195,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Service\" />
+    <Folder Include="View\Helper\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icon\Icon.xaml">

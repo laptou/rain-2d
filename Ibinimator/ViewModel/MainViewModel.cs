@@ -21,8 +21,92 @@ namespace Ibinimator.ViewModel
 
         public MainViewModel()
         {
-            Root = new Layer();
-            Root.PropertyChanged += OnLayerPropertyChanged;
+            FillPicker = new FillPickerViewModel(this);
+            TransformPicker = new TransformViewModel(this);
+            SelectLayerCommand = new DelegateCommand(SelectLayer);
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public IViewManager ViewManager { get => Get<IViewManager>(); set => Set(value); }
+
+        public ISelectionManager SelectionManager { get => Get<ISelectionManager>(); set => Set(value); }
+
+        public FillPickerViewModel FillPicker { get; }
+
+        public TransformViewModel TransformPicker { get; }
+
+        public ObservableCollection<Layer> Selection { get; } = new ObservableCollection<Layer>();
+
+        public DelegateCommand SelectLayerCommand { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is Layer layer)
+            {
+                if (e.PropertyName == nameof(Layer.Selected))
+                {
+                    var contains = Selection.Contains(layer);
+
+                    if (layer.Selected && !contains)
+                        Selection.Add(layer);
+                    else if (!layer.Selected && contains)
+                        Selection.Remove(layer);
+                }
+            }
+            else throw new ArgumentException("What?!");
+        }
+
+        private void SelectLayer(object param)
+        {
+            if (param is Layer layer)
+            {
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                {
+                    layer.Selected = !layer.Selected;
+                }
+                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                {
+                    if (Selection.Count > 0)
+                    {
+                        bool inRange = false;
+
+                        foreach (var l in Selection[0].Parent.SubLayers)
+                        {
+                            if (inRange)
+                            {
+                                l.Selected = inRange;
+                            }
+
+                            if (l == layer || l == Selection[0])
+                            {
+                                inRange = !inRange;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // use a while loop so that we don't get 'collection modified' exceptions
+                    while (Selection.Count > 0)
+                        Selection[0].Selected = false;
+
+                    layer.Selected = true;
+                }
+            }
+            else throw new ArgumentException(nameof(param));
+        }
+
+        public void Load()
+        {
+            ViewManager.Root = new Layer();
+            ViewManager.Root.PropertyChanged += OnLayerPropertyChanged;
 
             var l = new Group();
 
@@ -65,92 +149,11 @@ namespace Ibinimator.ViewModel
             l.Position = new SharpDX.Vector2(100, 100);
             l.UpdateTransform();
 
-            Root.Add(l);
+            ViewManager.Root.Add(l);
 
             l.Add(e);
             l.Add(r);
             l.Add(r2);
-
-            Zoom = 1;
-
-            SelectLayerCommand = new DelegateCommand(OnSelectLayer);
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public ArtView ArtView { get; set; }
-
-        public Layer Root { get => Get<Layer>(); set => Set(value); }
-
-        public FillPickerViewModel FillPicker { get; } = new FillPickerViewModel();
-
-        public ObservableCollection<Layer> Selection { get; } = new ObservableCollection<Layer>();
-
-        public DelegateCommand SelectLayerCommand { get; }
-
-        public float Zoom { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
-
-        #region Methods
-
-        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Layer layer)
-            {
-                if (e.PropertyName == nameof(Layer.Selected))
-                {
-                    var contains = Selection.Contains(layer);
-
-                    if (layer.Selected && !contains)
-                        Selection.Add(layer);
-                    else if (!layer.Selected && contains)
-                        Selection.Remove(layer);
-                }
-            }
-            else throw new ArgumentException("What?!");
-        }
-
-        private void OnSelectLayer(object param)
-        {
-            if (param is Layer layer)
-            {
-                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                {
-                    layer.Selected = !layer.Selected;
-                }
-                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                {
-                    if (Selection.Count > 0)
-                    {
-                        bool inRange = false;
-
-                        foreach (var l in Selection[0].Parent.SubLayers)
-                        {
-                            if (inRange)
-                            {
-                                l.Selected = inRange;
-                            }
-
-                            if (l == layer || l == Selection[0])
-                            {
-                                inRange = !inRange;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // use a while loop so that we don't get 'collection modified' exceptions
-                    while (Selection.Count > 0)
-                        Selection[0].Selected = false;
-
-                    layer.Selected = true;
-                }
-            }
-            else throw new ArgumentException(nameof(param));
         }
 
         #endregion Methods

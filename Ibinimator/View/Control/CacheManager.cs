@@ -12,7 +12,7 @@ using System.ComponentModel;
 
 namespace Ibinimator.View.Control
 {
-    public class CacheManager : Model.Model
+    public class CacheManager : Model.Model, ICacheManager
     {
         #region Fields
 
@@ -143,14 +143,28 @@ namespace Ibinimator.View.Control
             }
         }
 
-        public void Reset()
+        public void ResetAll()
         {
+            ResetLayerCache();
+
             lock (brushes)
             {
                 foreach (var (name, brush) in brushes.AsTuples())
                     brush?.Dispose();
                 brushes.Clear();
+            }
 
+            lock (bitmaps)
+            {
+                foreach (var (name, bitmap) in bitmaps.AsTuples()) bitmap?.Dispose();
+                bitmaps.Clear();
+            }
+        }
+
+        public void ResetLayerCache()
+        {
+            lock (brushBindings)
+            {
                 foreach (var (brushInfo, (shape, brush)) in brushBindings.AsTuples())
                 {
                     brushInfo.PropertyChanged -= OnBrushPropertyChanged;
@@ -165,20 +179,14 @@ namespace Ibinimator.View.Control
                 geometries.Clear();
             }
 
-            lock (bitmaps)
-            {
-                foreach (var (name, bitmap) in bitmaps.AsTuples()) bitmap?.Dispose();
-                bitmaps.Clear();
-            }
-
             lock (fills)
             {
                 foreach (var (layer, fill) in fills.AsTuples()) fill?.Dispose();
                 fills.Clear();
             }
 
-            lock(strokes)
-            { 
+            lock (strokes)
+            {
                 foreach (var (layer, (stroke, width, style)) in strokes.AsTuples())
                 {
                     stroke?.Dispose();

@@ -21,23 +21,18 @@ namespace Ibinimator.View.Control
 
     public class ArtView : D2DImage
     {
-        #region Fields
 
-        public static readonly DependencyProperty RootProperty =
-            DependencyProperty.Register("Root", typeof(Model.Layer), typeof(ArtView), new PropertyMetadata(null, OnRootChanged));
+        #region Fields
 
         public static readonly DependencyProperty SelectionProperty =
             DependencyProperty.Register("Selection", typeof(IList<Model.Layer>), typeof(ArtView), new PropertyMetadata(OnSelectionChanged));
 
-        public static readonly DependencyProperty ZoomProperty =
-            DependencyProperty.Register("Zoom", typeof(float), typeof(ArtView), new PropertyMetadata(1f, OnZoomChanged));
-
-        internal CacheManager CacheManager;
-        internal SelectionManager SelectionManager;
+        internal ICacheManager CacheManager;
+        internal ISelectionManager SelectionManager;
+        internal IViewManager ViewManager;
 
         private Factory factory;
         private RenderTarget renderTarget;
-        private Matrix3x2 viewTransform = Matrix3x2.Identity;
 
         #endregion Fields
 
@@ -50,24 +45,14 @@ namespace Ibinimator.View.Control
 
             SelectionManager = new SelectionManager(this);
             CacheManager = new CacheManager(this);
+            ViewManager = new ViewManager(this);
 
             Unloaded += OnUnloaded;
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            CacheManager.Reset();
         }
 
         #endregion Constructors
 
         #region Properties
-
-        public Model.Layer Root
-        {
-            get { return (Model.Layer)GetValue(RootProperty); }
-            set { SetValue(RootProperty, value); }
-        }
 
         public IList<Model.Layer> Selection
         {
@@ -75,13 +60,7 @@ namespace Ibinimator.View.Control
             set { SetValue(SelectionProperty, value); }
         }
 
-        public float Zoom
-        {
-            get { return (float)GetValue(ZoomProperty); }
-            set { SetValue(ZoomProperty, value); }
-        }
-
-        internal RenderTarget RenderTarget => renderTarget;
+        public RenderTarget RenderTarget => renderTarget;
 
         #endregion Properties
 
@@ -92,15 +71,7 @@ namespace Ibinimator.View.Control
             if (area == null)
                 base.InvalidateSurface(null);
             else
-            {
-                Rectangle rect = area.Value.Round();
-                rect.X = (int)(rect.X * viewTransform.ScaleVector.X + viewTransform.TranslationVector.X);
-                rect.Y = (int)(rect.Y * viewTransform.ScaleVector.Y + viewTransform.TranslationVector.Y);
-                rect.Width = (int)(rect.Width * viewTransform.ScaleVector.X);
-                rect.Height = (int)(rect.Height * viewTransform.ScaleVector.Y);
-
-                base.InvalidateSurface(rect);
-            }
+                base.InvalidateSurface(ViewManager.FromArtSpace(area.Value).Round());
         }
 
         protected override async void OnLostFocus(RoutedEventArgs e)
@@ -117,7 +88,7 @@ namespace Ibinimator.View.Control
             CaptureMouse();
 
             var pos1 = e.GetPosition(this);
-            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
+            var pos = ViewManager.ToArtSpace(new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => SelectionManager.OnMouseDown(pos, factory));
         }
@@ -127,9 +98,14 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseMove(e);
 
             var pos1 = e.GetPosition(this);
-            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
+            var pos = ViewManager.ToArtSpace(new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => SelectionManager.OnMouseMove(pos, factory));
+
+            if (SelectionManager.Cursor != null)
+                Cursor = Cursors.None;
+            else
+                Cursor = Cursors.Arrow;
         }
 
         protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
@@ -139,7 +115,7 @@ namespace Ibinimator.View.Control
             ReleaseMouseCapture();
 
             var pos1 = e.GetPosition(this);
-            var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
+            var pos = ViewManager.ToArtSpace(new Vector2((float)pos1.X, (float)pos1.Y));
 
             await Task.Run(() => SelectionManager.OnMouseUp(pos, factory));
         }
@@ -148,10 +124,14 @@ namespace Ibinimator.View.Control
         {
             float scale = 1 + e.Delta / 500f;
             var pos1 = e.GetPosition(this);
-            var pos = (new Vector2((float)pos1.X, (float)pos1.Y) - viewTransform.TranslationVector) / viewTransform.ScaleVector;
+            var pos = ViewManager.ToArtSpace(new Vector2((float)pos1.X, (float)pos1.Y));
 
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-                viewTransform *= Matrix3x2.Scaling(scale, scale, pos);
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                ViewManager.Zoom *= scale;
+            else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                ViewManager.Pan += new Vector2(e.Delta / 100f, 0);
+            else
+                ViewManager.Pan += new Vector2(0, e.Delta / 100f);
 
             InvalidateSurface(null);
 
@@ -163,10 +143,12 @@ namespace Ibinimator.View.Control
             factory = target.Factory;
             renderTarget = target;
 
-            CacheManager.Reset();
+            CacheManager.ResetAll();
             CacheManager.LoadBrushes(target);
             CacheManager.LoadBitmaps(target);
-            CacheManager.BindLayer(Root);
+
+            if(ViewManager.Root != null)
+                CacheManager.BindLayer(ViewManager.Root);
         }
 
         protected override void Render(RenderTarget target)
@@ -175,18 +157,26 @@ namespace Ibinimator.View.Control
             {
                 target.Clear(Color4.White);
 
-                target.Transform = viewTransform;
+                target.Transform = ViewManager.Transform;
 
-                Dispatcher.Invoke(() => Root).Render(target, CacheManager);
+                ViewManager.Root.Render(target, CacheManager);
 
-                SelectionManager.Render(target, CacheManager.GetBrush("A1"), CacheManager.GetBrush("L1"));
+                SelectionManager.Render(target, CacheManager);
             }
         }
 
         private static void OnRootChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var av = d as ArtView;
-            av.Root.PropertyChanged += av.OnRootPropertyChanged;
+            var newLayer = e.NewValue as Model.Layer;
+            var oldLayer = e.OldValue as Model.Layer;
+            newLayer.PropertyChanged += av.OnRootPropertyChanged;
+            if(oldLayer != null)
+                oldLayer.PropertyChanged -= av.OnRootPropertyChanged;
+
+            av.CacheManager.ResetLayerCache();
+            av.CacheManager.BindLayer(newLayer);
+            av.InvalidateSurface(null);
         }
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -201,12 +191,6 @@ namespace Ibinimator.View.Control
             av.SelectionManager.Update(true);
         }
 
-        private static void OnZoomChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ArtView av = d as ArtView;
-            av.viewTransform.ScaleVector = new Vector2(av.Zoom);
-        }
-
         private void OnRootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             // this event fires whenever any of the layers changes anything, not just the root layer
@@ -219,6 +203,11 @@ namespace Ibinimator.View.Control
         private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
             SelectionManager.Update(true);
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            CacheManager.ResetAll();
         }
 
         #endregion Methods

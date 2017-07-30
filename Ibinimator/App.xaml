@@ -15,6 +15,7 @@
         <Color x:Key="T2">#4B4B4B</Color>
         <!--green-->
         <Color x:Key="A1">#58D432</Color>
+        <Color x:Key="A1-1/2">#9F58D432</Color>
         <!--blue-->
         <Color x:Key="A2">#5BC0EB</Color>
         <!--yellow-->

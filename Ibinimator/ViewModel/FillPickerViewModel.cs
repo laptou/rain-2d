@@ -1,9 +1,11 @@
-﻿using Ibinimator.Shared;
+﻿using Ibinimator.Model;
+using Ibinimator.Shared;
+using Ibinimator.View.Control;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -11,10 +13,16 @@ namespace Ibinimator.ViewModel
 {
     public partial class MainViewModel
     {
+        #region Enums
+
         public enum ColorPickerTarget
         {
             Fill, Stroke
         }
+
+        #endregion Enums
+
+        #region Classes
 
         public class ColorPickerViewModel : ViewModel
         {
@@ -102,39 +110,93 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            #endregion Properties
-
             public ColorPickerTarget Target { get; }
+
+            #endregion Properties
         }
 
         public class FillPickerViewModel : ViewModel
         {
-            ColorPickerTarget pickerTarget = ColorPickerTarget.Fill;
-            ColorPickerViewModel strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
-            ColorPickerViewModel fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
+            #region Fields
 
-            public FillPickerViewModel()
+            private ColorPickerViewModel fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
+            private MainViewModel parent;
+
+            private ColorPickerTarget pickerTarget = ColorPickerTarget.Fill;
+            private ColorPickerViewModel strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
+
+            #endregion Fields
+
+            #region Constructors
+
+            public FillPickerViewModel(MainViewModel parent)
             {
+                this.parent = parent;
+
+                parent.Selection.CollectionChanged += OnSelectionChanged;
+
                 strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
                 fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
             }
+
+            #endregion Constructors
+
+            #region Properties
 
             public ColorPickerViewModel ColorPicker =>
                 pickerTarget == ColorPickerTarget.Fill ?
                 fillPicker : strokePicker;
 
-            private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)
-            {
-                var color = new SharpDX.Color4(
-                    (float)ColorPicker.Red,
-                    (float)ColorPicker.Green,
-                    (float)ColorPicker.Blue,
-                    (float)ColorPicker.Alpha);
-            }
-
             public Brush FillBrush { get => Get<Brush>(); set => Set(value); }
 
             public Brush StrokeBrush { get => Get<Brush>(); set => Set(value); }
+
+            #endregion Properties
+
+            #region Methods
+
+            private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)
+            {
+                var picker = sender as ColorPickerViewModel;
+
+                if (picker.Target == ColorPickerTarget.Fill)
+                {
+                    FillBrush = new SolidColorBrush(picker.Color);
+                    foreach (var layer in parent.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                        if (layer is Shape shape)
+                            if (shape.FillBrush?.BrushType == BrushType.Color)
+                                shape.FillBrush.Color = picker.Color.ToDirectX();
+                            else
+                                shape.FillBrush =
+                                    new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
+                }
+                else
+                {
+                    StrokeBrush = new SolidColorBrush(picker.Color);
+                    foreach (var layer in parent.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                        if (layer is Shape shape)
+                            if (shape.StrokeBrush?.BrushType == BrushType.Color)
+                                shape.StrokeBrush.Color = picker.Color.ToDirectX();
+                            else
+                                shape.StrokeBrush =
+                                    new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
+                }
+            }
+
+            private void OnSelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                var layer = parent.SelectionManager.Selection.LastOrDefault();
+
+                if (layer is Shape shape)
+                {
+                    FillBrush = shape.FillBrush?.ToWPF();
+                    StrokeBrush = shape.StrokeBrush?.ToWPF();
+                }
+            }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

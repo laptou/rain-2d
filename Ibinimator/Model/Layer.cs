@@ -203,9 +203,9 @@ namespace Ibinimator.Model
             SubLayers.Remove(child);
         }
 
-        public virtual void Render(RenderTarget target, CacheManager helper)
+        public virtual void Render(RenderTarget target, ICacheManager helper)
         {
-            foreach (var layer in SubLayers)
+            foreach (var layer in SubLayers.Reverse())
             {
                 layer.Render(target, helper);
             }
