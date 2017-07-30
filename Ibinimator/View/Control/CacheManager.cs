@@ -12,7 +12,7 @@ using System.ComponentModel;
 
 namespace Ibinimator.View.Control
 {
-    public class CacheHelper : Model.Model
+    public class CacheManager : Model.Model
     {
         #region Fields
 
@@ -30,7 +30,7 @@ namespace Ibinimator.View.Control
 
         #region Constructors
 
-        public CacheHelper(ArtView artView)
+        public CacheManager(ArtView artView)
         {
             ArtView = artView;
         }

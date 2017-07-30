@@ -27,13 +27,14 @@ namespace Ibinimator.View.Control
             DependencyProperty.Register("Root", typeof(Model.Layer), typeof(ArtView), new PropertyMetadata(null, OnRootChanged));
 
         public static readonly DependencyProperty SelectionProperty =
-            DependencyProperty.Register("Selection", typeof(IEnumerable<Model.Layer>), typeof(ArtView), new PropertyMetadata(OnSelectionChanged));
+            DependencyProperty.Register("Selection", typeof(IList<Model.Layer>), typeof(ArtView), new PropertyMetadata(OnSelectionChanged));
 
         public static readonly DependencyProperty ZoomProperty =
             DependencyProperty.Register("Zoom", typeof(float), typeof(ArtView), new PropertyMetadata(1f, OnZoomChanged));
 
-        internal CacheHelper Cache;
-        internal SelectionHelper SelectionHelper;
+        internal CacheManager CacheManager;
+        internal SelectionManager SelectionManager;
+
         private Factory factory;
         private RenderTarget renderTarget;
         private Matrix3x2 viewTransform = Matrix3x2.Identity;
@@ -47,15 +48,15 @@ namespace Ibinimator.View.Control
             RenderMode = RenderMode.Manual;
             RenderTargetBound += OnRenderTargetBound;
 
-            SelectionHelper = new SelectionHelper(this);
-            Cache = new CacheHelper(this);
+            SelectionManager = new SelectionManager(this);
+            CacheManager = new CacheManager(this);
 
             Unloaded += OnUnloaded;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            Cache.Reset();
+            CacheManager.Reset();
         }
 
         #endregion Constructors
@@ -68,7 +69,6 @@ namespace Ibinimator.View.Control
             set { SetValue(RootProperty, value); }
         }
 
-        [Bindable(true)]
         public IList<Model.Layer> Selection
         {
             get { return (IList<Model.Layer>)GetValue(SelectionProperty); }
@@ -82,8 +82,6 @@ namespace Ibinimator.View.Control
         }
 
         internal RenderTarget RenderTarget => renderTarget;
-
-        internal Matrix3x2 ViewTransform => viewTransform;
 
         #endregion Properties
 
@@ -109,7 +107,7 @@ namespace Ibinimator.View.Control
         {
             base.OnLostFocus(e);
 
-            await Task.Run(() => SelectionHelper.OnMouseUp(-Vector2.One, factory));
+            await Task.Run(() => SelectionManager.OnMouseUp(-Vector2.One, factory));
         }
 
         protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -121,7 +119,7 @@ namespace Ibinimator.View.Control
             var pos1 = e.GetPosition(this);
             var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
-            await Task.Run(() => SelectionHelper.OnMouseDown(pos, factory));
+            await Task.Run(() => SelectionManager.OnMouseDown(pos, factory));
         }
 
         protected override async void OnPreviewMouseMove(MouseEventArgs e)
@@ -131,7 +129,7 @@ namespace Ibinimator.View.Control
             var pos1 = e.GetPosition(this);
             var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
-            await Task.Run(() => SelectionHelper.OnMouseMove(pos, factory));
+            await Task.Run(() => SelectionManager.OnMouseMove(pos, factory));
         }
 
         protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
@@ -143,7 +141,7 @@ namespace Ibinimator.View.Control
             var pos1 = e.GetPosition(this);
             var pos = Matrix3x2.TransformPoint(Matrix3x2.Invert(viewTransform), new Vector2((float)pos1.X, (float)pos1.Y));
 
-            await Task.Run(() => SelectionHelper.OnMouseUp(pos, factory));
+            await Task.Run(() => SelectionManager.OnMouseUp(pos, factory));
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
@@ -165,23 +163,23 @@ namespace Ibinimator.View.Control
             factory = target.Factory;
             renderTarget = target;
 
-            Cache.Reset();
-            Cache.LoadBrushes(target);
-            Cache.LoadBitmaps(target);
-            Cache.BindLayer(Root);
+            CacheManager.Reset();
+            CacheManager.LoadBrushes(target);
+            CacheManager.LoadBitmaps(target);
+            CacheManager.BindLayer(Root);
         }
 
         protected override void Render(RenderTarget target)
         {
-            lock (SelectionHelper)
+            lock (SelectionManager)
             {
                 target.Clear(Color4.White);
 
                 target.Transform = viewTransform;
 
-                Dispatcher.Invoke(() => Root).Render(target, Cache);
+                Dispatcher.Invoke(() => Root).Render(target, CacheManager);
 
-                SelectionHelper.Render(target, Cache.GetBrush("A1"), Cache.GetBrush("L1"));
+                SelectionManager.Render(target, CacheManager.GetBrush("A1"), CacheManager.GetBrush("L1"));
             }
         }
 
@@ -199,8 +197,8 @@ namespace Ibinimator.View.Control
             if (e.NewValue is INotifyCollectionChanged incc)
                 incc.CollectionChanged += av.OnSelectionUpdated;
 
-            av.SelectionHelper.Selection = e.NewValue as IList<Model.Layer>;
-            av.SelectionHelper.UpdateSelection(true);
+            av.SelectionManager.Selection = e.NewValue as IList<Model.Layer>;
+            av.SelectionManager.Update(true);
         }
 
         private static void OnZoomChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -214,13 +212,13 @@ namespace Ibinimator.View.Control
             // this event fires whenever any of the layers changes anything, not just the root layer
             var layer = sender as Model.Layer;
 
-            Cache.UpdateLayer(layer, e.PropertyName);
-            SelectionHelper.UpdateSelection(false);
+            CacheManager.UpdateLayer(layer, e.PropertyName);
+            SelectionManager.Update(false);
         }
 
         private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
         {
-            SelectionHelper.UpdateSelection(true);
+            SelectionManager.Update(true);
         }
 
         #endregion Methods

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Ibinimator.ViewModel;
 
 namespace Ibinimator.View
 {
@@ -15,13 +16,14 @@ namespace Ibinimator.View
     {
         public MainView()
         {
-            var x = D2DImage.FPSProperty;
             InitializeComponent();
 
             CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => SystemCommands.CloseWindow(this)));
             CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
             CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
                 (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized));
+
+            (DataContext as MainViewModel).ArtView = artView;
         }
     }
 }

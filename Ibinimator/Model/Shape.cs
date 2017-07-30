@@ -101,7 +101,7 @@ namespace Ibinimator.Model
             }
         }
 
-        public override void Render(RenderTarget target, CacheHelper cacheHelper)
+        public override void Render(RenderTarget target, CacheManager cacheHelper)
         {
             target.Transform *= AbsoluteTransform;
 

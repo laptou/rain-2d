@@ -9,8 +9,8 @@
         xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-        x:Class="Ibinimator.View.MainView"
-        mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" Width="1920" Icon="/Ibinimator;component/Resources/logo.png">
+        x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
+        mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" Icon="/Ibinimator;component/Resources/logo.png">
     <Window.Resources>
         <view:PercentageConverter x:Key="PercentageConverter" />
     </Window.Resources>
@@ -189,10 +189,8 @@
                 </Grid.RowDefinitions>
                 <TabControl view:Helper.Accent="{StaticResource A2Brush}">
                     <TabItem Header="Color">
-                        <Grid>
-
-
-                            <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Height="50" Margin="8">
+                        <Grid DataContext="{Binding FillPicker}">
+                            <Grid HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="50" Height="50" Margin="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="2*"/>
@@ -234,7 +232,7 @@
                                 </Grid.ColumnDefinitions>
                             
                                 <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}"
-                                                  Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" Grid.RowSpan="2" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+                                                  Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" Grid.RowSpan="2" VerticalAlignment="Top" Margin="0,8" />
                                 <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />

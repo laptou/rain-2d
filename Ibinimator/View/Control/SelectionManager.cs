@@ -17,7 +17,7 @@ using System.ComponentModel;
 
 namespace Ibinimator.View.Control
 {
-    internal class SelectionHelper : Model.Model
+    internal class SelectionManager : Model.Model
     {
         #region Fields
 
@@ -37,7 +37,7 @@ namespace Ibinimator.View.Control
 
         #region Constructors
 
-        public SelectionHelper(ArtView artView)
+        public SelectionManager(ArtView artView)
         {
             ArtView = artView;
             ArtView.RenderTargetBound += OnArtViewRenderTargetBound;
@@ -50,13 +50,13 @@ namespace Ibinimator.View.Control
             switch (e.PropertyName)
             {
                 case nameof(SelectionFillBrush):
-                    foreach (var layer in Selection)
+                    foreach (var layer in Selection.Select(l => l.Flatten()))
                         if (layer is Model.Shape shape)
                             shape.FillBrush = SelectionFillBrush;
                     break;
 
                 case nameof(SelectionStrokeBrush):
-                    foreach (var layer in Selection)
+                    foreach (var layer in Selection.Select(l => l.Flatten()))
                         if (layer is Model.Shape shape)
                             shape.StrokeBrush = SelectionStrokeBrush;
                     break;
@@ -181,7 +181,7 @@ namespace Ibinimator.View.Control
                 {
                     Parallel.ForEach(Root.Flatten(), layer =>
                     {
-                        var bounds = ArtView.Cache.GetBounds(layer);
+                        var bounds = ArtView.CacheManager.GetBounds(layer);
                         selectionBox.Contains(ref bounds, out bool contains);
                         layer.Selected = layer.Selected || contains;
                     });
@@ -244,7 +244,7 @@ namespace Ibinimator.View.Control
                 if (layer is Model.Shape shape)
                 {
                     target.Transform *= shape.AbsoluteTransform;
-                    target.DrawGeometry(ArtView.Cache.GetGeometry(shape), fill, 1f, selectionStroke);
+                    target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), fill, 1f, selectionStroke);
                     target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
                 }
             }
@@ -298,12 +298,12 @@ namespace Ibinimator.View.Control
                     break;
 
                 default:
-                    RectangleF bounds = ArtView.Cache.GetBounds(Selection[0]);
+                    RectangleF bounds = ArtView.CacheManager.GetBounds(Selection[0]);
                     (float x1, float y1, float x2, float y2) = (bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
 
                     Parallel.ForEach(Selection.Skip(1), l =>
                     {
-                        var b = ArtView.Cache.GetBounds(l);
+                        var b = ArtView.CacheManager.GetBounds(l);
 
                         if (b.Left < x1) x1 = b.Left;
                         if (b.Top < y1) y1 = b.Top;
@@ -317,6 +317,12 @@ namespace Ibinimator.View.Control
                     {
                         selectionRotation = 0;
                         selectionShear = 0;
+
+                        if (Selection[Selection.Count - 1] is Model.Shape shape)
+                        {
+                            SelectionFillBrush = shape?.FillBrush;
+                            SelectionStrokeBrush = shape?.StrokeBrush;
+                        }
                     }
                     break;
             }
@@ -354,8 +360,8 @@ namespace Ibinimator.View.Control
 
             foreach (var h in handles)
             {
-                if ((pos - h.pos).LengthSquared() < 25f / ArtView.ViewTransform.ScaleVector.LengthSquared())
-                    return (ArtView.Cache.GetBitmap("cursor-" + h.cur), h.handle);
+                if ((pos - h.pos).LengthSquared() < 25f / ArtView.Zoom)
+                    return (ArtView.CacheManager.GetBitmap("cursor-" + h.cur), h.handle);
             }
 
             return (null, null);
@@ -433,6 +439,7 @@ namespace Ibinimator.View.Control
                     rotate = r - selectionRotation;
                     selectionRotation = r;
                     origin = selectionBounds.Center;
+                    // origin.Y -= selectionBounds.Height / 2 * (float)Math.Sin(selectionShear) / 2;
                     break;
             }
 

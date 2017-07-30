@@ -203,7 +203,7 @@ namespace Ibinimator.Model
             SubLayers.Remove(child);
         }
 
-        public virtual void Render(RenderTarget target, CacheHelper helper)
+        public virtual void Render(RenderTarget target, CacheManager helper)
         {
             foreach (var layer in SubLayers)
             {
