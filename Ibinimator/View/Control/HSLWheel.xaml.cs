@@ -14,41 +14,41 @@ using Screen = System.Windows.Forms.Screen;
 
 namespace Ibinimator.View.Control
 {
-    public partial class HSLWheel : UserControl, INotifyPropertyChanged
+    public partial class HslWheel : UserControl, INotifyPropertyChanged
     {
         #region Fields
 
         public static readonly DependencyProperty ColorProperty =
-            DependencyProperty.Register("Color", typeof(Color), typeof(HSLWheel), new PropertyMetadata(new Color()));
+            DependencyProperty.Register("Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color()));
 
         public static readonly DependencyProperty HueProperty =
-                    DependencyProperty.Register("Hue", typeof(double), typeof(HSLWheel), new PropertyMetadata(0.0, OnColorChanged));
+                    DependencyProperty.Register("Hue", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
 
         public static readonly DependencyProperty LightnessProperty =
-            DependencyProperty.Register("Lightness", typeof(double), typeof(HSLWheel), new PropertyMetadata(0.0, OnColorChanged));
+            DependencyProperty.Register("Lightness", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
 
         public static readonly DependencyProperty SaturationProperty =
-            DependencyProperty.Register("Saturation", typeof(double), typeof(HSLWheel), new PropertyMetadata(0.0, OnColorChanged));
+            DependencyProperty.Register("Saturation", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
 
-        private bool draggingRing;
+        private bool _draggingRing;
 
-        private bool draggingTriangle;
+        private bool _draggingTriangle;
 
-        private WriteableBitmap ring;
+        private WriteableBitmap _ring;
 
-        private WriteableBitmap triangle;
+        private WriteableBitmap _triangle;
 
         #endregion Fields
 
         #region Constructors
 
-        public HSLWheel()
+        public HslWheel()
         {
             InitializeComponent();
 
             Loaded += OnLoaded;
-            PART_ring.MouseDown += OnRingMouseDown;
-            PART_triangle.MouseDown += OnTriangleMouseDown;
+            Ring.MouseDown += OnRingMouseDown;
+            Triangle.MouseDown += OnTriangleMouseDown;
 
             UpdateHandles();
         }
@@ -118,7 +118,7 @@ namespace Ibinimator.View.Control
         {
             base.OnLostFocus(e);
 
-            draggingRing = draggingTriangle = false;
+            _draggingRing = _draggingTriangle = false;
 
             RaisePropertyChanged(nameof(Color));
         }
@@ -132,11 +132,11 @@ namespace Ibinimator.View.Control
             if (pos.X > ActualWidth || pos.Y > ActualHeight)
             {
                 ReleaseMouseCapture();
-                draggingRing = draggingTriangle = false;
+                _draggingRing = _draggingTriangle = false;
                 return;
             }
 
-            if (draggingRing || draggingTriangle)
+            if (_draggingRing || _draggingTriangle)
                 CaptureMouse();
         }
 
@@ -144,14 +144,14 @@ namespace Ibinimator.View.Control
         {
             base.OnMouseMove(e);
 
-            if (!draggingRing && !draggingTriangle)
+            if (!_draggingRing && !_draggingTriangle)
                 return;
 
             var pi2 = Math.PI * 2;
             var pos = e.GetPosition(this);
             pos.Offset(-ActualWidth / 2, -ActualHeight / 2);
 
-            if (draggingRing)
+            if (_draggingRing)
             {
                 var rotation = Math.Atan2(pos.Y, pos.X);
                 Hue = rotation / pi2 * 360;
@@ -159,14 +159,14 @@ namespace Ibinimator.View.Control
                 Dispatcher.BeginInvoke((Action)UpdateTriangle, DispatcherPriority.Render, null);
             }
 
-            if (draggingTriangle)
+            if (_draggingTriangle)
             {
-                double height = PART_triangle.ActualWidth / Math.Sqrt(3) * 1.5;
+                double height = Triangle.ActualWidth / Math.Sqrt(3) * 1.5;
 
-                var tpos = e.GetPosition(PART_triangle);
+                var tpos = e.GetPosition(Triangle);
 
                 Saturation = Math.Max(0, Math.Min(1, 1 - tpos.Y / height));
-                Lightness = Math.Max(0, Math.Min(1, tpos.X / PART_triangle.ActualWidth));
+                Lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
 
                 UpdateHandles();
             }
@@ -176,7 +176,7 @@ namespace Ibinimator.View.Control
         {
             base.OnMouseUp(e);
 
-            draggingTriangle = draggingRing = false;
+            _draggingTriangle = _draggingRing = false;
 
             ReleaseMouseCapture();
 
@@ -187,14 +187,14 @@ namespace Ibinimator.View.Control
         {
             base.OnRenderSizeChanged(sizeInfo);
 
-            PART_triangle.Width = sizeInfo.NewSize.Width * 0.5 * 0.75 * Math.Sqrt(3);
+            Triangle.Width = sizeInfo.NewSize.Width * 0.5 * 0.75 * Math.Sqrt(3);
 
             UpdateHandles();
         }
 
         private static void OnColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is HSLWheel hslWheel)
+            if (d is HslWheel hslWheel)
             {
                 hslWheel.RaisePropertyChanged(nameof(Color));
                 hslWheel.UpdateHandles();
@@ -214,11 +214,11 @@ namespace Ibinimator.View.Control
             var dpi = screen.GetDpiForMonitor(DpiType.Effective);
             var size = (int)Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
 
-            triangle = new WriteableBitmap(size, (int)(size / MathUtils.SQRT3_2), dpi.x, dpi.y, PixelFormats.Bgra32, null);
-            ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
+            _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt32), dpi.x, dpi.y, PixelFormats.Bgra32, null);
+            _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
 
-            PART_triangle.Fill = new ImageBrush(triangle);
-            PART_ring.Fill = new ImageBrush(ring);
+            Triangle.Fill = new ImageBrush(_triangle);
+            Ring.Fill = new ImageBrush(_ring);
 
             UpdateTriangle();
             UpdateRing();
@@ -226,12 +226,12 @@ namespace Ibinimator.View.Control
 
         private void OnRingMouseDown(object sender, MouseButtonEventArgs e)
         {
-            draggingRing = true;
+            _draggingRing = true;
         }
 
         private void OnTriangleMouseDown(object sender, MouseButtonEventArgs e)
         {
-            draggingTriangle = true;
+            _draggingTriangle = true;
         }
 
         private void RaisePropertyChanged(string name)
@@ -239,18 +239,18 @@ namespace Ibinimator.View.Control
 
         private void UpdateHandles()
         {
-            var transform = PART_triangle.RenderTransform as RotateTransform;
+            var transform = Triangle.RenderTransform as RotateTransform;
             transform.Angle = 90 + Hue;
 
-            int height = (int)(PART_triangle.ActualWidth / Math.Sqrt(3) * 1.5);
+            int height = (int)(Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
             double slope = 1.0 / Math.Sqrt(3);
 
-            var hpos = new Point((Lightness - 0.5) * PART_triangle.ActualWidth, (1 - Saturation) * height);
+            var hpos = new Point((Lightness - 0.5) * Triangle.ActualWidth, (1 - Saturation) * height);
 
             hpos.Y = Math.Max(0, Math.Min(height, hpos.Y));
-            hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) + PART_triangle.ActualWidth / 2;
+            hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) + Triangle.ActualWidth / 2;
 
-            hpos = PART_triangle.TranslatePoint(hpos, this);
+            hpos = Triangle.TranslatePoint(hpos, this);
 
             Canvas.SetLeft(triangleHandle, hpos.X);
             Canvas.SetTop(triangleHandle, hpos.Y);
@@ -258,18 +258,18 @@ namespace Ibinimator.View.Control
 
         private unsafe void UpdateRing()
         {
-            ring.Lock();
-            byte* pStart = (byte*)(void*)ring.BackBuffer;
+            _ring.Lock();
+            byte* pStart = (byte*)(void*)_ring.BackBuffer;
 
-            for (int radius = (int)(ring.PixelWidth * 0.375); radius <= ring.PixelWidth * 0.5; radius += 1)
+            for (int radius = (int)(_ring.PixelWidth * 0.375); radius <= _ring.PixelWidth * 0.5; radius += 1)
             {
-                for (double theta = 0; theta <= MathUtils.PI2; theta += 10f / radius / radius)
+                for (double theta = 0; theta <= MathUtils.TwoPi; theta += 10f / radius / radius)
                 {
-                    int row = (int)(radius * Math.Sin(theta)) + ring.PixelHeight / 2;
-                    int col = (int)(radius * Math.Cos(theta)) + ring.PixelWidth / 2;
-                    int currentPixel = (row * triangle.PixelWidth + col);
+                    int row = (int)(radius * Math.Sin(theta)) + _ring.PixelHeight / 2;
+                    int col = (int)(radius * Math.Cos(theta)) + _ring.PixelWidth / 2;
+                    int currentPixel = (row * _triangle.PixelWidth + col);
 
-                    double h = theta / MathUtils.PI2 * 360;
+                    double h = theta / MathUtils.TwoPi * 360;
 
                     (double r, double g, double b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
 
@@ -279,31 +279,31 @@ namespace Ibinimator.View.Control
                     *(pStart + currentPixel * 4 + 0) = (byte)(b * 255f); //Blue
                 }
             }
-            ring.AddDirtyRect(new Int32Rect(0, 0,
-                   ring.PixelWidth, ring.PixelHeight));
-            ring.Unlock();
+            _ring.AddDirtyRect(new Int32Rect(0, 0,
+                   _ring.PixelWidth, _ring.PixelHeight));
+            _ring.Unlock();
         }
 
         private unsafe void UpdateTriangle()
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                int height = (int)(triangle.PixelWidth / Math.Sqrt(3) * 1.5);
+                int height = (int)(_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
                 double slope = 1.0 / Math.Sqrt(3);
 
-                triangle.Lock();
-                byte* pStart = (byte*)(void*)triangle.BackBuffer;
+                _triangle.Lock();
+                byte* pStart = (byte*)(void*)_triangle.BackBuffer;
 
                 for (int iRow = 0; iRow < height; iRow++)
                 {
                     int offset = (int)(iRow * slope);
 
-                    for (int iCol = (triangle.PixelWidth / 2) - offset; iCol < (triangle.PixelWidth / 2) + offset; iCol++)
+                    for (int iCol = (_triangle.PixelWidth / 2) - offset; iCol < (_triangle.PixelWidth / 2) + offset; iCol++)
                     {
-                        int currentPixel = (iRow * triangle.PixelWidth + iCol);
+                        int currentPixel = (iRow * _triangle.PixelWidth + iCol);
 
                         double s = 1f - (double)iRow / height;
-                        double l = (double)iCol / triangle.PixelWidth;
+                        double l = (double)iCol / _triangle.PixelWidth;
 
                         (double r, double g, double b) = ColorUtils.HslToRgb(Hue, s, l);
 
@@ -314,9 +314,9 @@ namespace Ibinimator.View.Control
                     }
                 }
 
-                triangle.AddDirtyRect(new Int32Rect(0, 0,
-                       triangle.PixelWidth, height));
-                triangle.Unlock();
+                _triangle.AddDirtyRect(new Int32Rect(0, 0,
+                       _triangle.PixelWidth, height));
+                _triangle.Unlock();
             }));
         }
 

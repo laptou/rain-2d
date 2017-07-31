@@ -116,25 +116,25 @@ namespace Ibinimator.Model
             }
         }
 
-        public WPF.Brush ToWPF()
+        public WPF.Brush ToWpf()
         {
             return App.Current.Dispatcher.Invoke<WPF.Brush>(() =>
             {
                 switch (BrushType)
                 {
                     case BrushType.Color:
-                        return new WPF.SolidColorBrush(Color.ToWPF());
+                        return new WPF.SolidColorBrush(Color.ToWpf());
 
                     case BrushType.LinearGradient:
                         return new WPF.LinearGradientBrush(
                             new WPF.GradientStopCollection(
-                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
+                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWpf(), stop.Position))
                             ));
 
                     case BrushType.RadialGradient:
                         return new WPF.RadialGradientBrush(
                             new WPF.GradientStopCollection(
-                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
+                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWpf(), stop.Position))
                             ));
 
                     default:

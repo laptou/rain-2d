@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service;
@@ -37,6 +40,18 @@ namespace Ibinimator.ViewModel
             set => Set(value);
         }
 
+        public IToolManager ToolManager
+        {
+            get => Get<IToolManager>();
+            set => Set(value);
+        }
+
+        public IBrushManager BrushManager
+        {
+            get => Get<IBrushManager>();
+            set => Set(value);
+        }
+
         public FillPickerViewModel FillPicker { get; }
 
         public TransformViewModel TransformPicker { get; }
@@ -44,6 +59,7 @@ namespace Ibinimator.ViewModel
         public ObservableCollection<Layer> Selection { get; } = new ObservableCollection<Layer>();
 
         public DelegateCommand SelectLayerCommand { get; }
+
 
         #endregion Properties
 

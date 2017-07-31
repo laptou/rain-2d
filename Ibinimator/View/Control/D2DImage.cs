@@ -63,7 +63,7 @@ namespace Ibinimator.View.Control
         private bool _invalidated = false;
         private Stack<Int32Rect> _dirty = new Stack<Int32Rect>();
         private Texture2D _renderTarget;
-        private DX11ImageSource _surface;
+        private Dx11ImageSource _surface;
 
         #endregion Fields
 
@@ -99,7 +99,7 @@ namespace Ibinimator.View.Control
             set => _d2DRenderTarget.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
-        public DX11ImageSource Surface => _surface;
+        public Dx11ImageSource Surface => _surface;
 
         public Device Device => _device;
 
@@ -270,7 +270,7 @@ namespace Ibinimator.View.Control
         {
             _device = new Device(DriverType.Hardware, DeviceCreationFlags.BgraSupport);
 
-            _surface = new DX11ImageSource();
+            _surface = new Dx11ImageSource();
             _surface.IsFrontBufferAvailableChanged += OnIsFrontBufferAvailableChanged;
 
             Source = _surface;
@@ -327,7 +327,7 @@ namespace Ibinimator.View.Control
         #endregion Methods
     }
 
-    public class DX11ImageSource : D3DImage, IDisposable
+    public class Dx11ImageSource : D3DImage, IDisposable
     {
         #region Fields
 
@@ -341,7 +341,7 @@ namespace Ibinimator.View.Control
 
         #region Constructors
 
-        public DX11ImageSource()
+        public Dx11ImageSource()
         {
             StartD3D();
             _activeClients++;

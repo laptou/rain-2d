@@ -23,9 +23,12 @@ namespace Ibinimator.View
             CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
                 (s, e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized));
 
-            var viewModel = (DataContext as MainViewModel);
+            var viewModel = DataContext as MainViewModel;
+            // ReSharper disable once PossibleNullReferenceException
+            viewModel.BrushManager = artView.BrushManager;
             viewModel.ViewManager = artView.ViewManager;
             viewModel.SelectionManager = artView.SelectionManager;
+            viewModel.ToolManager = artView.ToolManager;
             viewModel.Load();
         }
     }

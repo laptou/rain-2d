@@ -86,12 +86,12 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        protected void UI(Action action)
+        protected void Ui(Action action)
         {
             Application.Current.Dispatcher.Invoke(action);
         }
 
-        protected async Task UIAsync(Action action)
+        protected async Task UiAsync(Action action)
         {
             await Application.Current.Dispatcher.InvokeAsync(action);
         }

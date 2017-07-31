@@ -48,19 +48,19 @@ namespace Ibinimator.Test
         public void Rotation()
         {
             Vector2 v1 = new Vector2(1, 0);
-            Vector2 v2 = new Vector2(MathUtils.SQRT1_2, MathUtils.SQRT1_2);
+            Vector2 v2 = new Vector2(MathUtils.Sqrt12, MathUtils.Sqrt12);
             Vector2 v3 = new Vector2(0, 1);
-            Vector2 v4 = new Vector2(-MathUtils.SQRT1_2, MathUtils.SQRT1_2);
+            Vector2 v4 = new Vector2(-MathUtils.Sqrt12, MathUtils.Sqrt12);
             Vector2 v5 = new Vector2(-1, 0);
-            Vector2 v6 = new Vector2(-MathUtils.SQRT1_2, -MathUtils.SQRT1_2);
+            Vector2 v6 = new Vector2(-MathUtils.Sqrt12, -MathUtils.Sqrt12);
             Vector2 v7 = new Vector2(0, -1);
-            Vector2 v8 = new Vector2(MathUtils.SQRT1_2, -MathUtils.SQRT1_2);
+            Vector2 v8 = new Vector2(MathUtils.Sqrt12, -MathUtils.Sqrt12);
 
-            Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PI_2 / 2));
-            Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PI_2));
-            Assert.AreEqual(v5, MathUtils.Rotate(v1, MathUtils.PI_2 * 2));
-            Assert.AreEqual(v7, MathUtils.Rotate(v1, MathUtils.PI_2 * 3));
-            Assert.AreEqual(new Vector2(3, 0), MathUtils.Rotate(v5, v1, MathUtils.PI_2 * 2));
+            Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
+            Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));
+            Assert.AreEqual(v5, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 2));
+            Assert.AreEqual(v7, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 3));
+            Assert.AreEqual(new Vector2(3, 0), MathUtils.Rotate(v5, v1, MathUtils.PiOverTwo * 2));
         }
 
         [TestMethod]
@@ -127,37 +127,37 @@ namespace Ibinimator.Test
             Assert.AreEqual(0, d.rotation, 1e-5f);
             Verify(m);
 
-            m *= Matrix3x2.Rotation(MathUtils.PI_2);
+            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo);
             d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 3), d.scale);
             Assert.AreEqual(new Vector2(-3, 2), d.translation);
             Assert.AreEqual(0, d.skew, 1e-5f);
-            Assert.AreEqual(MathUtils.PI_2, d.rotation, 1e-5f);
+            Assert.AreEqual(MathUtils.PiOverTwo, d.rotation, 1e-5f);
             Verify(m);
 
             m *= Matrix3x2.Scaling(2, 1);
             d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 6), d.scale);
             Assert.AreEqual(new Vector2(-6, 2), d.translation);
-            Assert.AreEqual(MathUtils.PI_2, d.rotation, 1e-5f);
+            Assert.AreEqual(MathUtils.PiOverTwo, d.rotation, 1e-5f);
             Verify(m);
 
-            m *= Matrix3x2.Rotation(MathUtils.PI_2 / 2);
+            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo / 2);
             d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 6), d.scale);
-            Assert.AreEqual(MathUtils.Rotate(new Vector2(-6, 2), MathUtils.PI_2 / 2), d.translation);
-            Assert.AreEqual(MathUtils.PI_2 * 1.5f, d.rotation, 1e-5f);
+            Assert.AreEqual(MathUtils.Rotate(new Vector2(-6, 2), MathUtils.PiOverTwo / 2), d.translation);
+            Assert.AreEqual(MathUtils.PiOverTwo * 1.5f, d.rotation, 1e-5f);
             Verify(m);
 
-            m = Matrix3x2.Rotation(MathUtils.PI_2 / 2) * Matrix3x2.Scaling(2, 1);
+            m = Matrix3x2.Rotation(MathUtils.PiOverTwo / 2) * Matrix3x2.Scaling(2, 1);
             Verify(m);
 
-            m = Matrix3x2.Rotation(MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
-            m *= Matrix3x2.Rotation(MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
+            m = Matrix3x2.Rotation(MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
+            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
             Verify(m);
 
-            m = Matrix3x2.Rotation(-MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
-            m *= Matrix3x2.Rotation(-MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(10, -6);
+            m = Matrix3x2.Rotation(-MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
+            m *= Matrix3x2.Rotation(-MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(10, -6);
             Verify(m);
 
             m = Matrix3x2.Scaling(2, -1);

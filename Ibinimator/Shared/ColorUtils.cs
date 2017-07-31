@@ -83,7 +83,7 @@ namespace Ibinimator.Shared
             return RgbaToColor(r, g, b, alpha);
         }
 
-        public static Color ToWPF(this SharpDX.Color4 color) 
+        public static Color ToWpf(this SharpDX.Color4 color) 
             => RgbaToColor(color.Red, color.Green, color.Blue, color.Alpha);
 
         public static SharpDX.Color4 ToDirectX(this Color color)

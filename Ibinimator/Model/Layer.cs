@@ -85,7 +85,7 @@ namespace Ibinimator.Model
 
         public virtual float Height { get => Get<float>(); set => Set(value); }
 
-        public Guid ID { get; } = Guid.NewGuid();
+        public Guid Id { get; } = Guid.NewGuid();
 
         public Layer Mask { get => Get<Layer>(); set => Set(value); }
 

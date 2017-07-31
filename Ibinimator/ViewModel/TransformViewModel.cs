@@ -75,23 +75,23 @@ namespace Ibinimator.ViewModel
 
             public float Rotation
             {
-                get => MathUtil.RadiansToDegrees(_parent.SelectionManager?.SelectionRotation ?? 0);
+                get => _parent.SelectionManager?.SelectionRotation ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
-                    MathUtil.DegreesToRadians(value - Rotation),
+                    value - Rotation,
                     0,
-                    Vector2.Zero);
+                    Vector2.One * 0.5f);
             }
 
             public float Shear
             {
-                get => MathUtil.RadiansToDegrees(_parent.SelectionManager?.SelectionShear ?? 0);
+                get => _parent.SelectionManager?.SelectionShear ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
                     0,
-                    MathUtil.DegreesToRadians(value - Shear),
+                    value - Shear,
                     Vector2.Zero);
             }
         }

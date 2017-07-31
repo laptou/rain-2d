@@ -42,15 +42,15 @@ namespace Ibinimator.Shared
             new Rectangle((int)Math.Round(rect.X), (int)Math.Round(rect.Y),
                 (int)Math.Round(rect.Width), (int)Math.Round(rect.Height));
 
-        public const float PI2 = (float)Math.PI * 2;
-        public const float PI_2 = (float)Math.PI / 2;
+        public const float TwoPi = (float)Math.PI * 2;
+        public const float PiOverTwo = (float)Math.PI / 2;
 
-        public static readonly float SQRT2 = (float)Math.Sqrt(2);
-        public static readonly float SQRT3 = (float)Math.Sqrt(3);
-        public static readonly float SQRT3_2 = (float)Math.Sqrt(3) / 2;
-        public static readonly float SQRT2_2 = (float)Math.Sqrt(2) / 2;
-        public static readonly float SQRT1_3 = 1 / (float)Math.Sqrt(3);
-        public static readonly float SQRT1_2 = 1 / (float)Math.Sqrt(2);
+        public static readonly float Sqrt2 = (float)Math.Sqrt(2);
+        public static readonly float Sqrt3 = (float)Math.Sqrt(3);
+        public static readonly float Sqrt32 = (float)Math.Sqrt(3) / 2;
+        public static readonly float Sqrt22 = (float)Math.Sqrt(2) / 2;
+        public static readonly float Sqrt13 = 1 / (float)Math.Sqrt(3);
+        public static readonly float Sqrt12 = 1 / (float)Math.Sqrt(2);
 
         public static Vector2 Transform2D(Vector2 v, Matrix3x2 m)
         {
@@ -82,9 +82,9 @@ namespace Ibinimator.Shared
             var scale = m.GetScale();
             var translation = m.Row3;
             var skewx = (float)Math.Atan2(m.M12, m.M11);
-            var skewy = (float)Math.Atan2(m.M22, m.M21) - PI_2;
-            var rotation = Wrap(skewx, PI2);
-            var skew = Wrap(skewy - skewx, PI2);
+            var skewy = (float)Math.Atan2(m.M22, m.M21) - PiOverTwo;
+            var rotation = Wrap(skewx, TwoPi);
+            var skew = Wrap(skewy - skewx, TwoPi);
             scale.Y *= (float)Math.Cos(skew);
 
             return (scale, rotation, translation, -skew);

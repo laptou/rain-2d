@@ -13,7 +13,7 @@ namespace Ibinimator.Model
     {
         #region Fields
 
-        private Dictionary<string, Object> properties = new Dictionary<string, object>();
+        private Dictionary<string, Object> _properties = new Dictionary<string, object>();
 
         #endregion Fields
 
@@ -29,7 +29,7 @@ namespace Ibinimator.Model
 
         public T Get<T>([CallerMemberName] string propertyName = "")
         {
-            return properties.TryGetValue(propertyName, out object o) && o is T ? (T)o : default(T);
+            return _properties.TryGetValue(propertyName, out object o) && o is T ? (T)o : default(T);
         }
 
         public void RaisePropertyChanged(string propertyName)
@@ -63,7 +63,7 @@ namespace Ibinimator.Model
         public void Set<T>(T value, [CallerMemberName] string propertyName = "")
         {
             RaisePropertyChanging(propertyName);
-            properties[propertyName] = value;
+            _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
         }
 

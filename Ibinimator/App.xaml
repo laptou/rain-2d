@@ -171,10 +171,10 @@
                         <Grid x:Name="templateRoot" SnapsToDevicePixels="true" Margin="12,0">
                             <Border x:Name="mainBorder"
                                     BorderBrush="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabPanel}}}"
-                                    BorderThickness="0,0,0,2" Background="{TemplateBinding Background}" Margin="0" Cursor="Hand" Padding="{TemplateBinding Padding}">
+                                    BorderThickness="0,0,0,1" Background="{TemplateBinding Background}" Margin="0" Cursor="Hand" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter x:Name="contentPresenter" Content="{TemplateBinding Header}" Focusable="False"
                                                   HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" TextBlock.Foreground="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
                             </Border>
                         </Grid>
@@ -188,6 +188,7 @@
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                                 <Setter Property="TextBlock.FontWeight" Value="Bold" TargetName="contentPresenter" />
                                 <Setter Property="TextElement.Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}" />
+                                <Setter Property="TextBlock.Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}" TargetName="mainBorder" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="False">
                                 <Setter Property="BorderThickness" TargetName="mainBorder" Value="0" />

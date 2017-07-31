@@ -30,12 +30,12 @@ namespace Ibinimator.Service
         #region Fields
 
         private object _render = new object();
-        private Vector2? lastPosition;
-        private bool moved;
-        private ArtViewHandle? resizingHandle;
-        private bool selecting;
-        private RectangleF selectionBox;
-        private StrokeStyle1 selectionStroke;
+        private Vector2? _lastPosition;
+        private bool _moved;
+        private ArtViewHandle? _resizingHandle;
+        private bool _selecting;
+        private RectangleF _selectionBox;
+        private StrokeStyle1 _selectionStroke;
 
         #endregion Fields
 
@@ -79,12 +79,12 @@ namespace Ibinimator.Service
         {
             lock (this)
             {
-                moved = false;
+                _moved = false;
 
                 if (Selection.Count > 0)
                 {
                     var test = HandleTest(pos);
-                    resizingHandle = test.handle;
+                    _resizingHandle = test.handle;
                     bool hit = test.handle != null;
 
                     if (!hit)
@@ -93,7 +93,7 @@ namespace Ibinimator.Service
                         {
                             if (l.Hit(ArtView.RenderTarget.Factory, pos, l.Parent.AbsoluteTransform) != null)
                             {
-                                resizingHandle = ArtViewHandle.Translation;
+                                _resizingHandle = ArtViewHandle.Translation;
                                 hit = true;
                                 break;
                             }
@@ -104,13 +104,13 @@ namespace Ibinimator.Service
                         ClearSelection();
                 }
 
-                if (Selection.Count == 0 && !selecting)
+                if (Selection.Count == 0 && !_selecting)
                 {
-                    selectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
-                    selecting = true;
+                    _selectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
+                    _selecting = true;
                 }
 
-                lastPosition = pos;
+                _lastPosition = pos;
 
                 Update(false);
             }
@@ -122,22 +122,22 @@ namespace Ibinimator.Service
 
             lock (this)
             {
-                moved = true;
+                _moved = true;
 
-                lastPosition = lastPosition ?? pos;
+                _lastPosition = _lastPosition ?? pos;
 
                 float width = Math.Max(1f, SelectionBounds.Width),
                     height = Math.Max(1f, SelectionBounds.Height);
 
-                if (resizingHandle != null)
+                if (_resizingHandle != null)
                     Resize(pos, modifiers.HasFlag(ModifierKeys.Shift));
 
-                if (selecting && Selection.Count == 0)
+                if (_selecting && Selection.Count == 0)
                     Select(pos);
 
                 UpdateCursor(pos);
 
-                lastPosition = pos;
+                _lastPosition = pos;
             }
         }
 
@@ -150,9 +150,9 @@ namespace Ibinimator.Service
 
             lock (this)
             {
-                resizingHandle = null;
+                _resizingHandle = null;
 
-                if (!moved)
+                if (!_moved)
                 {
                     var hit = Root.Hit(ArtView.RenderTarget.Factory, pos, Matrix3x2.Identity);
 
@@ -163,19 +163,19 @@ namespace Ibinimator.Service
                         hit.Selected = true;
                 }
 
-                if (selecting)
+                if (_selecting)
                 {
                     Parallel.ForEach(Root.Flatten(), layer =>
                     {
                         var bounds = ArtView.CacheManager.GetBounds(layer);
-                        selectionBox.Contains(ref bounds, out bool contains);
+                        _selectionBox.Contains(ref bounds, out bool contains);
                         layer.Selected = layer.Selected || contains;
                     });
 
                     ArtView.InvalidateSurface();
-                    selectionBox = RectangleF.Empty;
+                    _selectionBox = RectangleF.Empty;
 
-                    selecting = false;
+                    _selecting = false;
                 }
             }
         }
@@ -186,39 +186,38 @@ namespace Ibinimator.Service
             {
                 target.Transform *= transform;
 
-                target.DrawRectangle(SelectionBounds, cache.GetBrush("A1"), 1, selectionStroke);
+                target.DrawRectangle(SelectionBounds, cache.GetBrush("A1"), 1, _selectionStroke);
 
                 target.Transform *= Matrix3x2.Invert(transform);
 
-                target.Transform *= Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center); ;
-
-                target.DrawRectangle(SelectionBounds, cache.GetBrush("A2"), 1, selectionStroke);
-
-                target.Transform *= Matrix3x2.Rotation(-SelectionRotation, SelectionBounds.Center); ;
-
-                // draw handles
-                List<Vector2> handles = new List<Vector2>();
-
-                float x1 = rect.Left, y1 = rect.Top,
-                    x2 = rect.Right, y2 = rect.Bottom;
-
-                handles.Add(new Vector2(x1, y1));
-                handles.Add(new Vector2(x2, y1));
-                handles.Add(new Vector2(x2, y2));
-                handles.Add(new Vector2(x1, y2));
-                handles.Add(new Vector2((x1 + x2) / 2, y1));
-                handles.Add(new Vector2(x1, (y1 + y2) / 2));
-                handles.Add(new Vector2(x2, (y1 + y2) / 2));
-                handles.Add(new Vector2((x1 + x2) / 2, y2));
-                handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
-
-                var zoom = MathUtils.GetScale(target.Transform);
-
-                foreach (Vector2 v in handles.Select(ToSelectionSpace))
+                if (ArtView.ToolManager.Tool?.Type == ToolType.Select)
                 {
-                    Ellipse e = new Ellipse(v, 5f / zoom.Y, 5f / zoom.X);
-                    target.FillEllipse(e, cache.GetBrush("A1"));
-                    target.DrawEllipse(e, cache.GetBrush("L1"), 2f / zoom.LengthSquared() * 2);
+                    // draw handles
+                    List<Vector2> handles = new List<Vector2>();
+
+                    float x1 = rect.Left,
+                        y1 = rect.Top,
+                        x2 = rect.Right,
+                        y2 = rect.Bottom;
+
+                    handles.Add(new Vector2(x1, y1));
+                    handles.Add(new Vector2(x2, y1));
+                    handles.Add(new Vector2(x2, y2));
+                    handles.Add(new Vector2(x1, y2));
+                    handles.Add(new Vector2((x1 + x2) / 2, y1));
+                    handles.Add(new Vector2(x1, (y1 + y2) / 2));
+                    handles.Add(new Vector2(x2, (y1 + y2) / 2));
+                    handles.Add(new Vector2((x1 + x2) / 2, y2));
+                    handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
+
+                    var zoom = MathUtils.GetScale(target.Transform);
+
+                    foreach (Vector2 v in handles.Select(ToSelectionSpace))
+                    {
+                        Ellipse e = new Ellipse(v, 5f / zoom.Y, 5f / zoom.X);
+                        target.FillEllipse(e, cache.GetBrush("A1"));
+                        target.DrawEllipse(e, cache.GetBrush("L1"), 2f / zoom.LengthSquared() * 2);
+                    }
                 }
             }
 
@@ -237,7 +236,7 @@ namespace Ibinimator.Service
                         if (layer is Model.Shape shape)
                         {
                             target.Transform *= shape.AbsoluteTransform;
-                            target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), cache.GetBrush("A1"), 1f, selectionStroke);
+                            target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), cache.GetBrush("A1"), 1f, _selectionStroke);
                             target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
                         }
                     }
@@ -245,10 +244,10 @@ namespace Ibinimator.Service
                     DrawBounds(SelectionBounds, distort);
                 }
 
-                if (!selectionBox.IsEmpty)
+                if (!_selectionBox.IsEmpty)
                 {
-                    target.DrawRectangle(selectionBox, cache.GetBrush("A1"), 1f / target.Transform.M11);
-                    target.FillRectangle(selectionBox, cache.GetBrush("A1-1/2"));
+                    target.DrawRectangle(_selectionBox, cache.GetBrush("A1"), 1f / target.Transform.M11);
+                    target.FillRectangle(_selectionBox, cache.GetBrush("A1-1/2"));
                 }
 
                 if (Cursor != null)
@@ -256,7 +255,7 @@ namespace Ibinimator.Service
                     target.Transform =
                         Matrix3x2.Scaling(1f / 3) *
                         Matrix3x2.Rotation(SelectionRotation - SelectionShear, new Vector2(8)) *
-                        Matrix3x2.Translation(lastPosition.Value - new Vector2(8));
+                        Matrix3x2.Translation(_lastPosition.Value - new Vector2(8));
                     target.DrawBitmap(Cursor, 1, BitmapInterpolationMode.Linear);
                 }
             }
@@ -276,7 +275,7 @@ namespace Ibinimator.Service
                Matrix3x2.Translation(-SelectionBounds.Center) *
                Matrix3x2.Skew(0, -SelectionShear) *
                Matrix3x2.Scaling(scale.X, scale.Y, origin - SelectionBounds.Center) *
-               Matrix3x2.Skew(0, SelectionShear) *
+               Matrix3x2.Skew(0, SelectionShear + shear) *
                Matrix3x2.Translation(SelectionBounds.Center) *
                Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center) *
                Matrix3x2.Rotation(rotate, so) *
@@ -310,7 +309,10 @@ namespace Ibinimator.Service
                     transform, SelectionBounds.Center);
             var sdelta = newCenter - sb.Center;
             sb.Offset(sdelta);
+
             SelectionBounds = sb;
+            SelectionRotation += rotate;
+            SelectionShear += shear;
 
             Updated?.BeginInvoke(this, null, null, null);
             InvalidateSurface();
@@ -428,7 +430,7 @@ namespace Ibinimator.Service
 
         private void OnRenderTargetBound(object sender, RenderTarget target)
         {
-            selectionStroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(),
+            _selectionStroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(),
                 new StrokeStyleProperties1 { TransformType = StrokeTransformType.Hairline });
         }
 
@@ -442,7 +444,7 @@ namespace Ibinimator.Service
             Vector2 axis = Vector2.Zero;
             Vector2 rpos = FromSelectionSpace(pos);
 
-            switch (resizingHandle)
+            switch (_resizingHandle)
             {
                 case ArtViewHandle.Top:
                     origin = new Vector2(SelectionBounds.Center.X, SelectionBounds.Bottom);
@@ -475,8 +477,8 @@ namespace Ibinimator.Service
                     break;
 
                 case ArtViewHandle.Translation:
-                    if (lastPosition != null)
-                        translate = pos - lastPosition.Value;
+                    if (_lastPosition != null)
+                        translate = pos - _lastPosition.Value;
                     break;
 
                 case ArtViewHandle.Rotation:
@@ -545,8 +547,6 @@ namespace Ibinimator.Service
                     rotate = MathUtil.PiOverTwo;
             }
 
-            SelectionRotation += rotate;
-
             var relativeOrigin = origin - SelectionBounds.TopLeft;
             relativeOrigin /= MathUtils.Abs(new Vector2(SelectionBounds.Width, SelectionBounds.Height));
 
@@ -562,15 +562,15 @@ namespace Ibinimator.Service
         {
             ArtView.InvalidateSurface();
 
-            if (pos.X < selectionBox.Left)
-                selectionBox.Left = pos.X;
+            if (pos.X < _selectionBox.Left)
+                _selectionBox.Left = pos.X;
             else
-                selectionBox.Right = pos.X;
+                _selectionBox.Right = pos.X;
 
-            if (pos.Y < selectionBox.Top)
-                selectionBox.Top = pos.Y;
+            if (pos.Y < _selectionBox.Top)
+                _selectionBox.Top = pos.Y;
             else
-                selectionBox.Bottom = pos.Y;
+                _selectionBox.Bottom = pos.Y;
 
             ArtView.InvalidateSurface();
         }
@@ -583,7 +583,7 @@ namespace Ibinimator.Service
 
         private void UpdateCursor(Vector2 pos)
         {
-            if (resizingHandle == null)
+            if (_resizingHandle == null)
             {
                 if (Selection.Count > 0)
                     Cursor = HandleTest(pos).cursor;

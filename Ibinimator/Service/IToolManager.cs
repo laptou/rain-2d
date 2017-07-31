@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Ibinimator.View.Control;
 using SharpDX;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
@@ -8,12 +9,11 @@ namespace Ibinimator.Service
     {
         ArtView ArtView { get; }
         ITool Tool { get; }
+        ToolType Type { get; set; }
 
         void MouseDown(Vector2 pos);
         void MouseMove(Vector2 pos);
         void MouseUp(Vector2 pos);
-
-        void SetTool(ToolType type);
     }
 
     public interface ITool : INotifyPropertyChanged
@@ -25,6 +25,7 @@ namespace Ibinimator.Service
         void MouseDown(Vector2 pos);
         void MouseMove(Vector2 pos);
         void MouseUp(Vector2 pos);
+        void Render(RenderTarget target, ICacheManager cacheManager);
     }
 
     public enum ToolType

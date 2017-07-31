@@ -126,6 +126,9 @@
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Path.cs" />
     <Compile Include="Model\Shape.cs" />
+    <Compile Include="Model\Unit.cs" />
+    <Compile Include="Service\BrushManager.cs" />
+    <Compile Include="Service\IBrushManager.cs" />
     <Compile Include="Service\ToolManager.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\MathUtils.cs" />
@@ -151,11 +154,13 @@
     <Compile Include="Service\SelectionManager.cs" />
     <Compile Include="Service\ViewManager.cs" />
     <Compile Include="View\DataBinder.cs" />
+    <Compile Include="View\EnumToBooleanConverter.cs" />
     <Compile Include="View\Helper.cs" />
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TreeViewBehavior.cs" />
+    <Compile Include="View\UnitConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -202,9 +207,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\Helper\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Resources\Icon\Icon.xaml">
       <SubType>Designer</SubType>

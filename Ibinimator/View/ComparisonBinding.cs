@@ -1,12 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows.Data;
 
 namespace Ibinimator.View
 {
     // Supported types of comparisons
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum ComparisonOperators
     {
         EQ = 0,

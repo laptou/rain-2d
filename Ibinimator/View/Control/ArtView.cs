@@ -51,6 +51,7 @@ namespace Ibinimator.View.Control
             DependencyProperty.Register("Selection", typeof(IList<Layer>), typeof(ArtView),
                 new PropertyMetadata(OnSelectionChanged));
 
+        internal IBrushManager BrushManager;
         internal IToolManager ToolManager;
         internal ICacheManager CacheManager;
         internal ISelectionManager SelectionManager;
@@ -165,6 +166,8 @@ namespace Ibinimator.View.Control
             ViewManager.Root.Render(target, CacheManager);
 
             SelectionManager.Render(target, CacheManager);
+
+            ToolManager.Tool?.Render(target, CacheManager);
         }
 
         private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

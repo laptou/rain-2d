@@ -25,5 +25,6 @@ namespace Ibinimator.Service
         void OnMouseUp(Vector2 pos);
         void Render(RenderTarget target, ICacheManager cache);
         void Update(bool reset);
+        void ClearSelection();
     }
 }

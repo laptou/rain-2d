@@ -9,9 +9,14 @@
         xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:service="clr-namespace:Ibinimator.Service"
         x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
-        mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" Icon="/Ibinimator;component/Resources/logo.png">
+        mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized" 
+        Icon="/Ibinimator;component/Resources/logo.png">
     <Window.Resources>
+        <view:UnitConverter x:Key="AngleConverter" SourceUnit="Radians" TargetUnit="Degrees"/>
+        <view:UnitConverter x:Key="DistanceConverter" SourceUnit="Pixels" TargetUnit="Pixels"/>
+        <view:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <view:PercentageConverter x:Key="PercentageConverter" />
     </Window.Resources>
     <WindowChrome.WindowChrome>
@@ -153,13 +158,16 @@
         <DockPanel Grid.Row="2" LastChildFill="True" UseLayoutRounding="True">
             <ToolBarTray DockPanel.Dock="Left" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0" VerticalAlignment="Stretch">
-                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" IsChecked="True">
+                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" 
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Select}, Mode=TwoWay}">
                         <Image Source="/Ibinimator;component/Resources/Icon/cursor.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
-                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
+                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Path}, Mode=TwoWay}">
                         <Image Source="/Ibinimator;component/Resources/Icon/pointer.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
-                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
+                    <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Pencil}, Mode=TwoWay}">
                         <Image Source="/Ibinimator;component/Resources/Icon/pencil.png" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}">
@@ -232,7 +240,7 @@
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
 
-                                <control:HSLWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}"
+                                <control:HslWheel x:Name="hslWheel" Height="144" Width="144" Hue="{Binding Hue, Mode=TwoWay}"
                                                   Lightness="{Binding Lightness, Mode=TwoWay}" Saturation="{Binding Saturation, Mode=TwoWay}" Grid.RowSpan="2" VerticalAlignment="Top" Margin="0,8" />
                                 <Grid Grid.Column="1" Height="160" Margin="0,0,10,0">
                                     <Grid.RowDefinitions>
@@ -275,7 +283,7 @@
 
                                 <DockPanel Margin="0,5,10,5" Grid.Row="1" Height="25" Grid.Column="1">
                                     <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,5,0"><Run Text="A"/></TextBlock>
-                                    <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" />
+                                    <TextBox DockPanel.Dock="Right" Width="50" Text="{Binding Alpha, Mode=TwoWay, StringFormat=\{0:F2\}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Background="Transparent" BorderBrush="{DynamicResource T1Brush}" BorderThickness="0,0,0,1" Margin="0" />
                                     <Slider Value="{Binding Alpha, Mode=TwoWay}" LargeChange="0.1" Maximum="1" SmallChange="0.05" VerticalAlignment="Center" Margin="0,0,5,0" />
                                 </DockPanel>
                             </Grid>
@@ -405,8 +413,8 @@
                     <TabItem Header="Effects" />
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A3Brush}" Grid.Row="2">
-                    <TabItem Header="Transform" DataContext="{Binding TransformPicker}">
-                        <Grid Margin="8,0,8,8">
+                    <TabItem Header="Transform" IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, NE, 0, Mode=OneWay}">
+                        <Grid Margin="8,0,8,8" DataContext="{Binding TransformPicker}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*"/>
                                 <RowDefinition Height="1*"/>
@@ -419,19 +427,19 @@
                                 <ColumnDefinition Width="3*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">X:</TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding X, StringFormat={}{0:N1} px}"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding X, Converter={StaticResource DistanceConverter}}"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">Y:</TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Y, StringFormat={}{0:N1} px}"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Y, Converter={StaticResource DistanceConverter}}"/>
 
                             <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">W:</TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Width, StringFormat={}{0:N1} px}"/>
+                            <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding Width, Converter={StaticResource DistanceConverter}}"/>
                             <TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">H:</TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Height, StringFormat={}{0:N1} px}"/>
+                            <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding Height, Converter={StaticResource DistanceConverter}}"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">R:</TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Rotation, StringFormat={}{0:N1}&#176;}"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Rotation, Converter={StaticResource AngleConverter}}"/>
                             <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">S:</TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding Shear, StringFormat={}{0:N1}&#176;}"/>
+                            <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding Shear, Converter={StaticResource AngleConverter}}"/>
                         </Grid>
                     </TabItem>
                     <TabItem Header="History" />
@@ -439,17 +447,6 @@
             </Grid>
             <TabControl>
                 <TabItem>
-                    <TabItem.Header>
-                        <TextBlock>
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0:P2} ({1:P2}) {2} FPS">
-                                    <Binding Path="Zoom" />
-                                    <Binding Path="Zoom" />
-                                    <Binding Path="Fps" ElementName="artView" />
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </TabItem.Header>
                     <Border Background="White">
                         <control:ArtView
                             x:Name="artView"

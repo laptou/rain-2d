@@ -119,11 +119,11 @@ namespace Ibinimator.ViewModel
         {
             #region Fields
 
-            private ColorPickerViewModel fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
-            private MainViewModel parent;
+            private ColorPickerViewModel _fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
+            private MainViewModel _parent;
 
-            private ColorPickerTarget pickerTarget = ColorPickerTarget.Fill;
-            private ColorPickerViewModel strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
+            private ColorPickerTarget _pickerTarget = ColorPickerTarget.Fill;
+            private ColorPickerViewModel _strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
 
             #endregion Fields
 
@@ -131,12 +131,12 @@ namespace Ibinimator.ViewModel
 
             public FillPickerViewModel(MainViewModel parent)
             {
-                this.parent = parent;
+                this._parent = parent;
 
                 parent.Selection.CollectionChanged += OnSelectionChanged;
 
-                strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
-                fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
+                _strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
+                _fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
             }
 
             #endregion Constructors
@@ -144,12 +144,12 @@ namespace Ibinimator.ViewModel
             #region Properties
 
             public ColorPickerViewModel ColorPicker =>
-                pickerTarget == ColorPickerTarget.Fill ?
-                fillPicker : strokePicker;
+                _pickerTarget == ColorPickerTarget.Fill ?
+                _fillPicker : _strokePicker;
 
-            public Brush FillBrush { get => Get<Brush>(); set => Set(value); }
+            public Brush FillBrush => _parent.BrushManager.Fill.ToWpf();
 
-            public Brush StrokeBrush { get => Get<Brush>(); set => Set(value); }
+            public Brush StrokeBrush => _parent.BrushManager.Stroke.ToWpf();
 
             #endregion Properties
 
@@ -157,41 +157,20 @@ namespace Ibinimator.ViewModel
 
             private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)
             {
-                var picker = sender as ColorPickerViewModel;
+                var picker = (ColorPickerViewModel) sender;
 
                 if (picker.Target == ColorPickerTarget.Fill)
-                {
-                    FillBrush = new SolidColorBrush(picker.Color);
-                    foreach (var layer in parent.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            if (shape.FillBrush?.BrushType == BrushType.Color)
-                                shape.FillBrush.Color = picker.Color.ToDirectX();
-                            else
-                                shape.FillBrush =
-                                    new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
-                }
+                    _parent.BrushManager.Fill = 
+                        new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
                 else
-                {
-                    StrokeBrush = new SolidColorBrush(picker.Color);
-                    foreach (var layer in parent.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            if (shape.StrokeBrush?.BrushType == BrushType.Color)
-                                shape.StrokeBrush.Color = picker.Color.ToDirectX();
-                            else
-                                shape.StrokeBrush =
-                                    new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
-                }
+                    _parent.BrushManager.Stroke =
+                        new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
             }
 
             private void OnSelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
-                var layer = parent.SelectionManager.Selection.LastOrDefault();
-
-                if (layer is Shape shape)
-                {
-                    FillBrush = shape.FillBrush?.ToWPF();
-                    StrokeBrush = shape.StrokeBrush?.ToWPF();
-                }
+                RaisePropertyChanged(nameof(FillBrush));
+                RaisePropertyChanged(nameof(StrokeBrush));
             }
 
             #endregion Methods

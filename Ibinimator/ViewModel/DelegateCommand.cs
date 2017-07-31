@@ -8,49 +8,49 @@ namespace Ibinimator.ViewModel
 {
     public class DelegateCommand : ICommand
     {
-        private Action<object> action;
+        private Action<object> _action;
 
         public event EventHandler CanExecuteChanged;
 
         public DelegateCommand(Action<object> action)
         {
-            this.action = action;
+            this._action = action;
         }
 
         public DelegateCommand(Task action)
         {
-            this.action = (o) => action.Start();
+            this._action = (o) => action.Start();
         }
 
         public Action<object> Action
         {
             get
             {
-                return action;
+                return _action;
             }
             set
             {
-                if (action != value && (action == null || value == null))
+                if (_action != value && (_action == null || value == null))
                     CanExecuteChanged?.Invoke(this, null);
 
-                action = value;
+                _action = value;
             }
         }
 
         public bool CanExecute(object parameter)
         {
-            return action != null;
+            return _action != null;
         }
 
         public void Execute(object parameter)
         {
-            action?.Invoke(parameter);
+            _action?.Invoke(parameter);
         }
     }
 
     public class AsyncDelegateCommand : ICommand, INotifyPropertyChanged
     {
-        private Func<Task> task;
+        private Func<Task> _task;
 
         public event EventHandler CanExecuteChanged;
 
@@ -58,7 +58,7 @@ namespace Ibinimator.ViewModel
 
         public AsyncDelegateCommand(Func<Task> task)
         {
-            this.task = task;
+            this._task = task;
         }
 
         public AsyncDelegateCommand(Action task) : this(() => System.Threading.Tasks.Task.Run(task))
@@ -69,14 +69,14 @@ namespace Ibinimator.ViewModel
         {
             get
             {
-                return task;
+                return _task;
             }
             set
             {
-                if (task != value && (task == null || value == null))
+                if (_task != value && (_task == null || value == null))
                     CanExecuteChanged?.Invoke(this, null);
 
-                task = value;
+                _task = value;
             }
         }
 
@@ -84,12 +84,12 @@ namespace Ibinimator.ViewModel
 
         public bool CanExecute(object parameter)
         {
-            return task != null;
+            return _task != null;
         }
 
         public void Execute(object parameter)
         {
-            Execution = new NotifyTaskCompletion(task?.Invoke());
+            Execution = new NotifyTaskCompletion(_task?.Invoke());
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Execution"));
         }
     }
