@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Ibinimator.Shared;
 using Ibinimator.View.Control;
+using Ibinimator.Service;
 
 namespace Ibinimator.Model
 {

@@ -9,8 +9,9 @@ using System.Collections;
 using System.Windows;
 using System.Diagnostics;
 using System.ComponentModel;
+using Ibinimator.View.Control;
 
-namespace Ibinimator.View.Control
+namespace Ibinimator.Service
 {
     public class CacheManager : Model.Model, ICacheManager
     {
@@ -270,7 +271,7 @@ namespace Ibinimator.View.Control
 
         private void InvalidateLayer(Model.Layer layer)
         {
-            ArtView.InvalidateSurface(GetBounds(layer));
+            ArtView.InvalidateSurface();
         }
 
         private unsafe Bitmap LoadBitmap(RenderTarget target, string name)

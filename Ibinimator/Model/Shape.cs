@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Ibinimator.View.Control;
 using Ibinimator.Shared;
 using System.ComponentModel;
+using Ibinimator.Service;
 
 namespace Ibinimator.Model
 {

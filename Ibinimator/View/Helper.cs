@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ibinimator.Shared;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -22,7 +23,10 @@ namespace Ibinimator.View
         }
 
         public static readonly DependencyProperty AccentProperty =
-            DependencyProperty.RegisterAttached("Accent", typeof(Brush), typeof(Helper), new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0, 0, 0))));
+            DependencyProperty.RegisterAttached("Accent", typeof(Brush), typeof(Helper), 
+                new FrameworkPropertyMetadata(
+                    new SolidColorBrush(ColorUtils.RgbaToColor(0, 0, 0, 1)),
+                    FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
     }
 
     public class PercentageConverter : IValueConverter

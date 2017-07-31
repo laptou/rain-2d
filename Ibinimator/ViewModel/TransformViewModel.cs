@@ -1,7 +1,4 @@
-﻿using Ibinimator.View.Control;
-using SharpDX;
-using System;
-using System.ComponentModel;
+﻿using SharpDX;
 
 namespace Ibinimator.ViewModel
 {
@@ -9,11 +6,11 @@ namespace Ibinimator.ViewModel
     {
         public class TransformViewModel : ViewModel
         {
-            private MainViewModel parent;
+            private readonly MainViewModel _parent;
 
             public TransformViewModel(MainViewModel parent)
             {
-                this.parent = parent;
+                _parent = parent;
 
                 parent.PropertyChanged += (s, e) =>
                 {
@@ -34,8 +31,8 @@ namespace Ibinimator.ViewModel
             
             public float X
             {
-                get => parent.SelectionManager?.SelectionBounds.X ?? 0;
-                set => parent.SelectionManager?.Transform(
+                get => _parent.SelectionManager?.SelectionBounds.X ?? 0;
+                set => _parent.SelectionManager?.Transform(
                     Vector2.One, 
                     new Vector2(value - X, 0), 
                     0,
@@ -45,8 +42,8 @@ namespace Ibinimator.ViewModel
 
             public float Y
             {
-                get => parent.SelectionManager?.SelectionBounds.Y ?? 0;
-                set => parent.SelectionManager?.Transform(
+                get => _parent.SelectionManager?.SelectionBounds.Y ?? 0;
+                set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     new Vector2(0, value - Y),
                     0,
@@ -56,8 +53,8 @@ namespace Ibinimator.ViewModel
 
             public float Width
             {
-                get => parent.SelectionManager?.SelectionBounds.Width ?? 0;
-                set => parent.SelectionManager?.Transform(
+                get => _parent.SelectionManager?.SelectionBounds.Width ?? 0;
+                set => _parent.SelectionManager?.Transform(
                     new Vector2(value / Width, 1),
                     Vector2.Zero,
                     0,
@@ -67,8 +64,8 @@ namespace Ibinimator.ViewModel
 
             public float Height
             {
-                get => parent.SelectionManager?.SelectionBounds.Height ?? 0;
-                set => parent.SelectionManager?.Transform(
+                get => _parent.SelectionManager?.SelectionBounds.Height ?? 0;
+                set => _parent.SelectionManager?.Transform(
                     new Vector2(1, value / Height),
                     Vector2.Zero,
                     0,
@@ -78,8 +75,8 @@ namespace Ibinimator.ViewModel
 
             public float Rotation
             {
-                get => MathUtil.RadiansToDegrees(parent.SelectionManager?.SelectionRotation ?? 0);
-                set => parent.SelectionManager?.Transform(
+                get => MathUtil.RadiansToDegrees(_parent.SelectionManager?.SelectionRotation ?? 0);
+                set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
                     MathUtil.DegreesToRadians(value - Rotation),
@@ -89,8 +86,8 @@ namespace Ibinimator.ViewModel
 
             public float Shear
             {
-                get => MathUtil.RadiansToDegrees(parent.SelectionManager?.SelectionShear ?? 0);
-                set => parent.SelectionManager?.Transform(
+                get => MathUtil.RadiansToDegrees(_parent.SelectionManager?.SelectionShear ?? 0);
+                set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
                     0,

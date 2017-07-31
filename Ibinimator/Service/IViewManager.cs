@@ -1,8 +1,9 @@
 ﻿using Ibinimator.Model;
+using Ibinimator.View.Control;
 using SharpDX;
 using System.ComponentModel;
 
-namespace Ibinimator.View.Control
+namespace Ibinimator.Service
 {
     public interface IViewManager : INotifyPropertyChanged
     {

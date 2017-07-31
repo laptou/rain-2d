@@ -445,7 +445,7 @@
                                 <MultiBinding StringFormat="{}{0:P2} ({1:P2}) {2} FPS">
                                     <Binding Path="Zoom" />
                                     <Binding Path="Zoom" />
-                                    <Binding Path="FPS" ElementName="artView" />
+                                    <Binding Path="Fps" ElementName="artView" />
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>

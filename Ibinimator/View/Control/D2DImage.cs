@@ -15,6 +15,8 @@ using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
 using Screen = System.Windows.Forms.Screen;
 using SharpDX;
+using SharpDX.DXGI;
+using Device = SharpDX.Direct3D11.Device;
 
 namespace Ibinimator.View.Control
 {
@@ -22,14 +24,14 @@ namespace Ibinimator.View.Control
     {
         #region Fields
 
-        private static readonly DependencyPropertyKey FPSPropertyKey = DependencyProperty.RegisterReadOnly(
+        private static readonly DependencyPropertyKey FpsPropertyKey = DependencyProperty.RegisterReadOnly(
            "FPS",
            typeof(int),
            typeof(D2DImage),
            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.None)
            );
 
-        public static readonly DependencyProperty FPSProperty = FPSPropertyKey.DependencyProperty;
+        public static readonly DependencyProperty FpsProperty = FpsPropertyKey.DependencyProperty;
 
         public RenderMode RenderMode
         {
@@ -49,25 +51,25 @@ namespace Ibinimator.View.Control
             }
         }
 
-        private readonly Stopwatch renderTimer = new Stopwatch();
-        private D2D.Factory d2DFactory;
-        private D2D.RenderTarget d2DRenderTarget;
-        private Device device;
-        private int frameCount = 0;
-        private Queue<int> frameCountHist = new Queue<int>();
-        private int frameCountHistTotal = 0;
-        private long lastFrameTime = 0;
-        private long lastRenderTime = 0;
-        private bool invalidated = false;
-        private Stack<Int32Rect> dirty = new Stack<Int32Rect>();
-        private Texture2D renderTarget;
-        private DX11ImageSource surface;
+        private readonly Stopwatch _renderTimer = new Stopwatch();
+        private D2D.Factory _d2DFactory;
+        private D2D.RenderTarget _d2DRenderTarget;
+        private Device _device;
+        private int _frameCount = 0;
+        private Queue<int> _frameCountHist = new Queue<int>();
+        private int _frameCountHistTotal = 0;
+        private long _lastFrameTime = 0;
+        private long _lastRenderTime = 0;
+        private bool _invalidated = false;
+        private Stack<Int32Rect> _dirty = new Stack<Int32Rect>();
+        private Texture2D _renderTarget;
+        private DX11ImageSource _surface;
 
         #endregion Fields
 
         #region Constructors
 
-        public D2DImage()
+        protected D2DImage()
         {
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -85,21 +87,21 @@ namespace Ibinimator.View.Control
 
         #region Properties
 
-        public int FPS
+        public int Fps
         {
-            get { return (int)GetValue(FPSProperty); }
-            protected set { SetValue(FPSPropertyKey, value); }
+            get { return (int)GetValue(FpsProperty); }
+            protected set { SetValue(FpsPropertyKey, value); }
         }
 
         public bool EnableAntialiasing
         {
-            get => d2DRenderTarget?.AntialiasMode == D2D.AntialiasMode.Aliased;
-            set => d2DRenderTarget.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
+            get => _d2DRenderTarget?.AntialiasMode == D2D.AntialiasMode.Aliased;
+            set => _d2DRenderTarget.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
-        public DX11ImageSource Surface => surface;
+        public DX11ImageSource Surface => _surface;
 
-        public Device Device => device;
+        public Device Device => _device;
 
         #endregion Properties
 
@@ -115,40 +117,40 @@ namespace Ibinimator.View.Control
 
             CreateAndBindTargets();
             PrepareAndCallRender();
-            surface.InvalidateD3DImage();
+            _surface.InvalidateD3DImage();
         }
 
         private void CalcFps()
         {
-            frameCount++;
-            if (renderTimer.ElapsedMilliseconds - lastFrameTime > 1000)
+            _frameCount++;
+            if (_renderTimer.ElapsedMilliseconds - _lastFrameTime > 1000)
             {
-                frameCountHist.Enqueue(frameCount);
-                frameCountHistTotal += frameCount;
-                if (frameCountHist.Count > 5)
+                _frameCountHist.Enqueue(_frameCount);
+                _frameCountHistTotal += _frameCount;
+                if (_frameCountHist.Count > 5)
                 {
-                    frameCountHistTotal -= frameCountHist.Dequeue();
+                    _frameCountHistTotal -= _frameCountHist.Dequeue();
                 }
 
-                Dispatcher.InvokeAsync(() => FPS = frameCountHistTotal / frameCountHist.Count);
+                Dispatcher.InvokeAsync(() => Fps = _frameCountHistTotal / _frameCountHist.Count);
 
-                frameCount = 0;
-                lastFrameTime = renderTimer.ElapsedMilliseconds;
+                _frameCount = 0;
+                _lastFrameTime = _renderTimer.ElapsedMilliseconds;
             }
         }
 
         private void CreateAndBindTargets()
         {
-            this.surface.SetRenderTarget(null);
+            this._surface.SetRenderTarget(null);
 
-            Disposer.SafeDispose(ref d2DRenderTarget);
-            Disposer.SafeDispose(ref d2DFactory);
-            Disposer.SafeDispose(ref renderTarget);
+            Disposer.SafeDispose(ref _d2DRenderTarget);
+            Disposer.SafeDispose(ref _d2DFactory);
+            Disposer.SafeDispose(ref _renderTarget);
 
-            d2DFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
+            _d2DFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
 
-            var width = (int)Math.Max(1, ActualWidth * d2DFactory.DesktopDpi.Width / 96.0);
-            var height = (int)Math.Max(1, ActualHeight * d2DFactory.DesktopDpi.Height / 96.0);
+            var width = (int)Math.Max(1, ActualWidth * _d2DFactory.DesktopDpi.Width / 96.0);
+            var height = (int)Math.Max(1, ActualHeight * _d2DFactory.DesktopDpi.Height / 96.0);
 
             var renderDesc = new Texture2DDescription
             {
@@ -164,37 +166,39 @@ namespace Ibinimator.View.Control
                 ArraySize = 1
             };
 
-            renderTarget = new Texture2D(device, renderDesc);
+            _renderTarget = new Texture2D(_device, renderDesc);
 
-            var surface = renderTarget.QueryInterface<SharpDX.DXGI.Surface>();
+            var dxgiSurface = _renderTarget.QueryInterface<SharpDX.DXGI.Surface>();
+            var dxgiDevice = _device.QueryInterface<SharpDX.DXGI.Device1>();
+
+            var dxgiFactory = dxgiDevice.Adapter.GetParent<SharpDX.DXGI.Factory1>();
 
             var rtp = new D2D.RenderTargetProperties(new D2D.PixelFormat(SharpDX.DXGI.Format.Unknown, D2D.AlphaMode.Premultiplied));
-            d2DRenderTarget = new D2D.RenderTarget(d2DFactory, surface, rtp);
 
-            d2DRenderTarget.DotsPerInch = d2DFactory.DesktopDpi;
+            _d2DRenderTarget = new D2D.RenderTarget(_d2DFactory, dxgiSurface, rtp) { DotsPerInch = _d2DFactory.DesktopDpi};
 
-            this.surface.SetRenderTarget(renderTarget);
+            _device.ImmediateContext.Rasterizer.SetViewport(0, 0, width, height, 0.0f, 1.0f);
 
-            RenderTargetBound?.Invoke(this, d2DRenderTarget);
+            this._surface.SetRenderTarget(_renderTarget);
 
-            device.ImmediateContext.Rasterizer.SetViewport(0, 0, width, height, 0.0f, 1.0f);
+            RenderTargetBound?.Invoke(this, _d2DRenderTarget);
         }
 
         private void EndD3D()
         {
-            surface.IsFrontBufferAvailableChanged -= OnIsFrontBufferAvailableChanged;
+            _surface.IsFrontBufferAvailableChanged -= OnIsFrontBufferAvailableChanged;
             Source = null;
 
-            Disposer.SafeDispose(ref d2DRenderTarget);
-            Disposer.SafeDispose(ref d2DFactory);
-            Disposer.SafeDispose(ref surface);
-            Disposer.SafeDispose(ref renderTarget);
-            Disposer.SafeDispose(ref device);
+            Disposer.SafeDispose(ref _d2DRenderTarget);
+            Disposer.SafeDispose(ref _d2DFactory);
+            Disposer.SafeDispose(ref _surface);
+            Disposer.SafeDispose(ref _renderTarget);
+            Disposer.SafeDispose(ref _device);
         }
 
         private void OnIsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (surface.IsFrontBufferAvailable)
+            if (_surface.IsFrontBufferAvailable)
             {
                 StartRendering();
             }
@@ -209,28 +213,28 @@ namespace Ibinimator.View.Control
             if(App.IsDesigner) return;
 
             PrepareAndCallRender();
-            surface.InvalidateD3DImage();
+            _surface.InvalidateD3DImage();
         }
 
         private async void OnRendering(object sender, EventArgs e)
         {
-            if (!renderTimer.IsRunning)
+            if (!_renderTimer.IsRunning)
             {
                 return;
             }
 
-            if (RenderMode == RenderMode.Constant || invalidated)
+            if (RenderMode == RenderMode.Constant || _invalidated)
             {
                 await Task.Run((Action)PrepareAndCallRender);
 
                 Int32Rect rect;
-                surface.Lock();
-                while (dirty.Count > 0)
-                    surface.AddDirtyRect(rect = dirty.Pop());
-                surface.Unlock();
+                _surface.Lock();
+                while (_dirty.Count > 0)
+                    _surface.AddDirtyRect(rect = _dirty.Pop());
+                _surface.Unlock();
 
-                lastRenderTime = renderTimer.ElapsedMilliseconds;
-                invalidated = false;
+                _lastRenderTime = _renderTimer.ElapsedMilliseconds;
+                _invalidated = false;
             }
         }
 
@@ -245,70 +249,70 @@ namespace Ibinimator.View.Control
 
         private void PrepareAndCallRender()
         {
-            if (device == null)
+            if (_device == null)
             {
                 return;
             }
 
-            lock (d2DRenderTarget)
+            lock (_d2DRenderTarget)
             {
-                d2DRenderTarget.BeginDraw();
-                Render(d2DRenderTarget);
-                d2DRenderTarget.EndDraw();
+                _d2DRenderTarget.BeginDraw();
+                Render(_d2DRenderTarget);
+                _d2DRenderTarget.EndDraw();
+
+                CalcFps();
+
+                _device.ImmediateContext.Flush();
             }
-
-            CalcFps();
-
-            device.ImmediateContext.Flush();
         }
 
         private void StartD3D()
         {
-            device = new Device(DriverType.Hardware, DeviceCreationFlags.BgraSupport);
+            _device = new Device(DriverType.Hardware, DeviceCreationFlags.BgraSupport);
 
-            surface = new DX11ImageSource();
-            surface.IsFrontBufferAvailableChanged += OnIsFrontBufferAvailableChanged;
+            _surface = new DX11ImageSource();
+            _surface.IsFrontBufferAvailableChanged += OnIsFrontBufferAvailableChanged;
 
-            Source = surface;
+            Source = _surface;
 
             CreateAndBindTargets();
         }
 
         private void StartRendering()
         {
-            if (renderTimer.IsRunning)
+            if (_renderTimer.IsRunning)
             {
                 return;
             }
 
             CompositionTarget.Rendering += OnRendering;
 
-            renderTimer.Start();
+            _renderTimer.Start();
         }
 
         private void StopRendering()
         {
-            if (!renderTimer.IsRunning)
+            if (!_renderTimer.IsRunning)
             {
                 return;
             }
 
             CompositionTarget.Rendering -= OnRendering;
 
-            renderTimer.Stop();
+            _renderTimer.Stop();
         }
 
         public virtual void InvalidateSurface(Rectangle? area)
         {
-            invalidated = true;
+            _invalidated = true;
 
-            if(surface == null)
+            if(_surface == null)
                 return;
 
-            var whole = new Rectangle(0, 0, d2DRenderTarget.PixelSize.Width, d2DRenderTarget.PixelSize.Height);
+            var whole = new Rectangle(0, 0, _d2DRenderTarget.PixelSize.Width, _d2DRenderTarget.PixelSize.Height);
 
             var rect = area ?? whole;
-            var dpi = new Vector2(x: d2DRenderTarget.DotsPerInch.Width, y: d2DRenderTarget.DotsPerInch.Height) / new Vector2(96);
+            var dpi = new Vector2(x: _d2DRenderTarget.DotsPerInch.Width, y: _d2DRenderTarget.DotsPerInch.Height) / new Vector2(96);
 
             rect.Top = (int)MathUtils.Clamp(0, whole.Height, rect.Top * dpi.Y);
             rect.Bottom = (int)MathUtils.Clamp(rect.Top, whole.Height, rect.Bottom * dpi.Y);
@@ -317,7 +321,7 @@ namespace Ibinimator.View.Control
 
             if (rect.Width < 0) Debugger.Break();
 
-            dirty.Push(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
+            _dirty.Push(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
         }
 
         #endregion Methods
@@ -327,11 +331,11 @@ namespace Ibinimator.View.Control
     {
         #region Fields
 
-        private static int ActiveClients;
-        private static D3D9.Direct3DEx context;
-        private static D3D9.DeviceEx device;
+        private static int _activeClients;
+        private static D3D9.Direct3DEx _context;
+        private static D3D9.DeviceEx _device;
 
-        private D3D9.Texture renderTarget;
+        private D3D9.Texture _renderTarget;
 
         #endregion Fields
 
@@ -340,7 +344,7 @@ namespace Ibinimator.View.Control
         public DX11ImageSource()
         {
             StartD3D();
-            ActiveClients++;
+            _activeClients++;
         }
 
         #endregion Constructors
@@ -351,15 +355,15 @@ namespace Ibinimator.View.Control
         {
             SetRenderTarget(null);
 
-            Disposer.SafeDispose(ref renderTarget);
+            Disposer.SafeDispose(ref _renderTarget);
 
-            ActiveClients--;
+            _activeClients--;
             EndD3D();
         }
 
         public void InvalidateD3DImage(Int32Rect? rect = null)
         {
-            if (renderTarget != null)
+            if (_renderTarget != null)
             {
                 lock (this)
                 {
@@ -372,9 +376,9 @@ namespace Ibinimator.View.Control
 
         public void SetRenderTarget(Texture2D target)
         {
-            if (renderTarget != null)
+            if (_renderTarget != null)
             {
-                renderTarget = null;
+                _renderTarget = null;
 
                 base.Lock();
                 base.SetBackBuffer(D3DResourceType.IDirect3DSurface9, IntPtr.Zero);
@@ -404,11 +408,11 @@ namespace Ibinimator.View.Control
                 throw new ArgumentException("Invalid handle");
             }
 
-            renderTarget = new D3D9.Texture(device,
+            _renderTarget = new D3D9.Texture(_device,
                 target.Description.Width, target.Description.Height, 1,
                 D3D9.Usage.RenderTarget, format, D3D9.Pool.Default, ref handle);
 
-            using (var surface = renderTarget.GetSurfaceLevel(0))
+            using (var surface = _renderTarget.GetSurfaceLevel(0))
             {
                 base.Lock();
                 base.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
@@ -418,12 +422,14 @@ namespace Ibinimator.View.Control
 
         private static D3D9.PresentParameters GetPresentParameters()
         {
-            var presentParams = new D3D9.PresentParameters();
+            var presentParams = new D3D9.PresentParameters
+            {
+                Windowed = true,
+                SwapEffect = D3D9.SwapEffect.Discard,
+                DeviceWindowHandle = NativeMethods.GetDesktopWindow(),
+                PresentationInterval = D3D9.PresentInterval.Default
+            };
 
-            presentParams.Windowed = true;
-            presentParams.SwapEffect = D3D9.SwapEffect.Discard;
-            presentParams.DeviceWindowHandle = NativeMethods.GetDesktopWindow();
-            presentParams.PresentationInterval = D3D9.PresentInterval.Default;
 
             return presentParams;
         }
@@ -435,13 +441,13 @@ namespace Ibinimator.View.Control
 
         private static void ResetD3D()
         {
-            if (ActiveClients == 0)
+            if (_activeClients == 0)
             {
                 return;
             }
 
             var presentParams = GetPresentParameters();
-            device.ResetEx(ref presentParams);
+            _device.ResetEx(ref presentParams);
         }
 
         private static D3D9.Format TranslateFormat(Texture2D texture)
@@ -457,14 +463,14 @@ namespace Ibinimator.View.Control
 
         private void EndD3D()
         {
-            if (ActiveClients != 0)
+            if (_activeClients != 0)
             {
                 return;
             }
 
-            Disposer.SafeDispose(ref renderTarget);
-            Disposer.SafeDispose(ref device);
-            Disposer.SafeDispose(ref context);
+            Disposer.SafeDispose(ref _renderTarget);
+            Disposer.SafeDispose(ref _device);
+            Disposer.SafeDispose(ref _context);
         }
 
         private IntPtr GetSharedHandle(Texture2D texture)
@@ -477,7 +483,7 @@ namespace Ibinimator.View.Control
 
         private void StartD3D()
         {
-            if (ActiveClients != 0)
+            if (_activeClients != 0)
             {
                 return;
             }
@@ -485,8 +491,8 @@ namespace Ibinimator.View.Control
             var presentParams = GetPresentParameters();
             var createFlags = D3D9.CreateFlags.HardwareVertexProcessing | D3D9.CreateFlags.Multithreaded | D3D9.CreateFlags.FpuPreserve;
 
-            context = new D3D9.Direct3DEx();
-            device = new D3D9.DeviceEx(context, 0, D3D9.DeviceType.Hardware, IntPtr.Zero, createFlags, presentParams);
+            _context = new D3D9.Direct3DEx();
+            _device = new D3D9.DeviceEx(_context, 0, D3D9.DeviceType.Hardware, IntPtr.Zero, createFlags, presentParams);
         }
 
         #endregion Methods

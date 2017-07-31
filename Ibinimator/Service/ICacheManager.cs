@@ -1,9 +1,10 @@
 ﻿using Ibinimator.Model;
+using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using System.ComponentModel;
 
-namespace Ibinimator.View.Control
+namespace Ibinimator.Service
 {
     public interface ICacheManager : INotifyPropertyChanged
     {

@@ -1,17 +1,12 @@
-﻿using Ibinimator.Model;
-using Ibinimator.Shared;
-using SharpDX.Mathematics.Interop;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Linq;
 using System.ComponentModel;
-
-
 using System.Windows.Input;
-using System.Windows.Media;
-using Ibinimator.View.Control;
+using Ibinimator.Model;
+using Ibinimator.Service;
+using SharpDX;
+using SharpDX.Mathematics.Interop;
+using Rectangle = Ibinimator.Model.Rectangle;
 
 namespace Ibinimator.ViewModel
 {
@@ -30,9 +25,17 @@ namespace Ibinimator.ViewModel
 
         #region Properties
 
-        public IViewManager ViewManager { get => Get<IViewManager>(); set => Set(value); }
+        public IViewManager ViewManager
+        {
+            get => Get<IViewManager>();
+            set => Set(value);
+        }
 
-        public ISelectionManager SelectionManager { get => Get<ISelectionManager>(); set => Set(value); }
+        public ISelectionManager SelectionManager
+        {
+            get => Get<ISelectionManager>();
+            set => Set(value);
+        }
 
         public FillPickerViewModel FillPicker { get; }
 
@@ -60,13 +63,15 @@ namespace Ibinimator.ViewModel
                         Selection.Remove(layer);
                 }
             }
-            else throw new ArgumentException("What?!");
+            else
+            {
+                throw new ArgumentException("What?!");
+            }
         }
 
         private void SelectLayer(object param)
         {
             if (param is Layer layer)
-            {
                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     layer.Selected = !layer.Selected;
@@ -75,19 +80,15 @@ namespace Ibinimator.ViewModel
                 {
                     if (Selection.Count > 0)
                     {
-                        bool inRange = false;
+                        var inRange = false;
 
                         foreach (var l in Selection[0].Parent.SubLayers)
                         {
                             if (inRange)
-                            {
                                 l.Selected = inRange;
-                            }
 
                             if (l == layer || l == Selection[0])
-                            {
                                 inRange = !inRange;
-                            }
                         }
                     }
                 }
@@ -99,7 +100,6 @@ namespace Ibinimator.ViewModel
 
                     layer.Selected = true;
                 }
-            }
             else throw new ArgumentException(nameof(param));
         }
 
@@ -110,43 +110,43 @@ namespace Ibinimator.ViewModel
 
             var l = new Group();
 
-            var e = new Ellipse()
+            var e = new Ellipse
             {
                 X = 100,
                 Y = 100,
                 RadiusX = 50,
                 RadiusY = 50,
-                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 1f, 0, 1f) },
-                StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 0, 1f) },
+                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 1f, 0, 1f)},
+                StrokeBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 0, 0, 1f)},
                 StrokeWidth = 5,
-                Rotation = SharpDX.MathUtil.Pi
+                Rotation = MathUtil.Pi
             };
             e.UpdateTransform();
 
-            var r = new Rectangle()
+            var r = new Rectangle
             {
                 X = 150,
                 Y = 150,
                 Width = 100,
                 Height = 100,
-                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(1f, 0, 1f, 1f) },
-                StrokeBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 1f, 1f, 1f) },
+                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 0, 1f, 1f)},
+                StrokeBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(0, 1f, 1f, 1f)},
                 StrokeWidth = 5
             };
             r.UpdateTransform();
 
-            var r2 = new Rectangle()
+            var r2 = new Rectangle
             {
                 X = 200,
                 Y = 200,
                 Width = 100,
                 Height = 100,
-                FillBrush = new BrushInfo(BrushType.Color) { Color = new RawColor4(0, 0.5f, 1f, 1f) },
-                Rotation = SharpDX.MathUtil.Pi / 4
+                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(0, 0.5f, 1f, 1f)},
+                Rotation = MathUtil.Pi / 4
             };
             r2.UpdateTransform();
 
-            l.Position = new SharpDX.Vector2(100, 100);
+            l.Position = new Vector2(100, 100);
             l.UpdateTransform();
 
             ViewManager.Root.Add(l);

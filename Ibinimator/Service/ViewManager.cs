@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Model;
 using SharpDX;
+using Ibinimator.View.Control;
 
-namespace Ibinimator.View.Control
+namespace Ibinimator.Service
 {
     public class ViewManager : Model.Model, IViewManager
     {
@@ -25,10 +26,7 @@ namespace Ibinimator.View.Control
         public Layer Root
         {
             get => Get<Layer>();
-            set
-            {
-                Set(value);
-            }
+            set => Set(value);
         }
 
         public Vector2 FromArtSpace(Vector2 v)

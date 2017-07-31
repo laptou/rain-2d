@@ -4,6 +4,7 @@ using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using WPF = System.Windows.Media;
 
@@ -25,7 +26,7 @@ namespace Ibinimator.Model
             Opacity = 1;
 
             if (IsGradient)
-                Stops = new List<GradientStop>();
+                Stops = new ObservableCollection<GradientStop>();
         }
 
         #endregion Constructors
@@ -66,9 +67,9 @@ namespace Ibinimator.Model
             set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
         }
 
-        public List<GradientStop> Stops
+        public ObservableCollection<GradientStop> Stops
         {
-            get => Get<List<GradientStop>>();
+            get => Get<ObservableCollection<GradientStop>>();
             set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
         }
 
@@ -117,26 +118,61 @@ namespace Ibinimator.Model
 
         public WPF.Brush ToWPF()
         {
+            return App.Current.Dispatcher.Invoke<WPF.Brush>(() =>
+            {
+                switch (BrushType)
+                {
+                    case BrushType.Color:
+                        return new WPF.SolidColorBrush(Color.ToWPF());
+
+                    case BrushType.LinearGradient:
+                        return new WPF.LinearGradientBrush(
+                            new WPF.GradientStopCollection(
+                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
+                            ));
+
+                    case BrushType.RadialGradient:
+                        return new WPF.RadialGradientBrush(
+                            new WPF.GradientStopCollection(
+                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
+                            ));
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            });
+        }
+
+        public void Copy(BrushInfo brush)
+        {
+            if (this.BrushType != brush?.BrushType)
+                throw new InvalidOperationException();
+
+            Opacity = brush.Opacity;
+            Transform = brush.Transform;
+
             switch (BrushType)
             {
                 case BrushType.Color:
-                    return new WPF.SolidColorBrush(Color.ToWPF());
-
-                case BrushType.LinearGradient:
-                    return new WPF.LinearGradientBrush(
-                        new WPF.GradientStopCollection(
-                            Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
-                        ));
-
-                case BrushType.RadialGradient:
-                    return new WPF.RadialGradientBrush(
-                        new WPF.GradientStopCollection(
-                            Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWPF(), stop.Position))
-                        ));
-
-                default:
+                    Color = brush.Color;
+                    break;
+                case BrushType.Bitmap:
+                    Bitmap = brush.Bitmap;
+                    ExtendMode = brush.ExtendMode;
+                    break;
+                case BrushType.Image:
                     throw new NotImplementedException();
+                case BrushType.LinearGradient:
+                case BrushType.RadialGradient:
+                    EndPoint = brush.EndPoint;
+                    StartPoint = brush.StartPoint;
+                    Stops = brush.Stops;
+                    ExtendMode = brush.ExtendMode;
+                    break;
+                default:
+                    break;
             }
+
         }
 
         #endregion Methods

@@ -67,11 +67,11 @@ namespace Ibinimator.Test
         public void Decompose()
         {
             Matrix3x2 m = Matrix3x2.Identity;
-            var d = MathUtils.Decompose(m);
+            var d = m.Decompose();
 
             void Verify(Matrix3x2 mat)
             {
-                var decomp = MathUtils.Decompose(mat);
+                var decomp = mat.Decompose();
 
                 Matrix3x2 mat2 = Matrix3x2.Identity;
                 mat2 *= Matrix3x2.Scaling(decomp.scale);
@@ -112,7 +112,7 @@ namespace Ibinimator.Test
             Verify(m);
 
             m *= Matrix3x2.Scaling(2, 3);
-            d = MathUtils.Decompose(m);
+            d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 3), d.scale);
             Assert.AreEqual(Vector2.Zero, d.translation);
             Assert.AreEqual(0, d.skew, 1e-5f);
@@ -120,7 +120,7 @@ namespace Ibinimator.Test
             Verify(m);
 
             m *= Matrix3x2.Translation(2, 3);
-            d = MathUtils.Decompose(m);
+            d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 3), d.scale);
             Assert.AreEqual(new Vector2(2, 3), d.translation);
             Assert.AreEqual(0, d.skew, 1e-5f);
@@ -128,7 +128,7 @@ namespace Ibinimator.Test
             Verify(m);
 
             m *= Matrix3x2.Rotation(MathUtils.PI_2);
-            d = MathUtils.Decompose(m);
+            d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 3), d.scale);
             Assert.AreEqual(new Vector2(-3, 2), d.translation);
             Assert.AreEqual(0, d.skew, 1e-5f);
@@ -136,31 +136,31 @@ namespace Ibinimator.Test
             Verify(m);
 
             m *= Matrix3x2.Scaling(2, 1);
-            d = MathUtils.Decompose(m);
+            d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 6), d.scale);
             Assert.AreEqual(new Vector2(-6, 2), d.translation);
             Assert.AreEqual(MathUtils.PI_2, d.rotation, 1e-5f);
             Verify(m);
 
             m *= Matrix3x2.Rotation(MathUtils.PI_2 / 2);
-            d = MathUtils.Decompose(m);
+            d = m.Decompose();
             Assert.AreEqual(new Vector2(2, 6), d.scale);
             Assert.AreEqual(MathUtils.Rotate(new Vector2(-6, 2), MathUtils.PI_2 / 2), d.translation);
             Assert.AreEqual(MathUtils.PI_2 * 1.5f, d.rotation, 1e-5f);
             Verify(m);
 
             m = Matrix3x2.Rotation(MathUtils.PI_2 / 2) * Matrix3x2.Scaling(2, 1);
-            d = MathUtils.Decompose(m);
             Verify(m);
 
             m = Matrix3x2.Rotation(MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
             m *= Matrix3x2.Rotation(MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
-            d = MathUtils.Decompose(m);
             Verify(m);
 
             m = Matrix3x2.Rotation(-MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(2, 1);
             m *= Matrix3x2.Rotation(-MathUtils.PI_2 * 1.25f) * Matrix3x2.Scaling(10, -6);
-            d = MathUtils.Decompose(m);
+            Verify(m);
+
+            m = Matrix3x2.Scaling(2, -1);
             Verify(m);
         }
 
