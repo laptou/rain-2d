@@ -52,19 +52,10 @@ namespace Ibinimator.ViewModel
 
             public double Blue { get => Color.B / 255f; set => Color = ColorUtils.RgbToColor(Red, Green, value); }
 
-            public Color Color
+            public Color Color 
             {
                 get => ColorUtils.HslaToColor(Hue, Saturation, Lightness, Alpha);
-                set
-                {
-                    (Hue, Saturation, Lightness) = ColorUtils.RgbToHsl(value.R / 255f, value.G / 255f, value.B / 255f);
-                    RaisePropertyChanged(nameof(Red));
-                    RaisePropertyChanged(nameof(Green));
-                    RaisePropertyChanged(nameof(Blue));
-                    RaisePropertyChanged(nameof(Hue));
-                    RaisePropertyChanged(nameof(Saturation));
-                    RaisePropertyChanged(nameof(Lightness));
-                }
+                set => (Hue, Saturation, Lightness, Alpha) = ColorUtils.RgbaToHsla(value.R / 255f, value.G / 255f, value.B / 255f, value.A / 255f);
             }
 
             public double Green { get => Color.G / 255f; set => Color = ColorUtils.RgbToColor(Red, value, Blue); }
@@ -112,6 +103,8 @@ namespace Ibinimator.ViewModel
 
             public ColorPickerTarget Target { get; }
 
+            public bool Flag = false;
+
             #endregion Properties
         }
 
@@ -131,9 +124,25 @@ namespace Ibinimator.ViewModel
 
             public FillPickerViewModel(MainViewModel parent)
             {
-                this._parent = parent;
+                _parent = parent;
 
-                parent.Selection.CollectionChanged += OnSelectionChanged;
+                _parent.BrushUpdated += (sender, args) =>
+                {
+                    RaisePropertyChanged(nameof(FillBrush));
+                    RaisePropertyChanged(nameof(StrokeBrush));
+
+                    if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
+                    {
+                        lock(_fillPicker)
+                            _fillPicker.Flag = true;
+
+                        if(_fillPicker.Flag)
+                            _fillPicker.Color = fill.Color.ToWpf();
+
+                        lock (_fillPicker)
+                            _fillPicker.Flag = false;
+                    }
+                };
 
                 _strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
                 _fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
@@ -147,9 +156,9 @@ namespace Ibinimator.ViewModel
                 _pickerTarget == ColorPickerTarget.Fill ?
                 _fillPicker : _strokePicker;
 
-            public Brush FillBrush => _parent.BrushManager.Fill.ToWpf();
+            public Brush FillBrush => _parent.BrushManager.Fill?.ToWpf();
 
-            public Brush StrokeBrush => _parent.BrushManager.Stroke.ToWpf();
+            public Brush StrokeBrush => _parent.BrushManager.Stroke?.ToWpf();
 
             #endregion Properties
 
@@ -159,18 +168,18 @@ namespace Ibinimator.ViewModel
             {
                 var picker = (ColorPickerViewModel) sender;
 
+                lock (picker)
+                {
+                    if (picker.Flag)
+                        return;
+                }
+
                 if (picker.Target == ColorPickerTarget.Fill)
                     _parent.BrushManager.Fill = 
-                        new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
+                        new SolidColorBrushInfo { Color = picker.Color.ToDirectX() };
                 else
                     _parent.BrushManager.Stroke =
-                        new BrushInfo(BrushType.Color) { Color = picker.Color.ToDirectX() };
-            }
-
-            private void OnSelectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-            {
-                RaisePropertyChanged(nameof(FillBrush));
-                RaisePropertyChanged(nameof(StrokeBrush));
+                        new SolidColorBrushInfo { Color = picker.Color.ToDirectX() };
             }
 
             #endregion Methods

@@ -10,21 +10,23 @@ namespace Ibinimator.Service
 {
     public class BrushManager : Model.Model, IBrushManager
     {
-        public BrushManager(ArtView artView)
+        private bool selecting = false;
+
+        public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
             ArtView = artView;
-            ArtView.ViewManager.Root.PropertyChanged += (sender, args) =>
+
+            selectionManager.Updated += (sender, args) =>
             {
-                if (args.PropertyName == nameof(Layer.Selected))
+                selecting = true;
+                if (ArtView.SelectionManager.Selection.LastOrDefault() is Shape shape)
                 {
-                    if (ArtView.SelectionManager.Selection.LastOrDefault() is Shape shape)
-                    {
-                        Fill = shape.FillBrush;
-                        Stroke = shape.StrokeBrush;
-                        StrokeStyle = shape.StrokeStyle;
-                        StrokeWidth = shape.StrokeWidth;
-                    }
+                    Fill = shape.FillBrush;
+                    Stroke = shape.StrokeBrush;
+                    StrokeStyle = shape.StrokeStyle;
+                    StrokeWidth = shape.StrokeWidth;
                 }
+                selecting = false;
             };
 
             PropertyChanged += OnPropertyChanged;
@@ -32,23 +34,21 @@ namespace Ibinimator.Service
 
         private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
         {
+            // otherwise, selecting new shapes applies their properties to all
+            // of the other selected shapes
+            if (selecting) return;
+
             switch (args.PropertyName)
             {
                 case nameof(Fill):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is Shape shape)
-                            if (shape.FillBrush?.BrushType == Fill?.BrushType)
-                                shape.FillBrush?.Copy(Fill);
-                            else
-                                shape.FillBrush = Fill;
+                            shape.FillBrush = Fill;
                     break;
                 case nameof(Stroke):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is Shape shape)
-                            if (shape.StrokeBrush?.BrushType == Stroke?.BrushType)
-                                shape.StrokeBrush?.Copy(Stroke);
-                            else
-                                shape.StrokeBrush = Fill;
+                            shape.StrokeBrush = Stroke;
                     break;
                 case nameof(StrokeStyle):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))

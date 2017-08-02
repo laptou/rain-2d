@@ -133,11 +133,13 @@ namespace Ibinimator.Service
             {
                 Manager.ArtView.SelectionManager.ClearSelection();
 
-                Path path = new Path();
-                path.FillBrush = Manager.ArtView.BrushManager.Fill;
-                path.StrokeBrush = Manager.ArtView.BrushManager.Stroke;
-                path.StrokeWidth = Manager.ArtView.BrushManager.StrokeWidth;
-                path.StrokeStyle = Manager.ArtView.BrushManager.StrokeStyle;
+                Path path = new Path
+                {
+                    FillBrush = Manager.ArtView.BrushManager.Fill,
+                    StrokeBrush = Manager.ArtView.BrushManager.Stroke,
+                    StrokeWidth = Manager.ArtView.BrushManager.StrokeWidth,
+                    StrokeStyle = Manager.ArtView.BrushManager.StrokeStyle
+                };
 
                 Manager.ArtView.ViewManager.Root.Add(path);
 
@@ -162,12 +164,11 @@ namespace Ibinimator.Service
             if (CurrentPath == null) return;
 
             var props = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Hairline };
-            using (StrokeStyle1 stroke = 
-                new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), props))
+            using (var stroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), props))
             {
                 var transform = CurrentPath.AbsoluteTransform;
 
-                using (Geometry geom = CurrentPath.GetGeometry(target.Factory))
+                using (var geom = CurrentPath.GetGeometry(target.Factory))
                 {
                     target.Transform *= transform;
                     target.DrawGeometry(geom, cacheManager.GetBrush("A2"), 1, stroke);
@@ -178,7 +179,7 @@ namespace Ibinimator.Service
                     CurrentPath.Nodes.Select(n => 
                         Matrix3x2.TransformPoint(transform, n.Position)))
                 {
-                    RawRectangleF rect = new RawRectangleF(
+                    var rect = new RawRectangleF(
                         node.X - 2.5f, node.Y - 2.5f, node.X + 2.5f, node.Y + 2.5f);
                     target.DrawRectangle(rect, cacheManager.GetBrush("A2"), 1, stroke);
                 }

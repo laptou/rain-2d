@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,12 @@ namespace Ibinimator.Service
         public Layer Root
         {
             get => Get<Layer>();
-            set => Set(value);
+            set { Set(value); value.PropertyChanged += RootPropertyChanged;}
+        }
+
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            LayerUpdated?.Invoke(sender, propertyChangedEventArgs);
         }
 
         public Vector2 FromArtSpace(Vector2 v)
@@ -43,6 +49,8 @@ namespace Ibinimator.Service
             v.Location -= Pan;
             return v;
         }
+
+        public event PropertyChangedEventHandler LayerUpdated;
 
         public Vector2 ToArtSpace(Vector2 v)
         {

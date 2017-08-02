@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Service;
@@ -12,19 +13,7 @@ using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.View.Control
 {
-    internal enum ArtViewHandle
-    {
-        TopLeft,
-        Top,
-        TopRight,
-        Left,
-        Translation,
-        Right,
-        BottomLeft,
-        Bottom,
-        BottomRight,
-        Rotation
-    }
+    
 
     public class ArtView : D2DImage
     {
@@ -34,12 +23,6 @@ namespace Ibinimator.View.Control
         {
             RenderMode = RenderMode.Manual;
             RenderTargetBound += OnRenderTargetBound;
-
-            ToolManager = new ToolManager(this);
-            SelectionManager = new SelectionManager(this);
-            CacheManager = new CacheManager(this);
-            ViewManager = new ViewManager(this);
-
             Unloaded += OnUnloaded;
         }
 
@@ -47,27 +30,17 @@ namespace Ibinimator.View.Control
 
         #region Fields
 
-        public static readonly DependencyProperty SelectionProperty =
-            DependencyProperty.Register("Selection", typeof(IList<Layer>), typeof(ArtView),
-                new PropertyMetadata(OnSelectionChanged));
-
-        internal IBrushManager BrushManager;
-        internal IToolManager ToolManager;
-        internal ICacheManager CacheManager;
-        internal ISelectionManager SelectionManager;
-        internal IViewManager ViewManager;
+        public IBrushManager BrushManager { get; private set; }
+        public IToolManager ToolManager { get; private set; }
+        public ICacheManager CacheManager { get; private set; }
+        public ISelectionManager SelectionManager { get; private set; }
+        public IViewManager ViewManager { get; private set; }
 
         private Factory _factory;
 
         #endregion Fields
 
         #region Properties
-
-        public IList<Layer> Selection
-        {
-            get => (IList<Layer>) GetValue(SelectionProperty);
-            set => SetValue(SelectionProperty, value);
-        }
 
         public RenderTarget RenderTarget { get; private set; }
 
@@ -84,7 +57,8 @@ namespace Ibinimator.View.Control
         {
             base.OnLostFocus(e);
 
-            await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
+            if (ToolManager != null)
+                await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
         }
 
         protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -93,25 +67,28 @@ namespace Ibinimator.View.Control
 
             CaptureMouse();
 
+            if (ViewManager == null) return;
+
             var pos1 = e.GetPosition(this);
             var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
 
-            await Task.Run(() => ToolManager.MouseDown(pos));
+            if (ToolManager != null)
+                await Task.Run(() => ToolManager.MouseDown(pos));
         }
 
         protected override async void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
 
+            if (ViewManager == null) return;
+
             var pos1 = e.GetPosition(this);
             var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
 
-            await Task.Run(() => ToolManager.MouseMove(pos));
+            if(ToolManager != null)
+                await Task.Run(() => ToolManager.MouseMove(pos));
 
-            if (SelectionManager.Cursor != null)
-                Cursor = Cursors.None;
-            else
-                Cursor = Cursors.Arrow;
+            Cursor = SelectionManager?.Cursor != null ? Cursors.None : Cursors.Arrow;
         }
 
         protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
@@ -120,14 +97,19 @@ namespace Ibinimator.View.Control
 
             ReleaseMouseCapture();
 
+            if (ViewManager == null) return;
+
             var pos1 = e.GetPosition(this);
             var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
 
-            await Task.Run(() => ToolManager.MouseUp(pos));
+            if(ToolManager != null)
+                await Task.Run(() => ToolManager.MouseUp(pos));
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
         {
+            if (ViewManager == null) return;
+
             var scale = 1 + e.Delta / 500f;
             var pos1 = e.GetPosition(this);
             var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
@@ -149,47 +131,84 @@ namespace Ibinimator.View.Control
             _factory = target.Factory;
             RenderTarget = target;
 
-            CacheManager.ResetAll();
-            CacheManager.LoadBrushes(target);
-            CacheManager.LoadBitmaps(target);
+            CacheManager?.ResetAll();
+            CacheManager?.LoadBrushes(target);
+            CacheManager?.LoadBitmaps(target);
 
-            if (ViewManager.Root != null)
-                CacheManager.BindLayer(ViewManager.Root);
+            if (ViewManager?.Root != null)
+                CacheManager?.BindLayer(ViewManager.Root);
         }
 
         protected override void Render(RenderTarget target)
         {
             target.Clear(Color4.White);
 
-            target.Transform = ViewManager.Transform;
+            target.Transform = ViewManager?.Transform ?? Matrix.Identity;
 
-            ViewManager.Root.Render(target, CacheManager);
+            ViewManager?.Root?.Render(target, CacheManager);
 
-            SelectionManager.Render(target, CacheManager);
+            SelectionManager?.Render(target, CacheManager);
 
-            ToolManager.Tool?.Render(target, CacheManager);
-        }
-
-        private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var av = (ArtView) d;
-            if (e.OldValue is INotifyCollectionChanged old)
-                old.CollectionChanged -= av.OnSelectionUpdated;
-            if (e.NewValue is INotifyCollectionChanged incc)
-                incc.CollectionChanged += av.OnSelectionUpdated;
-
-            av.SelectionManager.Selection = e.NewValue as IList<Layer>;
-            av.SelectionManager.Update(true);
-        }
-
-        private void OnSelectionUpdated(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            SelectionManager.Update(true);
+            ToolManager?.Tool?.Render(target, CacheManager);
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            CacheManager.ResetAll();
+            CacheManager?.ResetAll();
+        }
+
+        public void SetManager<T>(T manager) where T : IArtViewManager
+        {
+            if(manager == null) throw new ArgumentNullException(nameof(manager));
+
+            var managerInterfaces =
+                typeof(T).FindInterfaces((type, criteria) =>
+                    typeof(IArtViewManager).IsAssignableFrom(type), null)
+                    .Concat(new []{ typeof(T) });
+
+            var interfaces = managerInterfaces.ToList();
+
+            if (interfaces.Contains(typeof(IBrushManager)))
+            {
+                BrushManager = (IBrushManager)manager;
+            }
+
+            if (interfaces.Contains(typeof(ICacheManager)))
+            {
+                CacheManager?.ResetAll();
+
+                CacheManager = (ICacheManager)manager;
+
+                if (RenderTarget != null)
+                {
+                    CacheManager.LoadBrushes(RenderTarget);
+                    CacheManager.LoadBitmaps(RenderTarget);
+
+                    if (ViewManager?.Root != null)
+                        CacheManager.BindLayer(ViewManager.Root);
+                }
+            }
+
+            if (interfaces.Contains(typeof(ISelectionManager)))
+            {
+                SelectionManager = (ISelectionManager)manager;
+            }
+
+            if (interfaces.Contains(typeof(IToolManager)))
+            {
+                ToolManager = (IToolManager)manager;
+            }
+
+            if (interfaces.Contains(typeof(IViewManager)))
+            {
+                ViewManager = (IViewManager)manager;
+
+                CacheManager?.ResetLayerCache();
+                if (ViewManager?.Root != null)
+                    CacheManager?.BindLayer(ViewManager.Root);
+            }
+
+            InvalidateSurface();
         }
 
         #endregion Methods

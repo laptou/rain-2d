@@ -31,9 +31,9 @@
             </Style.Triggers>
         </Style>
     </Window.Style>
-    <Window.DataContext>
+    <d:Window.DataContext>
         <viewmodel:MainViewModel />
-    </Window.DataContext>
+    </d:Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -223,11 +223,41 @@
                                             </CombinedGeometry.Geometry2>
                                         </CombinedGeometry>
                                     </Path.Data>
+                                    <Path.Style>
+                                        <Style TargetType="Shape">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding StrokeBrush, Mode=OneWay}" Value="{x:Null}">
+                                                    <Setter Property="Fill" Value="{DynamicResource NullBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
                                 </Path>
                                 <Ellipse Stroke="{StaticResource T2Brush}" StrokeThickness="1" Stretch="Uniform"
                                          Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="2"
                                          Fill="{Binding FillBrush, Mode=OneWay}">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Shape">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding FillBrush, Mode=OneWay}" Value="{x:Null}">
+                                                    <Setter Property="Fill" Value="{DynamicResource NullBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
                                 </Ellipse>
+                                <Ellipse Stroke="{StaticResource T2Brush}" StrokeThickness="1" Stretch="Uniform"
+                                         Grid.Column="0" Grid.Row="2" Fill="{DynamicResource NullBrush}" />
+                                <Grid.Resources>
+                                    <LinearGradientBrush x:Key="NullBrush">
+                                        <GradientStop Color="White"/>
+                                        <GradientStop Color="White" Offset="0.449"/>
+                                        <GradientStop Color="Red" Offset="0.45"/>
+                                        <GradientStop Color="Red" Offset="0.55"/>
+                                        <GradientStop Color="White" Offset="0.556"/>
+                                        <GradientStop Color="White" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Grid.Resources>
                             </Grid>
 
                             <Grid DataContext="{Binding ColorPicker}">
@@ -352,8 +382,6 @@
                                     <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
                                     <Setter Property="Padding" Value="0,10,0,0" />
                                     <Setter Property="Foreground" Value="{StaticResource T1Brush}" />
-                                    <!--<Setter Property="view:TreeViewMultipleSelectionBehavior.IsItemSelected" 
-                                            Value="{Binding Selected, Mode=TwoWay}" />-->
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type TreeViewItem}">
@@ -449,8 +477,7 @@
                 <TabItem>
                     <Border Background="White">
                         <control:ArtView
-                            x:Name="artView"
-                            Selection="{Binding Selection}" />
+                            x:Name="artView"/>
                     </Border>
                 </TabItem>
             </TabControl>

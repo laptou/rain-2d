@@ -4,9 +4,8 @@ using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
-    public interface IBrushManager
+    public interface IBrushManager : IArtViewManager
     {
-        ArtView ArtView { get; }
         BrushInfo Fill { get; set; }
         BrushInfo Stroke { get; set; }
         StrokeStyleProperties1 StrokeStyle { get; set; }

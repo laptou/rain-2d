@@ -6,10 +6,8 @@ using System.ComponentModel;
 
 namespace Ibinimator.Service
 {
-    public interface ICacheManager : INotifyPropertyChanged
+    public interface ICacheManager : IArtViewManager, INotifyPropertyChanged
     {
-        ArtView ArtView { get; }
-
         Brush BindBrush(Shape shape, BrushInfo brush);
         void BindLayer(Model.Layer layer);
 

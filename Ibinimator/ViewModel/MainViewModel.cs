@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,23 +20,46 @@ namespace Ibinimator.ViewModel
         {
             FillPicker = new FillPickerViewModel(this);
             TransformPicker = new TransformViewModel(this);
+
             SelectLayerCommand = new DelegateCommand(SelectLayer);
         }
 
         #endregion Constructors
+
+        public event EventHandler SelectionUpdated;
+        public event PropertyChangedEventHandler LayerUpdated;
+        public event PropertyChangedEventHandler BrushUpdated;
 
         #region Properties
 
         public IViewManager ViewManager
         {
             get => Get<IViewManager>();
-            set => Set(value);
+            set
+            {
+                if (ViewManager != null)
+                    ViewManager.LayerUpdated -= LayerUpdated;
+
+                Set(value);
+
+                if (ViewManager != null)
+                    ViewManager.LayerUpdated += LayerUpdated;
+            }
         }
 
         public ISelectionManager SelectionManager
         {
             get => Get<ISelectionManager>();
-            set => Set(value);
+            set
+            {
+                if (SelectionManager != null)
+                    SelectionManager.Updated -= SelectionUpdated;
+
+                Set(value);
+
+                if (SelectionManager != null)
+                    SelectionManager.Updated += SelectionUpdated;
+            }
         }
 
         public IToolManager ToolManager
@@ -49,17 +71,23 @@ namespace Ibinimator.ViewModel
         public IBrushManager BrushManager
         {
             get => Get<IBrushManager>();
-            set => Set(value);
+            set
+            {
+                if (BrushManager != null)
+                    BrushManager.PropertyChanged -= BrushUpdated;
+
+                Set(value);
+
+                if (BrushManager != null)
+                    BrushManager.PropertyChanged += BrushUpdated;
+            }
         }
 
         public FillPickerViewModel FillPicker { get; }
 
         public TransformViewModel TransformPicker { get; }
 
-        public ObservableCollection<Layer> Selection { get; } = new ObservableCollection<Layer>();
-
         public DelegateCommand SelectLayerCommand { get; }
-
 
         #endregion Properties
 
@@ -71,12 +99,12 @@ namespace Ibinimator.ViewModel
             {
                 if (e.PropertyName == nameof(Layer.Selected))
                 {
-                    var contains = Selection.Contains(layer);
+                    var contains = SelectionManager.Selection.Contains(layer);
 
                     if (layer.Selected && !contains)
-                        Selection.Add(layer);
+                        SelectionManager.Selection.Add(layer);
                     else if (!layer.Selected && contains)
-                        Selection.Remove(layer);
+                        SelectionManager.Selection.Remove(layer);
                 }
             }
             else
@@ -94,25 +122,23 @@ namespace Ibinimator.ViewModel
                 }
                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                 {
-                    if (Selection.Count > 0)
+                    if (SelectionManager.Selection.Count > 0)
                     {
                         var inRange = false;
 
-                        foreach (var l in Selection[0].Parent.SubLayers)
+                        foreach (var l in SelectionManager.Selection[0].Parent.SubLayers)
                         {
                             if (inRange)
-                                l.Selected = inRange;
+                                l.Selected = true;
 
-                            if (l == layer || l == Selection[0])
+                            if (l == layer || l == SelectionManager.Selection[0])
                                 inRange = !inRange;
                         }
                     }
                 }
                 else
                 {
-                    // use a while loop so that we don't get 'collection modified' exceptions
-                    while (Selection.Count > 0)
-                        Selection[0].Selected = false;
+                    SelectionManager.ClearSelection();
 
                     layer.Selected = true;
                 }
@@ -132,8 +158,8 @@ namespace Ibinimator.ViewModel
                 Y = 100,
                 RadiusX = 50,
                 RadiusY = 50,
-                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 1f, 0, 1f)},
-                StrokeBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 0, 0, 1f)},
+                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 1f, 0, 1f)},
+                StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 0, 1f)},
                 StrokeWidth = 5,
                 Rotation = MathUtil.Pi
             };
@@ -145,8 +171,8 @@ namespace Ibinimator.ViewModel
                 Y = 150,
                 Width = 100,
                 Height = 100,
-                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(1f, 0, 1f, 1f)},
-                StrokeBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(0, 1f, 1f, 1f)},
+                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 1f, 1f)},
+                StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
                 StrokeWidth = 5
             };
             r.UpdateTransform();
@@ -157,7 +183,7 @@ namespace Ibinimator.ViewModel
                 Y = 200,
                 Width = 100,
                 Height = 100,
-                FillBrush = new BrushInfo(BrushType.Color) {Color = new RawColor4(0, 0.5f, 1f, 1f)},
+                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
                 Rotation = MathUtil.Pi / 4
             };
             r2.UpdateTransform();

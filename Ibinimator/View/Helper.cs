@@ -17,7 +17,7 @@ namespace Ibinimator.View
             return (Brush)obj.GetValue(AccentProperty);
         }
 
-        public static void SetAccent(DependencyObject obj, Color value)
+        public static void SetAccent(DependencyObject obj, Brush value)
         {
             obj.SetValue(AccentProperty, value);
         }

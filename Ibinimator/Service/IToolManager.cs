@@ -5,9 +5,8 @@ using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
-    public interface IToolManager : INotifyPropertyChanged
+    public interface IToolManager : IArtViewManager, INotifyPropertyChanged
     {
-        ArtView ArtView { get; }
         ITool Tool { get; }
         ToolType Type { get; set; }
 

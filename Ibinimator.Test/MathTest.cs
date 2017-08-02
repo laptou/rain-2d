@@ -48,13 +48,13 @@ namespace Ibinimator.Test
         public void Rotation()
         {
             Vector2 v1 = new Vector2(1, 0);
-            Vector2 v2 = new Vector2(MathUtils.Sqrt12, MathUtils.Sqrt12);
+            Vector2 v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
             Vector2 v3 = new Vector2(0, 1);
-            Vector2 v4 = new Vector2(-MathUtils.Sqrt12, MathUtils.Sqrt12);
+            Vector2 v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
             Vector2 v5 = new Vector2(-1, 0);
-            Vector2 v6 = new Vector2(-MathUtils.Sqrt12, -MathUtils.Sqrt12);
+            Vector2 v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
             Vector2 v7 = new Vector2(0, -1);
-            Vector2 v8 = new Vector2(MathUtils.Sqrt12, -MathUtils.Sqrt12);
+            Vector2 v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
 
             Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
             Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));

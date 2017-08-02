@@ -129,6 +129,7 @@
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
+    <Compile Include="Service\IArtViewManager.cs" />
     <Compile Include="Service\ToolManager.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\MathUtils.cs" />

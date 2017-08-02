@@ -8,12 +8,11 @@ using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public interface ISelectionManager : INotifyPropertyChanged
+    public interface ISelectionManager : IArtViewManager, INotifyPropertyChanged
     {
-        ArtView ArtView { get; }
         Bitmap Cursor { get; set; }
         Model.Layer Root { get; }
-        IList<Model.Layer> Selection { get; set; }
+        IList<Model.Layer> Selection { get; }
         RectangleF SelectionBounds { get; }
         float SelectionRotation { get; }
         float SelectionShear { get; }

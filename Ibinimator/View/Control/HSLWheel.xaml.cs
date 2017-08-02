@@ -214,7 +214,7 @@ namespace Ibinimator.View.Control
             var dpi = screen.GetDpiForMonitor(DpiType.Effective);
             var size = (int)Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
 
-            _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt32), dpi.x, dpi.y, PixelFormats.Bgra32, null);
+            _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt3Over2), dpi.x, dpi.y, PixelFormats.Bgra32, null);
             _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
 
             Triangle.Fill = new ImageBrush(_triangle);

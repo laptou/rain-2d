@@ -1,14 +1,13 @@
-﻿using Ibinimator.Model;
+﻿using System;
+using Ibinimator.Model;
 using Ibinimator.View.Control;
 using SharpDX;
 using System.ComponentModel;
 
 namespace Ibinimator.Service
 {
-    public interface IViewManager : INotifyPropertyChanged
+    public interface IViewManager : IArtViewManager, INotifyPropertyChanged
     {
-        ArtView ArtView { get; }
-
         float Zoom { get; set; }
         Vector2 Pan { get; set; }
         Matrix3x2 Transform { get; }
@@ -19,5 +18,7 @@ namespace Ibinimator.Service
         RectangleF ToArtSpace(RectangleF v);
         Vector2 FromArtSpace(Vector2 v);
         RectangleF FromArtSpace(RectangleF v);
+
+        event PropertyChangedEventHandler LayerUpdated;
     }
 }
