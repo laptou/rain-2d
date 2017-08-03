@@ -18,11 +18,19 @@ namespace Ibinimator.Model
 
         #region Properties
 
-        public override String DefaultName => "Group";
+        public override string DefaultName => "Group";
 
         #endregion Properties
 
         #region Methods
+
+        public override Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        {
+            var hit = base.Hit(factory, point, world);
+            if (hit != null)
+                return Selected ? hit : this;
+            else return null;
+        }
 
         public override IEnumerable<Layer> Flatten()
         {
@@ -69,8 +77,6 @@ namespace Ibinimator.Model
             Opacity = 1;
             Scale = Vector2.One;
             UpdateTransform();
-
-            SubLayers.CollectionChanged += OnCollectionChanged;
         }
 
         #endregion Constructors
@@ -79,9 +85,9 @@ namespace Ibinimator.Model
 
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        public Matrix3x2 WorldTransform => (Parent?.AbsoluteTransform ?? Matrix.Identity);
+        public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
 
-        public virtual String DefaultName => "Layer";
+        public virtual string DefaultName => "Layer";
 
         public virtual float Height { get => Get<float>(); set => Set(value); }
 
@@ -95,9 +101,9 @@ namespace Ibinimator.Model
 
         public Layer Parent { get => Get<Layer>(); set => Set(value); }
 
-        public Vector2 Position { get => Get<Vector2>(); set { Set(value); } }
+        public Vector2 Position { get => Get<Vector2>(); set => Set(value); }
 
-        public float Rotation { get => Get<float>(); set { Set(value); } }
+        public float Rotation { get => Get<float>(); set => Set(value); }
 
         public bool Selected { get => Get<bool>(); set => Set(value); }
 
@@ -105,9 +111,9 @@ namespace Ibinimator.Model
 
         public Matrix3x2 Transform { get => Get<Matrix3x2>(); private set => Set(value); }
 
-        public Vector2 Scale { get => Get<Vector2>(); set { Set(value); } }
+        public Vector2 Scale { get => Get<Vector2>(); set => Set(value); }
 
-        public float Shear { get => Get<float>(); set { Set(value); } }
+        public float Shear { get => Get<float>(); set => Set(value); }
 
         public virtual float Width { get => Get<float>(); set => Set(value); }
 
@@ -121,8 +127,22 @@ namespace Ibinimator.Model
 
         public void Add(Layer child)
         {
+            if(child.Parent == this)
+                throw new InvalidOperationException();
+
             child.Parent = this;
             SubLayers.Add(child);
+            child.PropertyChanged += OnSubLayerChanged;
+        }
+
+        public void Remove(Layer child)
+        {
+            if(child.Parent != this)
+                throw new InvalidOperationException();
+
+            child.Parent = null;
+            SubLayers.Remove(child);
+            child.PropertyChanged -= OnSubLayerChanged;
         }
 
         /// <summary>
@@ -172,7 +192,9 @@ namespace Ibinimator.Model
 
         public RectangleF GetAxisAlignedBounds()
         {
-            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(Scale) * Matrix3x2.Translation(Position) * WorldTransform);
+            var decomp = AbsoluteTransform.Decompose();
+
+            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(decomp.scale) * Matrix3x2.Translation(decomp.translation));
 
             return r;
         }
@@ -183,7 +205,6 @@ namespace Ibinimator.Model
 
             return r;
         }
-
 
         public virtual Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
         {
@@ -198,37 +219,21 @@ namespace Ibinimator.Model
             return null;
         }
 
-        public void Remove(Layer child)
-        {
-            child.Parent = null;
-            SubLayers.Remove(child);
-        }
-
         public virtual void Render(RenderTarget target, ICacheManager helper)
         {
-            foreach (var layer in SubLayers.Reverse())
+            foreach (var layer in Enumerable.Reverse(SubLayers))
             {
                 layer.Render(target, helper);
             }
         }
 
-        public virtual void UpdateTransform()
+        public void UpdateTransform()
         {
             Transform =
                 Matrix3x2.Scaling(Scale) *
                 Matrix3x2.Skew(0, Shear) *
                 Matrix3x2.Rotation(Rotation) *
                 Matrix3x2.Translation(Position);
-        }
-
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            foreach (Layer layer in e.NewItems)
-                layer.PropertyChanged += OnSubLayerChanged;
-
-            if (e.Action == NotifyCollectionChangedAction.Remove)
-                foreach (Layer layer in e.OldItems)
-                    layer.PropertyChanged -= OnSubLayerChanged;
         }
 
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)

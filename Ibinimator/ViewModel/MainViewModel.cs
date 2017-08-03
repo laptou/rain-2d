@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -188,6 +189,24 @@ namespace Ibinimator.ViewModel
             };
             r2.UpdateTransform();
 
+            var p = new Path
+            {
+                X = 300,
+                Y = 300,
+                FillBrush = new SolidColorBrushInfo { Color = new RawColor4(0, 0.5f, 1f, 1f) },
+                StrokeBrush = new SolidColorBrushInfo { Color = new RawColor4(0, 1f, 1f, 1f) },
+                StrokeWidth = 5,
+                Nodes = new ObservableCollection<PathNode>
+                {
+                    new PathNode { X = 100, Y = 100 },
+                    new PathNode { X = 150, Y = 100 },
+                    new PathNode { X = 150, Y = 150 },
+                    new PathNode { X = 200, Y = 150 },
+                    new PathNode { X = 200, Y = 200 }
+                }
+            };
+            r2.UpdateTransform();
+
             l.Position = new Vector2(100, 100);
             l.UpdateTransform();
 
@@ -196,6 +215,7 @@ namespace Ibinimator.ViewModel
             l.Add(e);
             l.Add(r);
             l.Add(r2);
+            l.Add(p);
         }
 
         #endregion Methods

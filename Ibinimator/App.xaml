@@ -1,10 +1,12 @@
 ﻿<Application
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Ibinimator"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:local="clr-namespace:Ibinimator"
     xmlns:view="clr-namespace:Ibinimator.View"
-             xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" x:Class="Ibinimator.App"
-             StartupUri="View/MainView.xaml">
+    xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" 
+    x:Class="Ibinimator.App"
+    StartupUri="View/MainView.xaml">
     <Application.Resources>
         <!--#region Accents-->
         <!--#region Colors-->
@@ -95,11 +97,46 @@
             <Setter Property="Height" Value="25.6" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Style.Triggers>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{Binding (view:Helper.Accent)}" />
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="SelectionBrush">
+                <Setter.Value>
+                    <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                        <Border 
+                            x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2"
+                            Background="{TemplateBinding Background}" 
+                            SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="Background" TargetName="border">
+                                    <Setter.Value>
+                                        <LinearGradientBrush Opacity="0.5" EndPoint="0,1">
+                                            <GradientStop />
+                                            <GradientStop Offset="0.75"/>
+                                            <GradientStop Color="{Binding (view:Helper.Accent), ElementName=border}" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="BorderBrush" TargetName="border">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), ElementName=border}" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="{x:Type ToolBar}">
@@ -114,11 +151,11 @@
                                     <Image Source="/Ibinimator;component/Resources/Icon/expander.png" Style="{DynamicResource Icon}" />
                                 </ToggleButton>
                                 <Popup x:Name="OverflowPopup" AllowsTransparency="true" Focusable="false" IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom" StaysOpen="false">
-                                    <Themes:SystemDropShadowChrome x:Name="Shdw" Color="Transparent">
+                                    <themes:SystemDropShadowChrome x:Name="Shdw" Color="Transparent">
                                         <Border x:Name="ToolBarSubMenuBorder" Background="{DynamicResource L2Brush}" RenderOptions.ClearTypeHint="Enabled">
                                             <ToolBarOverflowPanel x:Name="PART_ToolBarOverflowPanel" KeyboardNavigation.DirectionalNavigation="Cycle" FocusVisualStyle="{x:Null}" Focusable="true" Margin="2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle" WrapWidth="200" />
                                         </Border>
-                                    </Themes:SystemDropShadowChrome>
+                                    </themes:SystemDropShadowChrome>
                                 </Popup>
                             </Grid>
                             <Border x:Name="MainPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
@@ -170,8 +207,10 @@
                     <ControlTemplate TargetType="{x:Type TabItem}">
                         <Grid x:Name="templateRoot" SnapsToDevicePixels="true" Margin="12,0">
                             <Border x:Name="mainBorder"
-                                    BorderBrush="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabPanel}}}"
                                     BorderThickness="0,0,0,1" Background="{TemplateBinding Background}" Margin="0" Cursor="Hand" Padding="{TemplateBinding Padding}">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"></SolidColorBrush>
+                                </Border.BorderBrush>
                                 <ContentPresenter x:Name="contentPresenter" Content="{TemplateBinding Header}" Focusable="False"
                                                   HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
@@ -187,8 +226,11 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                                 <Setter Property="TextBlock.FontWeight" Value="Bold" TargetName="contentPresenter" />
-                                <Setter Property="TextElement.Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}" />
-                                <Setter Property="TextBlock.Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource TemplatedParent}}" TargetName="mainBorder" />
+                                <Setter Property="TextElement.Foreground" TargetName="mainBorder">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"></SolidColorBrush>
+                                    </Setter.Value>
+                                </Setter>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="False">
                                 <Setter Property="BorderThickness" TargetName="mainBorder" Value="0" />

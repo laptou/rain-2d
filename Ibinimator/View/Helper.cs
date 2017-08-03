@@ -12,20 +12,25 @@ namespace Ibinimator.View
 {
     public class Helper
     {
-        public static Brush GetAccent(DependencyObject obj)
+        public static Brush GetAccentBrush(DependencyObject obj)
         {
-            return (Brush)obj.GetValue(AccentProperty);
+            return new SolidColorBrush(GetAccent(obj));
         }
 
-        public static void SetAccent(DependencyObject obj, Brush value)
+        public static Color GetAccent(DependencyObject obj)
+        {
+            return (Color)obj.GetValue(AccentProperty);
+        }
+
+        public static void SetAccent(DependencyObject obj, Color value)
         {
             obj.SetValue(AccentProperty, value);
         }
 
         public static readonly DependencyProperty AccentProperty =
-            DependencyProperty.RegisterAttached("Accent", typeof(Brush), typeof(Helper), 
+            DependencyProperty.RegisterAttached("Accent", typeof(Color), typeof(Helper), 
                 new FrameworkPropertyMetadata(
-                    new SolidColorBrush(ColorUtils.RgbaToColor(0, 0, 0, 1)),
+                    ColorUtils.RgbaToColor(0, 0, 0, 1),
                     FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
     }
 

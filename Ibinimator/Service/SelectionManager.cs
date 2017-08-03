@@ -372,10 +372,11 @@ namespace Ibinimator.Service
 
                     case 1:
                         bounds = Selection[0].GetAxisAlignedBounds();
+                        var transform = Selection[0].AbsoluteTransform.Decompose();
+                        var origin = transform.translation;
 
                         if (reset)
                         {
-                            var transform = Selection[0].AbsoluteTransform.Decompose();
 
                             SelectionRotation = transform.rotation;
                             SelectionShear = transform.skew;
@@ -385,9 +386,9 @@ namespace Ibinimator.Service
                             MathUtils.Rotate(
                                 MathUtils.ShearX(
                                     bounds.Center,
-                                    bounds.TopLeft,
+                                    origin,
                                     SelectionShear),
-                                bounds.TopLeft, 
+                                origin, 
                                 SelectionRotation) -
                             bounds.Center;
 

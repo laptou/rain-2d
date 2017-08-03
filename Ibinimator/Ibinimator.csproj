@@ -160,6 +160,7 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\TextBoxEnterBehavior.cs" />
     <Compile Include="View\TreeViewBehavior.cs" />
     <Compile Include="View\UnitConverter.cs" />
   </ItemGroup>

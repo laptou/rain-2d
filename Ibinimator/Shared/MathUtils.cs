@@ -47,10 +47,10 @@ namespace Ibinimator.Shared
 
         public static readonly float Sqrt2 = (float)Math.Sqrt(2);
         public static readonly float Sqrt3 = (float)Math.Sqrt(3);
-        public static readonly float Sqrt32 = (float)Math.Sqrt(3) / 2;
-        public static readonly float Sqrt22 = (float)Math.Sqrt(2) / 2;
-        public static readonly float Sqrt13 = 1 / (float)Math.Sqrt(3);
-        public static readonly float Sqrt12 = 1 / (float)Math.Sqrt(2);
+        public static readonly float Sqrt3Over2 = (float)Math.Sqrt(3) / 2;
+        public static readonly float Sqrt2Over2 = (float)Math.Sqrt(2) / 2;
+        public static readonly float InverseSqrt3 = 1 / (float)Math.Sqrt(3);
+        public static readonly float InverseSqrt2 = 1 / (float)Math.Sqrt(2);
 
         public static Vector2 Transform2D(Vector2 v, Matrix3x2 m)
         {

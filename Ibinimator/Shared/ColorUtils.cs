@@ -49,6 +49,29 @@ namespace Ibinimator.Shared
             return (h * 360f, s, l);
         }
 
+        public static (double h, double s, double l, double a) RgbaToHsla(double r, double g, double b, double a)
+        {
+            double max = MathUtils.Max(r, g, b), min = MathUtils.Min(r, g, b);
+            double h, s, l = (max + min) / 2;
+
+            if (max == min)
+            {
+                h = s = 0; // achromatic
+            }
+            else
+            {
+                var d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                if (max == r) h = (g - b) / d + (g < b ? 6 : 0);
+                else if (max == g) h = (b - r) / d + 2;
+                else h = (r - g) / d + 4;
+
+                h /= 6;
+            }
+
+            return (h * 360f, s, l, a);
+        }
+
         public static Color HslToColor(double h, double s, double l)
         {
             (double r, double g, double b) = HslToRgb(h, s, l);

@@ -10,171 +10,174 @@ using WPF = System.Windows.Media;
 
 namespace Ibinimator.Model
 {
-    public enum BrushType
+    public enum GradientBrushType
     {
-        Color, Bitmap, Image, LinearGradient, RadialGradient
+        Linear, Radial
     }
 
-    public class BrushInfo : Model
+    public abstract class BrushInfo : Model
     {
         #region Constructors
 
-        public BrushInfo(BrushType brushType)
+        protected BrushInfo()
         {
-            BrushType = brushType;
-
             Opacity = 1;
-
-            if (IsGradient)
-                Stops = new ObservableCollection<GradientStop>();
+            Transform = Matrix3x2.Identity;
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public byte[] Bitmap { get; set; }
-
-        public BrushType BrushType { get => Get<BrushType>(); private set => Set(value); }
-
-        public Color4 Color
-        {
-            get => Get<Color4>();
-            set { if (!IsGradient && !IsImage) Set(value); else throw new InvalidOperationException("Not a color brush."); }
-        }
-
-        public Vector2 EndPoint
-        {
-            get => Get<Vector2>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
-        public ExtendMode ExtendMode
-        {
-            get => Get<ExtendMode>();
-            set
-            {
-                if (IsGradient || IsImage) Set(value);
-                else throw new InvalidOperationException("Not valid for this type of brush.");
-            }
-        }
-
         public float Opacity { get => Get<float>(); set => Set(value); }
 
-        public Vector2 StartPoint
-        {
-            get => Get<Vector2>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
-        public ObservableCollection<GradientStop> Stops
-        {
-            get => Get<ObservableCollection<GradientStop>>();
-            set { if (IsGradient) Set(value); else throw new InvalidOperationException("Not a gradient."); }
-        }
-
         public Matrix3x2 Transform { get => Get<Matrix3x2>(); set => Set(value); }
-
-        private bool IsGradient => BrushType == BrushType.LinearGradient || BrushType == BrushType.RadialGradient;
-
-        private bool IsImage => BrushType == BrushType.Image || BrushType == BrushType.Bitmap;
 
         #endregion Properties
 
         #region Methods
 
-        public Brush ToDirectX(RenderTarget target)
+        public abstract Brush ToDirectX(RenderTarget target);
+
+        public abstract WPF.Brush ToWpf();
+
+        public virtual void Copy(BrushInfo brush)
         {
-            var props = new BrushProperties() { Opacity = Opacity, Transform = Transform };
+            if (this.GetType() != brush.GetType())
+                throw new InvalidOperationException();
 
-            switch (BrushType)
+            Opacity = brush.Opacity;
+            Transform = brush.Transform;
+        }
+
+        #endregion Methods
+    }
+
+    public class SolidColorBrushInfo : BrushInfo
+    {
+        public Color4 Color
+        {
+            get => Get<Color4>();
+            set => Set(value);
+        }
+
+        public override Brush ToDirectX(RenderTarget target)
+        {
+            return new SolidColorBrush(
+                target,
+                Color,
+                new BrushProperties { Opacity = Opacity, Transform = Transform });
+        }
+
+        public override WPF.Brush ToWpf()
+        {
+            return new WPF.SolidColorBrush(Color.ToWpf());
+        }
+    }
+
+    public class GradientBrushInfo : BrushInfo
+    {
+        public GradientBrushInfo()
+        {
+            Stops = new ObservableCollection<GradientStop>();
+        }
+
+        public Vector2 StartPoint
+        {
+            get => Get<Vector2>();
+            set => Set(value);
+        }
+
+        public ObservableCollection<GradientStop> Stops
+        {
+            get => Get<ObservableCollection<GradientStop>>();
+            set => Set(value);
+        }
+
+        public ExtendMode ExtendMode
+        {
+            get => Get<ExtendMode>();
+            set => Set(value);
+        }
+
+        public Vector2 EndPoint
+        {
+            get => Get<Vector2>();
+            set => Set(value);
+        }
+
+        public GradientBrushType GradientType
+        {
+            get => Get<GradientBrushType>();
+            set => Set(value);
+        }
+
+        public override Brush ToDirectX(RenderTarget target)
+        {
+            switch (GradientType)
             {
-                case BrushType.Color:
-                    return new SolidColorBrush(target, Color, props);
-
-                case BrushType.LinearGradient:
+                case GradientBrushType.Linear:
                     return new LinearGradientBrush(
                         target,
-                        new LinearGradientBrushProperties() { EndPoint = EndPoint, StartPoint = StartPoint },
-                        props,
+                        new LinearGradientBrushProperties { EndPoint = EndPoint, StartPoint = StartPoint },
+                        new BrushProperties { Opacity = Opacity, Transform = Transform },
                         new GradientStopCollection(target, Stops.ToArray()));
-
-                case BrushType.RadialGradient:
+                case GradientBrushType.Radial:
                     return new RadialGradientBrush(
                         target,
-                        new RadialGradientBrushProperties()
+                        new RadialGradientBrushProperties
                         {
                             Center = StartPoint,
                             RadiusX = EndPoint.X - StartPoint.X,
                             RadiusY = EndPoint.Y - StartPoint.Y
                         },
-                        props,
+                        new BrushProperties { Opacity = Opacity, Transform = Transform },
                         new GradientStopCollection(target, Stops.ToArray()));
-
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
-        public WPF.Brush ToWpf()
+        public override WPF.Brush ToWpf()
         {
-            return App.Current.Dispatcher.Invoke<WPF.Brush>(() =>
+            switch (GradientType)
             {
-                switch (BrushType)
-                {
-                    case BrushType.Color:
-                        return new WPF.SolidColorBrush(Color.ToWpf());
-
-                    case BrushType.LinearGradient:
-                        return new WPF.LinearGradientBrush(
-                            new WPF.GradientStopCollection(
-                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWpf(), stop.Position))
-                            ));
-
-                    case BrushType.RadialGradient:
-                        return new WPF.RadialGradientBrush(
-                            new WPF.GradientStopCollection(
-                                Stops.Select(stop => new WPF.GradientStop(((Color4)stop.Color).ToWpf(), stop.Position))
-                            ));
-
-                    default:
-                        throw new NotImplementedException();
-                }
-            });
-        }
-
-        public void Copy(BrushInfo brush)
-        {
-            if (this.BrushType != brush?.BrushType)
-                throw new InvalidOperationException();
-
-            Opacity = brush.Opacity;
-            Transform = brush.Transform;
-
-            switch (BrushType)
-            {
-                case BrushType.Color:
-                    Color = brush.Color;
-                    break;
-                case BrushType.Bitmap:
-                    Bitmap = brush.Bitmap;
-                    ExtendMode = brush.ExtendMode;
-                    break;
-                case BrushType.Image:
-                    throw new NotImplementedException();
-                case BrushType.LinearGradient:
-                case BrushType.RadialGradient:
-                    EndPoint = brush.EndPoint;
-                    StartPoint = brush.StartPoint;
-                    Stops = brush.Stops;
-                    ExtendMode = brush.ExtendMode;
-                    break;
+                case GradientBrushType.Linear:
+                    return new WPF.LinearGradientBrush(
+                        new WPF.GradientStopCollection(
+                            Stops.Select(s => new WPF.GradientStop(
+                                ColorUtils.ToWpf(s.Color), s.Position))), 
+                        new System.Windows.Point(StartPoint.X, StartPoint.Y),
+                        new System.Windows.Point(EndPoint.X, EndPoint.Y));
+                case GradientBrushType.Radial:
+                    return new WPF.RadialGradientBrush(
+                        new WPF.GradientStopCollection(
+                            Stops.Select(s => new WPF.GradientStop(
+                                ColorUtils.ToWpf(s.Color), s.Position))));
                 default:
-                    break;
+                    throw new ArgumentOutOfRangeException();
             }
+        }
+    }
 
+    public class BitmapBrushInfo : BrushInfo
+    {
+        public byte[] Bitmap { get; set; }
+
+        public ExtendMode ExtendMode
+        {
+            get => Get<ExtendMode>();
+            set => Set(value);
         }
 
-        #endregion Methods
+        public override Brush ToDirectX(RenderTarget target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override WPF.Brush ToWpf()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

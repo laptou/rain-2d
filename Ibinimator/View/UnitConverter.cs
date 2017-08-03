@@ -47,7 +47,7 @@ namespace Ibinimator.View
         {
             if (value is string input)
             {
-                float num = Unformat(input, TargetUnit);
+                float num = Unformat(input, SourceUnit);
                 if (!float.IsNaN(num)) return num;
             }
             return Binding.DoNothing;

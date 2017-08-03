@@ -11,17 +11,13 @@ using System.Windows.Media;
 
 namespace Ibinimator.ViewModel
 {
+    public enum ColorPickerTarget
+    {
+        Fill, Stroke
+    }
+
     public partial class MainViewModel
     {
-        #region Enums
-
-        public enum ColorPickerTarget
-        {
-            Fill, Stroke
-        }
-
-        #endregion Enums
-
         #region Classes
 
         public class ColorPickerViewModel : ViewModel
@@ -112,11 +108,9 @@ namespace Ibinimator.ViewModel
         {
             #region Fields
 
+            private ColorPickerViewModel _strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
             private ColorPickerViewModel _fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
             private MainViewModel _parent;
-
-            private ColorPickerTarget _pickerTarget = ColorPickerTarget.Fill;
-            private ColorPickerViewModel _strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
 
             #endregion Fields
 
@@ -142,6 +136,18 @@ namespace Ibinimator.ViewModel
                         lock (_fillPicker)
                             _fillPicker.Flag = false;
                     }
+
+                    if (_parent.BrushManager.Stroke is SolidColorBrushInfo stroke)
+                    {
+                        lock (_strokePicker)
+                            _strokePicker.Flag = true;
+
+                        if (_strokePicker.Flag)
+                            _strokePicker.Color = stroke.Color.ToWpf();
+
+                        lock (_strokePicker)
+                            _strokePicker.Flag = false;
+                    }
                 };
 
                 _strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
@@ -152,13 +158,19 @@ namespace Ibinimator.ViewModel
 
             #region Properties
 
-            public ColorPickerViewModel ColorPicker =>
-                _pickerTarget == ColorPickerTarget.Fill ?
+            public ColorPickerViewModel Picker =>
+                PickerTarget == ColorPickerTarget.Fill ?
                 _fillPicker : _strokePicker;
 
             public Brush FillBrush => _parent.BrushManager.Fill?.ToWpf();
 
             public Brush StrokeBrush => _parent.BrushManager.Stroke?.ToWpf();
+
+            public ColorPickerTarget PickerTarget
+            {
+                get => Get<ColorPickerTarget>();
+                set { Set(value); RaisePropertyChanged(nameof(Picker)); }
+            }
 
             #endregion Properties
 

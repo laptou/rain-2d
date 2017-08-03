@@ -2,15 +2,28 @@
 using SharpDX.Direct2D1;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Model
 {
     public class Path : Shape
     {
+        public Path()
+        {
+            Nodes.CollectionChanged += (sender, args) => RaisePropertyChanged("Geometry");
+        }
+
         #region Properties
 
-        public override String DefaultName => "Path";
+        public override string DefaultName => "Path";
+
+        public bool Closed
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
         public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
 
         #endregion Properties
@@ -19,7 +32,9 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds()
         {
-            float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            var first = Nodes.FirstOrDefault();
+            float x1 = first?.X ?? 0, y1 = first?.Y ?? 0, 
+                x2 = first?.X ?? 0, y2 = first?.Y ?? 0;
 
             Parallel.ForEach(Nodes, node =>
             {
@@ -29,7 +44,7 @@ namespace Ibinimator.Model
                 if (node.Y > y2) y2 = node.Y;
             });
 
-            return new RectangleF(x1, y1, x2, y2);
+            return new RectangleF(x1, y1, x2 - x1, y2 - y1);
         }
 
         public override Geometry GetGeometry(Factory factory)
@@ -37,29 +52,35 @@ namespace Ibinimator.Model
             PathGeometry pg = new PathGeometry(factory);
             GeometrySink gs = pg.Open();
 
-            gs.BeginFigure(Nodes[0].Position, FigureBegin.Filled);
-
-            for (int i = 1; i < Nodes.Count; i++)
+            if (Nodes.Count > 0)
             {
-                switch (Nodes[i])
-                {
-                    case BezierNode bn:
-                        var prevHandle = (Nodes[i - 1] as BezierNode)?.Control ?? Nodes[i - 1].Position;
-                        gs.AddBezier(new BezierSegment()
-                        {
-                            Point1 = prevHandle,
-                            Point2 = bn.Control,
-                            Point3 = bn.Position
-                        });
-                        break;
+                gs.SetFillMode(FillMode.Winding);
 
-                    case PathNode pn:
-                        gs.AddLine(pn.Position);
-                        break;
+                gs.BeginFigure(Nodes[0].Position, FigureBegin.Filled);
+
+                for (int i = 1; i < Nodes.Count; i++)
+                {
+                    switch (Nodes[i])
+                    {
+                        case BezierNode bn:
+                            var prevHandle = (Nodes[i - 1] as BezierNode)?.Control ?? Nodes[i - 1].Position;
+                            gs.AddBezier(new BezierSegment
+                            {
+                                Point1 = prevHandle,
+                                Point2 = bn.Control,
+                                Point3 = bn.Position
+                            });
+                            break;
+
+                        case PathNode pn:
+                            gs.AddLine(pn.Position);
+                            break;
+                    }
                 }
+
+                gs.EndFigure(Closed ? FigureEnd.Closed : FigureEnd.Open);
             }
 
-            gs.EndFigure(FigureEnd.Closed);
             gs.Close();
 
             return pg;

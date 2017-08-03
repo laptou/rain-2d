@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace Ibinimator.Service
             }
 
             RaisePropertyChanged(nameof(Type));
+            ArtView.InvalidateSurface();
         }
     }
 
@@ -116,13 +118,17 @@ namespace Ibinimator.Service
 
     public class PencilTool : Model.Model, ITool
     {
+        private Vector2 _lastPos;
+
         public PencilTool(IToolManager toolManager)
         {
             Manager = toolManager;
         }
 
         public IToolManager Manager { get; }
-        public ToolType Type => ToolType.Select;
+
+        public ToolType Type => ToolType.Pencil;
+
         public string Status => "";
 
         public Path CurrentPath => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Path;
@@ -141,18 +147,33 @@ namespace Ibinimator.Service
                     StrokeStyle = Manager.ArtView.BrushManager.StrokeStyle
                 };
 
-                Manager.ArtView.ViewManager.Root.Add(path);
+                Manager.ArtView.Dispatcher.Invoke(() =>
+                    Manager.ArtView.ViewManager.Root.Add(path));
 
                 path.Selected = true;
             }
+
+            Debug.Assert(CurrentPath != null, "CurrentPath != null");
+
+            var nodePos = 
+                Matrix3x2.TransformPoint(
+                    Matrix3x2.Invert(CurrentPath.AbsoluteTransform), pos);
+
+            var lastNode = CurrentPath.Nodes.LastOrDefault();
+
+            if (lastNode != null && (lastNode.Position - nodePos).Length() < 14.12f)
+                CurrentPath.Closed = !CurrentPath.Closed;
             else
-            {
-                CurrentPath.Nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
-            }
+                CurrentPath.Nodes.Add(new PathNode { X = nodePos.X, Y = nodePos.Y });
+
+            Manager.ArtView.SelectionManager.Update(true);
         }
 
         public void MouseMove(Vector2 pos)
         {
+            _lastPos = pos;
+
+            Manager.ArtView.InvalidateSurface();
         }
 
         public void MouseUp(Vector2 pos)
@@ -163,12 +184,12 @@ namespace Ibinimator.Service
         {
             if (CurrentPath == null) return;
 
-            var props = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Hairline };
+            var props = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed };
             using (var stroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), props))
             {
                 var transform = CurrentPath.AbsoluteTransform;
 
-                using (var geom = CurrentPath.GetGeometry(target.Factory))
+                using (var geom = cacheManager.GetGeometry(CurrentPath))
                 {
                     target.Transform *= transform;
                     target.DrawGeometry(geom, cacheManager.GetBrush("A2"), 1, stroke);
@@ -179,9 +200,14 @@ namespace Ibinimator.Service
                     CurrentPath.Nodes.Select(n => 
                         Matrix3x2.TransformPoint(transform, n.Position)))
                 {
-                    var rect = new RawRectangleF(
-                        node.X - 2.5f, node.Y - 2.5f, node.X + 2.5f, node.Y + 2.5f);
+                    var rect = new RectangleF(node.X - 5f, node.Y - 5f, 10, 10);
+
                     target.DrawRectangle(rect, cacheManager.GetBrush("A2"), 1, stroke);
+
+                    target.FillRectangle(rect, 
+                        rect.Contains(_lastPos) ? 
+                        cacheManager.GetBrush("A4") : 
+                        cacheManager.GetBrush("L1"));
                 }
             }
         }

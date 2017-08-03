@@ -1,34 +1,29 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Collections;
+using System.ComponentModel;
+using System.Drawing.Imaging;
 using Ibinimator.Shared;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
+using Ibinimator.Model;
+using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
-using System.Collections;
-using System.Windows;
-using System.Diagnostics;
-using System.ComponentModel;
-using Ibinimator.View.Control;
+using AlphaMode = SharpDX.Direct2D1.AlphaMode;
+using Factory1 = SharpDX.Direct2D1.Factory1;
+using Image = System.Drawing.Image;
+using Layer = Ibinimator.Model.Layer;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace Ibinimator.Service
 {
     public class CacheManager : Model.Model, ICacheManager
     {
-        #region Fields
-
-        private Dictionary<string, Bitmap> _bitmaps = new Dictionary<string, Bitmap>();
-        private Dictionary<Model.Layer, RectangleF> _bounds = new Dictionary<Model.Layer, RectangleF>();
-        private Dictionary<string, Brush> _brushes = new Dictionary<string, Brush>();
-        private Dictionary<Model.BrushInfo, (Model.Shape shape, Brush brush)> _brushBindings = 
-            new Dictionary<Model.BrushInfo, (Model.Shape, Brush)>();
-        private Dictionary<Model.Shape, Brush> _fills = new Dictionary<Model.Shape, Brush>();
-        private Dictionary<Model.Shape, Geometry> _geometries = new Dictionary<Model.Shape, Geometry>();
-        private Dictionary<Model.Shape, (Brush brush, float width, StrokeStyle style)> _strokes =
-                            new Dictionary<Model.Shape, (Brush, float, StrokeStyle)>();
-
-        #endregion Fields
-
         #region Constructors
 
         public CacheManager(ArtView artView)
@@ -44,45 +39,127 @@ namespace Ibinimator.Service
 
         #endregion Properties
 
+        #region Fields
+
+        private readonly Dictionary<string, Bitmap> _bitmaps = new Dictionary<string, Bitmap>();
+        private readonly Dictionary<Layer, RectangleF> _bounds = new Dictionary<Layer, RectangleF>();
+        private readonly Dictionary<string, Brush> _brushes = new Dictionary<string, Brush>();
+
+        private readonly Dictionary<BrushInfo, (Shape shape, Brush brush)> _brushBindings =
+            new Dictionary<BrushInfo, (Shape, Brush)>();
+
+        private readonly Dictionary<Shape, Brush> _fills = new Dictionary<Shape, Brush>();
+        private readonly Dictionary<Shape, Geometry> _geometries = new Dictionary<Shape, Geometry>();
+
+        private readonly Dictionary<Shape, (Brush brush, float width, StrokeStyle style)> _strokes =
+            new Dictionary<Shape, (Brush, float, StrokeStyle)>();
+
+        #endregion Fields
+
         #region Methods
 
-        public Brush BindBrush(Model.Shape shape, Model.BrushInfo brush)
+        public Brush BindBrush(Shape shape, BrushInfo brush)
         {
             if (brush == null) return null;
 
-            RenderTarget target = ArtView.RenderTarget;
+            var target = ArtView.RenderTarget;
 
-            Brush fill = brush.ToDirectX(target);
+            var fill = brush.ToDirectX(target);
             brush.PropertyChanged += OnBrushPropertyChanged;
-            _brushBindings.Add(brush, (shape, fill));
+            shape.PropertyChanged += OnShapePropertyChanged;
+
+            lock (_brushBindings)
+            {
+                _brushBindings.Add(brush, (shape, fill));
+            }
 
             return fill;
         }
 
-        private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnShapePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var brush = sender as Model.BrushInfo;
-            var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
-            
+            var shape = (Shape) sender;
+
             switch (e.PropertyName)
             {
-                case "Opacity":
-                    fill.Opacity = brush.Opacity;
+                case "Geometry":
+                    lock (_geometries)
+                    {
+                        _geometries[shape]?.Dispose();
+                        _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
+                    }
                     break;
 
-                case "Color":
-                    (fill as SolidColorBrush).Color = brush.Color;
+                case nameof(Shape.FillBrush):
+                    lock (_fills)
+                    {
+                        _fills[shape]?.Dispose();
+                        _fills[shape] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
+                    }
+                    break;
+
+                case nameof(Shape.StrokeBrush):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes[shape];
+                        stroke.brush?.Dispose();
+                        stroke.brush = shape.StrokeBrush.ToDirectX(ArtView.RenderTarget);
+                        _strokes[shape] = stroke;
+                    }
+                    break;
+
+                case nameof(Shape.StrokeWidth):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes[shape];
+                        stroke.width = shape.StrokeWidth;
+                        _strokes[shape] = stroke;
+                    }
+                    break;
+
+                case nameof(Shape.StrokeStyle):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes[shape];
+                        stroke.style.Dispose();
+                        stroke.style = new StrokeStyle1(ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                            shape.StrokeStyle);
+                        _strokes[shape] = stroke;
+                    }
                     break;
             }
 
             InvalidateLayer(shape);
         }
 
-        public void BindLayer(Model.Layer layer)
+        private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            RenderTarget target = ArtView.RenderTarget;
+            var brush = (BrushInfo) sender;
+            var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
 
-            if (layer is Model.Shape shape)
+            switch (e.PropertyName)
+            {
+                case "Opacity":
+                    fill.Opacity = brush.Opacity;
+                    break;
+
+                case "Transform":
+                    fill.Transform = brush.Transform;
+                    break;
+
+                case "Color":
+                    ((SolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
+                    break;
+            }
+
+            InvalidateLayer(shape);
+        }
+
+        public void BindLayer(Layer layer)
+        {
+            var target = ArtView.RenderTarget;
+
+            if (layer is Shape shape)
             {
                 if (shape.FillBrush != null)
                     _fills[shape] = BindBrush(shape, shape.FillBrush);
@@ -102,36 +179,48 @@ namespace Ibinimator.Service
 
         private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var layer = sender as Model.Layer;
+            var layer = sender as Layer;
 
             switch (e.PropertyName)
             {
-                case nameof(Model.Layer.Transform):
+                case nameof(Layer.Transform):
                     _bounds[layer] = layer.GetAbsoluteBounds();
-                    break;
-                default:
                     break;
             }
         }
 
-        public Bitmap GetBitmap(string key) => _bitmaps[key];
+        public Bitmap GetBitmap(string key)
+        {
+            return _bitmaps[key];
+        }
 
-        public RectangleF GetBounds(Model.Layer layer) =>
-            Get(_bounds, layer, l => l.GetAbsoluteBounds());
+        public RectangleF GetBounds(Layer layer)
+        {
+            return Get(_bounds, layer, l => l.GetAbsoluteBounds());
+        }
 
-        public Brush GetBrush(string key) => _brushes[key];
+        public Brush GetBrush(string key)
+        {
+            return _brushes[key];
+        }
 
-        public Brush GetFill(Model.Shape layer) =>
-            Get(_fills, layer, l => l.FillBrush.ToDirectX(ArtView.RenderTarget));
+        public Brush GetFill(Shape layer)
+        {
+            return Get(_fills, layer, l => l.FillBrush.ToDirectX(ArtView.RenderTarget));
+        }
 
-        public Geometry GetGeometry(Model.Shape layer) =>
-            Get(_geometries, layer, l => l.GetGeometry(ArtView.RenderTarget.Factory));
+        public Geometry GetGeometry(Shape layer)
+        {
+            return Get(_geometries, layer, l => l.GetGeometry(ArtView.RenderTarget.Factory));
+        }
 
-        public (Brush brush, float width, StrokeStyle style) GetStroke(Model.Shape layer, RenderTarget target) =>
-            Get(_strokes, layer, l => (
+        public (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target)
+        {
+            return Get(_strokes, layer, l => (
                 l.StrokeBrush.ToDirectX(target),
                 l.StrokeWidth,
                 new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle)));
+        }
 
         public void LoadBitmaps(RenderTarget target)
         {
@@ -145,9 +234,7 @@ namespace Ibinimator.Service
         public void LoadBrushes(RenderTarget target)
         {
             foreach (DictionaryEntry entry in Application.Current.Resources)
-            {
                 if (entry.Value is System.Windows.Media.Color color)
-                {
                     _brushes[entry.Key as string] =
                         new SolidColorBrush(
                             target,
@@ -156,8 +243,6 @@ namespace Ibinimator.Service
                                 color.G / 255f,
                                 color.B / 255f,
                                 color.A / 255f));
-                }
-            }
         }
 
         public void ResetAll()
@@ -213,13 +298,13 @@ namespace Ibinimator.Service
             }
         }
 
-        public async void UpdateLayer(Model.Layer layer, string property)
+        public async void UpdateLayer(Layer layer, string property)
         {
             await Task.Run(() =>
             {
                 lock (layer)
                 {
-                    Model.Shape shape = layer as Model.Shape;
+                    var shape = layer as Shape;
 
                     switch (property)
                     {
@@ -233,20 +318,20 @@ namespace Ibinimator.Service
                             InvalidateLayer(layer);
                             break;
 
-                        case nameof(Model.Layer.Transform):
+                        case nameof(Layer.Transform):
                             _bounds[layer] = layer.GetAbsoluteBounds();
 
                             InvalidateLayer(layer);
                             break;
 
-                        case nameof(Model.Shape.FillBrush):
+                        case nameof(Shape.FillBrush):
                             _fills.TryGetValue(shape, out Brush fill);
                             fill?.Dispose();
                             _fills[shape] = shape.FillBrush?.ToDirectX(ArtView.RenderTarget);
                             InvalidateLayer(layer);
                             break;
 
-                        case nameof(Model.Shape.StrokeBrush):
+                        case nameof(Shape.StrokeBrush):
                             _strokes.TryGetValue(shape, out (Brush brush, float, StrokeStyle) stroke);
                             stroke.brush?.Dispose();
                             stroke.brush = shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget);
@@ -262,38 +347,43 @@ namespace Ibinimator.Service
 
         private TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
         {
-            lock(dict)
+            lock (dict)
             {
-                if (dict.TryGetValue(key, out TV value)) return value;
-                else return dict[key] = fallback(key);
+                if (dict.TryGetValue(key, out TV value) && 
+                    (value as DisposeBase)?.IsDisposed != true)
+                    return value;
+
+                return dict[key] = fallback(key);
             }
         }
 
-        private void InvalidateLayer(Model.Layer layer)
+        private void InvalidateLayer(Layer layer)
         {
             ArtView.InvalidateSurface();
         }
 
-        private unsafe Bitmap LoadBitmap(RenderTarget target, string name)
+        private Bitmap LoadBitmap(RenderTarget target, string name)
         {
-            using (var stream = App.GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative)).Stream)
+            using (var stream = Application.GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative))
+                .Stream)
             {
-                using (var bitmap = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(stream))
+                using (var bitmap = (System.Drawing.Bitmap) Image.FromStream(stream))
                 {
-                    var sourceArea = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                    var sourceArea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
                     var bitmapProperties = new BitmapProperties(
-                        new PixelFormat(SharpDX.DXGI.Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied),
-                            target.DotsPerInch.Width, target.DotsPerInch.Height);
+                        new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied),
+                        target.DotsPerInch.Width, target.DotsPerInch.Height);
 
                     var data = bitmap.LockBits(sourceArea,
-                        System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                        ImageLockMode.ReadOnly,
                         System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
 
                     var dpi = target.DotsPerInch.Width / 96;
 
                     using (var temp = new DataStream(data.Scan0, bitmap.Width * sizeof(int), true, true))
                     {
-                        var bmp = new Bitmap(target, new Size2(sourceArea.Width, sourceArea.Height), temp, data.Stride, bitmapProperties);
+                        var bmp = new Bitmap(target, new Size2(sourceArea.Width, sourceArea.Height), temp, data.Stride,
+                            bitmapProperties);
 
                         bitmap.UnlockBits(data);
 
