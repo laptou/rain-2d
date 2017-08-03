@@ -15,7 +15,6 @@ namespace Ibinimator.Model
 {
     public class Group : Layer
     {
-
         #region Properties
 
         public override string DefaultName => "Group";
@@ -24,12 +23,14 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public override Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world)
         {
-            var hit = base.Hit(factory, point, world);
+            var hit = base.Hit<T>(factory, point, world);
             if (hit != null)
-                return Selected ? hit : this;
-            else return null;
+                if (this is T)
+                    return Selected ? hit : this as T;
+                else return hit;
+            return null;
         }
 
         public override IEnumerable<Layer> Flatten()
@@ -99,7 +100,7 @@ namespace Ibinimator.Model
 
         public float Opacity { get => Get<float>(); set => Set(value); }
 
-        public Layer Parent { get => Get<Layer>(); set => Set(value); }
+        public Layer Parent { get => Get<Layer>(); private set => Set(value); }
 
         public Vector2 Position { get => Get<Vector2>(); set => Set(value); }
 
@@ -127,12 +128,13 @@ namespace Ibinimator.Model
 
         public void Add(Layer child)
         {
-            if(child.Parent == this)
+            if(child.Parent != null)
                 throw new InvalidOperationException();
 
             child.Parent = this;
             SubLayers.Add(child);
             child.PropertyChanged += OnSubLayerChanged;
+            LayerAdded?.Invoke(this, child);
         }
 
         public void Remove(Layer child)
@@ -143,6 +145,7 @@ namespace Ibinimator.Model
             child.Parent = null;
             SubLayers.Remove(child);
             child.PropertyChanged -= OnSubLayerChanged;
+            LayerRemoved?.Invoke(this, child);
         }
 
         /// <summary>
@@ -206,18 +209,22 @@ namespace Ibinimator.Model
             return r;
         }
 
-        public virtual Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        public virtual T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world) where T : Layer
         {
             world *= Transform;
 
             foreach (var layer in SubLayers)
             {
-                var result = layer.Hit(factory, point, world);
+                var result = layer.Hit<T>(factory, point, world);
                 if (result != null) return result;
             }
 
             return null;
         }
+
+        public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world) => 
+            Hit<Layer>(factory, point, world);
+
 
         public virtual void Render(RenderTarget target, ICacheManager helper)
         {
@@ -242,5 +249,8 @@ namespace Ibinimator.Model
         }
 
         #endregion Methods
+
+        public event EventHandler<Layer> LayerAdded;
+        public event EventHandler<Layer> LayerRemoved;
     }
 }

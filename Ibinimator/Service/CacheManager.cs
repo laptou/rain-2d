@@ -66,93 +66,13 @@ namespace Ibinimator.Service
 
             var fill = brush.ToDirectX(target);
             brush.PropertyChanged += OnBrushPropertyChanged;
-            shape.PropertyChanged += OnShapePropertyChanged;
 
             lock (_brushBindings)
             {
-                _brushBindings.Add(brush, (shape, fill));
+                _brushBindings[brush] = (shape, fill);
             }
 
             return fill;
-        }
-
-        private void OnShapePropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var shape = (Shape) sender;
-
-            switch (e.PropertyName)
-            {
-                case "Geometry":
-                    lock (_geometries)
-                    {
-                        _geometries[shape]?.Dispose();
-                        _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
-                    }
-                    break;
-
-                case nameof(Shape.FillBrush):
-                    lock (_fills)
-                    {
-                        _fills[shape]?.Dispose();
-                        _fills[shape] = shape.FillBrush.ToDirectX(ArtView.RenderTarget);
-                    }
-                    break;
-
-                case nameof(Shape.StrokeBrush):
-                    lock (_strokes)
-                    {
-                        var stroke = _strokes[shape];
-                        stroke.brush?.Dispose();
-                        stroke.brush = shape.StrokeBrush.ToDirectX(ArtView.RenderTarget);
-                        _strokes[shape] = stroke;
-                    }
-                    break;
-
-                case nameof(Shape.StrokeWidth):
-                    lock (_strokes)
-                    {
-                        var stroke = _strokes[shape];
-                        stroke.width = shape.StrokeWidth;
-                        _strokes[shape] = stroke;
-                    }
-                    break;
-
-                case nameof(Shape.StrokeStyle):
-                    lock (_strokes)
-                    {
-                        var stroke = _strokes[shape];
-                        stroke.style.Dispose();
-                        stroke.style = new StrokeStyle1(ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
-                            shape.StrokeStyle);
-                        _strokes[shape] = stroke;
-                    }
-                    break;
-            }
-
-            InvalidateLayer(shape);
-        }
-
-        private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var brush = (BrushInfo) sender;
-            var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
-
-            switch (e.PropertyName)
-            {
-                case "Opacity":
-                    fill.Opacity = brush.Opacity;
-                    break;
-
-                case "Transform":
-                    fill.Transform = brush.Transform;
-                    break;
-
-                case "Color":
-                    ((SolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
-                    break;
-            }
-
-            InvalidateLayer(shape);
         }
 
         public void BindLayer(Layer layer)
@@ -162,31 +82,51 @@ namespace Ibinimator.Service
             if (layer is Shape shape)
             {
                 if (shape.FillBrush != null)
-                    _fills[shape] = BindBrush(shape, shape.FillBrush);
+                    lock (_fills)
+                    {
+                        _fills[shape] = BindBrush(shape, shape.FillBrush);
+                    }
                 if (shape.StrokeBrush != null)
-                    _strokes[shape] = (
-                        BindBrush(shape, shape.StrokeBrush),
-                        shape.StrokeWidth,
-                        new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), shape.StrokeStyle)
-                        );
+                    lock (_strokes)
+                    {
+                        _strokes[shape] = (
+                            BindBrush(shape, shape.StrokeBrush),
+                            shape.StrokeWidth,
+                            new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), shape.StrokeStyle)
+                            );
+                    }
             }
 
             layer.PropertyChanged += OnLayerPropertyChanged;
+            layer.LayerAdded +=
+                (sender, layer1) =>
+                    BindLayer(layer1);
 
             foreach (var subLayer in layer.SubLayers)
                 BindLayer(subLayer);
         }
 
-        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void UnbindLayer(Layer layer)
         {
-            var layer = sender as Layer;
-
-            switch (e.PropertyName)
+            if (layer is Shape shape)
             {
-                case nameof(Layer.Transform):
-                    _bounds[layer] = layer.GetAbsoluteBounds();
-                    break;
+                if (shape.FillBrush != null)
+                    lock (_fills)
+                    {
+                        _fills[shape]?.Dispose();
+                        _fills.Remove(shape);
+                    }
+                if (shape.StrokeBrush != null)
+                    lock (_strokes)
+                    {
+                        _strokes[shape].brush.Dispose();
+                        _strokes[shape].style.Dispose();
+                        _strokes.Remove(shape);
+                    }
             }
+
+            foreach (var subLayer in layer.SubLayers)
+                UnbindLayer(subLayer);
         }
 
         public Bitmap GetBitmap(string key)
@@ -220,6 +160,89 @@ namespace Ibinimator.Service
                 l.StrokeBrush.ToDirectX(target),
                 l.StrokeWidth,
                 new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle)));
+        }
+
+        private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var brush = (BrushInfo) sender;
+            var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
+
+            switch (e.PropertyName)
+            {
+                case "Opacity":
+                    fill.Opacity = brush.Opacity;
+                    break;
+
+                case "Transform":
+                    fill.Transform = brush.Transform;
+                    break;
+
+                case "Color":
+                    ((SolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
+                    break;
+            }
+
+            InvalidateLayer(shape);
+        }
+
+        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var layer = sender as Layer;
+            var shape = sender as Shape;
+
+            switch (e.PropertyName)
+            {
+                case "Geometry":
+                    lock (_geometries)
+                    {
+                        _geometries.TryGet(shape)?.Dispose();
+                        _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
+                    }
+                    break;
+
+                case nameof(Shape.FillBrush):
+                    lock (_fills)
+                    {
+                        _fills.TryGet(shape)?.Dispose();
+                        _fills[shape] = BindBrush(shape, shape.FillBrush);
+                    }
+                    break;
+
+                case nameof(Shape.StrokeBrush):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes.TryGet(shape);
+                        stroke.brush?.Dispose();
+                        stroke.brush = BindBrush(shape, shape.StrokeBrush);
+                        _strokes[shape] = stroke;
+                    }
+                    break;
+
+                case nameof(Shape.StrokeWidth):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes.TryGet(shape);
+                        stroke.width = shape.StrokeWidth;
+                        _strokes[shape] = stroke;
+                    }
+                    break;
+
+                case nameof(Shape.StrokeStyle):
+                    lock (_strokes)
+                    {
+                        var stroke = _strokes.TryGet(shape);
+                        stroke.style.Dispose();
+                        stroke.style = new StrokeStyle1(ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                            shape.StrokeStyle);
+                        _strokes[shape] = stroke;
+                    }
+                    break;
+                case nameof(Layer.Transform):
+                    _bounds[layer] = layer.GetAbsoluteBounds();
+                    break;
+            }
+
+            InvalidateLayer(layer);
         }
 
         public void LoadBitmaps(RenderTarget target)
@@ -349,7 +372,7 @@ namespace Ibinimator.Service
         {
             lock (dict)
             {
-                if (dict.TryGetValue(key, out TV value) && 
+                if (dict.TryGetValue(key, out TV value) &&
                     (value as DisposeBase)?.IsDisposed != true)
                     return value;
 
@@ -364,7 +387,8 @@ namespace Ibinimator.Service
 
         private Bitmap LoadBitmap(RenderTarget target, string name)
         {
-            using (var stream = Application.GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative))
+            using (var stream = Application
+                .GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative))
                 .Stream)
             {
                 using (var bitmap = (System.Drawing.Bitmap) Image.FromStream(stream))

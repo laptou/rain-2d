@@ -4,11 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Ibinimator.Model;
+using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
+using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
@@ -49,6 +52,16 @@ namespace Ibinimator.Service
             Tool?.MouseUp(pos);
         }
 
+        public void KeyDown(KeyEventArgs keyEventArgs)
+        {
+            Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
+        }
+
+        public void KeyUp(KeyEventArgs keyEventArgs)
+        {
+            Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
+        }
+
         public void SetTool(ToolType type)
         {
             switch (type)
@@ -84,7 +97,7 @@ namespace Ibinimator.Service
         }
     }
 
-    public class SelectTool : Model.Model, ITool
+    public sealed class SelectTool : Model.Model, ITool
     {
         public SelectTool(IToolManager toolManager)
         {
@@ -92,33 +105,60 @@ namespace Ibinimator.Service
         }
 
         public IToolManager Manager { get; }
+
         public ToolType Type => ToolType.Select;
+
         public string Status => "";
+
+        private IList<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
 
         public void MouseDown(Vector2 pos)
         {
-            Manager.ArtView.SelectionManager.OnMouseDown(pos);
+            Manager.ArtView.SelectionManager.MouseDown(pos);
         }
 
         public void MouseMove(Vector2 pos)
         {
-            Manager.ArtView.SelectionManager.OnMouseMove(pos);
+            Manager.ArtView.SelectionManager.MouseMove(pos);
         }
 
         public void MouseUp(Vector2 pos)
         {
-            Manager.ArtView.SelectionManager.OnMouseUp(pos);
+            Manager.ArtView.SelectionManager.MouseUp(pos);
         }
 
         public void Render(RenderTarget target, ICacheManager cacheManager)
         {
             // rendering is handled by SelectionManager
         }
+
+        public void KeyDown(Key key)
+        {
+            if (key == Key.Delete)
+            {
+                var delete = Selection.ToArray();
+                Manager.ArtView.SelectionManager.ClearSelection();
+
+                Manager.ArtView.Dispatcher.Invoke(() =>
+                {
+                    foreach (var layer in delete)
+                        layer.Parent.Remove(layer);
+                });
+
+            }
+        }
+
+        public void KeyUp(Key key)
+        {
+            
+        }
     }
 
-    public class PencilTool : Model.Model, ITool
+    public sealed class PencilTool : Model.Model, ITool
     {
         private Vector2 _lastPos;
+        private bool _shift;
+        private bool _alt;
 
         public PencilTool(IToolManager toolManager)
         {
@@ -126,6 +166,10 @@ namespace Ibinimator.Service
         }
 
         public IToolManager Manager { get; }
+
+        private ArtView ArtView => Manager.ArtView;
+
+        private Layer Root => ArtView.ViewManager.Root;
 
         public ToolType Type => ToolType.Pencil;
 
@@ -137,6 +181,14 @@ namespace Ibinimator.Service
         {
             if (CurrentPath == null)
             {
+                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, Matrix3x2.Identity);
+
+                if (hit != null)
+                {
+                    hit.Selected = true;
+                    return;
+                }
+
                 Manager.ArtView.SelectionManager.ClearSelection();
 
                 Path path = new Path
@@ -155,16 +207,36 @@ namespace Ibinimator.Service
 
             Debug.Assert(CurrentPath != null, "CurrentPath != null");
 
-            var nodePos = 
+            var tpos =
                 Matrix3x2.TransformPoint(
                     Matrix3x2.Invert(CurrentPath.AbsoluteTransform), pos);
 
-            var lastNode = CurrentPath.Nodes.LastOrDefault();
+            if (_alt)
+            {
+                var node = CurrentPath.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 14.12f);
 
-            if (lastNode != null && (lastNode.Position - nodePos).Length() < 14.12f)
-                CurrentPath.Closed = !CurrentPath.Closed;
+                if (node != null)
+                    CurrentPath.Nodes.Remove(node);
+            }
+            else if (_shift && CurrentPath.Nodes.Count > 0)
+            {
+                var cpos = 
+                    Matrix3x2.TransformPoint(
+                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
+                        Constrain(pos));
+
+                CurrentPath.Nodes.Add(new PathNode { X = cpos.X, Y = cpos.Y });
+            }
             else
-                CurrentPath.Nodes.Add(new PathNode { X = nodePos.X, Y = nodePos.Y });
+            {
+                var first = CurrentPath.Nodes.FirstOrDefault();
+
+                if (first != null && (first.Position - tpos).Length() < 14.12f)
+                    CurrentPath.Closed = !CurrentPath.Closed;
+                else
+                    CurrentPath.Nodes.Add(new PathNode { X = tpos.X, Y = tpos.Y });
+            }
+            
 
             Manager.ArtView.SelectionManager.Update(true);
         }
@@ -178,6 +250,24 @@ namespace Ibinimator.Service
 
         public void MouseUp(Vector2 pos)
         {
+        }
+
+        public void KeyDown(Key key)
+        {
+            if (key == Key.LeftShift || key == Key.RightShift)
+                _shift = true;
+            if (key == Key.LeftAlt || key == Key.RightAlt)
+                _alt = true;
+            if(key == Key.Escape)
+                Manager.ArtView.SelectionManager.ClearSelection();
+        }
+
+        public void KeyUp(Key key)
+        {
+            if (key == Key.LeftShift || key == Key.RightShift)
+                _shift = false;
+            if (key == Key.LeftAlt || key == Key.RightAlt)
+                _alt = false;
         }
 
         public void Render(RenderTarget target, ICacheManager cacheManager)
@@ -196,20 +286,58 @@ namespace Ibinimator.Service
                     target.Transform *= Matrix3x2.Invert(transform);
                 }
 
+                if (CurrentPath.Nodes.Count > 0)
+                {
+                    var lpos = 
+                        Matrix3x2.TransformPoint(
+                            CurrentPath.AbsoluteTransform,
+                            CurrentPath.Nodes.Last().Position);
+                    
+                    var mpos = _shift ? Constrain(_lastPos) : _lastPos;
+
+                    target.DrawLine(lpos, mpos, cacheManager.GetBrush("A2"), 1, stroke);
+
+                    if (CurrentPath.Closed)
+                    {
+                        var fpos =
+                            Matrix3x2.TransformPoint(
+                                CurrentPath.AbsoluteTransform,
+                                CurrentPath.Nodes.First().Position);
+
+                        target.DrawLine(mpos, fpos, cacheManager.GetBrush("A2"), 1, stroke);
+                    }
+                }
+
                 foreach (var node in 
                     CurrentPath.Nodes.Select(n => 
                         Matrix3x2.TransformPoint(transform, n.Position)))
                 {
                     var rect = new RectangleF(node.X - 5f, node.Y - 5f, 10, 10);
 
+                    target.FillRectangle(rect,
+                        rect.Contains(_lastPos) ?
+                            cacheManager.GetBrush("A4") :
+                            cacheManager.GetBrush("L1"));
                     target.DrawRectangle(rect, cacheManager.GetBrush("A2"), 1, stroke);
-
-                    target.FillRectangle(rect, 
-                        rect.Contains(_lastPos) ? 
-                        cacheManager.GetBrush("A4") : 
-                        cacheManager.GetBrush("L1"));
                 }
             }
+        }
+
+        private Vector2 Constrain(Vector2 pos)
+        {
+            var lastNode = CurrentPath.Nodes.Last();
+            var lpos = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, lastNode.Position);
+
+            var delta = pos - lpos;
+
+            if (Math.Abs(delta.Y / delta.X) > MathUtils.Sqrt3)
+                delta = new Vector2(0, delta.Y);
+            else if (Math.Abs(delta.Y / delta.X) > MathUtils.InverseSqrt3)
+                delta = MathUtils.Project(delta, new Vector2(1, Math.Sign(delta.Y / delta.X)));
+            else
+                delta = new Vector2(delta.X, 0);
+
+            return lpos + delta;
         }
     }
 }

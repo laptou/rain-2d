@@ -211,7 +211,7 @@
                                 <Border.BorderBrush>
                                     <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"></SolidColorBrush>
                                 </Border.BorderBrush>
-                                <ContentPresenter x:Name="contentPresenter" Content="{TemplateBinding Header}" Focusable="False"
+                                <TextBlock x:Name="contentPresenter" Text="{TemplateBinding Header}" Focusable="False"
                                                   HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                   VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
@@ -226,9 +226,9 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                                 <Setter Property="TextBlock.FontWeight" Value="Bold" TargetName="contentPresenter" />
-                                <Setter Property="TextElement.Foreground" TargetName="mainBorder">
+                                <Setter Property="TextBlock.Foreground" TargetName="contentPresenter">
                                     <Setter.Value>
-                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"></SolidColorBrush>
+                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, ElementName=mainBorder}"></SolidColorBrush>
                                     </Setter.Value>
                                 </Setter>
                             </DataTrigger>

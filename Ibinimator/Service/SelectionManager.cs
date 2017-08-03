@@ -47,6 +47,7 @@ namespace Ibinimator.Service
 
         private object _render = new object();
         private Vector2? _lastPosition;
+        private Vector2? _beginPosition;
         private bool _moved;
         private SelectionResizeHandle? _resizingHandle;
         private bool _selecting;
@@ -113,7 +114,7 @@ namespace Ibinimator.Service
                 Selection[0].Selected = false;
         }
 
-        public void OnMouseDown(Vector2 pos)
+        public void MouseDown(Vector2 pos)
         {
             lock (this)
             {
@@ -149,12 +150,13 @@ namespace Ibinimator.Service
                 }
 
                 _lastPosition = pos;
+                _beginPosition = pos;
 
                 Update(false);
             }
         }
 
-        public void OnMouseMove(Vector2 pos)
+        public void MouseMove(Vector2 pos)
         {
             var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
 
@@ -179,7 +181,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public void OnMouseUp(Vector2 pos)
+        public void MouseUp(Vector2 pos)
         {
             // do all UI operations out here to avoid deadlock
             // otherwise, we might block on UI operation while
@@ -578,14 +580,20 @@ namespace Ibinimator.Service
 
             if (translate != Vector2.Zero && uniform)
             {
-                var angle = Math.Abs(translate.Y / translate.X);
+                var delta = (_lastPosition - _beginPosition).GetValueOrDefault();
 
-                if(angle < 0.57735026918962576450914878050196f) // tan (30 degrees)
-                    translate = new Vector2(translate.X, 0);
-                else if (angle < 1.7320508075688772935274463415059f) // tan(60 degrees)
-                    translate = MathUtils.Project(translate, Vector2.One * Math.Sign(translate.Y / translate.X));
+                var newDelta = delta + translate;
+
+                var angle = Math.Abs(delta.Y / delta.X);
+
+                if(angle < MathUtils.InverseSqrt3) // tan (30 degrees)
+                    newDelta = new Vector2(newDelta.X, 0);
+                else if (angle < MathUtils.Sqrt3) // tan(60 degrees)
+                    newDelta = MathUtils.Project(newDelta, new Vector2(1, Math.Sign(newDelta.Y / newDelta.X)));
                 else
-                    translate = new Vector2(0, translate.Y);
+                    newDelta = new Vector2(0, newDelta.Y);
+
+                translate = newDelta;
             }
 
             if (Math.Abs(rotate) > 0.01f && uniform)

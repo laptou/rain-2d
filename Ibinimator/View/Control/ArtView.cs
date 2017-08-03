@@ -22,6 +22,8 @@ namespace Ibinimator.View.Control
         public ArtView()
         {
             RenderMode = RenderMode.Manual;
+            Focusable = true;
+
             RenderTargetBound += OnRenderTargetBound;
             Unloaded += OnUnloaded;
         }
@@ -59,6 +61,20 @@ namespace Ibinimator.View.Control
 
             if (ToolManager != null)
                 await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e)
+        {
+            base.OnMouseEnter(e);
+
+            Keyboard.Focus(this);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+
+            Keyboard.ClearFocus();
         }
 
         protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -104,6 +120,22 @@ namespace Ibinimator.View.Control
 
             if(ToolManager != null)
                 await Task.Run(() => ToolManager.MouseUp(pos));
+        }
+
+        protected override async void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+
+            if (ToolManager != null)
+                await Task.Run(() => ToolManager.KeyDown(e));
+        }
+
+        protected override async void OnPreviewKeyUp(KeyEventArgs e)
+        {
+            base.OnPreviewKeyUp(e);
+
+            if (ToolManager != null)
+                await Task.Run(() => ToolManager.KeyUp(e));
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)

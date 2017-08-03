@@ -84,22 +84,27 @@ namespace Ibinimator.Model
 
         public abstract Geometry GetGeometry(Factory factory);
 
-        public override Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world)
         {
-            var hit = base.Hit(factory, point, world);
+            var hit = base.Hit<T>(factory, point, world);
 
             if (hit != null) return hit;
 
-            using (var geometry = GetGeometry(factory))
+            if (this is T)
             {
-                if (FillBrush != null && geometry.FillContainsPoint(point, AbsoluteTransform, geometry.FlatteningTolerance))
-                    return this;
+                using (var geometry = GetGeometry(factory))
+                {
+                    if (FillBrush != null &&
+                        geometry.FillContainsPoint(point, AbsoluteTransform, geometry.FlatteningTolerance))
+                        return this as T;
 
-                if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, AbsoluteTransform, geometry.FlatteningTolerance))
-                    return this;
-
-                return null;
+                    if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, AbsoluteTransform,
+                            geometry.FlatteningTolerance))
+                        return this as T;
+                }
             }
+
+            return null;
         }
 
         public override void Render(RenderTarget target, ICacheManager cacheHelper)

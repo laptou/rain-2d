@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows.Input;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -13,6 +14,8 @@ namespace Ibinimator.Service
         void MouseDown(Vector2 pos);
         void MouseMove(Vector2 pos);
         void MouseUp(Vector2 pos);
+        void KeyDown(KeyEventArgs keyEventArgs);
+        void KeyUp(KeyEventArgs keyEventArgs);
     }
 
     public interface ITool : INotifyPropertyChanged
@@ -25,6 +28,8 @@ namespace Ibinimator.Service
         void MouseMove(Vector2 pos);
         void MouseUp(Vector2 pos);
         void Render(RenderTarget target, ICacheManager cacheManager);
+        void KeyDown(Key key);
+        void KeyUp(Key key);
     }
 
     public enum ToolType

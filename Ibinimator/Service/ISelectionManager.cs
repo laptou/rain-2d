@@ -19,9 +19,9 @@ namespace Ibinimator.Service
         event EventHandler Updated;
 
         void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin);
-        void OnMouseDown(Vector2 pos);
-        void OnMouseMove(Vector2 pos);
-        void OnMouseUp(Vector2 pos);
+        void MouseDown(Vector2 pos);
+        void MouseMove(Vector2 pos);
+        void MouseUp(Vector2 pos);
         void Render(RenderTarget target, ICacheManager cache);
         void Update(bool reset);
         void ClearSelection();
