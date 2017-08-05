@@ -39,6 +39,7 @@ namespace Ibinimator.View.Control
         public IViewManager ViewManager { get; private set; }
 
         private Factory _factory;
+        private Vector2 _lastPosition;
 
         #endregion Fields
 
@@ -104,7 +105,9 @@ namespace Ibinimator.View.Control
             if(ToolManager != null)
                 await Task.Run(() => ToolManager.MouseMove(pos));
 
-            Cursor = SelectionManager?.Cursor != null ? Cursors.None : Cursors.Arrow;
+            Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow;
+
+            _lastPosition = pos;
         }
 
         protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
@@ -182,6 +185,15 @@ namespace Ibinimator.View.Control
             SelectionManager?.Render(target, CacheManager);
 
             ToolManager?.Tool?.Render(target, CacheManager);
+
+            if (ToolManager?.Tool?.Cursor != null)
+            {
+                target.Transform =
+                    Matrix3x2.Scaling(1f / 3) *
+                    Matrix3x2.Rotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
+                    Matrix3x2.Translation(_lastPosition - new Vector2(8));
+                target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
+            }
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)

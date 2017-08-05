@@ -27,17 +27,17 @@ namespace Ibinimator.View
 #pragma warning disable IDE0017 // Simplify object initialization
             var viewModel = new MainViewModel();
 #pragma warning restore IDE0017 // Simplify object initialization
-            viewModel.ViewManager = new ViewManager(artView);
-            viewModel.SelectionManager = new SelectionManager(artView, viewModel.ViewManager);
-            viewModel.BrushManager = new BrushManager(artView, viewModel.SelectionManager);
-            viewModel.ToolManager = new ToolManager(artView);
+            viewModel.ViewManager = new ViewManager(this.ArtView);
+            viewModel.SelectionManager = new SelectionManager(this.ArtView, viewModel.ViewManager);
+            viewModel.BrushManager = new BrushManager(this.ArtView, viewModel.SelectionManager);
+            viewModel.ToolManager = new ToolManager(this.ArtView);
             viewModel.Load();
 
-            artView.SetManager(viewModel.ViewManager);
-            artView.SetManager(viewModel.BrushManager);
-            artView.SetManager(viewModel.SelectionManager);
-            artView.SetManager(viewModel.ToolManager);
-            artView.SetManager(new CacheManager(artView));
+            this.ArtView.SetManager(viewModel.ViewManager);
+            this.ArtView.SetManager(viewModel.BrushManager);
+            this.ArtView.SetManager(viewModel.SelectionManager);
+            this.ArtView.SetManager(viewModel.ToolManager);
+            this.ArtView.SetManager(new CacheManager(this.ArtView));
 
             DataContext = viewModel;
         }

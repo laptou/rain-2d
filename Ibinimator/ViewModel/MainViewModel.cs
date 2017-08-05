@@ -22,7 +22,7 @@ namespace Ibinimator.ViewModel
             FillPicker = new FillPickerViewModel(this);
             TransformPicker = new TransformViewModel(this);
 
-            SelectLayerCommand = new DelegateCommand(SelectLayer);
+            SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
         }
 
         #endregion Constructors
@@ -88,7 +88,7 @@ namespace Ibinimator.ViewModel
 
         public TransformViewModel TransformPicker { get; }
 
-        public DelegateCommand SelectLayerCommand { get; }
+        public DelegateCommand<Layer> SelectLayerCommand { get; }
 
         #endregion Properties
 
@@ -143,7 +143,8 @@ namespace Ibinimator.ViewModel
 
                     layer.Selected = true;
                 }
-            else throw new ArgumentException(nameof(param));
+            else if (param != null)
+                throw new ArgumentException(nameof(param));
         }
 
         public void Load()

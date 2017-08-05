@@ -25,5 +25,8 @@ namespace Ibinimator.Service
         void Render(RenderTarget target, ICacheManager cache);
         void Update(bool reset);
         void ClearSelection();
+
+        Vector2 ToSelectionSpace(Vector2 v);
+        Vector2 FromSelectionSpace(Vector2 v);
     }
 }

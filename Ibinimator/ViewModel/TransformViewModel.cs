@@ -1,4 +1,6 @@
-﻿using SharpDX;
+﻿using System;
+using SharpDX;
+using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel
 {
@@ -93,6 +95,12 @@ namespace Ibinimator.ViewModel
                     0,
                     value - Shear,
                     Vector2.Zero);
+            }
+
+            public SelectionResizeHandle Origin
+            {
+                get => Get<SelectionResizeHandle>();
+                set => Set(value);
             }
         }
     }

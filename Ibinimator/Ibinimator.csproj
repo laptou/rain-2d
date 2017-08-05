@@ -130,8 +130,10 @@
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
     <Compile Include="Service\IArtViewManager.cs" />
+    <Compile Include="Service\SelectionCommands.cs" />
     <Compile Include="Service\ToolManager.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
+    <Compile Include="Shared\DictionaryExtensions.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
     <Compile Include="Shared\TupleUtils.cs" />

@@ -22,6 +22,20 @@
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="50" />
     </WindowChrome.WindowChrome>
+    <Window.InputBindings>
+        <KeyBinding Gesture="CTRL+SHIFT+OemOpenBrackets" 
+                    Command="{x:Static service:SelectionCommands.MoveToBottomCommand}"
+                    CommandParameter="{Binding SelectionManager}"/>
+        <KeyBinding Gesture="CTRL+OemOpenBrackets" 
+                    Command="{x:Static service:SelectionCommands.MoveDownCommand}"
+                    CommandParameter="{Binding SelectionManager}"/>
+        <KeyBinding Gesture="CTRL+OemCloseBrackets" 
+                    Command="{x:Static service:SelectionCommands.MoveUpCommand}"
+                    CommandParameter="{Binding SelectionManager}"/>
+        <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets" 
+                    Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
+                    CommandParameter="{Binding SelectionManager}"/>
+    </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
             <Style.Triggers>
@@ -82,36 +96,60 @@
             <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="50,0,0,0" Padding="0"
                      UseLayoutRounding="True">
                 <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.MoveToBottomCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/to back.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.MoveDownCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/backward.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.MoveUpCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/forward.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/to front.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.FlipHorizontalCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/flip horizontally.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/flip vertically.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            CommandParameter="{Binding SelectionManager}"
+                            IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
@@ -178,8 +216,13 @@
                 </StackPanel>
             </ToolBar>
         </Border>
-        <DockPanel Grid.Row="2" LastChildFill="True" UseLayoutRounding="True">
-            <ToolBarTray DockPanel.Dock="Left" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
+        <Grid Grid.Row="2" UseLayoutRounding="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ToolBarTray Grid.Column="0" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
@@ -216,7 +259,15 @@
                     </RadioButton>
                 </ToolBar>
             </ToolBarTray>
-            <Grid DockPanel.Dock="Right" Width="384">
+            <TabControl Grid.Column="1">
+                <TabItem>
+                    <Border Background="White">
+                        <control:ArtView x:Name="ArtView">
+                        </control:ArtView>
+                    </Border>
+                </TabItem>
+            </TabControl>
+            <Grid Grid.Column="2" Width="384">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
@@ -432,11 +483,25 @@
                         </Grid>
                     </TabItem>
                     <TabItem Header="Swatches" />
-                    <TabItem Header="Stroke" />
+                    <TabItem Header="Stroke">
+                        <Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Stroke Width: " DockPanel.Dock="Left" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" />
+                                <TextBox  Width="50"
+                                         Text="{Binding FillPicker.StrokeWidth, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
+                                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                         BorderThickness="0,0,0,1" Margin="0" Grid.Column="1" />
+                            </Grid>
+                        </Grid>
+                    </TabItem>
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A1}" Grid.Row="1">
                     <TabItem Header="Layers">
-                        <TreeView x:Name="layerTree" ItemsSource="{Binding ViewManager.Root.SubLayers}"
+                        <TreeView x:Name="LayerTree" ItemsSource="{Binding ViewManager.Root.SubLayers}"
                                   BorderThickness="0" Padding="0"
                                   Background="{DynamicResource L3Brush}">
                             <TreeView.Resources>
@@ -477,7 +542,7 @@
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectedItemChanged">
                                     <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}"
-                                                           CommandParameter="{Binding SelectedValue, ElementName=layerTree, Mode=OneWay}" />
+                                                           CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
@@ -572,75 +637,114 @@
                 </TabControl>
                 <TabControl view:Helper.Accent="{StaticResource A3}" Grid.Row="2">
                     <TabItem Header="Transform">
-                        <Grid Margin="8,0,8,8"
-                              IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, EQ, 0}">
+                        <Grid Margin="8,0,8,8">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="1*" />
                                 <RowDefinition Height="1*" />
                                 <RowDefinition Height="1.5*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition/>
                                 <ColumnDefinition Width="3*" />
-                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition />
                                 <ColumnDefinition Width="3*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center"
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectionManager.Selection.Count}" Value="0">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Border HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                    BorderBrush="{DynamicResource T2Brush}" BorderThickness="1" 
+                                    Grid.RowSpan="3" RenderTransformOrigin="0.5,0.5">
+                                <Grid Width="50" Height="50">
+                                    <Path Data="M0,100 L100,100 50,13.39745 Z"
+                                          Stroke="{DynamicResource A3Brush}" StrokeThickness="1" 
+                                          Stretch="Uniform" Margin="5"/>
+                                </Grid>
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <RotateTransform x:Name="RotateTransform"/>
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                                <Border.Triggers>
+                                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="RotateTransform" 
+                                                                 Storyboard.TargetProperty="Angle"
+                                                                 To="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}, NotifyOnTargetUpdated=True}" 
+                                                                 Duration="0:0:0.25" >
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Border.Triggers>
+                            </Border>
+                            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"
                                        VerticalAlignment="Center" Text="X:" />
-                            <TextBox Grid.Row="0" Grid.Column="1"
-                                     Text="{Binding TransformPicker.X, Converter={StaticResource DistanceConverter}}">
+                            <TextBox Grid.Row="0" Grid.Column="2"
+                                     Text="{Binding TransformPicker.X, Converter={StaticResource DistanceConverter}}" Margin="7.6,8,8,7.6">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
-                            <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center"
+                            <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
                                 Y:
                             </TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="1"
-                                     Text="{Binding TransformPicker.Y, Converter={StaticResource DistanceConverter}}">
+                            <TextBox Grid.Row="1" Grid.Column="2"
+                                     Text="{Binding TransformPicker.Y, Converter={StaticResource DistanceConverter}}" Margin="7.6,8.4,8,7.2">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
 
-                            <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center"
+                            <TextBlock Grid.Row="0" Grid.Column="3" HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
                                 W:
                             </TextBlock>
-                            <TextBox Grid.Row="0" Grid.Column="3"
-                                     Text="{Binding TransformPicker.Width, Converter={StaticResource DistanceConverter}}">
+                            <TextBox Grid.Row="0" Grid.Column="4"
+                                     Text="{Binding TransformPicker.Width, Converter={StaticResource DistanceConverter}}" Margin="8.4,8,7,7.6">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
-                            <TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"
+                            <TextBlock Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
                                 H:
                             </TextBlock>
-                            <TextBox Grid.Row="1" Grid.Column="3"
-                                     Text="{Binding TransformPicker.Height, Converter={StaticResource DistanceConverter}}">
+                            <TextBox Grid.Row="1" Grid.Column="4"
+                                     Text="{Binding TransformPicker.Height, Converter={StaticResource DistanceConverter}}" Margin="8.4,8.4,7,7.2">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center"
+                            <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
                                 R:
                             </TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="1"
-                                     Text="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}}">
+                            <TextBox Grid.Row="2" Grid.Column="2"
+                                     Text="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}}" Margin="7.6,7.8,8,7.8">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
-                            <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"
+                            <TextBlock Grid.Row="2" Grid.Column="3" HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
                                 S:
                             </TextBlock>
-                            <TextBox Grid.Row="2" Grid.Column="3"
-                                     Text="{Binding TransformPicker.Shear, Converter={StaticResource AngleConverter}}">
+                            <TextBox Grid.Row="2" Grid.Column="4"
+                                     Text="{Binding TransformPicker.Shear, Converter={StaticResource AngleConverter}}" Margin="8.4,7.8,7,7.8">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -650,14 +754,7 @@
                     <TabItem Header="History" />
                 </TabControl>
             </Grid>
-            <TabControl>
-                <TabItem>
-                    <Border Background="White">
-                        <control:ArtView
-                            x:Name="artView" />
-                    </Border>
-                </TabItem>
-            </TabControl>
-        </DockPanel>
+            <GridSplitter Grid.Column="1" Width="5" Background="Transparent"/>
+        </Grid>
     </Grid>
 </Window>

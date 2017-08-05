@@ -11,6 +11,7 @@ using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
+using Ellipse = SharpDX.Direct2D1.Ellipse;
 using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
@@ -110,7 +111,12 @@ namespace Ibinimator.Service
 
         public string Status => "";
 
-        private IList<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
+        public Bitmap Cursor => Manager.ArtView.SelectionManager.Cursor;
+
+        public float CursorRotate => Manager.ArtView.SelectionManager.SelectionRotation -
+                                     Manager.ArtView.SelectionManager.SelectionShear;
+
+        private IEnumerable<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
 
         public void MouseDown(Vector2 pos)
         {
@@ -127,9 +133,47 @@ namespace Ibinimator.Service
             Manager.ArtView.SelectionManager.MouseUp(pos);
         }
 
-        public void Render(RenderTarget target, ICacheManager cacheManager)
+        public void Render(RenderTarget target, ICacheManager cache)
         {
-            // rendering is handled by SelectionManager
+            var rect = Manager.ArtView.SelectionManager.SelectionBounds;
+
+            if (rect.IsEmpty) return;
+
+            // draw handles
+            var handles = new List<Vector2>();
+
+            float x1 = rect.Left,
+                y1 = rect.Top,
+                x2 = rect.Right,
+                y2 = rect.Bottom;
+
+            handles.Add(new Vector2(x1, y1));
+            handles.Add(new Vector2(x2, y1));
+            handles.Add(new Vector2(x2, y2));
+            handles.Add(new Vector2(x1, y2));
+            handles.Add(new Vector2((x1 + x2) / 2, y1));
+            handles.Add(new Vector2(x1, (y1 + y2) / 2));
+            handles.Add(new Vector2(x2, (y1 + y2) / 2));
+            handles.Add(new Vector2((x1 + x2) / 2, y2));
+            handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
+
+            var zoom = MathUtils.GetScale(target.Transform);
+            
+            using (var stroke = 
+                new StrokeStyle1(
+                    target.Factory.QueryInterface<Factory1>(),
+                    new StrokeStyleProperties1
+                    {
+                        TransformType = StrokeTransformType.Fixed
+                    }))
+            {
+                foreach (var v in handles.Select(Manager.ArtView.SelectionManager.ToSelectionSpace))
+                {
+                    var e = new Ellipse(v, 5f / zoom.Y, 5f / zoom.X);
+                    target.FillEllipse(e, cache.GetBrush("A1"));
+                    target.DrawEllipse(e, cache.GetBrush("L1"), 2, stroke);
+                }
+            }
         }
 
         public void KeyDown(Key key)
@@ -174,6 +218,10 @@ namespace Ibinimator.Service
         public ToolType Type => ToolType.Pencil;
 
         public string Status => "";
+
+        public Bitmap Cursor => null;
+
+        public float CursorRotate => 0;
 
         public Path CurrentPath => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Path;
 

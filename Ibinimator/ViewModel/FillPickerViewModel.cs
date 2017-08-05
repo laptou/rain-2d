@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel
 {
@@ -122,31 +123,42 @@ namespace Ibinimator.ViewModel
 
                 _parent.BrushUpdated += (sender, args) =>
                 {
-                    RaisePropertyChanged(nameof(FillBrush));
-                    RaisePropertyChanged(nameof(StrokeBrush));
-
-                    if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
+                    switch (args.PropertyName)
                     {
-                        lock(_fillPicker)
-                            _fillPicker.Flag = true;
+                        case nameof(IBrushManager.Fill):
+                            RaisePropertyChanged(nameof(FillBrush));
 
-                        if(_fillPicker.Flag)
-                            _fillPicker.Color = fill.Color.ToWpf();
+                            if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
+                            {
+                                lock (_fillPicker)
+                                    _fillPicker.Flag = true;
 
-                        lock (_fillPicker)
-                            _fillPicker.Flag = false;
-                    }
+                                if (_fillPicker.Flag)
+                                    _fillPicker.Color = fill.Color.ToWpf();
 
-                    if (_parent.BrushManager.Stroke is SolidColorBrushInfo stroke)
-                    {
-                        lock (_strokePicker)
-                            _strokePicker.Flag = true;
+                                lock (_fillPicker)
+                                    _fillPicker.Flag = false;
+                            }
+                            break;
+                        case nameof(IBrushManager.Stroke):
+                            RaisePropertyChanged(nameof(StrokeBrush));
 
-                        if (_strokePicker.Flag)
-                            _strokePicker.Color = stroke.Color.ToWpf();
+                            if (_parent.BrushManager.Stroke is SolidColorBrushInfo stroke)
+                            {
+                                lock (_strokePicker)
+                                    _strokePicker.Flag = true;
 
-                        lock (_strokePicker)
-                            _strokePicker.Flag = false;
+                                if (_strokePicker.Flag)
+                                    _strokePicker.Color = stroke.Color.ToWpf();
+
+                                lock (_strokePicker)
+                                    _strokePicker.Flag = false;
+                            }
+                            break;
+
+                        case nameof(IBrushManager.StrokeWidth):
+                            RaisePropertyChanged(nameof(StrokeWidth));
+                            break;
                     }
                 };
 
@@ -161,6 +173,12 @@ namespace Ibinimator.ViewModel
             public ColorPickerViewModel Picker =>
                 PickerTarget == ColorPickerTarget.Fill ?
                 _fillPicker : _strokePicker;
+
+            public float StrokeWidth
+            {
+                get => _parent.BrushManager.StrokeWidth;
+                set => _parent.BrushManager.StrokeWidth = value;
+            }
 
             public Brush FillBrush => _parent.BrushManager.Fill?.ToWpf();
 

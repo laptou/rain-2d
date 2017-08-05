@@ -38,7 +38,10 @@ namespace Ibinimator.View
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is float input)
-                return Format(input * ConversionFactor(SourceUnit, TargetUnit), TargetUnit);
+                if (Type.GetTypeCode(targetType) == TypeCode.String)
+                    return Format(input * ConversionFactor(SourceUnit, TargetUnit), TargetUnit);
+                else
+                    return input * ConversionFactor(SourceUnit, TargetUnit);
             else
                 throw new InvalidOperationException();
         }
@@ -47,8 +50,12 @@ namespace Ibinimator.View
         {
             if (value is string input)
             {
-                float num = Unformat(input, SourceUnit);
+                var num = Unformat(input, TargetUnit) * ConversionFactor(TargetUnit, SourceUnit);
                 if (!float.IsNaN(num)) return num;
+            }
+            else
+            {
+                return System.Convert.ToSingle(value) * ConversionFactor(TargetUnit, SourceUnit);
             }
             return Binding.DoNothing;
         }

@@ -6,7 +6,7 @@ using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
-    public interface IToolManager : IArtViewManager, INotifyPropertyChanged
+    public interface IToolManager : IArtViewManager
     {
         ITool Tool { get; }
         ToolType Type { get; set; }
@@ -23,6 +23,8 @@ namespace Ibinimator.Service
         IToolManager Manager { get; }
         ToolType Type { get; }
         string Status { get; }
+        Bitmap Cursor { get; }
+        float CursorRotate { get; }
 
         void MouseDown(Vector2 pos);
         void MouseMove(Vector2 pos);
