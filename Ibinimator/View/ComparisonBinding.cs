@@ -42,7 +42,6 @@ namespace Ibinimator.View
         public ComparisonBinding(string path, ComparisonOperators op, object comparand)
             : base(path)
         {
-            RelativeSource = RelativeSource.Self;
             Comparand = comparand;
             Operator = op;
             Converter = new ComparisonConverter(this);

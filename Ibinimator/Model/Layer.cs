@@ -126,13 +126,17 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public void Add(Layer child)
+        public void Add(Layer child, int index = -1)
         {
             if(child.Parent != null)
                 throw new InvalidOperationException();
 
             child.Parent = this;
-            SubLayers.Add(child);
+            if(index == -1)
+                SubLayers.Add(child);
+            else
+                SubLayers.Insert(index, child);
+
             child.PropertyChanged += OnSubLayerChanged;
             LayerAdded?.Invoke(this, child);
         }

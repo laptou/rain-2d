@@ -35,6 +35,12 @@
         <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets" 
                     Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
                     CommandParameter="{Binding SelectionManager}"/>
+        <KeyBinding Gesture="CTRL+Z" 
+                    Command="{x:Static service:HistoryCommands.UndoCommand}"
+                    CommandParameter="{Binding HistoryManager}"/>
+        <KeyBinding Gesture="CTRL+SHIFT+Z" 
+                    Command="{x:Static service:HistoryCommands.RedoCommand}"
+                    CommandParameter="{Binding HistoryManager}"/>
     </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -140,14 +146,14 @@
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            Command="{x:Static service:SelectionCommands.RotateClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            Command="{x:Static service:SelectionCommands.RotateCounterClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png"

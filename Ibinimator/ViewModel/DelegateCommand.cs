@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,49 +7,68 @@ using System.Windows.Input;
 
 namespace Ibinimator.ViewModel
 {
-    public class DelegateCommand : ICommand
+    public class DelegateCommand<T> : ICommand
     {
-        private Action<object> _action;
+        private Action<T> _action;
+        private Predicate<T> _predicate;
 
         public event EventHandler CanExecuteChanged;
 
-        public DelegateCommand(Action<object> action)
+        public DelegateCommand(Action<T> action, Predicate<T> predicate)
         {
-            this._action = action;
+            _action = action;
+            _predicate = predicate;
         }
 
-        public DelegateCommand(Task action)
+        public DelegateCommand(Task action, Predicate<T> predicate)
         {
-            this._action = (o) => action.Start();
+            _action = o => action.Start();
+            _predicate = predicate;
         }
 
-        public Action<object> Action
+        public Action<T> Action
         {
-            get
-            {
-                return _action;
-            }
+            get => _action;
             set
             {
-                if (_action != value && (_action == null || value == null))
+                if (_action != value)
                     CanExecuteChanged?.Invoke(this, null);
 
                 _action = value;
             }
         }
 
+        public Predicate<T> Predicate
+        {
+            get => _predicate;
+            set
+            {
+                if (_predicate != value)
+                    CanExecuteChanged?.Invoke(this, null);
+
+                _predicate = value;
+            }
+        }
+
         public bool CanExecute(object parameter)
         {
-            return _action != null;
+            return _action != null && Predicate?.Invoke((T)parameter) != false;
         }
 
         public void Execute(object parameter)
         {
-            _action?.Invoke(parameter);
+            try
+            {
+                _action?.Invoke((T)parameter);
+            }
+            finally
+            {
+                
+            }
         }
     }
 
-    public class AsyncDelegateCommand : ICommand, INotifyPropertyChanged
+    public class AsyncDelegateCommand<T> : ICommand, INotifyPropertyChanged
     {
         private Func<Task> _task;
 
@@ -58,7 +78,7 @@ namespace Ibinimator.ViewModel
 
         public AsyncDelegateCommand(Func<Task> task)
         {
-            this._task = task;
+            _task = task;
         }
 
         public AsyncDelegateCommand(Action task) : this(() => System.Threading.Tasks.Task.Run(task))

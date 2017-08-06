@@ -80,6 +80,9 @@
                 <Trigger Property="ToggleButton.IsChecked" Value="True">
                     <Setter Property="Background" Value="#19000000" />
                 </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.56" />
+                </Trigger>
             </Style.Triggers>
         </Style>
         <!--#endregion-->

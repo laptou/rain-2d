@@ -18,6 +18,8 @@ namespace Ibinimator.Service
         public static readonly DelegateCommand<ISelectionManager> MoveDownCommand = new DelegateCommand<ISelectionManager>(MoveDown, null);
         public static readonly DelegateCommand<ISelectionManager> FlipVerticalCommand = new DelegateCommand<ISelectionManager>(FlipVertical, null);
         public static readonly DelegateCommand<ISelectionManager> FlipHorizontalCommand = new DelegateCommand<ISelectionManager>(FlipHorizontal, null);
+        public static readonly DelegateCommand<ISelectionManager> RotateCounterClockwiseCommand = new DelegateCommand<ISelectionManager>(RotateCounterClockwise, null);
+        public static readonly DelegateCommand<ISelectionManager> RotateClockwiseCommand = new DelegateCommand<ISelectionManager>(RotateClockwise, null);
 
         private static void SelectAll(ISelectionManager selectionManager)
         {
@@ -82,6 +84,16 @@ namespace Ibinimator.Service
         private static void FlipHorizontal(ISelectionManager selectionManager)
         {
             selectionManager.Transform(new Vector2(-1, 1), Vector2.Zero, 0, 0, Vector2.One * 0.5f);
+        }
+
+        private static void RotateClockwise(ISelectionManager selectionManager)
+        {
+            selectionManager.Transform(Vector2.One, Vector2.Zero, MathUtil.PiOverTwo, 0, Vector2.One * 0.5f);
+        }
+
+        private static void RotateCounterClockwise(ISelectionManager selectionManager)
+        {
+            selectionManager.Transform(Vector2.One, Vector2.Zero, -MathUtil.PiOverTwo, 0, Vector2.One * 0.5f);
         }
 
         private static bool HasSelection(ISelectionManager selectionManager)
