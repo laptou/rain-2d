@@ -52,45 +52,37 @@ namespace Ibinimator.ViewModel
 
         public bool CanExecute(object parameter)
         {
-            return _action != null && Predicate?.Invoke((T)parameter) != false;
+            return _action != null && 
+                _predicate?.Invoke(default(T) != null && parameter == null ? default(T) : (T)parameter) != false;
         }
 
         public void Execute(object parameter)
         {
-            try
-            {
-                _action?.Invoke((T)parameter);
-            }
-            finally
-            {
-                
-            }
+            // casting null to a value type causes problems
+           _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T)parameter);
         }
     }
 
     public class AsyncDelegateCommand<T> : ICommand, INotifyPropertyChanged
     {
-        private Func<Task> _task;
+        private Func<T, Task> _task;
 
         public event EventHandler CanExecuteChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public AsyncDelegateCommand(Func<Task> task)
+        public AsyncDelegateCommand(Func<T, Task> task)
         {
             _task = task;
         }
 
-        public AsyncDelegateCommand(Action task) : this(() => System.Threading.Tasks.Task.Run(task))
+        public AsyncDelegateCommand(Action<T> task) : this(async p => task(p))
         {
         }
 
-        public Func<Task> Task
+        public Func<T, Task> Task
         {
-            get
-            {
-                return _task;
-            }
+            get => _task;
             set
             {
                 if (_task != value && (_task == null || value == null))
@@ -109,7 +101,8 @@ namespace Ibinimator.ViewModel
 
         public void Execute(object parameter)
         {
-            Execution = new NotifyTaskCompletion(_task?.Invoke());
+            var castedParameter = default(T) != null && parameter == null ? default(T) : (T) parameter;
+            Execution = new NotifyTaskCompletion(_task?.Invoke(castedParameter));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Execution"));
         }
     }

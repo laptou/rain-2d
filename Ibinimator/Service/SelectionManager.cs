@@ -39,7 +39,7 @@ namespace Ibinimator.Service
     {
         #region Constructors
 
-        public SelectionManager(ArtView artView, IViewManager viewManager)
+        public SelectionManager(ArtView artView, IViewManager viewManager, IHistoryManager historyManager)
         {
             ArtView = artView;
             ArtView.RenderTargetBound += OnRenderTargetBound;
@@ -64,6 +64,12 @@ namespace Ibinimator.Service
                         Selection.Remove(layer);
                 }
             };
+
+            historyManager.TimeChanged += (sender, args) =>
+            {
+                Update(true);
+                Updated?.Invoke(this, null);
+            };
         }
 
         #endregion Constructors
@@ -80,11 +86,13 @@ namespace Ibinimator.Service
         private Vector2? _lastPosition;
         private Vector2? _beginPosition;
         private Vector2 _accumulatedTranslation;
+        private Matrix3x2 _accumulatedTransform;
         private bool _moved;
         private SelectionResizeHandle? _resizingHandle;
         private bool _selecting;
         private RectangleF _selectionBox;
         private StrokeStyle1 _selectionStroke;
+        private Watcher<Guid, Layer> _watcher;
 
         #endregion Fields
 
@@ -142,8 +150,10 @@ namespace Ibinimator.Service
 
                 _lastPosition = pos;
                 _beginPosition = pos;
-                _accumulatedTranslation = Vector2.Zero;
+                _accumulatedTransform = Matrix.Identity;
 
+                var history = ArtView.HistoryManager;
+                _watcher = history.BeginRecord(Root);
                 Update(false);
             }
         }
@@ -182,7 +192,13 @@ namespace Ibinimator.Service
 
             lock (this)
             {
-                _resizingHandle = null;
+                if (_accumulatedTransform != Matrix3x2.Identity)
+                {
+                    _resizingHandle = null;
+
+                    var history = ArtView.HistoryManager;
+                    history.Key(history.EndRecord(_watcher, history.NextId));
+                }
 
                 if (!_moved)
                 {
@@ -253,7 +269,14 @@ namespace Ibinimator.Service
             }
         }
 
-        public void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin)
+        public void Transform(Vector2 scale, Vector2 translate,
+            float rotate, float shear, Vector2 origin)
+        {
+            Transform(scale, translate, rotate, shear, origin, true);
+        }
+
+        private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate, 
+            float shear, Vector2 origin, bool makeRecord)
         {
             var size = new Vector2(
                 Math.Abs(SelectionBounds.Width),
@@ -273,6 +296,12 @@ namespace Ibinimator.Service
                 Matrix3x2.Rotation(rotate, so) *
                 Matrix3x2.Translation(translate);
 
+            if (makeRecord)
+            {
+                var history = ArtView.HistoryManager;
+                _watcher = history.BeginRecord(Root);
+            }
+
             foreach (var layer in Selection)
                 lock (layer)
                 {
@@ -284,8 +313,6 @@ namespace Ibinimator.Service
                     layer.Rotation = delta.rotation;
                     layer.Position = delta.translation;
                     layer.Shear = delta.skew;
-
-                    layer.UpdateTransform();
                 }
 
             var sb = SelectionBounds;
@@ -305,8 +332,16 @@ namespace Ibinimator.Service
             SelectionRotation += rotate;
             SelectionShear += shear;
 
+            if (makeRecord)
+            {
+                var history = ArtView.HistoryManager;
+                history.Key(history.EndRecord(_watcher, history.NextId));
+            }
+
             Updated?.Invoke(this, null);
             InvalidateSurface();
+
+            return transform;
         }
 
         public void Update(bool reset)
@@ -565,12 +600,14 @@ namespace Ibinimator.Service
 
             _accumulatedTranslation += translate;
 
-            Transform(
-                scale,
-                translate,
-                rotate,
-                0,
-                relativeOrigin);
+            _accumulatedTransform *=
+                Transform(
+                    scale,
+                    translate,
+                    rotate,
+                    0,
+                    relativeOrigin,
+                    false);
         }
 
         private void Select(Vector2 pos)

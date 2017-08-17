@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service;
+using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using Rectangle = Ibinimator.Model.Rectangle;
@@ -17,12 +19,34 @@ namespace Ibinimator.ViewModel
     {
         #region Constructors
 
-        public MainViewModel()
+        public MainViewModel(ArtView artView)
         {
             FillPicker = new FillPickerViewModel(this);
             TransformPicker = new TransformViewModel(this);
 
+            ViewManager = new ViewManager(artView);
+            HistoryManager = new HistoryManager(artView);
+            SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager);
+            BrushManager = new BrushManager(artView, SelectionManager);
+            ToolManager = new ToolManager(artView);
+            Load();
+
+            artView.SetManager(ViewManager);
+            artView.SetManager(BrushManager);
+            artView.SetManager(SelectionManager);
+            artView.SetManager(ToolManager);
+            artView.SetManager(new CacheManager(artView));
+            artView.SetManager(HistoryManager);
+
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
+            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
+        }
+
+        public MainViewModel()
+        {
+            RunTime(() => throw new InvalidOperationException(
+                "This constructor only exists so that the XAML designer doesn't " +
+                "complain. Do not call this."));
         }
 
         #endregion Constructors
@@ -69,6 +93,16 @@ namespace Ibinimator.ViewModel
             set => Set(value);
         }
 
+        public IHistoryManager HistoryManager
+        {
+            get => Get<IHistoryManager>();
+            set
+            {
+                Set(value);
+                BindingOperations.EnableCollectionSynchronization(value, value);
+            }
+        }
+
         public IBrushManager BrushManager
         {
             get => Get<IBrushManager>();
@@ -89,6 +123,8 @@ namespace Ibinimator.ViewModel
         public TransformViewModel TransformPicker { get; }
 
         public DelegateCommand<Layer> SelectLayerCommand { get; }
+
+        public DelegateCommand<long> JumpHistoryCommand { get; }
 
         #endregion Properties
 
@@ -165,7 +201,6 @@ namespace Ibinimator.ViewModel
                 StrokeWidth = 5,
                 Rotation = MathUtil.Pi
             };
-            e.UpdateTransform();
 
             var r = new Rectangle
             {
@@ -177,7 +212,6 @@ namespace Ibinimator.ViewModel
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
                 StrokeWidth = 5
             };
-            r.UpdateTransform();
 
             var r2 = new Rectangle
             {
@@ -188,7 +222,6 @@ namespace Ibinimator.ViewModel
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
                 Rotation = MathUtil.Pi / 4
             };
-            r2.UpdateTransform();
 
             var p = new Path
             {
@@ -206,10 +239,8 @@ namespace Ibinimator.ViewModel
                     new PathNode { X = 200, Y = 200 }
                 }
             };
-            r2.UpdateTransform();
 
             l.Position = new Vector2(100, 100);
-            l.UpdateTransform();
 
             ViewManager.Root.Add(l);
 

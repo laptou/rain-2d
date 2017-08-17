@@ -65,6 +65,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
       <Private>True</Private>
@@ -121,6 +124,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\Attributes.cs" />
     <Compile Include="Model\BrushInfo.cs" />
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
@@ -128,9 +132,14 @@
     <Compile Include="Model\Shape.cs" />
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
+    <Compile Include="Service\FileCommands.cs" />
+    <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
     <Compile Include="Service\IArtViewManager.cs" />
+    <Compile Include="Service\IHistoryManager.cs" />
+    <Compile Include="Service\IRecorder.cs" />
     <Compile Include="Service\SelectionCommands.cs" />
+    <Compile Include="Service\FileService.cs" />
     <Compile Include="Service\ToolManager.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\DictionaryExtensions.cs" />

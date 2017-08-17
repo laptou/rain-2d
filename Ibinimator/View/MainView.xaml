@@ -41,6 +41,9 @@
         <KeyBinding Gesture="CTRL+SHIFT+Z" 
                     Command="{x:Static service:HistoryCommands.RedoCommand}"
                     CommandParameter="{Binding HistoryManager}"/>
+        <KeyBinding Gesture="CTRL+S" 
+                    Command="{x:Static service:FileCommands.SerializeCommand}"
+                    CommandParameter="{Binding ViewManager.Root}"/>
     </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -698,7 +701,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"
                                        VerticalAlignment="Center" Text="X:" />
                             <TextBox Grid.Row="0" Grid.Column="2"
-                                     Text="{Binding TransformPicker.X, Converter={StaticResource DistanceConverter}}" Margin="7.6,8,8,7.6">
+                                     Text="{Binding TransformPicker.X, Converter={StaticResource DistanceConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -708,7 +711,7 @@
                                 Y:
                             </TextBlock>
                             <TextBox Grid.Row="1" Grid.Column="2"
-                                     Text="{Binding TransformPicker.Y, Converter={StaticResource DistanceConverter}}" Margin="7.6,8.4,8,7.2">
+                                     Text="{Binding TransformPicker.Y, Converter={StaticResource DistanceConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -719,7 +722,7 @@
                                 W:
                             </TextBlock>
                             <TextBox Grid.Row="0" Grid.Column="4"
-                                     Text="{Binding TransformPicker.Width, Converter={StaticResource DistanceConverter}}" Margin="8.4,8,7,7.6">
+                                     Text="{Binding TransformPicker.Width, Converter={StaticResource DistanceConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -729,7 +732,7 @@
                                 H:
                             </TextBlock>
                             <TextBox Grid.Row="1" Grid.Column="4"
-                                     Text="{Binding TransformPicker.Height, Converter={StaticResource DistanceConverter}}" Margin="8.4,8.4,7,7.2">
+                                     Text="{Binding TransformPicker.Height, Converter={StaticResource DistanceConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -740,7 +743,7 @@
                                 R:
                             </TextBlock>
                             <TextBox Grid.Row="2" Grid.Column="2"
-                                     Text="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}}" Margin="7.6,7.8,8,7.8">
+                                     Text="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
@@ -750,14 +753,39 @@
                                 S:
                             </TextBlock>
                             <TextBox Grid.Row="2" Grid.Column="4"
-                                     Text="{Binding TransformPicker.Shear, Converter={StaticResource AngleConverter}}" Margin="8.4,7.8,7,7.8">
+                                     Text="{Binding TransformPicker.Shear, Converter={StaticResource AngleConverter}}">
                                 <i:Interaction.Behaviors>
                                     <view:TextBoxEnterBehavior />
                                 </i:Interaction.Behaviors>
                             </TextBox>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="History" />
+                    <TabItem Header="History">
+                        <Grid MinHeight="128" MaxHeight="256">
+                            <ListBox ItemsSource="{Binding HistoryManager}" x:Name="HistoryList"
+                                      Background="{DynamicResource L1Brush}" SelectionMode="Single" 
+                                      SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time}" 
+                                      BorderBrush="{x:Null}">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="{Binding (view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock x:Name="HistoryRecordDescription" Text="{Binding Description}"
+                                                   Margin="8,4" Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </TabItem>
                 </TabControl>
             </Grid>
             <GridSplitter Grid.Column="1" Width="5" Background="Transparent"/>

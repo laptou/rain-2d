@@ -33,9 +33,10 @@ namespace Ibinimator.View.Control
         #region Fields
 
         public IBrushManager BrushManager { get; private set; }
-        public IToolManager ToolManager { get; private set; }
         public ICacheManager CacheManager { get; private set; }
+        public IHistoryManager HistoryManager { get; private set; }
         public ISelectionManager SelectionManager { get; private set; }
+        public IToolManager ToolManager { get; private set; }
         public IViewManager ViewManager { get; private set; }
 
         private Factory _factory;
@@ -60,8 +61,8 @@ namespace Ibinimator.View.Control
         {
             base.OnLostFocus(e);
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
+            //if (ToolManager != null)
+            //    await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -231,6 +232,11 @@ namespace Ibinimator.View.Control
                     if (ViewManager?.Root != null)
                         CacheManager.BindLayer(ViewManager.Root);
                 }
+            }
+
+            if (interfaces.Contains(typeof(IHistoryManager)))
+            {
+                HistoryManager = (IHistoryManager)manager;
             }
 
             if (interfaces.Contains(typeof(ISelectionManager)))

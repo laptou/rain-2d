@@ -1,27 +1,21 @@
-﻿using SharpDX;
-using SharpDX.Direct2D1;
-using System;
-using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections;
 using System.Threading.Tasks;
 using System.Linq;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Collections.Generic;
-using Ibinimator.Shared;
-using Ibinimator.View.Control;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Xml.Serialization;
 using Ibinimator.Service;
+using Ibinimator.Shared;
+using SharpDX;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
 {
     public class Group : Layer
     {
-        #region Properties
-
         public override string DefaultName => "Group";
-
-        #endregion Properties
-
-        #region Methods
 
         public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world)
         {
@@ -47,7 +41,7 @@ namespace Ibinimator.Model
                 case 1:
                     return SubLayers[0].GetAbsoluteBounds();
                 default:
-                    RectangleF first = SubLayers[0].GetRelativeBounds();
+                    var first = SubLayers[0].GetRelativeBounds();
 
                     float x1 = first.Left, y1 = first.Top, x2 = first.Right, y2 = first.Bottom;
 
@@ -64,15 +58,11 @@ namespace Ibinimator.Model
                     return new RectangleF(x1, y1, x2 - x1, y2 - y1);
             }
         }
-
-        #endregion Methods
-
     }
 
-    public class Layer : Model
+    [Serializable]
+    public class Layer : Model //, ICollection<Layer>
     {
-        #region Constructors
-
         public Layer()
         {
             Opacity = 1;
@@ -80,85 +70,240 @@ namespace Ibinimator.Model
             UpdateTransform();
         }
 
-        #endregion Constructors
-
-        #region Properties
-
-        public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
-
-        public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
-
+        [XmlIgnore]
         public virtual string DefaultName => "Layer";
-
-        public virtual float Height { get => Get<float>(); set => Set(value); }
 
         public Guid Id { get; } = Guid.NewGuid();
 
-        public Layer Mask { get => Get<Layer>(); set => Set(value); }
+        [XmlIgnore]
+        public Layer Mask
+        {
+            get => Get<Layer>();
+            set => Set(value);
+        }
 
-        public string Name { get => Get<string>(); set => Set(value); }
+        [Undoable]
+        public string Name
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
 
-        public float Opacity { get => Get<float>(); set => Set(value); }
+        [Undoable]
+        [Animatable]
+        public float Opacity
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
 
-        public Layer Parent { get => Get<Layer>(); private set => Set(value); }
+        [Undoable]
+        [XmlIgnore]
+        public Layer Parent
+        {
+            get => Get<Layer>();
+            private set => Set(value);
+        }
 
-        public Vector2 Position { get => Get<Vector2>(); set => Set(value); }
+        [XmlIgnore]
+        public bool Selected
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
 
-        public float Rotation { get => Get<float>(); set => Set(value); }
-
-        public bool Selected { get => Get<bool>(); set => Set(value); }
-
+        //[XmlIgnore]
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        public Matrix3x2 Transform { get => Get<Matrix3x2>(); private set => Set(value); }
+        [XmlIgnore]
+        public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        public Vector2 Scale { get => Get<Vector2>(); set => Set(value); }
+        [XmlIgnore]
+        public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
 
-        public float Shear { get => Get<float>(); set => Set(value); }
-
-        public virtual float Width { get => Get<float>(); set => Set(value); }
-
-        public float X { get => Position.X; set => Position = new Vector2(value, Y); }
-
-        public float Y { get => Position.Y; set => Position = new Vector2(X, value); }
-
-        #endregion Properties
-
-        #region Methods
-
-        public void Add(Layer child, int index = -1)
+        [XmlIgnore]
+        public Matrix3x2 Transform
         {
-            if(child.Parent != null)
+            get => Get<Matrix3x2>();
+            private set => Set(value);
+        }
+
+        [Undoable]
+        [Animatable]
+        public Vector2 Scale
+        {
+            get => Get<Vector2>();
+            set
+            {
+                Set(value);
+                UpdateTransform();
+            }
+        }
+
+        [Undoable]
+        [Animatable]
+        public float Shear
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                UpdateTransform();
+            }
+        }
+
+        [Undoable]
+        [Animatable]
+        public float Rotation
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                UpdateTransform();
+            }
+        }
+
+        [Undoable]
+        [Animatable]
+        public Vector2 Position
+        {
+            get => Get<Vector2>();
+            set
+            {
+                Set(value);
+                UpdateTransform();
+            }
+        }
+
+        [Undoable]
+        [Animatable]
+        public virtual float Height
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        [Undoable]
+        [Animatable]
+        public virtual float Width
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        [XmlIgnore]
+        public float X
+        {
+            get => Position.X;
+            set => Position = new Vector2(value, Y);
+        }
+
+        [XmlIgnore]
+        public float Y
+        {
+            get => Position.Y;
+            set => Position = new Vector2(X, value);
+        }
+
+        #region ICollection<Layer> Members
+
+        public void Add(Layer item)
+        {
+            Add(item, -1);
+        }
+
+        public void Clear()
+        {
+            SubLayers.Clear();
+        }
+
+        public bool Contains(Layer item)
+        {
+            return SubLayers.Contains(item);
+        }
+
+        public void CopyTo(Layer[] array, int arrayIndex)
+        {
+            SubLayers.CopyTo(array, arrayIndex);
+        }
+
+        //bool ICollection<Layer>.Remove(Layer item)
+        //{
+        //    Remove(item);
+        //    return true;
+        //}
+
+        //int ICollection<Layer>.Count => SubLayers.Count;
+
+        //bool ICollection<Layer>.IsReadOnly => false;
+
+        public IEnumerator<Layer> GetEnumerator()
+        {
+            return SubLayers.GetEnumerator();
+        }
+
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{
+        //    return GetEnumerator();
+        //}
+
+        #endregion
+
+        public event EventHandler<Layer> LayerAdded;
+        public event EventHandler<Layer> LayerRemoved;
+
+        public void Add(Layer child, int index)
+        {
+            if (child.Parent != null)
                 throw new InvalidOperationException();
 
             child.Parent = this;
-            if(index == -1)
+
+            if (index == -1)
                 SubLayers.Add(child);
             else
                 SubLayers.Insert(index, child);
 
             child.PropertyChanged += OnSubLayerChanged;
+            child.PropertyChanging += OnSubLayerChanging;
             LayerAdded?.Invoke(this, child);
+        }
+
+        private void OnSubLayerChanging(object sender, PropertyChangingEventArgs e)
+        {
+            RaisePropertyChanging(sender, e);
         }
 
         public void Remove(Layer child)
         {
-            if(child.Parent != this)
+            if (child.Parent != this)
                 throw new InvalidOperationException();
 
             child.Parent = null;
             SubLayers.Remove(child);
             child.PropertyChanged -= OnSubLayerChanged;
+            child.PropertyChanging -= OnSubLayerChanging;
             LayerRemoved?.Invoke(this, child);
         }
 
+        public Layer Find(Guid id)
+        {
+            return
+                id == Id
+                    ? this
+                    : SubLayers
+                        .Select(layer => layer.Find(id))
+                        .FirstOrDefault(l => l != null);
+        }
+
         /// <summary>
-        /// Returns the entire layer graph starting at this layer,
-        /// as a list.
+        ///     Returns the entire layer graph starting at this layer,
+        ///     as a list.
         /// </summary>
         /// <returns>
-        /// The entire layer graph starting at this layer,
-        /// as a list.
+        ///     The entire layer graph starting at this layer,
+        ///     as a list.
         /// </returns>
         public virtual IEnumerable<Layer> Flatten()
         {
@@ -201,7 +346,8 @@ namespace Ibinimator.Model
         {
             var decomp = AbsoluteTransform.Decompose();
 
-            var r = MathUtils.Bounds(GetBounds(), Matrix3x2.Scaling(decomp.scale) * Matrix3x2.Translation(decomp.translation));
+            var r = MathUtils.Bounds(GetBounds(),
+                Matrix3x2.Scaling(decomp.scale) * Matrix3x2.Translation(decomp.translation));
 
             return r;
         }
@@ -226,19 +372,21 @@ namespace Ibinimator.Model
             return null;
         }
 
-        public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world) => 
-            Hit<Layer>(factory, point, world);
-
+        public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world)
+        {
+            return Hit<Layer>(factory, point, world);
+        }
 
         public virtual void Render(RenderTarget target, ICacheManager helper)
         {
-            foreach (var layer in Enumerable.Reverse(SubLayers))
+            lock (this)
             {
-                layer.Render(target, helper);
+                foreach (var layer in SubLayers.Reverse())
+                    layer.Render(target, helper);
             }
         }
 
-        public void UpdateTransform()
+        private void UpdateTransform()
         {
             Transform =
                 Matrix3x2.Scaling(Scale) *
@@ -251,10 +399,5 @@ namespace Ibinimator.Model
         {
             RaisePropertyChanged(sender, e);
         }
-
-        #endregion Methods
-
-        public event EventHandler<Layer> LayerAdded;
-        public event EventHandler<Layer> LayerRemoved;
     }
 }

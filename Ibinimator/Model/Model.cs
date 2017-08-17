@@ -48,9 +48,14 @@ namespace Ibinimator.Model
             PropertyChanged?.Invoke(sender, args);
         }
 
+        public void RaisePropertyChanging(object sender, PropertyChangingEventArgs args)
+        {
+            PropertyChanging?.Invoke(sender, args);
+        }
+
         public void RaisePropertyChanging(string propertyName)
         {
-            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+            RaisePropertyChanging(this, new PropertyChangingEventArgs(propertyName));
         }
 
         public void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
@@ -62,6 +67,8 @@ namespace Ibinimator.Model
 
         public void Set<T>(T value, [CallerMemberName] string propertyName = "")
         {
+            if (Equals(Get<T>(propertyName), value)) return;
+
             RaisePropertyChanging(propertyName);
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
@@ -69,6 +76,8 @@ namespace Ibinimator.Model
 
         public void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")
         {
+            if (Equals(variable, value)) return;
+
             RaisePropertyChanging(propertyName);
 
             variable = value;
@@ -91,15 +100,13 @@ namespace Ibinimator.Model
         {
             MemberExpression member = propertyLambda.Body as MemberExpression;
             if (member == null)
-                throw new ArgumentException(string.Format(
-                    "Expression '{0}' refers to a method, not a property.",
-                    propertyLambda.ToString()));
+                throw new ArgumentException(
+                    $"Expression '{propertyLambda}' refers to a method, not a property.");
 
             PropertyInfo propInfo = member.Member as PropertyInfo;
             if (propInfo == null)
-                throw new ArgumentException(string.Format(
-                    "Expression '{0}' refers to a field, not a property.",
-                    propertyLambda.ToString()));
+                throw new ArgumentException(
+                    $"Expression '{propertyLambda}' refers to a field, not a property.");
 
             return propInfo;
         }
