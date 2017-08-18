@@ -5,6 +5,7 @@ namespace Ibinimator.Service
 {
     public static class FileCommands
     {
-        public static readonly DelegateCommand<Layer> SerializeCommand = new DelegateCommand<Layer>(FileService.Serialize, l => true);
+        public static readonly AsyncDelegateCommand<Layer> SerializeCommand = 
+            new AsyncDelegateCommand<Layer>(async layer => await FileService.Serialize(layer));
     }
 }

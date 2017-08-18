@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Ibinimator.Service;
 using Ibinimator.Shared;
@@ -70,12 +71,12 @@ namespace Ibinimator.Model
             UpdateTransform();
         }
 
-        [XmlIgnore]
+        [DontSerialize]
         public virtual string DefaultName => "Layer";
 
         public Guid Id { get; } = Guid.NewGuid();
 
-        [XmlIgnore]
+        [DontSerialize]
         public Layer Mask
         {
             get => Get<Layer>();
@@ -98,30 +99,30 @@ namespace Ibinimator.Model
         }
 
         [Undoable]
-        [XmlIgnore]
+        [DontSerialize]
         public Layer Parent
         {
             get => Get<Layer>();
             private set => Set(value);
         }
 
-        [XmlIgnore]
+        [DontSerialize]
         public bool Selected
         {
             get => Get<bool>();
             set => Set(value);
         }
 
-        //[XmlIgnore]
+        //[DontSerialize]
         public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
-        [XmlIgnore]
+        [DontSerialize]
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        [XmlIgnore]
+        [DontSerialize]
         public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
 
-        [XmlIgnore]
+        [DontSerialize]
         public Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
@@ -192,14 +193,14 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        [XmlIgnore]
+        [DontSerialize]
         public float X
         {
             get => Position.X;
             set => Position = new Vector2(value, Y);
         }
 
-        [XmlIgnore]
+        [DontSerialize]
         public float Y
         {
             get => Position.Y;
@@ -398,6 +399,11 @@ namespace Ibinimator.Model
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Name", Name);
         }
     }
 }

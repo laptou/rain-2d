@@ -114,6 +114,12 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="ZeroFormatter, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZeroFormatter.1.6.4\lib\net45\ZeroFormatter.dll</HintPath>
+    </Reference>
+    <Reference Include="ZeroFormatter.Interfaces, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZeroFormatter.Interfaces.1.6.4\lib\net45\ZeroFormatter.Interfaces.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -145,7 +151,9 @@
     <Compile Include="Shared\DictionaryExtensions.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
+    <Compile Include="Shared\StreamExtensions.cs" />
     <Compile Include="Shared\TupleUtils.cs" />
+    <Compile Include="Shared\TypeExtensions.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -220,7 +228,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="..\packages\ZeroFormatter.Analyzer.1.1.1\analyzers\dotnet\cs\ZeroFormatterAnalyzer.dll" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icon\Icon.xaml">
       <SubType>Designer</SubType>

@@ -771,7 +771,7 @@
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Style.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="{Binding (view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
+                                                <Setter Property="Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
                                                 <Setter Property="FontWeight" Value="Bold"/>
                                             </Trigger>
                                         </Style.Triggers>
