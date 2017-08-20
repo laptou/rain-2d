@@ -1,11 +1,11 @@
-﻿using Ibinimator.Shared;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Xml.Serialization;
+using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using WPF = System.Windows.Media;
 
 namespace Ibinimator.Model
@@ -15,6 +15,9 @@ namespace Ibinimator.Model
         Linear, Radial
     }
 
+    [XmlInclude(typeof(SolidColorBrushInfo))]
+    [XmlInclude(typeof(GradientBrushInfo))]
+    [XmlInclude(typeof(BitmapBrushInfo))]
     public abstract class BrushInfo : Model
     {
         #region Constructors
@@ -29,8 +32,9 @@ namespace Ibinimator.Model
 
         #region Properties
 
+        [XmlAttribute]
         public float Opacity { get => Get<float>(); set => Set(value); }
-
+        
         public Matrix3x2 Transform { get => Get<Matrix3x2>(); set => Set(value); }
 
         #endregion Properties
@@ -53,6 +57,7 @@ namespace Ibinimator.Model
         #endregion Methods
     }
 
+    [XmlType("SolidColor")]
     public class SolidColorBrushInfo : BrushInfo
     {
         public Color4 Color
@@ -75,6 +80,7 @@ namespace Ibinimator.Model
         }
     }
 
+    [XmlType("Gradient")]
     public class GradientBrushInfo : BrushInfo
     {
         public GradientBrushInfo()
@@ -160,6 +166,7 @@ namespace Ibinimator.Model
         }
     }
 
+    [XmlType("Bitmap")]
     public class BitmapBrushInfo : BrushInfo
     {
         public byte[] Bitmap { get; set; }

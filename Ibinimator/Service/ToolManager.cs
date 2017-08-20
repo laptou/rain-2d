@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
 using Layer = Ibinimator.Model.Layer;
 

@@ -27,45 +27,45 @@ namespace Ibinimator.Model
 
         #region Methods
 
-        public T Get<T>([CallerMemberName] string propertyName = "")
+        protected T Get<T>([CallerMemberName] string propertyName = "")
         {
             return _properties.TryGetValue(propertyName, out object o) && o is T ? (T)o : default(T);
         }
 
-        public void RaisePropertyChanged(string propertyName)
+        protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void RaisePropertyChanged<T>(Expression<Func<T>> propertyLambda)
+        protected void RaisePropertyChanged<T>(Expression<Func<T>> propertyLambda)
         {
             string propertyName = GetPropertyInfo(propertyLambda).Name;
             RaisePropertyChanged(propertyName);
         }
 
-        public void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
+        protected void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             PropertyChanged?.Invoke(sender, args);
         }
 
-        public void RaisePropertyChanging(object sender, PropertyChangingEventArgs args)
+        protected void RaisePropertyChanging(object sender, PropertyChangingEventArgs args)
         {
             PropertyChanging?.Invoke(sender, args);
         }
 
-        public void RaisePropertyChanging(string propertyName)
+        protected void RaisePropertyChanging(string propertyName)
         {
             RaisePropertyChanging(this, new PropertyChangingEventArgs(propertyName));
         }
 
-        public void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
+        protected void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
         {
             string propertyName = GetPropertyInfo(propertyLambda).Name;
 
             RaisePropertyChanging(propertyName);
         }
 
-        public void Set<T>(T value, [CallerMemberName] string propertyName = "")
+        protected void Set<T>(T value, [CallerMemberName] string propertyName = "")
         {
             if (Equals(Get<T>(propertyName), value)) return;
 
@@ -74,7 +74,7 @@ namespace Ibinimator.Model
             RaisePropertyChanged(propertyName);
         }
 
-        public void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")
+        protected void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")
         {
             if (Equals(variable, value)) return;
 
@@ -85,7 +85,7 @@ namespace Ibinimator.Model
             RaisePropertyChanged(propertyName);
         }
 
-        public void SetProperty<T>(T value, ref T variable, Expression<Func<T>> propertyLambda)
+        protected void SetProperty<T>(T value, out T variable, Expression<Func<T>> propertyLambda)
         {
             string propertyName = GetPropertyInfo(propertyLambda).Name;
 
@@ -96,7 +96,7 @@ namespace Ibinimator.Model
             RaisePropertyChanged(propertyName);
         }
 
-        private PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
+        protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
         {
             MemberExpression member = propertyLambda.Body as MemberExpression;
             if (member == null)
@@ -109,6 +109,17 @@ namespace Ibinimator.Model
                     $"Expression '{propertyLambda}' refers to a field, not a property.");
 
             return propInfo;
+        }
+
+        public T Clone<T>() where T : Model, new()
+        {
+            if(typeof(T) != GetType())
+                throw new InvalidCastException();
+            
+            return new T
+            {
+                _properties = _properties.ToDictionary(kv => kv.Key, kv => kv.Value)
+            }; 
         }
 
         #endregion Methods

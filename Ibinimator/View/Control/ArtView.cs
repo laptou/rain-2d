@@ -1,19 +1,15 @@
 ﻿using System.Threading.Tasks;
-using System.Collections.Generic;
 using System;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.View.Control
 {
-    
+
 
     public class ArtView : D2DImage
     {
@@ -55,14 +51,6 @@ namespace Ibinimator.View.Control
         public void InvalidateSurface()
         {
             base.InvalidateSurface(null);
-        }
-
-        protected override async void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-
-            //if (ToolManager != null)
-            //    await Task.Run(() => ToolManager.MouseUp(-Vector2.One));
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)

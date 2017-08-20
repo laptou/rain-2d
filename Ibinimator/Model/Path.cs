@@ -1,12 +1,17 @@
-﻿using SharpDX;
+﻿using System;
+using SharpDX;
 using SharpDX.Direct2D1;
-using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Ibinimator.Shared;
 
 namespace Ibinimator.Model
 {
+    [Serializable]
+    [XmlType(nameof(Path))]
     public class Path : Shape
     {
         public Path()
@@ -89,23 +94,33 @@ namespace Ibinimator.Model
         #endregion Methods
     }
 
+    [Serializable]
     public class BezierNode : PathNode
     {
         #region Properties
 
+        [XmlAttribute]
         public float ControlX { get => Get<float>(); set => Set(value); }
+
+        [XmlAttribute]
         public float ControlY { get => Get<float>(); set => Set(value); }
+
         public Vector2 Control => new Vector2(ControlX, ControlY);
 
         #endregion Properties
     }
 
+    [Serializable]
     public class PathNode : Model
     {
         #region Properties
-
+        
+        [XmlAttribute]
         public float X { get => Get<float>(); set => Set(value); }
+        
+        [XmlAttribute]
         public float Y { get => Get<float>(); set => Set(value); }
+
         public Vector2 Position => new Vector2(X, Y);
 
         #endregion Properties

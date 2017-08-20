@@ -43,7 +43,7 @@
                     CommandParameter="{Binding HistoryManager}"/>
         <KeyBinding Gesture="CTRL+S" 
                     Command="{x:Static service:FileCommands.SerializeCommand}"
-                    CommandParameter="{Binding ViewManager.Root}"/>
+                    CommandParameter="{Binding ViewManager.Document}"/>
     </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">

@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service

@@ -1,20 +1,25 @@
 ﻿using SharpDX;
 using SharpDX.Direct2D1;
 using System;
-using System.Diagnostics;
-using Ibinimator.View.Control;
-using Ibinimator.Shared;
-using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using Ibinimator.Service;
+using Ibinimator.Shared;
 
 namespace Ibinimator.Model
 {
+    [Serializable]
+    [XmlType(nameof(Ellipse))]
     public class Ellipse : Shape
     {
         #region Properties
 
-        public override String DefaultName => "Ellipse";
+        public override string DefaultName => "Ellipse";
+
+        [XmlAttribute]
         public float RadiusX { get => Width / 2; set => Width = value * 2; }
+
+        [XmlAttribute]
         public float RadiusY { get => Height / 2; set => Height = value * 2; }
 
         #endregion Properties
@@ -34,14 +39,19 @@ namespace Ibinimator.Model
         #endregion Methods
     }
 
+    [Serializable]
+    [XmlType(nameof(Rectangle))]
     public class Rectangle : Shape
     {
+        [XmlAttribute]
         public override float Width { get => base.Width; set { base.Width = value; RaisePropertyChanged("Geometry"); } }
+
+        [XmlAttribute]
         public override float Height { get => base.Height; set { base.Height = value; RaisePropertyChanged("Geometry"); } }
 
         #region Properties
 
-        public override String DefaultName => "Rectangle";
+        public override string DefaultName => "Rectangle";
 
         #endregion Properties
 
@@ -57,11 +67,14 @@ namespace Ibinimator.Model
         #endregion Methods
     }
 
+    [XmlInclude(typeof(Rectangle))]
+    [XmlInclude(typeof(Ellipse))]
+    [XmlInclude(typeof(Path))]
     public abstract class Shape : Layer
     {
-        public Shape()
+        protected Shape()
         {
-            StrokeStyle = new StrokeStyleProperties1()
+            StrokeStyle = new StrokeStyleProperties1
             {
                 TransformType = StrokeTransformType.Fixed
             };
@@ -69,14 +82,19 @@ namespace Ibinimator.Model
 
         #region Properties
 
-        public override String DefaultName => "Shape";
-        public BrushInfo FillBrush { get => Get<BrushInfo>(); set => Set(value); }
-        public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
-        public StrokeStyleProperties1 StrokeStyle { get => Get<StrokeStyleProperties1>(); set => Set(value); }
-        public float StrokeWidth { get => Get<float>(); set => Set(value); }
+        public override string DefaultName => "Shape";
 
-        public override float Height { get => Get<float>(); set => Set(value); }
-        public override float Width { get => Get<float>(); set => Set(value); }
+        [XmlElement]
+        public BrushInfo FillBrush { get => Get<BrushInfo>(); set => Set(value); }
+
+        [XmlElement]
+        public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
+
+        [XmlElement]
+        public StrokeStyleProperties1 StrokeStyle { get => Get<StrokeStyleProperties1>(); set => Set(value); }
+
+        [XmlAttribute]
+        public float StrokeWidth { get => Get<float>(); set => Set(value); }
 
         #endregion Properties
 

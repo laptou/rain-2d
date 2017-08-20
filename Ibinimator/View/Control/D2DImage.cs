@@ -3,7 +3,6 @@ using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -13,9 +12,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
-using Screen = System.Windows.Forms.Screen;
 using SharpDX;
-using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
 
 namespace Ibinimator.View.Control

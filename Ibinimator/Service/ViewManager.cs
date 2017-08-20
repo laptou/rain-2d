@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Ibinimator.Model;
 using SharpDX;
 using Ibinimator.View.Control;
@@ -15,6 +10,7 @@ namespace Ibinimator.Service
         public ViewManager(ArtView artView)
         {
             ArtView = artView;
+            Document = new Document();
             Zoom = 1;
         }
 
@@ -26,8 +22,14 @@ namespace Ibinimator.Service
 
         public Layer Root
         {
-            get => Get<Layer>();
-            set { Set(value); value.PropertyChanged += RootPropertyChanged;}
+            get => Document.Root;
+            set => Document.Root = value;
+        }
+
+        public Document Document
+        {
+            get => Get<Document>();
+            set => Set(value);
         }
 
         private void RootPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)

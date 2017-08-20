@@ -1,10 +1,7 @@
 ﻿using SharpDX;
 using SharpDX.Mathematics.Interop;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ibinimator.Shared
 {

@@ -1,11 +1,9 @@
-﻿using System;
-using Ibinimator.Model;
-using Ibinimator.View.Control;
+﻿using Ibinimator.Model;
 using SharpDX;
 using System.ComponentModel;
 
 namespace Ibinimator.Service
-{
+{ 
     public interface IViewManager : IArtViewManager, INotifyPropertyChanged
     {
         float Zoom { get; set; }

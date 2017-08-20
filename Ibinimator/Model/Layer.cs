@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
@@ -61,8 +60,9 @@ namespace Ibinimator.Model
         }
     }
 
-    [Serializable]
-    public class Layer : Model //, ICollection<Layer>
+    [XmlInclude(typeof(Group))]
+    [XmlInclude(typeof(Shape))]
+    public class Layer : Model
     {
         public Layer()
         {
@@ -70,13 +70,14 @@ namespace Ibinimator.Model
             Scale = Vector2.One;
             UpdateTransform();
         }
-
-        [DontSerialize]
+        
+        [XmlIgnore]
         public virtual string DefaultName => "Layer";
 
-        public Guid Id { get; } = Guid.NewGuid();
-
-        [DontSerialize]
+        [XmlAttribute]
+        public Guid Id { get; set; } = Guid.NewGuid();
+        
+        [XmlElement]
         public Layer Mask
         {
             get => Get<Layer>();
@@ -84,6 +85,7 @@ namespace Ibinimator.Model
         }
 
         [Undoable]
+        [XmlAttribute]
         public string Name
         {
             get => Get<string>();
@@ -92,6 +94,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlAttribute]
         public float Opacity
         {
             get => Get<float>();
@@ -99,30 +102,30 @@ namespace Ibinimator.Model
         }
 
         [Undoable]
-        [DontSerialize]
+        [XmlIgnore]
         public Layer Parent
         {
             get => Get<Layer>();
             private set => Set(value);
         }
 
-        [DontSerialize]
+        [XmlAttribute]
         public bool Selected
         {
             get => Get<bool>();
             set => Set(value);
         }
 
-        //[DontSerialize]
-        public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
+        [XmlElement("Layer")]
+        public ObservableCollection<Layer> SubLayers { get; set; } = new ObservableCollection<Layer>();
 
-        [DontSerialize]
+        [XmlIgnore]
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        [DontSerialize]
+        [XmlIgnore]
         public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
 
-        [DontSerialize]
+        [XmlIgnore]
         public Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
@@ -131,6 +134,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlIgnore]
         public Vector2 Scale
         {
             get => Get<Vector2>();
@@ -141,8 +145,23 @@ namespace Ibinimator.Model
             }
         }
 
+        [XmlAttribute]
+        public float ScaleX
+        {
+            get => Scale.X;
+            set => Scale = new Vector2(value, Scale.Y);
+        }
+
+        [XmlAttribute]
+        public float ScaleY
+        {
+            get => Scale.Y;
+            set => Scale = new Vector2(Scale.X, value);
+        }
+
         [Undoable]
         [Animatable]
+        [XmlAttribute]
         public float Shear
         {
             get => Get<float>();
@@ -155,6 +174,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlAttribute]
         public float Rotation
         {
             get => Get<float>();
@@ -167,6 +187,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlIgnore]
         public Vector2 Position
         {
             get => Get<Vector2>();
@@ -179,6 +200,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlAttribute]
         public virtual float Height
         {
             get => Get<float>();
@@ -187,74 +209,32 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
+        [XmlAttribute]
         public virtual float Width
         {
             get => Get<float>();
             set => Set(value);
         }
 
-        [DontSerialize]
+        [XmlAttribute]
         public float X
         {
             get => Position.X;
             set => Position = new Vector2(value, Y);
         }
 
-        [DontSerialize]
+        [XmlAttribute]
         public float Y
         {
             get => Position.Y;
             set => Position = new Vector2(X, value);
         }
 
-        #region ICollection<Layer> Members
-
-        public void Add(Layer item)
-        {
-            Add(item, -1);
-        }
-
-        public void Clear()
-        {
-            SubLayers.Clear();
-        }
-
-        public bool Contains(Layer item)
-        {
-            return SubLayers.Contains(item);
-        }
-
-        public void CopyTo(Layer[] array, int arrayIndex)
-        {
-            SubLayers.CopyTo(array, arrayIndex);
-        }
-
-        //bool ICollection<Layer>.Remove(Layer item)
-        //{
-        //    Remove(item);
-        //    return true;
-        //}
-
-        //int ICollection<Layer>.Count => SubLayers.Count;
-
-        //bool ICollection<Layer>.IsReadOnly => false;
-
-        public IEnumerator<Layer> GetEnumerator()
-        {
-            return SubLayers.GetEnumerator();
-        }
-
-        //IEnumerator IEnumerable.GetEnumerator()
-        //{
-        //    return GetEnumerator();
-        //}
-
-        #endregion
-
         public event EventHandler<Layer> LayerAdded;
+
         public event EventHandler<Layer> LayerRemoved;
 
-        public void Add(Layer child, int index)
+        public void Add(Layer child, int index = -1)
         {
             if (child.Parent != null)
                 throw new InvalidOperationException();
@@ -399,11 +379,6 @@ namespace Ibinimator.Model
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Name", Name);
         }
     }
 }

@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 using System.ComponentModel;
 using System;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {

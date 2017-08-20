@@ -1,5 +1,4 @@
 ﻿using Ibinimator.Model;
-using Ibinimator.View.Control;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service

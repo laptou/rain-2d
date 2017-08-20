@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Ibinimator
 {
@@ -16,6 +14,9 @@ namespace Ibinimator
     {
         public static bool IsDesigner =>
             System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime;
+
+        public static Dispatcher Dispatcher => Current.Dispatcher;
+
 
         public App()
         {

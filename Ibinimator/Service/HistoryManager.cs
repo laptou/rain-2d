@@ -5,12 +5,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using FastMember;
 using Ibinimator.View.Control;
-using SharpDX;
 using Ibinimator.Model;
-using Ibinimator.Shared;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.Service

@@ -1,12 +1,6 @@
 ﻿using Ibinimator.Model;
 using Ibinimator.Shared;
-using Ibinimator.View.Control;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Service;
 

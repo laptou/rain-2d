@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
-using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 

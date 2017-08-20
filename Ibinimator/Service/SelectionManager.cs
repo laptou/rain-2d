@@ -1,16 +1,10 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq;
-using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Ibinimator.Shared;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.View.Control;
@@ -37,7 +31,17 @@ namespace Ibinimator.Service
 
     public class SelectionManager : Model.Model, ISelectionManager
     {
-        #region Constructors
+        private readonly object _render = new object();
+        private Matrix3x2 _accumulatedTransform;
+        private Vector2 _accumulatedTranslation;
+        private Vector2? _beginPosition;
+        private Vector2? _lastPosition;
+        private bool _moved;
+        private SelectionResizeHandle? _resizingHandle;
+        private bool _selecting;
+        private RectangleF _selectionBox;
+        private StrokeStyle1 _selectionStroke;
+        private Watcher<Guid, Layer> _watcher;
 
         public SelectionManager(ArtView artView, IViewManager viewManager, IHistoryManager historyManager)
         {
@@ -72,44 +76,19 @@ namespace Ibinimator.Service
             };
         }
 
-        #endregion Constructors
+        public ObservableCollection<Layer> Selection { get; }
 
-        #region Events
+        #region ISelectionManager Members
 
         public event EventHandler Updated;
-
-        #endregion Events
-
-        #region Fields
-
-        private readonly object _render = new object();
-        private Vector2? _lastPosition;
-        private Vector2? _beginPosition;
-        private Vector2 _accumulatedTranslation;
-        private Matrix3x2 _accumulatedTransform;
-        private bool _moved;
-        private SelectionResizeHandle? _resizingHandle;
-        private bool _selecting;
-        private RectangleF _selectionBox;
-        private StrokeStyle1 _selectionStroke;
-        private Watcher<Guid, Layer> _watcher;
-
-        #endregion Fields
-
-        #region Properties
 
         public ArtView ArtView { get; }
         public Bitmap Cursor { get; set; }
         public Layer Root => ArtView.ViewManager.Root;
-        public ObservableCollection<Layer> Selection { get; }
         IList<Layer> ISelectionManager.Selection => Selection;
         public RectangleF SelectionBounds { get; set; }
         public float SelectionRotation { get; set; }
         public float SelectionShear { get; set; }
-
-        #endregion Properties
-
-        #region Methods
 
         public void ClearSelection()
         {
@@ -275,75 +254,6 @@ namespace Ibinimator.Service
             Transform(scale, translate, rotate, shear, origin, true);
         }
 
-        private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate, 
-            float shear, Vector2 origin, bool makeRecord)
-        {
-            var size = new Vector2(
-                Math.Abs(SelectionBounds.Width),
-                Math.Abs(SelectionBounds.Height));
-            origin *= size;
-            origin += SelectionBounds.TopLeft;
-            var so = ToSelectionSpace(origin);
-
-            var transform =
-                Matrix3x2.Rotation(-SelectionRotation, SelectionBounds.Center) *
-                Matrix3x2.Translation(-SelectionBounds.Center) *
-                Matrix3x2.Skew(0, -SelectionShear) *
-                Matrix3x2.Scaling(scale.X, scale.Y, origin - SelectionBounds.Center) *
-                Matrix3x2.Skew(0, SelectionShear + shear) *
-                Matrix3x2.Translation(SelectionBounds.Center) *
-                Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center) *
-                Matrix3x2.Rotation(rotate, so) *
-                Matrix3x2.Translation(translate);
-
-            if (makeRecord)
-            {
-                var history = ArtView.HistoryManager;
-                _watcher = history.BeginRecord(Root);
-            }
-
-            foreach (var layer in Selection)
-                lock (layer)
-                {
-                    var layerTransform =
-                        layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
-                    var delta = layerTransform.Decompose();
-
-                    layer.Scale = delta.scale;
-                    layer.Rotation = delta.rotation;
-                    layer.Position = delta.translation;
-                    layer.Shear = delta.skew;
-                }
-
-            var sb = SelectionBounds;
-            var tl = MathUtils.Scale(sb.TopLeft, origin, scale);
-            var br = MathUtils.Scale(sb.BottomRight, origin, scale);
-            (tl, br) = (Vector2.Min(tl, br), Vector2.Max(tl, br));
-
-            sb = new RectangleF(tl.X, tl.Y, br.X - tl.X, br.Y - tl.Y);
-
-            var newCenter =
-                Matrix3x2.TransformPoint(
-                    transform, SelectionBounds.Center);
-            var sdelta = newCenter - sb.Center;
-            sb.Offset(sdelta);
-
-            SelectionBounds = sb;
-            SelectionRotation += rotate;
-            SelectionShear += shear;
-
-            if (makeRecord)
-            {
-                var history = ArtView.HistoryManager;
-                history.Key(history.EndRecord(_watcher, history.NextId));
-            }
-
-            Updated?.Invoke(this, null);
-            InvalidateSurface();
-
-            return transform;
-        }
-
         public void Update(bool reset)
         {
             lock (_render)
@@ -419,6 +329,85 @@ namespace Ibinimator.Service
                 MathUtils.Rotate(v, SelectionBounds.Center, -SelectionRotation),
                 SelectionBounds.Center,
                 -SelectionShear);
+        }
+
+        public Vector2 ToSelectionSpace(Vector2 v)
+        {
+            return MathUtils.Rotate(
+                MathUtils.ShearX(v, SelectionBounds.Center, SelectionShear),
+                SelectionBounds.Center,
+                SelectionRotation);
+        }
+
+        #endregion
+
+        private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate,
+            float shear, Vector2 origin, bool makeRecord)
+        {
+            var size = new Vector2(
+                Math.Abs(SelectionBounds.Width),
+                Math.Abs(SelectionBounds.Height));
+            origin *= size;
+            origin += SelectionBounds.TopLeft;
+            var so = ToSelectionSpace(origin);
+
+            var transform =
+                Matrix3x2.Rotation(-SelectionRotation, SelectionBounds.Center) *
+                Matrix3x2.Translation(-SelectionBounds.Center) *
+                Matrix3x2.Skew(0, -SelectionShear) *
+                Matrix3x2.Scaling(scale.X, scale.Y, origin - SelectionBounds.Center) *
+                Matrix3x2.Skew(0, SelectionShear + shear) *
+                Matrix3x2.Translation(SelectionBounds.Center) *
+                Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center) *
+                Matrix3x2.Rotation(rotate, so) *
+                Matrix3x2.Translation(translate);
+
+            if (makeRecord)
+            {
+                var history = ArtView.HistoryManager;
+                _watcher = history.BeginRecord(Root);
+            }
+
+            foreach (var layer in Selection)
+                lock (layer)
+                {
+                    var layerTransform =
+                        layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
+                    var delta = layerTransform.Decompose();
+
+                    layer.Scale = delta.scale;
+                    layer.Rotation = delta.rotation;
+                    layer.Position = delta.translation;
+                    layer.Shear = delta.skew;
+                }
+
+            var sb = SelectionBounds;
+            var tl = MathUtils.Scale(sb.TopLeft, origin, scale);
+            var br = MathUtils.Scale(sb.BottomRight, origin, scale);
+            (tl, br) = (Vector2.Min(tl, br), Vector2.Max(tl, br));
+
+            sb = new RectangleF(tl.X, tl.Y, br.X - tl.X, br.Y - tl.Y);
+
+            var newCenter =
+                Matrix3x2.TransformPoint(
+                    transform, SelectionBounds.Center);
+            var sdelta = newCenter - sb.Center;
+            sb.Offset(sdelta);
+
+            SelectionBounds = sb;
+            SelectionRotation += rotate;
+            SelectionShear += shear;
+
+            if (makeRecord)
+            {
+                var history = ArtView.HistoryManager;
+                history.Key(history.EndRecord(_watcher, history.NextId));
+            }
+
+            Updated?.Invoke(this, null);
+            InvalidateSurface();
+
+            return transform;
         }
 
         private (Bitmap cursor, SelectionResizeHandle? handle) HandleTest(Vector2 pos)
@@ -627,14 +616,6 @@ namespace Ibinimator.Service
             ArtView.InvalidateSurface();
         }
 
-        public Vector2 ToSelectionSpace(Vector2 v)
-        {
-            return MathUtils.Rotate(
-                MathUtils.ShearX(v, SelectionBounds.Center, SelectionShear),
-                SelectionBounds.Center,
-                SelectionRotation);
-        }
-
         private void UpdateCursor(Vector2 pos)
         {
             if (_resizingHandle == null)
@@ -652,7 +633,5 @@ namespace Ibinimator.Service
 
             ArtView.InvalidateSurface();
         }
-
-        #endregion Methods
     }
 }

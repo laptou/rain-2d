@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -76,7 +74,8 @@ namespace Ibinimator.ViewModel
             _task = task;
         }
 
-        public AsyncDelegateCommand(Action<T> task) : this(async p => task(p))
+        public AsyncDelegateCommand(Action<T> task) : 
+            this(p => System.Threading.Tasks.Task.Run(() => task(p)))
         {
         }
 

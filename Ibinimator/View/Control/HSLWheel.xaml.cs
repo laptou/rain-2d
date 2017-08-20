@@ -1,9 +1,6 @@
 ﻿using Ibinimator.Shared;
 using System;
-using System.Linq;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

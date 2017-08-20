@@ -132,6 +132,7 @@
     </Compile>
     <Compile Include="Model\Attributes.cs" />
     <Compile Include="Model\BrushInfo.cs" />
+    <Compile Include="Model\Document.cs" />
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Path.cs" />
@@ -151,6 +152,7 @@
     <Compile Include="Shared\DictionaryExtensions.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
+    <Compile Include="Shared\SerializationExtensions.cs" />
     <Compile Include="Shared\StreamExtensions.cs" />
     <Compile Include="Shared\TupleUtils.cs" />
     <Compile Include="Shared\TypeExtensions.cs" />

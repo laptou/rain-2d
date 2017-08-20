@@ -4,7 +4,6 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using Ibinimator.Shared;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Ibinimator.Model;
