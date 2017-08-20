@@ -57,7 +57,7 @@ namespace Ibinimator.Model
         #endregion Methods
     }
 
-    [XmlType("SolidColor")]
+    [XmlType("Color")]
     public class SolidColorBrushInfo : BrushInfo
     {
         public Color4 Color

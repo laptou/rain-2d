@@ -110,6 +110,7 @@ namespace Ibinimator.Model
         }
 
         [XmlAttribute]
+        [DefaultValue(false)]
         public bool Selected
         {
             get => Get<bool>();
@@ -146,6 +147,7 @@ namespace Ibinimator.Model
         }
 
         [XmlAttribute]
+        [DefaultValue(1f)]
         public float ScaleX
         {
             get => Scale.X;
@@ -153,6 +155,7 @@ namespace Ibinimator.Model
         }
 
         [XmlAttribute]
+        [DefaultValue(1f)]
         public float ScaleY
         {
             get => Scale.Y;
@@ -162,6 +165,7 @@ namespace Ibinimator.Model
         [Undoable]
         [Animatable]
         [XmlAttribute]
+        [DefaultValue(0f)]
         public float Shear
         {
             get => Get<float>();
@@ -175,6 +179,7 @@ namespace Ibinimator.Model
         [Undoable]
         [Animatable]
         [XmlAttribute]
+        [DefaultValue(0f)]
         public float Rotation
         {
             get => Get<float>();
@@ -201,6 +206,7 @@ namespace Ibinimator.Model
         [Undoable]
         [Animatable]
         [XmlAttribute]
+        [DefaultValue(0f)]
         public virtual float Height
         {
             get => Get<float>();
@@ -210,6 +216,7 @@ namespace Ibinimator.Model
         [Undoable]
         [Animatable]
         [XmlAttribute]
+        [DefaultValue(0F)]
         public virtual float Width
         {
             get => Get<float>();

@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using SharpDX.Direct2D1;
 using System;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using Ibinimator.Service;
@@ -16,10 +17,10 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Ellipse";
 
-        [XmlAttribute]
+        [XmlIgnore] // ignore bc redundant to width and height
         public float RadiusX { get => Width / 2; set => Width = value * 2; }
 
-        [XmlAttribute]
+        [XmlIgnore]
         public float RadiusY { get => Height / 2; set => Height = value * 2; }
 
         #endregion Properties
@@ -94,6 +95,7 @@ namespace Ibinimator.Model
         public StrokeStyleProperties1 StrokeStyle { get => Get<StrokeStyleProperties1>(); set => Set(value); }
 
         [XmlAttribute]
+        [DefaultValue(0)]
         public float StrokeWidth { get => Get<float>(); set => Set(value); }
 
         #endregion Properties

@@ -2,6 +2,7 @@
 using SharpDX;
 using SharpDX.Direct2D1;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Path";
 
+        [XmlAttribute]
         public bool Closed
         {
             get => Get<bool>();
