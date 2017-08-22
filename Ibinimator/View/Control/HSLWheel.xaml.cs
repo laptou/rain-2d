@@ -1,31 +1,37 @@
-﻿using Ibinimator.Shared;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using Ibinimator.Shared;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Screen = System.Windows.Forms.Screen;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace Ibinimator.View.Control
 {
     public partial class HslWheel : UserControl, INotifyPropertyChanged
     {
-        #region Fields
-
         public static readonly DependencyProperty ColorProperty =
             DependencyProperty.Register("Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color()));
 
         public static readonly DependencyProperty HueProperty =
-                    DependencyProperty.Register("Hue", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
+            DependencyProperty.Register("Hue", typeof(double), typeof(HslWheel),
+                new PropertyMetadata(0.0, OnColorChanged));
 
         public static readonly DependencyProperty LightnessProperty =
-            DependencyProperty.Register("Lightness", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
+            DependencyProperty.Register("Lightness", typeof(double), typeof(HslWheel),
+                new PropertyMetadata(0.0, OnColorChanged));
 
         public static readonly DependencyProperty SaturationProperty =
-            DependencyProperty.Register("Saturation", typeof(double), typeof(HslWheel), new PropertyMetadata(0.0, OnColorChanged));
+            DependencyProperty.Register("Saturation", typeof(double), typeof(HslWheel),
+                new PropertyMetadata(0.0, OnColorChanged));
 
         private bool _draggingRing;
 
@@ -34,10 +40,6 @@ namespace Ibinimator.View.Control
         private WriteableBitmap _ring;
 
         private WriteableBitmap _triangle;
-
-        #endregion Fields
-
-        #region Constructors
 
         public HslWheel()
         {
@@ -50,66 +52,51 @@ namespace Ibinimator.View.Control
             UpdateHandles();
         }
 
-        #endregion Constructors
-
-        #region Events
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion Events
-
-        #region Properties
-
         public Color Color
         {
             get
             {
                 var x = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
-                return Color.FromRgb((byte)(x.r * 255), (byte)(x.g * 255), (byte)(x.b * 255));
+                return Color.FromRgb((byte) (x.r * 255), (byte) (x.g * 255), (byte) (x.b * 255));
             }
 
             set
             {
                 var x = ColorUtils.RgbToHsl(value.R / 255.0, value.G / 255.0, value.B / 255.0);
-                Hue = x.h; Saturation = x.s; Lightness = x.l;
+                Hue = x.h;
+                Saturation = x.s;
+                Lightness = x.l;
                 SetValue(ColorProperty, value);
             }
         }
 
         public double Hue
         {
-            get { return (double)GetValue(HueProperty); }
-            set
-            {
-                SetValue(HueProperty, (value + 360) % 360);
-            }
+            get => (double) GetValue(HueProperty);
+            set => SetValue(HueProperty, (value + 360) % 360);
         }
 
         public double Lightness
         {
-            get { return (double)GetValue(LightnessProperty); }
-            set
-            {
-                SetValue(LightnessProperty, value);
-            }
+            get => (double) GetValue(LightnessProperty);
+            set => SetValue(LightnessProperty, value);
         }
 
         public double Saturation
         {
-            get { return (double)GetValue(SaturationProperty); }
-            set
-            {
-                SetValue(SaturationProperty,
-                    MathUtils.Clamp(
-                        0,
-                        1 - Math.Abs(0.5 - Lightness) * 2,
-                        value));
-            }
+            get => (double) GetValue(SaturationProperty);
+            set => SetValue(SaturationProperty,
+                MathUtils.Clamp(
+                    0,
+                    1 - Math.Abs(0.5 - Lightness) * 2,
+                    value));
         }
 
-        #endregion Properties
+        #region INotifyPropertyChanged Members
 
-        #region Methods
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
@@ -153,12 +140,12 @@ namespace Ibinimator.View.Control
                 var rotation = Math.Atan2(pos.Y, pos.X);
                 Hue = rotation / pi2 * 360;
 
-                Dispatcher.BeginInvoke((Action)UpdateTriangle, DispatcherPriority.Render, null);
+                Dispatcher.BeginInvoke((Action) UpdateTriangle, DispatcherPriority.Render, null);
             }
 
             if (_draggingTriangle)
             {
-                double height = Triangle.ActualWidth / Math.Sqrt(3) * 1.5;
+                var height = Triangle.ActualWidth / Math.Sqrt(3) * 1.5;
 
                 var tpos = e.GetPosition(Triangle);
 
@@ -207,11 +194,12 @@ namespace Ibinimator.View.Control
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             var pt = PointToScreen(new Point());
-            Screen screen = Screen.FromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y));
+            var screen = Screen.FromPoint(new System.Drawing.Point((int) pt.X, (int) pt.Y));
             var dpi = screen.GetDpiForMonitor(DpiType.Effective);
-            var size = (int)Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
+            var size = (int) Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
 
-            _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt3Over2), dpi.x, dpi.y, PixelFormats.Bgra32, null);
+            _triangle = new WriteableBitmap(size, (int) (size / MathUtils.Sqrt3Over2), dpi.x, dpi.y,
+                PixelFormats.Bgra32, null);
             _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
 
             Triangle.Fill = new ImageBrush(_triangle);
@@ -232,15 +220,17 @@ namespace Ibinimator.View.Control
         }
 
         private void RaisePropertyChanged(string name)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
 
         private void UpdateHandles()
         {
             var transform = Triangle.RenderTransform as RotateTransform;
             transform.Angle = 90 + Hue;
 
-            int height = (int)(Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
-            double slope = 1.0 / Math.Sqrt(3);
+            var height = (int) (Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
+            var slope = 1.0 / Math.Sqrt(3);
 
             var hpos = new Point((Lightness - 0.5) * Triangle.ActualWidth, (1 - Saturation) * height);
 
@@ -256,28 +246,26 @@ namespace Ibinimator.View.Control
         private unsafe void UpdateRing()
         {
             _ring.Lock();
-            byte* pStart = (byte*)(void*)_ring.BackBuffer;
+            var pStart = (byte*) (void*) _ring.BackBuffer;
 
-            for (int radius = (int)(_ring.PixelWidth * 0.375); radius <= _ring.PixelWidth * 0.5; radius += 1)
+            for (var radius = (int) (_ring.PixelWidth * 0.375); radius <= _ring.PixelWidth * 0.5; radius += 1)
+            for (double theta = 0; theta <= MathUtils.TwoPi; theta += 10f / radius / radius)
             {
-                for (double theta = 0; theta <= MathUtils.TwoPi; theta += 10f / radius / radius)
-                {
-                    int row = (int)(radius * Math.Sin(theta)) + _ring.PixelHeight / 2;
-                    int col = (int)(radius * Math.Cos(theta)) + _ring.PixelWidth / 2;
-                    int currentPixel = (row * _triangle.PixelWidth + col);
+                var row = (int) (radius * Math.Sin(theta)) + _ring.PixelHeight / 2;
+                var col = (int) (radius * Math.Cos(theta)) + _ring.PixelWidth / 2;
+                var currentPixel = row * _triangle.PixelWidth + col;
 
-                    double h = theta / MathUtils.TwoPi * 360;
+                var h = theta / MathUtils.TwoPi * 360;
 
-                    (double r, double g, double b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
+                (double r, double g, double b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
 
-                    *(pStart + currentPixel * 4 + 3) = 255; //alpha
-                    *(pStart + currentPixel * 4 + 2) = (byte)(r * 255f); //red
-                    *(pStart + currentPixel * 4 + 1) = (byte)(g * 255f); //Green
-                    *(pStart + currentPixel * 4 + 0) = (byte)(b * 255f); //Blue
-                }
+                *(pStart + currentPixel * 4 + 3) = 255; //alpha
+                *(pStart + currentPixel * 4 + 2) = (byte) (r * 255f); //red
+                *(pStart + currentPixel * 4 + 1) = (byte) (g * 255f); //Green
+                *(pStart + currentPixel * 4 + 0) = (byte) (b * 255f); //Blue
             }
             _ring.AddDirtyRect(new Int32Rect(0, 0,
-                   _ring.PixelWidth, _ring.PixelHeight));
+                _ring.PixelWidth, _ring.PixelHeight));
             _ring.Unlock();
         }
 
@@ -285,38 +273,36 @@ namespace Ibinimator.View.Control
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                int height = (int)(_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
-                double slope = 1.0 / Math.Sqrt(3);
+                var height = (int) (_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
+                var slope = 1.0 / Math.Sqrt(3);
 
                 _triangle.Lock();
-                byte* pStart = (byte*)(void*)_triangle.BackBuffer;
+                var pStart = (byte*) (void*) _triangle.BackBuffer;
 
-                for (int iRow = 0; iRow < height; iRow++)
+                for (var iRow = 0; iRow < height; iRow++)
                 {
-                    int offset = (int)(iRow * slope);
+                    var offset = (int) (iRow * slope);
 
-                    for (int iCol = (_triangle.PixelWidth / 2) - offset; iCol < (_triangle.PixelWidth / 2) + offset; iCol++)
+                    for (var iCol = _triangle.PixelWidth / 2 - offset; iCol < _triangle.PixelWidth / 2 + offset; iCol++)
                     {
-                        int currentPixel = (iRow * _triangle.PixelWidth + iCol);
+                        var currentPixel = iRow * _triangle.PixelWidth + iCol;
 
-                        double s = 1f - (double)iRow / height;
-                        double l = (double)iCol / _triangle.PixelWidth;
+                        var s = 1f - (double) iRow / height;
+                        var l = (double) iCol / _triangle.PixelWidth;
 
                         (double r, double g, double b) = ColorUtils.HslToRgb(Hue, s, l);
 
                         *(pStart + currentPixel * 4 + 3) = 255; //alpha
-                        *(pStart + currentPixel * 4 + 2) = (byte)(r * 255.0); //red
-                        *(pStart + currentPixel * 4 + 1) = (byte)(g * 255.0); //Green
-                        *(pStart + currentPixel * 4 + 0) = (byte)(b * 255.0); //Blue
+                        *(pStart + currentPixel * 4 + 2) = (byte) (r * 255.0); //red
+                        *(pStart + currentPixel * 4 + 1) = (byte) (g * 255.0); //Green
+                        *(pStart + currentPixel * 4 + 0) = (byte) (b * 255.0); //Blue
                     }
                 }
 
                 _triangle.AddDirtyRect(new Int32Rect(0, 0,
-                       _triangle.PixelWidth, height));
+                    _triangle.PixelWidth, height));
                 _triangle.Unlock();
             }));
         }
-
-        #endregion Methods
     }
 }

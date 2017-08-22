@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -8,16 +12,10 @@ using System.Windows.Threading;
 namespace Ibinimator
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
-        public static bool IsDesigner =>
-            System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime;
-
-        public static Dispatcher Dispatcher => Current.Dispatcher;
-
-
         public App()
         {
             InitializeComponent();
@@ -25,9 +23,15 @@ namespace Ibinimator
             SetDefaultFont();
         }
 
+        public static Dispatcher Dispatcher => Current.Dispatcher;
+
+        public static bool IsDesigner =>
+            LicenseManager.UsageMode == LicenseUsageMode.Designtime;
+
         private void SetDefaultFont()
         {
-            var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute), "./Resources/Fonts/#Roboto");
+            var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute),
+                "./Resources/Fonts/#Roboto");
 
             TextElement.FontFamilyProperty.OverrideMetadata(
                 typeof(TextElement),

@@ -1,13 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 using SharpDX;
 using SharpDX.Direct2D1;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
-using Ibinimator.Shared;
 
 namespace Ibinimator.Model
 {
@@ -20,10 +19,6 @@ namespace Ibinimator.Model
             Nodes.CollectionChanged += (sender, args) => RaisePropertyChanged("Geometry");
         }
 
-        #region Properties
-
-        public override string DefaultName => "Path";
-
         [XmlAttribute]
         public bool Closed
         {
@@ -31,17 +26,19 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
+        public override string DefaultName => "Path";
+
+        public override string ElementName => "path";
+
         public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
-
-        #endregion Properties
-
-        #region Methods
 
         public override RectangleF GetBounds()
         {
             var first = Nodes.FirstOrDefault();
-            float x1 = first?.X ?? 0, y1 = first?.Y ?? 0, 
-                x2 = first?.X ?? 0, y2 = first?.Y ?? 0;
+            float x1 = first?.X ?? 0,
+                y1 = first?.Y ?? 0,
+                x2 = first?.X ?? 0,
+                y2 = first?.Y ?? 0;
 
             Parallel.ForEach(Nodes, node =>
             {
@@ -54,10 +51,36 @@ namespace Ibinimator.Model
             return new RectangleF(x1, y1, x2 - x1, y2 - y1);
         }
 
+        public override XElement GetElement()
+        {
+            var element = base.GetElement();
+
+            if (Nodes.Count > 0)
+            {
+                var pathData = $"M {Nodes.First().X},{Nodes.First().Y}";
+
+                foreach (var pathNode in Nodes.Skip(1))
+                    switch (pathNode)
+                    {
+                        case BezierNode bn:
+                            pathData +=
+                                $"C {bn.Control1.X},{bn.Control1.Y} {bn.Control2.X},{bn.Control2.Y} {bn.X},{bn.Y}";
+                            break;
+                        case PathNode pn:
+                            pathData += $"L {pn.X},{pn.Y}";
+                            break;
+                    }
+
+                element.Add(new XAttribute("d", pathData));
+            }
+
+            return element;
+        }
+
         public override Geometry GetGeometry(Factory factory)
         {
-            PathGeometry pg = new PathGeometry(factory);
-            GeometrySink gs = pg.Open();
+            var pg = new PathGeometry(factory);
+            var gs = pg.Open();
 
             if (Nodes.Count > 0)
             {
@@ -65,16 +88,15 @@ namespace Ibinimator.Model
 
                 gs.BeginFigure(Nodes[0].Position, FigureBegin.Filled);
 
-                for (int i = 1; i < Nodes.Count; i++)
-                {
+                for (var i = 1; i < Nodes.Count; i++)
                     switch (Nodes[i])
                     {
                         case BezierNode bn:
-                            var prevHandle = (Nodes[i - 1] as BezierNode)?.Control ?? Nodes[i - 1].Position;
+                            // var prevHandle = (Nodes[i - 1] as BezierNode)?.Control ?? Nodes[i - 1].Position;
                             gs.AddBezier(new BezierSegment
                             {
-                                Point1 = prevHandle,
-                                Point2 = bn.Control,
+                                Point1 = bn.Control1,
+                                Point2 = bn.Control2,
                                 Point3 = bn.Position
                             });
                             break;
@@ -83,7 +105,6 @@ namespace Ibinimator.Model
                             gs.AddLine(pn.Position);
                             break;
                     }
-                }
 
                 gs.EndFigure(Closed ? FigureEnd.Closed : FigureEnd.Open);
             }
@@ -92,39 +113,41 @@ namespace Ibinimator.Model
 
             return pg;
         }
-
-        #endregion Methods
     }
 
     [Serializable]
     public class BezierNode : PathNode
     {
-        #region Properties
+        public Vector2 Control1
+        {
+            get => Get<Vector2>();
+            set => Set(value);
+        }
 
-        [XmlAttribute]
-        public float ControlX { get => Get<float>(); set => Set(value); }
-
-        [XmlAttribute]
-        public float ControlY { get => Get<float>(); set => Set(value); }
-
-        public Vector2 Control => new Vector2(ControlX, ControlY);
-
-        #endregion Properties
+        public Vector2 Control2
+        {
+            get => Get<Vector2>();
+            set => Set(value);
+        }
     }
 
     [Serializable]
     public class PathNode : Model
     {
-        #region Properties
-        
-        [XmlAttribute]
-        public float X { get => Get<float>(); set => Set(value); }
-        
-        [XmlAttribute]
-        public float Y { get => Get<float>(); set => Set(value); }
-
         public Vector2 Position => new Vector2(X, Y);
 
-        #endregion Properties
+        [XmlAttribute]
+        public float X
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        [XmlAttribute]
+        public float Y
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
     }
 }

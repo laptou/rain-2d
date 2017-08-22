@@ -1,6 +1,9 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.Shared;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpDX;
 
 namespace Ibinimator.Test
@@ -11,10 +14,10 @@ namespace Ibinimator.Test
         [TestMethod]
         public void Projection()
         {
-            Vector2 vec = new Vector2(10, 10);
-            Vector2 axis = new Vector2(1, 1);
-            Vector2 expected = new Vector2(10, 10);
-            Vector2 actual = MathUtils.Project(vec, axis);
+            var vec = new Vector2(10, 10);
+            var axis = new Vector2(1, 1);
+            var expected = new Vector2(10, 10);
+            var actual = MathUtils.Project(vec, axis);
             Assert.AreEqual(expected, actual);
 
             vec = new Vector2(10, 0);
@@ -27,14 +30,14 @@ namespace Ibinimator.Test
         [TestMethod]
         public void CrossSection()
         {
-            RectangleF rect = new RectangleF(0, -100, 200, 100);
+            var rect = new RectangleF(0, -100, 200, 100);
 
-            Assert.AreEqual((new Vector2(0, -100), Vector2.Zero), 
+            Assert.AreEqual((new Vector2(0, -100), Vector2.Zero),
                 MathUtils.CrossSection(new Vector2(0, 1), Vector2.Zero, rect));
-            Assert.AreEqual((new Vector2(200, 0), Vector2.Zero), 
+            Assert.AreEqual((new Vector2(200, 0), Vector2.Zero),
                 MathUtils.CrossSection(new Vector2(1, 0), Vector2.Zero, rect));
             Assert.AreEqual(
-                (new Vector2(100, -100), Vector2.Zero), 
+                (new Vector2(100, -100), Vector2.Zero),
                 MathUtils.CrossSection(new Vector2(1, 1), Vector2.Zero, rect));
             Assert.AreEqual(
                 (new Vector2(200, -100), Vector2.Zero),
@@ -47,14 +50,14 @@ namespace Ibinimator.Test
         [TestMethod]
         public void Rotation()
         {
-            Vector2 v1 = new Vector2(1, 0);
-            Vector2 v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-            Vector2 v3 = new Vector2(0, 1);
-            Vector2 v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-            Vector2 v5 = new Vector2(-1, 0);
-            Vector2 v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
-            Vector2 v7 = new Vector2(0, -1);
-            Vector2 v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
+            var v1 = new Vector2(1, 0);
+            var v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
+            var v3 = new Vector2(0, 1);
+            var v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
+            var v5 = new Vector2(-1, 0);
+            var v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
+            var v7 = new Vector2(0, -1);
+            var v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
 
             Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
             Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));
@@ -66,41 +69,41 @@ namespace Ibinimator.Test
         [TestMethod]
         public void Decompose()
         {
-            Matrix3x2 m = Matrix3x2.Identity;
+            var m = Matrix3x2.Identity;
             var d = m.Decompose();
 
             void Verify(Matrix3x2 mat)
             {
                 var decomp = mat.Decompose();
 
-                Matrix3x2 mat2 = Matrix3x2.Identity;
+                var mat2 = Matrix3x2.Identity;
                 mat2 *= Matrix3x2.Scaling(decomp.scale);
                 mat2 *= Matrix3x2.Skew(0, decomp.skew);
                 mat2 *= Matrix3x2.Rotation(decomp.rotation);
                 mat2 *= Matrix3x2.Translation(decomp.translation);
 
-                RectangleF r = new RectangleF(0, 0, 100, 100);
+                var r = new RectangleF(0, 0, 100, 100);
 
-                Vector2 tl = Matrix3x2.TransformPoint(mat, r.TopLeft);
-                Vector2 tr = Matrix3x2.TransformPoint(mat, r.TopRight);
-                Vector2 br = Matrix3x2.TransformPoint(mat, r.BottomRight);
-                Vector2 bl = Matrix3x2.TransformPoint(mat, r.BottomLeft);
+                var tl = Matrix3x2.TransformPoint(mat, r.TopLeft);
+                var tr = Matrix3x2.TransformPoint(mat, r.TopRight);
+                var br = Matrix3x2.TransformPoint(mat, r.BottomRight);
+                var bl = Matrix3x2.TransformPoint(mat, r.BottomLeft);
 
-                Vector2 tl2 = Matrix3x2.TransformPoint(mat2, r.TopLeft);
-                Vector2 tr2 = Matrix3x2.TransformPoint(mat2, r.TopRight);
-                Vector2 br2 = Matrix3x2.TransformPoint(mat2, r.BottomRight);
-                Vector2 bl2 = Matrix3x2.TransformPoint(mat2, r.BottomLeft);
+                var tl2 = Matrix3x2.TransformPoint(mat2, r.TopLeft);
+                var tr2 = Matrix3x2.TransformPoint(mat2, r.TopRight);
+                var br2 = Matrix3x2.TransformPoint(mat2, r.BottomRight);
+                var bl2 = Matrix3x2.TransformPoint(mat2, r.BottomLeft);
 
                 AreEqual(tl, tl2, 1e-4f);
                 AreEqual(tr, tr2, 1e-4f);
                 AreEqual(br, br2, 1e-4f);
                 AreEqual(bl, bl2, 1e-4f);
 
-                Random rnd = new Random();
+                var rnd = new Random();
 
-                for (int i = 0; i < 10000; i++)
+                for (var i = 0; i < 10000; i++)
                 {
-                    Vector2 v = rnd.NextVector2(-Vector2.One * 10, Vector2.One * 10);
+                    var v = rnd.NextVector2(-Vector2.One * 10, Vector2.One * 10);
                     AreEqual(Matrix3x2.TransformPoint(mat, v), Matrix3x2.TransformPoint(mat2, v), 1e-4f);
                 }
             }
@@ -164,7 +167,7 @@ namespace Ibinimator.Test
             Verify(m);
         }
 
-        void AreEqual(Vector2 expected, Vector2 actual, float delta)
+        private void AreEqual(Vector2 expected, Vector2 actual, float delta)
         {
             Assert.AreEqual(expected.X, actual.X, delta * expected.Length());
             Assert.AreEqual(expected.Y, actual.Y, delta * expected.Length());

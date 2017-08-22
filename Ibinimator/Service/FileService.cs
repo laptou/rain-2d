@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Ibinimator.Model;
@@ -13,6 +14,8 @@ namespace Ibinimator.Service
 {
     public class FileService
     {
+        private static readonly XmlSerializer Serializer;
+
         static FileService()
         {
             var xao = new XmlAttributeOverrides();
@@ -57,13 +60,13 @@ namespace Ibinimator.Service
             xao.Default<StrokeStyle>(nameof(StrokeStyle.DashStyle), DashStyle.Solid);
             xao.Default<StrokeStyle>(nameof(StrokeStyle.DashOffset), 0);
             xao.Default<StrokeStyle>(nameof(StrokeStyle.DashCap), CapStyle.Flat);
-            xao.Default<StrokeStyle>(nameof(StrokeStyle.LineJoin), LineJoin.Miter);            
+            xao.Default<StrokeStyle>(nameof(StrokeStyle.LineJoin), LineJoin.Miter);
             xao.Default<StrokeStyle>(nameof(StrokeStyle.MiterLimit), 0);
             xao.Default<StrokeStyle>(nameof(StrokeStyle.TransformType), StrokeTransformType.Fixed);
 
-            Serializer = 
+            Serializer =
                 new XmlSerializer(
-                    typeof(Document), 
+                    typeof(Document),
                     xao,
                     new[]
                     {
@@ -72,7 +75,16 @@ namespace Ibinimator.Service
                     }, null, null, null);
         }
 
-        private static readonly XmlSerializer Serializer;
+        public static async Task<Document> LoadAsync(string path)
+        {
+            return await Task.Run(() =>
+            {
+                using (var fs = File.Open(path, FileMode.Create))
+                {
+                    return Serializer.Deserialize(fs) as Document;
+                }
+            });
+        }
 
         public static async Task SaveAsync(Document doc)
         {
@@ -81,16 +93,8 @@ namespace Ibinimator.Service
                 using (var fs = File.Open(doc.Path, FileMode.Create))
                 {
                     Serializer.Serialize(fs, doc);
+                    var xdoc = SvgSerializer.SerializeDocument(doc);
                 }
-            });
-        }
-
-        public static async Task<Document> LoadAsync(string path)
-        {
-            return await Task.Run(() =>
-            {
-                using (var fs = File.Open(path, FileMode.Create))
-                    return Serializer.Deserialize(fs) as Document;
             });
         }
     }
@@ -103,14 +107,6 @@ namespace Ibinimator.Service
                 xao.Add(typeof(T), name, new XmlAttributes());
 
             xao[typeof(T), name].XmlAttribute = new XmlAttributeAttribute();
-        }
-
-        public static void Ignore<T>(this XmlAttributeOverrides xao, string name)
-        {
-            if (xao[typeof(T), name] == null)
-                xao.Add(typeof(T), name, new XmlAttributes());
-
-            xao[typeof(T), name].XmlIgnore = true;
         }
 
         public static void Default<T>(this XmlAttributeOverrides xao, string name, object defaultValue)
@@ -127,6 +123,14 @@ namespace Ibinimator.Service
                 xao.Add(typeof(T), new XmlAttributes());
 
             xao[typeof(T)].XmlDefaultValue = default(T);
+        }
+
+        public static void Ignore<T>(this XmlAttributeOverrides xao, string name)
+        {
+            if (xao[typeof(T), name] == null)
+                xao.Add(typeof(T), name, new XmlAttributes());
+
+            xao[typeof(T), name].XmlIgnore = true;
         }
     }
 }

@@ -1,17 +1,22 @@
-﻿using Ibinimator.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
-using System.ComponentModel;
+using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
     public interface ICacheManager : IArtViewManager, INotifyPropertyChanged
     {
         Brush BindBrush(Shape shape, BrushInfo brush);
-        void BindLayer(Model.Layer layer);
+        void BindLayer(Layer layer);
 
         Bitmap GetBitmap(string key);
-        RectangleF GetBounds(Model.Layer layer);
+        RectangleF GetBounds(Layer layer);
         Brush GetBrush(string key);
         Brush GetFill(Shape layer);
         Geometry GetGeometry(Shape layer);
@@ -20,6 +25,6 @@ namespace Ibinimator.Service
         void LoadBrushes(RenderTarget target);
         void ResetAll();
         void ResetLayerCache();
-        void UpdateLayer(Model.Layer layer, string property);
+        void UpdateLayer(Layer layer, string property);
     }
 }

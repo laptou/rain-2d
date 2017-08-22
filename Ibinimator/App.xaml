@@ -4,7 +4,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:local="clr-namespace:Ibinimator"
     xmlns:view="clr-namespace:Ibinimator.View"
-    xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2" 
+    xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
     x:Class="Ibinimator.App"
     StartupUri="View/MainView.xaml">
     <Application.Resources>
@@ -55,8 +55,18 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ButtonBase}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                            <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                              Focusable="False"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -102,37 +112,41 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="SelectionBrush">
                 <Setter.Value>
-                    <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
+                    <SolidColorBrush
+                        Color="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
                 </Setter.Value>
             </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBoxBase}">
-                        <Border 
-                            x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" 
+                        <Border
+                            x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="2"
-                            Background="{TemplateBinding Background}" 
+                            Background="{TemplateBinding Background}"
                             SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                                <Setter Property="Opacity" TargetName="border" Value="0.56" />
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
                                 <Setter Property="Background" TargetName="border">
                                     <Setter.Value>
                                         <LinearGradientBrush Opacity="0.5" EndPoint="0,1">
                                             <GradientStop />
-                                            <GradientStop Offset="0.75"/>
-                                            <GradientStop Color="{Binding (view:Helper.Accent), ElementName=border}" Offset="1" />
+                                            <GradientStop Offset="0.75" />
+                                            <GradientStop Color="{Binding (view:Helper.Accent), ElementName=border}"
+                                                          Offset="1" />
                                         </LinearGradientBrush>
                                     </Setter.Value>
                                 </Setter>
                                 <Setter Property="BorderBrush" TargetName="border">
                                     <Setter.Value>
-                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), ElementName=border}" />
+                                        <SolidColorBrush
+                                            Color="{Binding Path=(view:Helper.Accent), ElementName=border}" />
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -149,22 +163,41 @@
                         <Grid x:Name="Grid" SnapsToDevicePixels="true">
                             <Grid x:Name="OverflowGrid" HorizontalAlignment="Right">
                                 <ToggleButton x:Name="OverflowButton" ClickMode="Press" FocusVisualStyle="{x:Null}"
-                                              IsChecked="{Binding IsOverflowOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" IsEnabled="{TemplateBinding HasOverflowItems}"
-                                              Background="#00000000" BorderBrush="{x:Null}" BorderThickness="0" ClipToBounds="True">
-                                    <Image Source="/Ibinimator;component/Resources/Icon/expander.png" Style="{DynamicResource Icon}" />
+                                              IsChecked="{Binding IsOverflowOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                              IsEnabled="{TemplateBinding HasOverflowItems}"
+                                              Background="#00000000" BorderBrush="{x:Null}" BorderThickness="0"
+                                              ClipToBounds="True">
+                                    <Image Source="/Ibinimator;component/Resources/Icon/expander.png"
+                                           Style="{DynamicResource Icon}" />
                                 </ToggleButton>
-                                <Popup x:Name="OverflowPopup" AllowsTransparency="true" Focusable="false" IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom" StaysOpen="false">
+                                <Popup x:Name="OverflowPopup" AllowsTransparency="true" Focusable="false"
+                                       IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                       PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
+                                       Placement="Bottom" StaysOpen="false">
                                     <themes:SystemDropShadowChrome x:Name="Shdw" Color="Transparent">
-                                        <Border x:Name="ToolBarSubMenuBorder" Background="{DynamicResource L2Brush}" RenderOptions.ClearTypeHint="Enabled">
-                                            <ToolBarOverflowPanel x:Name="PART_ToolBarOverflowPanel" KeyboardNavigation.DirectionalNavigation="Cycle" FocusVisualStyle="{x:Null}" Focusable="true" Margin="2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle" WrapWidth="200" />
+                                        <Border x:Name="ToolBarSubMenuBorder" Background="{DynamicResource L2Brush}"
+                                                RenderOptions.ClearTypeHint="Enabled">
+                                            <ToolBarOverflowPanel x:Name="PART_ToolBarOverflowPanel"
+                                                                  KeyboardNavigation.DirectionalNavigation="Cycle"
+                                                                  FocusVisualStyle="{x:Null}" Focusable="true"
+                                                                  Margin="2"
+                                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                  KeyboardNavigation.TabNavigation="Cycle"
+                                                                  WrapWidth="200" />
                                         </Border>
                                     </themes:SystemDropShadowChrome>
                                 </Popup>
                             </Grid>
-                            <Border x:Name="MainPanelBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="MainPanelBorder" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
                                 <DockPanel KeyboardNavigation.TabIndex="1" KeyboardNavigation.TabNavigation="Local">
-                                    <ContentPresenter x:Name="ToolBarHeader" ContentSource="Header" HorizontalAlignment="Center" Margin="4,0,4,0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" />
-                                    <ToolBarPanel x:Name="PART_ToolBarPanel" IsItemsHost="true" Margin="0,1,2,2" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                    <ContentPresenter x:Name="ToolBarHeader" ContentSource="Header"
+                                                      HorizontalAlignment="Center" Margin="4,0,4,0"
+                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                      VerticalAlignment="Center" />
+                                    <ToolBarPanel x:Name="PART_ToolBarPanel" IsItemsHost="true" Margin="0,1,2,2"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                 </DockPanel>
                             </Border>
                         </Grid>
@@ -188,7 +221,8 @@
                                 <Setter Property="Margin" TargetName="MainPanelBorder" Value="0,0,0,11" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -210,32 +244,40 @@
                     <ControlTemplate TargetType="{x:Type TabItem}">
                         <Grid x:Name="templateRoot" SnapsToDevicePixels="true" Margin="12,0">
                             <Border x:Name="mainBorder"
-                                    BorderThickness="0,0,0,1" Background="{TemplateBinding Background}" Margin="0" Cursor="Hand" Padding="{TemplateBinding Padding}">
+                                    BorderThickness="0,0,0,1" Background="{TemplateBinding Background}" Margin="0"
+                                    Cursor="Hand" Padding="{TemplateBinding Padding}">
                                 <Border.BorderBrush>
-                                    <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"></SolidColorBrush>
+                                    <SolidColorBrush
+                                        Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
                                 </Border.BorderBrush>
                                 <TextBlock x:Name="contentPresenter" Text="{TemplateBinding Header}" Focusable="False"
-                                                  HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                                  VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                           HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                           VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
-                            <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false">
+                            <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}"
+                                         Value="false">
                                 <Setter Property="Opacity" TargetName="contentPresenter" Value="0.56" />
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top">
+                            <DataTrigger
+                                Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}"
+                                Value="Top">
                                 <Setter Property="BorderThickness" TargetName="mainBorder" Value="0, 0, 0, 1" />
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
+                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}"
+                                         Value="True">
                                 <Setter Property="TextBlock.FontWeight" Value="Bold" TargetName="contentPresenter" />
                                 <Setter Property="TextBlock.Foreground" TargetName="contentPresenter">
                                     <Setter.Value>
-                                        <SolidColorBrush Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, ElementName=mainBorder}"></SolidColorBrush>
+                                        <SolidColorBrush
+                                            Color="{Binding Path=(view:Helper.Accent), Mode=OneWay, ElementName=mainBorder}" />
                                     </Setter.Value>
                                 </Setter>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="False">
+                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}"
+                                         Value="False">
                                 <Setter Property="BorderThickness" TargetName="mainBorder" Value="0" />
                             </DataTrigger>
                         </ControlTemplate.Triggers>
@@ -254,7 +296,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TabControl}">
-                        <Grid x:Name="templateRoot" ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
+                        <Grid x:Name="templateRoot" ClipToBounds="true" SnapsToDevicePixels="true"
+                              KeyboardNavigation.TabNavigation="Local">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition x:Name="ColumnDefinition0" />
                                 <ColumnDefinition x:Name="ColumnDefinition1" Width="0" />
@@ -263,10 +306,18 @@
                                 <RowDefinition x:Name="RowDefinition0" Height="Auto" />
                                 <RowDefinition x:Name="RowDefinition1" Height="*" />
                             </Grid.RowDefinitions>
-                            <TabPanel x:Name="headerPanel" Background="{DynamicResource L2Brush}" Grid.Column="0" IsItemsHost="true"
-                                      Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" Height="25.6" view:Helper.Accent="{TemplateBinding view:Helper.Accent}" />
-                            <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="0" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
-                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <TabPanel x:Name="headerPanel" Background="{DynamicResource L2Brush}" Grid.Column="0"
+                                      IsItemsHost="true"
+                                      Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1" Height="25.6"
+                                      view:Helper.Accent="{TemplateBinding view:Helper.Accent}" />
+                            <Border x:Name="contentPanel" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}" Grid.Column="0"
+                                    KeyboardNavigation.DirectionalNavigation="Contained" Grid.Row="1"
+                                    KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local">
+                                <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"
+                                                  Margin="{TemplateBinding Padding}"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -300,7 +351,8 @@
                                 <Setter Property="Margin" TargetName="headerPanel" Value="0,2,2,2" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="TextElement.Foreground" TargetName="templateRoot" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                                <Setter Property="TextElement.Foreground" TargetName="templateRoot"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

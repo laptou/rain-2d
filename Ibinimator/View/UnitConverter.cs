@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Ibinimator.Model;
@@ -11,27 +12,28 @@ namespace Ibinimator.View
 {
     public class UnitConverter : DependencyObject, IValueConverter
     {
-        public Unit SourceUnit
-        {
-            get => (Unit)GetValue(SourceUnitProperty);
-            set => SetValue(SourceUnitProperty, value);
-        }
-
-        public Unit TargetUnit
-        {
-            get => (Unit)GetValue(TargetUnitProperty);
-            set => SetValue(TargetUnitProperty, value);
-        }
-
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SourceUnitProperty =
-            DependencyProperty.Register("SourceUnit", typeof(Unit), typeof(UnitConverter), 
+            DependencyProperty.Register("SourceUnit", typeof(Unit), typeof(UnitConverter),
                 new PropertyMetadata(Unit.Radians));
 
         public static readonly DependencyProperty TargetUnitProperty =
             DependencyProperty.Register("TargetUnit", typeof(Unit), typeof(UnitConverter),
                 new PropertyMetadata(Unit.Degrees));
 
+        public Unit SourceUnit
+        {
+            get => (Unit) GetValue(SourceUnitProperty);
+            set => SetValue(SourceUnitProperty, value);
+        }
+
+        public Unit TargetUnit
+        {
+            get => (Unit) GetValue(TargetUnitProperty);
+            set => SetValue(TargetUnitProperty, value);
+        }
+
+        #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -40,8 +42,7 @@ namespace Ibinimator.View
                     return Format(input * ConversionFactor(SourceUnit, TargetUnit), TargetUnit);
                 else
                     return input * ConversionFactor(SourceUnit, TargetUnit);
-            else
-                throw new InvalidOperationException();
+            throw new InvalidOperationException();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -58,9 +59,11 @@ namespace Ibinimator.View
             return Binding.DoNothing;
         }
 
+        #endregion
+
         public float ConversionFactor(Unit source, Unit target)
         {
-            Dictionary<Unit, float> factor = new Dictionary<Unit, float>
+            var factor = new Dictionary<Unit, float>
             {
                 [Unit.Radians] = 1f,
                 [Unit.Degrees] = 360f / MathUtils.TwoPi,
@@ -94,7 +97,7 @@ namespace Ibinimator.View
         public float Unformat(string value, Unit target)
         {
             var parts = value.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            
+
             if (!float.TryParse(parts[0], out float num)) return float.NaN;
 
             Unit source;
@@ -128,5 +131,4 @@ namespace Ibinimator.View
             return num * ConversionFactor(source, target);
         }
     }
-
 }

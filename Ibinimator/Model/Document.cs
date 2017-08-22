@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
 using System.Xml.Serialization;
-using SharpDX;
-using IO = System.IO;
 
 namespace Ibinimator.Model
 {
@@ -18,65 +16,6 @@ namespace Ibinimator.Model
             LengthUnit = Unit.Pixels;
             AngleUnit = Unit.Degrees;
             TimeUnit = Unit.Frames;
-
-        }
-
-        [XmlIgnore]
-        public string Path
-        {
-            get => Get<string>();
-            set => Set(value);
-        }
-
-        [XmlElement("Layer")]
-        public Layer Root
-        {
-            get => Get<Layer>();
-            set
-            {
-                if(Root != null)
-                    Root.PropertyChanged -= RootPropertyChanged;
-
-                Set(value);
-
-                if(Root != null)
-                    Root.PropertyChanged += RootPropertyChanged;
-            }
-        }
-
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Updated?.Invoke(Root, e);
-        }
-
-        public static event PropertyChangedEventHandler Updated;
-
-        [XmlAttribute]
-        public Unit LengthUnit
-        {
-            get => Get<Unit>();
-            set
-            {
-                if (value.GetUnitType() == UnitType.Length)
-                    Set(value);
-                else
-                    throw new ArgumentOutOfRangeException(nameof(value),
-                        "Not a length unit.");
-            }
-        }
-
-        [XmlAttribute]
-        public Unit TimeUnit
-        {
-            get => Get<Unit>();
-            set
-            {
-                if (value == Unit.Frames || value == Unit.Milliseconds)
-                    Set(value);
-                else
-                    throw new ArgumentOutOfRangeException(nameof(value), 
-                        "Not a smallest-denomination Time unit.");
-            }
         }
 
         [XmlAttribute]
@@ -92,14 +31,71 @@ namespace Ibinimator.Model
             }
         }
 
-        [XmlElement]
-        public ObservableCollection<Color4> Swatches { get; set; }
-            = new ObservableCollection<Color4>();
+        [XmlAttribute]
+        public Unit LengthUnit
+        {
+            get => Get<Unit>();
+            set
+            {
+                if (value.GetUnitType() == UnitType.Length)
+                    Set(value);
+                else
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                        "Not a length unit.");
+            }
+        }
 
-        public string Name => IO.Path.GetFileNameWithoutExtension(Path);
+        public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
 
-        public string Type => IO.Path.GetExtension(Path);
+        [XmlIgnore]
+        public string Path
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
+
+        [XmlElement("Layer")]
+        public Group Root
+        {
+            get => Get<Group>();
+            set
+            {
+                if (Root != null)
+                    Root.PropertyChanged -= RootPropertyChanged;
+
+                Set(value);
+
+                if (Root != null)
+                    Root.PropertyChanged += RootPropertyChanged;
+            }
+        }
 
         public long Size => new FileInfo(Path).Length;
+
+        public ObservableCollection<BrushInfo> Swatches { get; set; }
+            = new ObservableCollection<BrushInfo>();
+
+        [XmlAttribute]
+        public Unit TimeUnit
+        {
+            get => Get<Unit>();
+            set
+            {
+                if (value == Unit.Frames || value == Unit.Milliseconds)
+                    Set(value);
+                else
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                        "Not a smallest-denomination Time unit.");
+            }
+        }
+
+        public string Type => System.IO.Path.GetExtension(Path);
+
+        public static event PropertyChangedEventHandler Updated;
+
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Updated?.Invoke(Root, e);
+        }
     }
 }

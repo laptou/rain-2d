@@ -1,13 +1,17 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.Model;
 using Ibinimator.View.Control;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
     public class BrushManager : Model.Model, IBrushManager
     {
-        private bool selecting = false;
+        private bool selecting;
 
         public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
@@ -28,6 +32,36 @@ namespace Ibinimator.Service
 
             PropertyChanged += OnPropertyChanged;
         }
+
+        #region IBrushManager Members
+
+        public ArtView ArtView { get; }
+
+        public BrushInfo Fill
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public BrushInfo Stroke
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public StrokeStyleProperties1 StrokeStyle
+        {
+            get => Get<StrokeStyleProperties1>();
+            set => Set(value);
+        }
+
+        public float StrokeWidth
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        #endregion
 
         private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
         {
@@ -58,32 +92,6 @@ namespace Ibinimator.Service
                             shape.StrokeWidth = StrokeWidth;
                     break;
             }
-        }
-
-        public ArtView ArtView { get; }
-
-        public BrushInfo Fill
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
-
-        public BrushInfo Stroke
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
-
-        public SharpDX.Direct2D1.StrokeStyleProperties1 StrokeStyle
-        {
-            get => Get<SharpDX.Direct2D1.StrokeStyleProperties1>();
-            set => Set(value);
-        }
-
-        public float StrokeWidth
-        {
-            get => Get<float>();
-            set => Set(value);
         }
     }
 }

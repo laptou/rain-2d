@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
@@ -19,18 +23,6 @@ namespace Ibinimator.View
             AssociatedObject.KeyDown += OnAssociatedObjectKeyDown;
         }
 
-        private static void OnAssiciatedObjectLostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox textBox)
-                textBox.Select(0,0);
-        }
-
-        private static void OnAssociatedObjectGotFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox textBox)
-                textBox.SelectAll();
-        }
-
         protected override void OnDetaching()
         {
             if (AssociatedObject == null) return;
@@ -43,11 +35,23 @@ namespace Ibinimator.View
             base.OnDetaching();
         }
 
+        private static void OnAssiciatedObjectLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+                textBox.Select(0, 0);
+        }
+
+        private static void OnAssociatedObjectGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+                textBox.SelectAll();
+        }
+
         private static void OnAssociatedObjectKeyDown(object sender, KeyEventArgs e)
         {
             if (sender is TextBox textBox)
             {
-                if(e.Key == Key.Return)
+                if (e.Key == Key.Return)
                     textBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
                 if (e.Key == Key.Escape)

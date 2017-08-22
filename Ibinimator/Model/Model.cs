@@ -5,31 +5,56 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Ibinimator.Model
 {
     public abstract class Model : INotifyPropertyChanged,
         INotifyPropertyChanging
     {
-        #region Fields
+        private Dictionary<string, object> _properties = new Dictionary<string, object>();
 
-        private Dictionary<string, Object> _properties = new Dictionary<string, object>();
-
-        #endregion Fields
-
-        #region Events
+        #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #endregion
+
+        #region INotifyPropertyChanging Members
+
         public event PropertyChangingEventHandler PropertyChanging;
 
-        #endregion Events
+        #endregion
 
-        #region Methods
+        public T Clone<T>() where T : Model, new()
+        {
+            if (typeof(T) != GetType())
+                throw new InvalidCastException();
+
+            return new T
+            {
+                _properties = _properties.ToDictionary(kv => kv.Key, kv => kv.Value)
+            };
+        }
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
-            return _properties.TryGetValue(propertyName, out object o) && o is T ? (T)o : default(T);
+            return _properties.TryGetValue(propertyName, out object o) && o is T ? (T) o : default(T);
+        }
+
+        protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
+        {
+            var member = propertyLambda.Body as MemberExpression;
+            if (member == null)
+                throw new ArgumentException(
+                    $"Expression '{propertyLambda}' refers to a method, not a property.");
+
+            var propInfo = member.Member as PropertyInfo;
+            if (propInfo == null)
+                throw new ArgumentException(
+                    $"Expression '{propertyLambda}' refers to a field, not a property.");
+
+            return propInfo;
         }
 
         protected void RaisePropertyChanged(string propertyName)
@@ -39,7 +64,7 @@ namespace Ibinimator.Model
 
         protected void RaisePropertyChanged<T>(Expression<Func<T>> propertyLambda)
         {
-            string propertyName = GetPropertyInfo(propertyLambda).Name;
+            var propertyName = GetPropertyInfo(propertyLambda).Name;
             RaisePropertyChanged(propertyName);
         }
 
@@ -60,7 +85,7 @@ namespace Ibinimator.Model
 
         protected void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
         {
-            string propertyName = GetPropertyInfo(propertyLambda).Name;
+            var propertyName = GetPropertyInfo(propertyLambda).Name;
 
             RaisePropertyChanging(propertyName);
         }
@@ -87,7 +112,7 @@ namespace Ibinimator.Model
 
         protected void SetProperty<T>(T value, out T variable, Expression<Func<T>> propertyLambda)
         {
-            string propertyName = GetPropertyInfo(propertyLambda).Name;
+            var propertyName = GetPropertyInfo(propertyLambda).Name;
 
             RaisePropertyChanging(propertyName);
 
@@ -95,33 +120,5 @@ namespace Ibinimator.Model
 
             RaisePropertyChanged(propertyName);
         }
-
-        protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
-        {
-            MemberExpression member = propertyLambda.Body as MemberExpression;
-            if (member == null)
-                throw new ArgumentException(
-                    $"Expression '{propertyLambda}' refers to a method, not a property.");
-
-            PropertyInfo propInfo = member.Member as PropertyInfo;
-            if (propInfo == null)
-                throw new ArgumentException(
-                    $"Expression '{propertyLambda}' refers to a field, not a property.");
-
-            return propInfo;
-        }
-
-        public T Clone<T>() where T : Model, new()
-        {
-            if(typeof(T) != GetType())
-                throw new InvalidCastException();
-            
-            return new T
-            {
-                _properties = _properties.ToDictionary(kv => kv.Key, kv => kv.Value)
-            }; 
-        }
-
-        #endregion Methods
     }
 }

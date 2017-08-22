@@ -136,6 +136,7 @@
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Path.cs" />
+    <Compile Include="Model\Resource.cs" />
     <Compile Include="Model\Shape.cs" />
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
@@ -147,6 +148,7 @@
     <Compile Include="Service\IRecorder.cs" />
     <Compile Include="Service\SelectionCommands.cs" />
     <Compile Include="Service\FileService.cs" />
+    <Compile Include="Service\SvgSerializer.cs" />
     <Compile Include="Service\ToolManager.cs" />
     <Compile Include="Shared\ColorUtils.cs" />
     <Compile Include="Shared\DictionaryExtensions.cs" />

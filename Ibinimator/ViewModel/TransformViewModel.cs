@@ -1,10 +1,16 @@
-﻿using SharpDX;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.Service;
+using SharpDX;
 
 namespace Ibinimator.ViewModel
 {
     public partial class MainViewModel
     {
+        #region Nested type: TransformViewModel
+
         public class TransformViewModel : ViewModel
         {
             private readonly MainViewModel _parent;
@@ -16,7 +22,6 @@ namespace Ibinimator.ViewModel
                 parent.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(SelectionManager) && parent.SelectionManager != null)
-                    {
                         parent.SelectionManager.Updated += (t, f) =>
                         {
                             RaisePropertyChanged(nameof(X));
@@ -26,41 +31,7 @@ namespace Ibinimator.ViewModel
                             RaisePropertyChanged(nameof(Rotation));
                             RaisePropertyChanged(nameof(Shear));
                         };
-                    }
                 };
-            }
-            
-            public float X
-            {
-                get => _parent.SelectionManager?.SelectionBounds.X ?? 0;
-                set => _parent.SelectionManager?.Transform(
-                    Vector2.One, 
-                    new Vector2(value - X, 0), 
-                    0,
-                    0, 
-                    Vector2.Zero);
-            }
-
-            public float Y
-            {
-                get => _parent.SelectionManager?.SelectionBounds.Y ?? 0;
-                set => _parent.SelectionManager?.Transform(
-                    Vector2.One,
-                    new Vector2(0, value - Y),
-                    0,
-                    0,
-                    Vector2.Zero);
-            }
-
-            public float Width
-            {
-                get => _parent.SelectionManager?.SelectionBounds.Width ?? 0;
-                set => _parent.SelectionManager?.Transform(
-                    new Vector2(value / Width, 1),
-                    Vector2.Zero,
-                    0,
-                    0,
-                    Vector2.Zero);
             }
 
             public float Height
@@ -72,6 +43,12 @@ namespace Ibinimator.ViewModel
                     0,
                     0,
                     Vector2.Zero);
+            }
+
+            public SelectionResizeHandle Origin
+            {
+                get => Get<SelectionResizeHandle>();
+                set => Set(value);
             }
 
             public float Rotation
@@ -96,11 +73,40 @@ namespace Ibinimator.ViewModel
                     Vector2.Zero);
             }
 
-            public SelectionResizeHandle Origin
+            public float Width
             {
-                get => Get<SelectionResizeHandle>();
-                set => Set(value);
+                get => _parent.SelectionManager?.SelectionBounds.Width ?? 0;
+                set => _parent.SelectionManager?.Transform(
+                    new Vector2(value / Width, 1),
+                    Vector2.Zero,
+                    0,
+                    0,
+                    Vector2.Zero);
+            }
+
+            public float X
+            {
+                get => _parent.SelectionManager?.SelectionBounds.X ?? 0;
+                set => _parent.SelectionManager?.Transform(
+                    Vector2.One,
+                    new Vector2(value - X, 0),
+                    0,
+                    0,
+                    Vector2.Zero);
+            }
+
+            public float Y
+            {
+                get => _parent.SelectionManager?.SelectionBounds.Y ?? 0;
+                set => _parent.SelectionManager?.Transform(
+                    Vector2.One,
+                    new Vector2(0, value - Y),
+                    0,
+                    0,
+                    Vector2.Zero);
             }
         }
+
+        #endregion
     }
 }

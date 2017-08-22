@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ibinimator.Model;
@@ -8,7 +10,7 @@ namespace Ibinimator.Service
 {
     public static class FileCommands
     {
-        public static readonly AsyncDelegateCommand<Document> SerializeCommand = 
+        public static readonly AsyncDelegateCommand<Document> SerializeCommand =
             new AsyncDelegateCommand<Document>(SaveAsync);
 
         private static async Task SaveAsync(Document doc)

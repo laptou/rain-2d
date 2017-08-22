@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace Ibinimator.View
@@ -29,8 +33,6 @@ namespace Ibinimator.View
     // The operator can be EQ, LT, LTE, GT, GTE.
     public class ComparisonBinding : Binding
     {
-        #region Constructors
-
         // Default constructor
         public ComparisonBinding()
             : this(null, ComparisonOperators.EQ, null)
@@ -46,16 +48,10 @@ namespace Ibinimator.View
             Converter = new ComparisonConverter(this);
         }
 
-        #endregion Constructors
-
-        #region Properties
-
         public object Comparand { get; set; }
 
         // Operator and comparand
         public ComparisonOperators Operator { get; set; }
-
-        #endregion Properties
     }
 
     // Thie IValueConverter is used by the StyleBinding to implement
@@ -63,17 +59,11 @@ namespace Ibinimator.View
     // returns null if the condition is met, non-null otherwise.
     internal class ComparisonConverter : IValueConverter
     {
-        #region Fields
-
         // Return this if the condition isn’t met
-        private static object _notNull = new Object();
+        private static readonly object _notNull = new object();
 
         // Keep a back reference to the StyleBinding
-        private ComparisonBinding _styleBinding;
-
-        #endregion Fields
-
-        #region Constructors
+        private readonly ComparisonBinding _styleBinding;
 
         // In construction, get a reference to the StyleBinding
         public ComparisonConverter(ComparisonBinding styleBinding)
@@ -81,31 +71,25 @@ namespace Ibinimator.View
             _styleBinding = styleBinding;
         }
 
-        #endregion Constructors
-
-        #region Methods
+        #region IValueConverter Members
 
         // IValueConverter.Convert
         //
         // Return null of the condition is met, non-null if not.
         public object Convert(
-            object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             // Simple check for null
             if (value == null || _styleBinding.Comparand == null)
-            {
                 if (_styleBinding.Operator == ComparisonOperators.NE)
                     return ReturnHelper(value != _styleBinding.Comparand);
                 else
                     return ReturnHelper(value == _styleBinding.Comparand);
-            }
             // Convert the comparand so that it matches the value
-            object convertedComparand = _styleBinding.Comparand;
+            var convertedComparand = _styleBinding.Comparand;
 
             if (_styleBinding.Comparand is Binding b)
-            {
                 convertedComparand = b.Eval();
-            }
 
             try
             {
@@ -115,26 +99,16 @@ namespace Ibinimator.View
             catch (InvalidCastException)
             {
                 // If Convert.ChangeType didn’t work, try a type converter
-                TypeConverter typeConverter = TypeDescriptor.GetConverter(value);
+                var typeConverter = TypeDescriptor.GetConverter(value);
                 if (typeConverter?.CanConvertFrom(_styleBinding.Comparand.GetType()) == true)
-                {
                     convertedComparand = typeConverter.ConvertFrom(_styleBinding.Comparand);
-                }
             }
             // Simple check for the equality case
             if (_styleBinding.Operator == ComparisonOperators.EQ)
-            {
-                // Actually, equality is a little more interesting, so
-                // put it in a helper routine
                 return ReturnHelper(CheckEquals(value.GetType(), value, convertedComparand));
-            }
 
             if (_styleBinding.Operator == ComparisonOperators.NE)
-            {
-                // Actually, equality is a little more interesting, so
-                // put it in a helper routine
                 return ReturnHelper(!CheckEquals(value.GetType(), value, convertedComparand));
-            }
 
             // For anything other than Equals, we need IComparable
             if (!(value is IComparable) || !(convertedComparand is IComparable))
@@ -143,7 +117,7 @@ namespace Ibinimator.View
                 return ReturnHelper(false);
             }
             // Compare the values
-            int comparison = (value as IComparable).CompareTo(convertedComparand);
+            var comparison = (value as IComparable).CompareTo(convertedComparand);
             // And return the comparisson result
             switch (_styleBinding.Operator)
             {
@@ -167,22 +141,19 @@ namespace Ibinimator.View
             object value,
             Type targetType,
             object parameter,
-            System.Globalization.CultureInfo culture)
+            CultureInfo culture)
         {
             throw new NotImplementedException();
         }
+
+        #endregion
 
         // Check for equality of two values
         private bool CheckEquals(Type type, object value1, object value2)
         {
             if (type.IsValueType || type == typeof(string))
-            {
-                return Object.Equals(value1, value2);
-            }
-            else
-            {
-                return Object.ReferenceEquals(value1, value2);
-            }
+                return Equals(value1, value2);
+            return ReferenceEquals(value1, value2);
         }
 
         // This helper produces the return value; null if the values
@@ -198,14 +169,12 @@ namespace Ibinimator.View
             if (Debugger.IsAttached)
             {
                 Debug.WriteLine("StyleBinding couldn’t convert '"
-                                 + value.GetType()
-                                 + "' to '"
-                                 + _styleBinding.Comparand.GetType()
-                                 + "'");
+                                + value.GetType()
+                                + "' to '"
+                                + _styleBinding.Comparand.GetType()
+                                + "'");
                 Debug.WriteLine("(" + message + ")");
             }
         }
-
-        #endregion Methods
     }
 }

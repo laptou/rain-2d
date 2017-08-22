@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Shared;
@@ -21,18 +22,18 @@ namespace Ibinimator.Service
             SetTool(ToolType.Select);
         }
 
+        #region IToolManager Members
+
         public ArtView ArtView { get; }
 
-        public ITool Tool
+        public void KeyDown(KeyEventArgs keyEventArgs)
         {
-            get => Get<ITool>();
-            set => Set(value);
+            Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
         }
 
-        public ToolType Type
+        public void KeyUp(KeyEventArgs keyEventArgs)
         {
-            get => Tool.Type;
-            set => SetTool(value);
+            Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
         }
 
         public void MouseDown(Vector2 pos)
@@ -50,15 +51,19 @@ namespace Ibinimator.Service
             Tool?.MouseUp(pos);
         }
 
-        public void KeyDown(KeyEventArgs keyEventArgs)
+        public ITool Tool
         {
-            Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
+            get => Get<ITool>();
+            set => Set(value);
         }
 
-        public void KeyUp(KeyEventArgs keyEventArgs)
+        public ToolType Type
         {
-            Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key);
+            get => Tool.Type;
+            set => SetTool(value);
         }
+
+        #endregion
 
         public void SetTool(ToolType type)
         {
@@ -102,18 +107,35 @@ namespace Ibinimator.Service
             Manager = toolManager;
         }
 
-        public IToolManager Manager { get; }
+        private IEnumerable<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
 
-        public ToolType Type => ToolType.Select;
-
-        public string Status => "";
+        #region ITool Members
 
         public Bitmap Cursor => Manager.ArtView.SelectionManager.Cursor;
 
         public float CursorRotate => Manager.ArtView.SelectionManager.SelectionRotation -
                                      Manager.ArtView.SelectionManager.SelectionShear;
 
-        private IEnumerable<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
+        public void KeyDown(Key key)
+        {
+            if (key == Key.Delete)
+            {
+                var delete = Selection.ToArray();
+                Manager.ArtView.SelectionManager.ClearSelection();
+
+                Manager.ArtView.Dispatcher.Invoke(() =>
+                {
+                    foreach (var layer in delete)
+                        layer.Parent.Remove(layer);
+                });
+            }
+        }
+
+        public void KeyUp(Key key)
+        {
+        }
+
+        public IToolManager Manager { get; }
 
         public void MouseDown(Vector2 pos)
         {
@@ -155,8 +177,8 @@ namespace Ibinimator.Service
             handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
 
             var zoom = MathUtils.GetScale(target.Transform);
-            
-            using (var stroke = 
+
+            using (var stroke =
                 new StrokeStyle1(
                     target.Factory.QueryInterface<Factory1>(),
                     new StrokeStyleProperties1
@@ -173,60 +195,61 @@ namespace Ibinimator.Service
             }
         }
 
-        public void KeyDown(Key key)
-        {
-            if (key == Key.Delete)
-            {
-                var delete = Selection.ToArray();
-                Manager.ArtView.SelectionManager.ClearSelection();
+        public string Status => "";
 
-                Manager.ArtView.Dispatcher.Invoke(() =>
-                {
-                    foreach (var layer in delete)
-                        layer.Parent.Remove(layer);
-                });
+        public ToolType Type => ToolType.Select;
 
-            }
-        }
-
-        public void KeyUp(Key key)
-        {
-            
-        }
+        #endregion
     }
 
     public sealed class PencilTool : Model.Model, ITool
     {
+        private bool _alt;
         private Vector2 _lastPos;
         private bool _shift;
-        private bool _alt;
 
         public PencilTool(IToolManager toolManager)
         {
             Manager = toolManager;
         }
 
-        public IToolManager Manager { get; }
+        public Path CurrentPath => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Path;
 
         private ArtView ArtView => Manager.ArtView;
 
         private Layer Root => ArtView.ViewManager.Root;
 
-        public ToolType Type => ToolType.Pencil;
-
-        public string Status => "";
+        #region ITool Members
 
         public Bitmap Cursor => null;
 
         public float CursorRotate => 0;
 
-        public Path CurrentPath => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Path;
+        public void KeyDown(Key key)
+        {
+            if (key == Key.LeftShift || key == Key.RightShift)
+                _shift = true;
+            if (key == Key.LeftAlt || key == Key.RightAlt)
+                _alt = true;
+            if (key == Key.Escape)
+                Manager.ArtView.SelectionManager.ClearSelection();
+        }
+
+        public void KeyUp(Key key)
+        {
+            if (key == Key.LeftShift || key == Key.RightShift)
+                _shift = false;
+            if (key == Key.LeftAlt || key == Key.RightAlt)
+                _alt = false;
+        }
+
+        public IToolManager Manager { get; }
 
         public void MouseDown(Vector2 pos)
         {
             if (CurrentPath == null)
             {
-                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, Matrix3x2.Identity);
+                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, Matrix3x2.Identity, true);
 
                 if (hit != null)
                 {
@@ -236,7 +259,7 @@ namespace Ibinimator.Service
 
                 Manager.ArtView.SelectionManager.ClearSelection();
 
-                Path path = new Path
+                var path = new Path
                 {
                     FillBrush = Manager.ArtView.BrushManager.Fill,
                     StrokeBrush = Manager.ArtView.BrushManager.Stroke,
@@ -265,12 +288,12 @@ namespace Ibinimator.Service
             }
             else if (_shift && CurrentPath.Nodes.Count > 0)
             {
-                var cpos = 
+                var cpos =
                     Matrix3x2.TransformPoint(
                         Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
                         Constrain(pos));
 
-                CurrentPath.Nodes.Add(new PathNode { X = cpos.X, Y = cpos.Y });
+                CurrentPath.Nodes.Add(new PathNode {X = cpos.X, Y = cpos.Y});
             }
             else
             {
@@ -279,9 +302,9 @@ namespace Ibinimator.Service
                 if (first != null && (first.Position - tpos).Length() < 14.12f)
                     CurrentPath.Closed = !CurrentPath.Closed;
                 else
-                    CurrentPath.Nodes.Add(new PathNode { X = tpos.X, Y = tpos.Y });
+                    CurrentPath.Nodes.Add(new PathNode {X = tpos.X, Y = tpos.Y});
             }
-            
+
 
             Manager.ArtView.SelectionManager.Update(true);
         }
@@ -297,29 +320,11 @@ namespace Ibinimator.Service
         {
         }
 
-        public void KeyDown(Key key)
-        {
-            if (key == Key.LeftShift || key == Key.RightShift)
-                _shift = true;
-            if (key == Key.LeftAlt || key == Key.RightAlt)
-                _alt = true;
-            if(key == Key.Escape)
-                Manager.ArtView.SelectionManager.ClearSelection();
-        }
-
-        public void KeyUp(Key key)
-        {
-            if (key == Key.LeftShift || key == Key.RightShift)
-                _shift = false;
-            if (key == Key.LeftAlt || key == Key.RightAlt)
-                _alt = false;
-        }
-
         public void Render(RenderTarget target, ICacheManager cacheManager)
         {
             if (CurrentPath == null) return;
 
-            var props = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed };
+            var props = new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed};
             using (var stroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), props))
             {
                 var transform = CurrentPath.AbsoluteTransform;
@@ -333,11 +338,11 @@ namespace Ibinimator.Service
 
                 if (CurrentPath.Nodes.Count > 0)
                 {
-                    var lpos = 
+                    var lpos =
                         Matrix3x2.TransformPoint(
                             CurrentPath.AbsoluteTransform,
                             CurrentPath.Nodes.Last().Position);
-                    
+
                     var mpos = _shift ? Constrain(_lastPos) : _lastPos;
 
                     target.DrawLine(lpos, mpos, cacheManager.GetBrush("A2"), 1, stroke);
@@ -353,20 +358,24 @@ namespace Ibinimator.Service
                     }
                 }
 
-                foreach (var node in 
-                    CurrentPath.Nodes.Select(n => 
+                foreach (var node in
+                    CurrentPath.Nodes.Select(n =>
                         Matrix3x2.TransformPoint(transform, n.Position)))
                 {
                     var rect = new RectangleF(node.X - 5f, node.Y - 5f, 10, 10);
 
                     target.FillRectangle(rect,
-                        rect.Contains(_lastPos) ?
-                            cacheManager.GetBrush("A4") :
-                            cacheManager.GetBrush("L1"));
+                        rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
                     target.DrawRectangle(rect, cacheManager.GetBrush("A2"), 1, stroke);
                 }
             }
         }
+
+        public string Status => "";
+
+        public ToolType Type => ToolType.Pencil;
+
+        #endregion
 
         private Vector2 Constrain(Vector2 pos)
         {

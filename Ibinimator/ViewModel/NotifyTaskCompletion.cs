@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ibinimator.ViewModel
@@ -15,51 +17,33 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        public string ErrorMessage => InnerException?.Message;
+
+        public AggregateException Exception => Task.Exception;
+
+        public Exception InnerException => Exception?.InnerException;
+
+        public bool IsCanceled => Task.IsCanceled;
+
+        public bool IsCompleted => Task.IsCompleted;
+
+        public bool IsFaulted => Task.IsFaulted;
+
+        public bool IsNotCompleted => !Task.IsCompleted;
+
+        public bool IsSuccessfullyCompleted => Task.Status == TaskStatus.RanToCompletion;
+
+        public TResult Result => Task.Status == TaskStatus.RanToCompletion ? Task.Result : default(TResult);
+
+        public TaskStatus Status => Task.Status;
+
+        public Task<TResult> Task { get; }
+
+        #region INotifyPropertyChanged Members
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string ErrorMessage
-        {
-            get
-            { return InnerException?.Message; }
-        }
-
-        public AggregateException Exception { get { return Task.Exception; } }
-
-        public Exception InnerException
-        {
-            get
-            {
-                return Exception?.InnerException;
-            }
-        }
-
-        public bool IsCanceled { get { return Task.IsCanceled; } }
-
-        public bool IsCompleted { get { return Task.IsCompleted; } }
-
-        public bool IsFaulted { get { return Task.IsFaulted; } }
-
-        public bool IsNotCompleted { get { return !Task.IsCompleted; } }
-
-        public bool IsSuccessfullyCompleted
-        {
-            get
-            {
-                return Task.Status == TaskStatus.RanToCompletion;
-            }
-        }
-
-        public TResult Result
-        {
-            get
-            {
-                return (Task.Status == TaskStatus.RanToCompletion) ? Task.Result : default(TResult);
-            }
-        }
-
-        public TaskStatus Status { get { return Task.Status; } }
-
-        public Task<TResult> Task { get; private set; }
+        #endregion
 
         private async Task WatchTaskAsync(Task task)
         {
@@ -77,19 +61,21 @@ namespace Ibinimator.ViewModel
             propertyChanged(this, new PropertyChangedEventArgs("IsCompleted"));
             propertyChanged(this, new PropertyChangedEventArgs("IsNotCompleted"));
             if (task.IsCanceled)
+            {
                 propertyChanged(this, new PropertyChangedEventArgs("IsCanceled"));
+            }
             else if (task.IsFaulted)
             {
                 propertyChanged(this, new PropertyChangedEventArgs("IsFaulted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Exception"));
                 propertyChanged(this,
-                  new PropertyChangedEventArgs("InnerException"));
+                    new PropertyChangedEventArgs("InnerException"));
                 propertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
             }
             else
             {
                 propertyChanged(this,
-                  new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
+                    new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Result"));
             }
         }
@@ -124,57 +110,39 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        public string ErrorMessage
-        {
-            get
-            { return InnerException?.Message; }
-        }
+        public string ErrorMessage => InnerException?.Message;
 
-        public AggregateException Exception { get { return Task.Exception; } }
+        public AggregateException Exception => Task.Exception;
 
-        public Exception InnerException
-        {
-            get
-            {
-                return Exception?.InnerException;
-            }
-        }
+        public Exception InnerException => Exception?.InnerException;
 
-        public bool IsCanceled { get { return Task.IsCanceled; } }
+        public bool IsCanceled => Task.IsCanceled;
 
-        public bool IsCompleted { get { return Task.IsCompleted; } }
+        public bool IsCompleted => Task.IsCompleted;
 
-        public bool IsFaulted { get { return Task.IsFaulted; } }
+        public bool IsFaulted => Task.IsFaulted;
 
-        public bool IsNotCompleted { get { return !Task.IsCompleted; } }
+        public bool IsNotCompleted => !Task.IsCompleted;
 
-        public bool IsSuccessfullyCompleted
-        {
-            get
-            {
-                return Task.Status == TaskStatus.RanToCompletion;
-            }
-        }
+        public bool IsRunning => Task.Status == TaskStatus.Running;
 
-        public bool IsRunning
-        {
-            get
-            {
-                return Task.Status == TaskStatus.Running;
-            }
-        }
+        public bool IsSuccessfullyCompleted => Task.Status == TaskStatus.RanToCompletion;
 
         public double Progress { get; private set; }
 
-        public TaskStatus Status { get { return Task.Status; } }
+        public TaskStatus Status => Task.Status;
 
-        public Task Task { get; private set; }
+        public Task Task { get; }
+
+        #region IProgress<double> Members
 
         public void Report(double value)
         {
             Progress = value;
             RaisePropertyChanged("Progress");
         }
+
+        #endregion
 
         private async Task WatchTaskAsync(Task task)
         {
@@ -190,7 +158,9 @@ namespace Ibinimator.ViewModel
             RaisePropertyChanged("IsCompleted");
             RaisePropertyChanged("IsNotCompleted");
             if (task.IsCanceled)
+            {
                 RaisePropertyChanged("IsCanceled");
+            }
             else if (task.IsFaulted)
             {
                 RaisePropertyChanged("IsFaulted");

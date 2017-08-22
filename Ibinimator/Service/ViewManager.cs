@@ -1,7 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.Model;
-using SharpDX;
 using Ibinimator.View.Control;
+using SharpDX;
 
 namespace Ibinimator.Service
 {
@@ -14,28 +18,15 @@ namespace Ibinimator.Service
             Zoom = 1;
         }
 
-        public ArtView ArtView { get; }
-
-        public float Zoom { get => Get<float>(); set { Set(value); Update(); } }
-        public Vector2 Pan { get => Get<Vector2>(); set { Set(value); Update(); } }
-        public Matrix3x2 Transform { get => Get<Matrix3x2>(); set => Set(value); }
-
-        public Layer Root
-        {
-            get => Document.Root;
-            set => Document.Root = value;
-        }
-
         public Document Document
         {
             get => Get<Document>();
             set => Set(value);
         }
 
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
-            LayerUpdated?.Invoke(sender, propertyChangedEventArgs);
-        }
+        #region IViewManager Members
+
+        public ArtView ArtView { get; }
 
         public Vector2 FromArtSpace(Vector2 v)
         {
@@ -54,6 +45,22 @@ namespace Ibinimator.Service
 
         public event PropertyChangedEventHandler LayerUpdated;
 
+        public Vector2 Pan
+        {
+            get => Get<Vector2>();
+            set
+            {
+                Set(value);
+                Update();
+            }
+        }
+
+        public Group Root
+        {
+            get => Document.Root;
+            set => Document.Root = value;
+        }
+
         public Vector2 ToArtSpace(Vector2 v)
         {
             return (v + Pan) * Zoom;
@@ -67,6 +74,29 @@ namespace Ibinimator.Service
             v.Bottom *= Zoom;
             v.Right *= Zoom;
             return v;
+        }
+
+        public Matrix3x2 Transform
+        {
+            get => Get<Matrix3x2>();
+            set => Set(value);
+        }
+
+        public float Zoom
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                Update();
+            }
+        }
+
+        #endregion
+
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            LayerUpdated?.Invoke(sender, propertyChangedEventArgs);
         }
 
         private void Update()

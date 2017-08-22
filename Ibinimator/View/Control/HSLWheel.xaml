@@ -28,7 +28,8 @@
             <Ellipse Stroke="Black" Grid.Column="1" VerticalAlignment="Center"
                      Height="10" Width="10" HorizontalAlignment="Center" />
             <Grid.RenderTransform>
-                <RotateTransform Angle="{Binding Hue, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:HslWheel}}}" />
+                <RotateTransform
+                    Angle="{Binding Hue, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:HslWheel}}}" />
             </Grid.RenderTransform>
         </Grid>
 

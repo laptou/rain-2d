@@ -1,11 +1,13 @@
-﻿using SharpDX;
-using SharpDX.Direct2D1;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.Serialization;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
-using Ibinimator.Shared;
+using SharpDX;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
 {
@@ -13,19 +15,35 @@ namespace Ibinimator.Model
     [XmlType(nameof(Ellipse))]
     public class Ellipse : Shape
     {
-        #region Properties
-
         public override string DefaultName => "Ellipse";
 
         [XmlIgnore] // ignore bc redundant to width and height
-        public float RadiusX { get => Width / 2; set => Width = value * 2; }
+        public float RadiusX
+        {
+            get => Width / 2;
+            set => Width = value * 2;
+        }
 
         [XmlIgnore]
-        public float RadiusY { get => Height / 2; set => Height = value * 2; }
+        public float RadiusY
+        {
+            get => Height / 2;
+            set => Height = value * 2;
+        }
 
-        #endregion Properties
+        protected override string ElementName => "ellipse";
 
-        #region Methods
+        public override XElement GetElement()
+        {
+            var element = base.GetElement();
+
+            element.Add(new XAttribute("cx", X + RadiusX));
+            element.Add(new XAttribute("cy", Y + RadiusY));
+            element.Add(new XAttribute("rx", RadiusX));
+            element.Add(new XAttribute("ry", RadiusY));
+
+            return element;
+        }
 
         public override Geometry GetGeometry(Factory factory)
         {
@@ -36,27 +54,49 @@ namespace Ibinimator.Model
                     RadiusX,
                     RadiusY));
         }
-
-        #endregion Methods
     }
 
     [Serializable]
     [XmlType(nameof(Rectangle))]
     public class Rectangle : Shape
     {
-        [XmlAttribute]
-        public override float Width { get => base.Width; set { base.Width = value; RaisePropertyChanged("Geometry"); } }
-
-        [XmlAttribute]
-        public override float Height { get => base.Height; set { base.Height = value; RaisePropertyChanged("Geometry"); } }
-
-        #region Properties
-
         public override string DefaultName => "Rectangle";
 
-        #endregion Properties
+        [XmlAttribute]
+        public override float Height
+        {
+            get => base.Height;
+            set
+            {
+                base.Height = value;
+                RaisePropertyChanged("Geometry");
+            }
+        }
 
-        #region Methods
+        [XmlAttribute]
+        public override float Width
+        {
+            get => base.Width;
+            set
+            {
+                base.Width = value;
+                RaisePropertyChanged("Geometry");
+            }
+        }
+
+        protected override string ElementName => "rect";
+
+        public override XElement GetElement()
+        {
+            var element = base.GetElement();
+
+            element.Add(new XAttribute("x", X));
+            element.Add(new XAttribute("y", Y));
+            element.Add(new XAttribute("width", Width));
+            element.Add(new XAttribute("height", Height));
+
+            return element;
+        }
 
         public override Geometry GetGeometry(Factory factory)
         {
@@ -64,8 +104,6 @@ namespace Ibinimator.Model
                 factory,
                 new RectangleF(0, 0, Width, Height));
         }
-
-        #endregion Methods
     }
 
     [XmlInclude(typeof(Rectangle))]
@@ -81,37 +119,53 @@ namespace Ibinimator.Model
             };
         }
 
-        #region Properties
-
         public override string DefaultName => "Shape";
 
         [XmlElement]
-        public BrushInfo FillBrush { get => Get<BrushInfo>(); set => Set(value); }
+        public BrushInfo FillBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
 
         [XmlElement]
-        public BrushInfo StrokeBrush { get => Get<BrushInfo>(); set => Set(value); }
+        public BrushInfo StrokeBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
 
         [XmlElement]
-        public StrokeStyleProperties1 StrokeStyle { get => Get<StrokeStyleProperties1>(); set => Set(value); }
+        public StrokeStyleProperties1 StrokeStyle
+        {
+            get => Get<StrokeStyleProperties1>();
+            set => Set(value);
+        }
 
         [XmlAttribute]
         [DefaultValue(0)]
-        public float StrokeWidth { get => Get<float>(); set => Set(value); }
-
-        #endregion Properties
-
-        #region Methods
+        public float StrokeWidth
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
 
         public abstract Geometry GetGeometry(Factory factory);
 
-        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world)
+        public override XElement GetElement()
         {
-            var hit = base.Hit<T>(factory, point, world);
+            var element = base.GetElement();
 
-            if (hit != null) return hit;
+            element.Add(new XAttribute("fill", FillBrush.GetReference()));
+            element.Add(new XAttribute("stroke", StrokeBrush.GetReference()));
+            element.Add(new XAttribute("stroke-width", StrokeWidth));
 
+            return element;
+        }
+
+        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
+        {
             if (this is T)
-            {
                 using (var geometry = GetGeometry(factory))
                 {
                     if (FillBrush != null &&
@@ -122,7 +176,6 @@ namespace Ibinimator.Model
                             geometry.FlatteningTolerance))
                         return this as T;
                 }
-            }
 
             return null;
         }
@@ -139,17 +192,13 @@ namespace Ibinimator.Model
                 var stroke = cacheHelper.GetStroke(this, target);
 
                 target.DrawGeometry(
-                  cacheHelper.GetGeometry(this),
-                  stroke.brush,
-                  stroke.width,
-                  stroke.style);
+                    cacheHelper.GetGeometry(this),
+                    stroke.brush,
+                    stroke.width,
+                    stroke.style);
             }
 
             target.Transform *= Matrix3x2.Invert(AbsoluteTransform);
-
-            base.Render(target, cacheHelper);
         }
-
-        #endregion Methods
     }
 }

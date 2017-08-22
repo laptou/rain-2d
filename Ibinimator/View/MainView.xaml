@@ -23,27 +23,27 @@
         <WindowChrome CaptionHeight="50" />
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
-        <KeyBinding Gesture="CTRL+SHIFT+OemOpenBrackets" 
+        <KeyBinding Gesture="CTRL+SHIFT+OemOpenBrackets"
                     Command="{x:Static service:SelectionCommands.MoveToBottomCommand}"
-                    CommandParameter="{Binding SelectionManager}"/>
-        <KeyBinding Gesture="CTRL+OemOpenBrackets" 
+                    CommandParameter="{Binding SelectionManager}" />
+        <KeyBinding Gesture="CTRL+OemOpenBrackets"
                     Command="{x:Static service:SelectionCommands.MoveDownCommand}"
-                    CommandParameter="{Binding SelectionManager}"/>
-        <KeyBinding Gesture="CTRL+OemCloseBrackets" 
+                    CommandParameter="{Binding SelectionManager}" />
+        <KeyBinding Gesture="CTRL+OemCloseBrackets"
                     Command="{x:Static service:SelectionCommands.MoveUpCommand}"
-                    CommandParameter="{Binding SelectionManager}"/>
-        <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets" 
+                    CommandParameter="{Binding SelectionManager}" />
+        <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets"
                     Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
-                    CommandParameter="{Binding SelectionManager}"/>
-        <KeyBinding Gesture="CTRL+Z" 
+                    CommandParameter="{Binding SelectionManager}" />
+        <KeyBinding Gesture="CTRL+Z"
                     Command="{x:Static service:HistoryCommands.UndoCommand}"
-                    CommandParameter="{Binding HistoryManager}"/>
-        <KeyBinding Gesture="CTRL+SHIFT+Z" 
+                    CommandParameter="{Binding HistoryManager}" />
+        <KeyBinding Gesture="CTRL+SHIFT+Z"
                     Command="{x:Static service:HistoryCommands.RedoCommand}"
-                    CommandParameter="{Binding HistoryManager}"/>
-        <KeyBinding Gesture="CTRL+S" 
+                    CommandParameter="{Binding HistoryManager}" />
+        <KeyBinding Gesture="CTRL+S"
                     Command="{x:Static service:FileCommands.SerializeCommand}"
-                    CommandParameter="{Binding ViewManager.Document}"/>
+                    CommandParameter="{Binding ViewManager.Document}" />
     </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -227,9 +227,9 @@
         </Border>
         <Grid Grid.Row="2" UseLayoutRounding="True">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <ToolBarTray Grid.Column="0" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
@@ -271,8 +271,7 @@
             <TabControl Grid.Column="1">
                 <TabItem>
                     <Border Background="White">
-                        <control:ArtView x:Name="ArtView">
-                        </control:ArtView>
+                        <control:ArtView x:Name="ArtView" />
                     </Border>
                 </TabItem>
             </TabControl>
@@ -499,8 +498,9 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Stroke Width: " DockPanel.Dock="Left" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" />
-                                <TextBox  Width="50"
+                                <TextBlock Text="Stroke Width: " DockPanel.Dock="Left" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" Margin="8,0" />
+                                <TextBox Width="50"
                                          Text="{Binding FillPicker.StrokeWidth, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                          BorderThickness="0,0,0,1" Margin="0" Grid.Column="1" />
@@ -654,7 +654,7 @@
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*" />
-                                <ColumnDefinition/>
+                                <ColumnDefinition />
                                 <ColumnDefinition Width="3*" />
                                 <ColumnDefinition />
                                 <ColumnDefinition Width="3*" />
@@ -663,34 +663,34 @@
                                 <Style TargetType="Grid">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding SelectionManager.Selection.Count}" Value="0">
-                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter Property="IsEnabled" Value="False" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Grid.Style>
-                            <Border HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                    BorderBrush="{DynamicResource T2Brush}" BorderThickness="1" 
+                            <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    BorderBrush="{DynamicResource T2Brush}" BorderThickness="1"
                                     Grid.RowSpan="3" RenderTransformOrigin="0.5,0.5">
                                 <Grid Width="50" Height="50">
                                     <Path Data="M0,100 L100,100 50,13.39745 Z"
-                                          Stroke="{DynamicResource A3Brush}" StrokeThickness="1" 
-                                          Stretch="Uniform" Margin="5"/>
+                                          Stroke="{DynamicResource A3Brush}" StrokeThickness="1"
+                                          Stretch="Uniform" Margin="5" />
                                 </Grid>
                                 <Border.RenderTransform>
                                     <TransformGroup>
-                                        <RotateTransform x:Name="RotateTransform"/>
+                                        <RotateTransform x:Name="RotateTransform" />
                                     </TransformGroup>
                                 </Border.RenderTransform>
                                 <Border.Triggers>
                                     <EventTrigger RoutedEvent="Binding.TargetUpdated">
                                         <BeginStoryboard>
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="RotateTransform" 
+                                                <DoubleAnimation Storyboard.TargetName="RotateTransform"
                                                                  Storyboard.TargetProperty="Angle"
-                                                                 To="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}, NotifyOnTargetUpdated=True}" 
-                                                                 Duration="0:0:0.25" >
+                                                                 To="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}, NotifyOnTargetUpdated=True}"
+                                                                 Duration="0:0:0.25">
                                                     <DoubleAnimation.EasingFunction>
-                                                        <CubicEase EasingMode="EaseOut"/>
+                                                        <CubicEase EasingMode="EaseOut" />
                                                     </DoubleAnimation.EasingFunction>
                                                 </DoubleAnimation>
                                             </Storyboard>
@@ -763,16 +763,17 @@
                     <TabItem Header="History">
                         <Grid MinHeight="128" MaxHeight="256">
                             <ListBox ItemsSource="{Binding HistoryManager}" x:Name="HistoryList"
-                                      Background="{DynamicResource L1Brush}" SelectionMode="Single" 
-                                      SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time}" 
-                                      BorderBrush="{x:Null}">
+                                     Background="{DynamicResource L1Brush}" SelectionMode="Single"
+                                     SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time}"
+                                     BorderBrush="{x:Null}">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Style.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
-                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                <Setter Property="Foreground"
+                                                        Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
+                                                <Setter Property="FontWeight" Value="Bold" />
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
@@ -780,7 +781,8 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock x:Name="HistoryRecordDescription" Text="{Binding Description}"
-                                                   Margin="8,4" Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}"/>
+                                                   Margin="8,4"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}" />
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
@@ -788,7 +790,7 @@
                     </TabItem>
                 </TabControl>
             </Grid>
-            <GridSplitter Grid.Column="1" Width="5" Background="Transparent"/>
+            <GridSplitter Grid.Column="1" Width="5" Background="Transparent" />
         </Grid>
     </Grid>
 </Window>

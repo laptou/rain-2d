@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -9,8 +11,6 @@ namespace Ibinimator.ViewModel
     {
         private Action<T> _action;
         private Predicate<T> _predicate;
-
-        public event EventHandler CanExecuteChanged;
 
         public DelegateCommand(Action<T> action, Predicate<T> predicate)
         {
@@ -48,36 +48,40 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        #region ICommand Members
+
         public bool CanExecute(object parameter)
         {
-            return _action != null && 
-                _predicate?.Invoke(default(T) != null && parameter == null ? default(T) : (T)parameter) != false;
+            return _action != null &&
+                   _predicate?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter) != false;
         }
+
+        public event EventHandler CanExecuteChanged;
 
         public void Execute(object parameter)
         {
             // casting null to a value type causes problems
-           _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T)parameter);
+            _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter);
         }
+
+        #endregion
     }
 
     public class AsyncDelegateCommand<T> : ICommand, INotifyPropertyChanged
     {
         private Func<T, Task> _task;
 
-        public event EventHandler CanExecuteChanged;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public AsyncDelegateCommand(Func<T, Task> task)
         {
             _task = task;
         }
 
-        public AsyncDelegateCommand(Action<T> task) : 
+        public AsyncDelegateCommand(Action<T> task) :
             this(p => System.Threading.Tasks.Task.Run(() => task(p)))
         {
         }
+
+        public NotifyTaskCompletion Execution { get; private set; }
 
         public Func<T, Task> Task
         {
@@ -91,12 +95,14 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        public NotifyTaskCompletion Execution { get; private set; }
+        #region ICommand Members
 
         public bool CanExecute(object parameter)
         {
             return _task != null;
         }
+
+        public event EventHandler CanExecuteChanged;
 
         public void Execute(object parameter)
         {
@@ -104,5 +110,13 @@ namespace Ibinimator.ViewModel
             Execution = new NotifyTaskCompletion(_task?.Invoke(castedParameter));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Execution"));
         }
+
+        #endregion
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
     }
 }
