@@ -236,10 +236,6 @@
     <Analyzer Include="..\packages\ZeroFormatter.Analyzer.1.1.1\analyzers\dotnet\cs\ZeroFormatterAnalyzer.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icon\Icon.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Resource>
     <Page Include="View\Control\HSLWheel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -251,45 +247,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\logo.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icon\align bottom.png" />
-    <Resource Include="Resources\Icon\align center horizontally.png" />
-    <Resource Include="Resources\Icon\align center vertically.png" />
-    <Resource Include="Resources\Icon\align left.png" />
-    <Resource Include="Resources\Icon\align right.png" />
-    <Resource Include="Resources\Icon\align top.png" />
-    <Resource Include="Resources\Icon\backward.png" />
-    <Resource Include="Resources\Icon\bucket.png" />
-    <Resource Include="Resources\Icon\combine.png" />
-    <Resource Include="Resources\Icon\cursor.png" />
-    <Resource Include="Resources\Icon\difference.png" />
-    <Resource Include="Resources\Icon\divide.png" />
-    <Resource Include="Resources\Icon\expander.png" />
-    <Resource Include="Resources\Icon\eyedropper.png" />
-    <Resource Include="Resources\Icon\flip horizontally.png" />
-    <Resource Include="Resources\Icon\flip vertically.png" />
-    <Resource Include="Resources\Icon\forward.png" />
-    <Resource Include="Resources\Icon\grid.png" />
-    <Resource Include="Resources\Icon\intersection.png" />
-    <Resource Include="Resources\Icon\keyframe.png" />
-    <Resource Include="Resources\Icon\mask.png" />
-    <Resource Include="Resources\Icon\pen.png" />
-    <Resource Include="Resources\Icon\pencil.png" />
-    <Resource Include="Resources\Icon\pointer.png" />
-    <Resource Include="Resources\Icon\rotate ccw.png" />
-    <Resource Include="Resources\Icon\rotate cw.png" />
-    <Resource Include="Resources\Icon\snap.png" />
-    <Resource Include="Resources\Icon\text.png" />
-    <Resource Include="Resources\Icon\to back.png" />
-    <Resource Include="Resources\Icon\to front.png" />
-    <Resource Include="Resources\Icon\union.png" />
-    <Resource Include="Resources\Icon\zoom.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icon\close.png" />
-    <Resource Include="Resources\Icon\minimize.png" />
-    <Resource Include="Resources\Icon\restore.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
@@ -304,11 +261,56 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Icon\align bottom.png" />
+    <Resource Include="Resources\Icon\align center horizontally.png" />
+    <Resource Include="Resources\Icon\align center vertically.png" />
+    <Resource Include="Resources\Icon\align left.png" />
+    <Resource Include="Resources\Icon\align right.png" />
+    <Resource Include="Resources\Icon\align top.png" />
+    <Resource Include="Resources\Icon\backward.png" />
+    <Resource Include="Resources\Icon\bucket.png" />
+    <Resource Include="Resources\Icon\close.png" />
+    <Resource Include="Resources\Icon\combine.png" />
+    <Resource Include="Resources\Icon\corner-bevel.png" />
+    <Resource Include="Resources\Icon\corner-miter.png" />
+    <Resource Include="Resources\Icon\corner-round.png" />
+    <Resource Include="Resources\Icon\cursor.png" />
+    <Resource Include="Resources\Icon\difference.png" />
+    <Resource Include="Resources\Icon\divide.png" />
+    <Resource Include="Resources\Icon\end-flat.png" />
+    <Resource Include="Resources\Icon\end-round.png" />
+    <Resource Include="Resources\Icon\end-square.png" />
+    <Resource Include="Resources\Icon\expander.png" />
+    <Resource Include="Resources\Icon\eyedropper.png" />
+    <Resource Include="Resources\Icon\flip horizontally.png" />
+    <Resource Include="Resources\Icon\flip vertically.png" />
+    <Resource Include="Resources\Icon\forward.png" />
+    <Resource Include="Resources\Icon\grid.png" />
+    <Resource Include="Resources\Icon\intersection.png" />
+    <Resource Include="Resources\Icon\keyframe.png" />
+    <Resource Include="Resources\Icon\mask.png" />
+    <Resource Include="Resources\Icon\minimize.png" />
+    <Resource Include="Resources\Icon\pen.png" />
+    <Resource Include="Resources\Icon\pencil.png" />
+    <Resource Include="Resources\Icon\pointer.png" />
     <Resource Include="Resources\Icon\resize-ew.png" />
     <Resource Include="Resources\Icon\resize-nesw.png" />
     <Resource Include="Resources\Icon\resize-ns.png" />
     <Resource Include="Resources\Icon\resize-nwse.png" />
+    <Resource Include="Resources\Icon\restore.png" />
+    <Resource Include="Resources\Icon\rotate ccw.png" />
+    <Resource Include="Resources\Icon\rotate cw.png" />
     <Resource Include="Resources\Icon\rotate.png" />
+    <Resource Include="Resources\Icon\snap.png" />
+    <Resource Include="Resources\Icon\text.png" />
+    <Resource Include="Resources\Icon\to back.png" />
+    <Resource Include="Resources\Icon\to front.png" />
+    <Resource Include="Resources\Icon\union.png" />
+    <Resource Include="Resources\Icon\zoom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\stroke-dash.png" />
+    <Resource Include="Resources\Icon\stroke-solid.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

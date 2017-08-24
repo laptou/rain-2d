@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Ibinimator.Service
         public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
             ArtView = artView;
+            StrokeDashes = new ObservableCollection<float>(new float [] { 0, 0, 0, 0 });
 
             selectionManager.Updated += (sender, args) =>
             {
@@ -26,6 +28,7 @@ namespace Ibinimator.Service
                     Stroke = shape.StrokeBrush;
                     StrokeStyle = shape.StrokeStyle;
                     StrokeWidth = shape.StrokeWidth;
+                    StrokeDashes = new ObservableCollection<float>(shape.StrokeDashes);
                 }
                 selecting = false;
             };
@@ -61,6 +64,12 @@ namespace Ibinimator.Service
             set => Set(value);
         }
 
+        public ObservableCollection<float> StrokeDashes
+        {
+            get => Get<ObservableCollection<float>>();
+            private set => Set(value);
+        }
+
         #endregion
 
         private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
@@ -90,6 +99,11 @@ namespace Ibinimator.Service
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is Shape shape)
                             shape.StrokeWidth = StrokeWidth;
+                    break;
+                case nameof(StrokeDashes):
+                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                        if (layer is Shape shape)
+                            shape.StrokeDashes = new ObservableCollection<float>(StrokeDashes);
                     break;
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Ibinimator.Shared;
 using System.Linq;
@@ -7,6 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Model;
 using Ibinimator.Service;
+using SharpDX.Direct2D1;
+using Brush = System.Windows.Media.Brush;
+using DashStyle = SharpDX.Direct2D1.DashStyle;
 
 namespace Ibinimator.ViewModel
 {
@@ -170,6 +174,17 @@ namespace Ibinimator.ViewModel
                         case nameof(IBrushManager.StrokeWidth):
                             RaisePropertyChanged(nameof(StrokeWidth));
                             break;
+
+                        case nameof(IBrushManager.StrokeStyle):
+                            RaisePropertyChanged(nameof(StrokeStyle));
+                            RaisePropertyChanged(nameof(StrokeDash));
+                            RaisePropertyChanged(nameof(StrokeCap));
+                            RaisePropertyChanged(nameof(StrokeJoin));
+                            break;
+
+                        case nameof(IBrushManager.StrokeDashes):
+                            RaisePropertyChanged(nameof(StrokeDashes));
+                            break;
                     }
                 };
 
@@ -198,6 +213,51 @@ namespace Ibinimator.ViewModel
             {
                 get => _parent.BrushManager.StrokeWidth;
                 set => _parent.BrushManager.StrokeWidth = value;
+            }
+
+            public StrokeStyleProperties1 StrokeStyle
+            {
+                get => _parent.BrushManager.StrokeStyle;
+                set => _parent.BrushManager.StrokeStyle = value;
+            }
+
+            public ObservableCollection<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
+
+            public DashStyle StrokeDash
+            {
+                get => StrokeStyle.DashStyle;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.DashStyle = value;
+                    StrokeStyle = ss;
+                }
+            }
+
+            public CapStyle StrokeCap
+            {
+                get => StrokeStyle.StartCap;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.StartCap = value;
+                    ss.EndCap = value;
+                    ss.DashCap = value;
+                    StrokeStyle = ss;
+                }
+            }
+
+            public LineJoin StrokeJoin
+            {
+                get => StrokeStyle.LineJoin;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.LineJoin = value;
+                    if (value == LineJoin.Miter)
+                        ss.MiterLimit = StrokeWidth;
+                    StrokeStyle = ss;
+                }
             }
 
             private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)

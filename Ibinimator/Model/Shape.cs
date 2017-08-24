@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,8 +38,8 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            element.Add(new XAttribute("cx", X + RadiusX));
-            element.Add(new XAttribute("cy", Y + RadiusY));
+            element.Add(new XAttribute("cx", RadiusX));
+            element.Add(new XAttribute("cy", RadiusY));
             element.Add(new XAttribute("rx", RadiusX));
             element.Add(new XAttribute("ry", RadiusY));
 
@@ -90,8 +91,8 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            element.Add(new XAttribute("x", X));
-            element.Add(new XAttribute("y", Y));
+            element.Add(new XAttribute("x", 0));
+            element.Add(new XAttribute("y", 0));
             element.Add(new XAttribute("width", Width));
             element.Add(new XAttribute("height", Height));
 
@@ -113,6 +114,7 @@ namespace Ibinimator.Model
     {
         protected Shape()
         {
+            StrokeDashes = new ObservableCollection<float>(new float[] { 0, 0, 0, 0 });
             StrokeStyle = new StrokeStyleProperties1
             {
                 TransformType = StrokeTransformType.Fixed
@@ -132,6 +134,12 @@ namespace Ibinimator.Model
         public BrushInfo StrokeBrush
         {
             get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public ObservableCollection<float> StrokeDashes
+        {
+            get => Get<ObservableCollection<float>>();
             set => Set(value);
         }
 
@@ -156,8 +164,11 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            element.Add(new XAttribute("fill", FillBrush.GetReference()));
-            element.Add(new XAttribute("stroke", StrokeBrush.GetReference()));
+            if (FillBrush != null)
+                element.Add(new XAttribute("fill", FillBrush.GetReference()));
+            if (StrokeBrush != null)
+                element.Add(new XAttribute("stroke", StrokeBrush.GetReference()));
+
             element.Add(new XAttribute("stroke-width", StrokeWidth));
 
             return element;

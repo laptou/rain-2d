@@ -92,8 +92,8 @@ namespace Ibinimator.Service
             {
                 using (var fs = File.Open(doc.Path, FileMode.Create))
                 {
-                    Serializer.Serialize(fs, doc);
                     var xdoc = SvgSerializer.SerializeDocument(doc);
+                    xdoc.Save(fs);
                 }
             });
         }

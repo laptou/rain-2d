@@ -16,7 +16,7 @@ using UserControl = System.Windows.Controls.UserControl;
 
 namespace Ibinimator.View.Control
 {
-    public partial class HslWheel : UserControl, INotifyPropertyChanged
+    public partial class HslWheel : INotifyPropertyChanged
     {
         public static readonly DependencyProperty ColorProperty =
             DependencyProperty.Register("Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color()));
@@ -73,23 +73,40 @@ namespace Ibinimator.View.Control
         public double Hue
         {
             get => (double) GetValue(HueProperty);
-            set => SetValue(HueProperty, (value + 360) % 360);
+            set
+            {
+                SetValue(HueProperty, (value + 360) % 360);
+                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
+                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
+                SetValue(SaturationProperty, hsl.s);
+                SetValue(LightnessProperty, hsl.l);
+            }
         }
 
         public double Lightness
         {
             get => (double) GetValue(LightnessProperty);
-            set => SetValue(LightnessProperty, value);
+            set
+            {
+                SetValue(LightnessProperty, value);
+                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
+                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
+                SetValue(HueProperty, hsl.l);
+                SetValue(SaturationProperty, hsl.s);
+            }
         }
 
         public double Saturation
         {
             get => (double) GetValue(SaturationProperty);
-            set => SetValue(SaturationProperty,
-                MathUtils.Clamp(
-                    0,
-                    1 - Math.Abs(0.5 - Lightness) * 2,
-                    value));
+            set
+            {
+                SetValue(SaturationProperty, value);
+                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
+                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
+                SetValue(HueProperty, hsl.l);
+                SetValue(LightnessProperty, hsl.s);
+            }
         }
 
         #region INotifyPropertyChanged Members
@@ -185,14 +202,14 @@ namespace Ibinimator.View.Control
 
                 if (e.Property == HueProperty)
                     hslWheel.UpdateTriangle();
-
-                if (e.Property == LightnessProperty)
-                    hslWheel.Saturation = hslWheel.Saturation;
             }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            if (PresentationSource.FromVisual(this) == null)
+                return;
+
             var pt = PointToScreen(new Point());
             var screen = Screen.FromPoint(new System.Drawing.Point((int) pt.X, (int) pt.Y));
             var dpi = screen.GetDpiForMonitor(DpiType.Effective);

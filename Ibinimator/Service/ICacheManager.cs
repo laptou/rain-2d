@@ -26,5 +26,6 @@ namespace Ibinimator.Service
         void ResetAll();
         void ResetLayerCache();
         void UpdateLayer(Layer layer, string property);
+        void BindRoot(Layer root);
     }
 }

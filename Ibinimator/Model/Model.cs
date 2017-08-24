@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,6 +14,7 @@ namespace Ibinimator.Model
         INotifyPropertyChanging
     {
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
+        private Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
 
         #region INotifyPropertyChanged Members
 
@@ -94,6 +96,21 @@ namespace Ibinimator.Model
         {
             if (Equals(Get<T>(propertyName), value)) return;
 
+            if (value is INotifyCollectionChanged collection)
+            {
+                var old = Get<INotifyCollectionChanged>(propertyName);
+
+                if (old != null && _handlers.ContainsKey(propertyName))
+                    old.CollectionChanged -= (NotifyCollectionChangedEventHandler)_handlers[propertyName];
+
+                _handlers[propertyName] = new NotifyCollectionChangedEventHandler((s, e) =>
+                {
+                    RaisePropertyChanged(propertyName);
+                });
+
+                collection.CollectionChanged += (NotifyCollectionChangedEventHandler)_handlers[propertyName];
+            }
+
             RaisePropertyChanging(propertyName);
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
@@ -120,5 +137,6 @@ namespace Ibinimator.Model
 
             RaisePropertyChanged(propertyName);
         }
+
     }
 }

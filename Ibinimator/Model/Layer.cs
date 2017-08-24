@@ -17,7 +17,7 @@ namespace Ibinimator.Model
     {
         public override string DefaultName => "Group";
 
-        public ObservableCollection<Layer> SubLayers { get; set; } = new ObservableCollection<Layer>();
+        public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
 
         protected override string ElementName => "g";
 
@@ -46,7 +46,7 @@ namespace Ibinimator.Model
         {
             if (id == Id) return this;
 
-            var subLayer = SubLayers.FirstOrDefault(layer => layer.Id == Id);
+            var subLayer = SubLayers.FirstOrDefault(layer => layer.Id == id);
 
             if (subLayer != null) return subLayer;
 
@@ -99,7 +99,7 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            foreach (var layer in SubLayers)
+            foreach (var layer in SubLayers.Reverse())
                 element.Add(layer.GetElement());
 
             return element;
@@ -375,7 +375,7 @@ namespace Ibinimator.Model
 
         public override XElement GetElement()
         {
-            var element = new XElement(ElementName);
+            var element = new XElement(XNamespace.Get("http://www.w3.org/2000/svg") + ElementName);
 
             if (Name != null)
                 element.Add(new XAttribute("id", Name));

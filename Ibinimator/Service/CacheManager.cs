@@ -79,15 +79,27 @@ namespace Ibinimator.Service
                 if (shape.StrokeBrush != null)
                     lock (_strokes)
                     {
-                        _strokes[shape] = (
-                            BindBrush(shape, shape.StrokeBrush),
-                            shape.StrokeWidth,
-                            new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), shape.StrokeStyle)
-                            );
+                        if(shape.StrokeStyle.DashStyle == DashStyle.Custom)
+                            _strokes[shape] = 
+                                (
+                                    BindBrush(shape, shape.StrokeBrush),
+                                    shape.StrokeWidth,
+                                    new StrokeStyle1(
+                                        target.Factory.QueryInterface<Factory1>(), 
+                                        shape.StrokeStyle, 
+                                        shape.StrokeDashes.ToArray()
+                                ));
+                        else
+                            _strokes[shape] =
+                                (
+                                BindBrush(shape, shape.StrokeBrush),
+                                shape.StrokeWidth,
+                                new StrokeStyle1(
+                                    target.Factory.QueryInterface<Factory1>(),
+                                    shape.StrokeStyle
+                                ));
                     }
             }
-
-            layer.PropertyChanged += OnLayerPropertyChanged;
 
             if (layer is Group group)
             {
@@ -98,6 +110,13 @@ namespace Ibinimator.Service
                     (sender, layer1) =>
                         BindLayer(layer1);
             }
+        }
+
+        public void BindRoot(Layer root)
+        {
+            root.PropertyChanged -= OnLayerPropertyChanged;
+            root.PropertyChanged += OnLayerPropertyChanged;
+            BindLayer(root);
         }
 
         public Bitmap GetBitmap(string key)
@@ -397,15 +416,28 @@ namespace Ibinimator.Service
                     break;
 
                 case nameof(Shape.StrokeStyle):
+                case nameof(Shape.StrokeDashes):
                     lock (_strokes)
                     {
                         var stroke = _strokes.TryGet(shape);
-                        stroke.style.Dispose();
-                        stroke.style = new StrokeStyle1(ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
-                            shape.StrokeStyle);
+                        stroke.style?.Dispose();
+
+                        if(shape.StrokeStyle.DashStyle == DashStyle.Custom)
+                            stroke.style = 
+                                new StrokeStyle1(
+                                    ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                                    shape.StrokeStyle,
+                                    shape.StrokeDashes.ToArray());
+                        else
+                            stroke.style =
+                                new StrokeStyle1(
+                                    ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                                    shape.StrokeStyle);
+
                         _strokes[shape] = stroke;
                     }
                     break;
+
                 case nameof(Layer.Transform):
                     _bounds[layer] = layer.GetAbsoluteBounds();
                     break;

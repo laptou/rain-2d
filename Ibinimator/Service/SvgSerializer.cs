@@ -17,8 +17,12 @@ namespace Ibinimator.Service
     {
         public static XDocument SerializeDocument(Document doc)
         {
-            var root = new XElement("svg");
-            var defs = new XElement("defs");
+            var ns = XNamespace.Get("http://www.w3.org/2000/svg");
+            var root = new XElement(ns + "svg");
+
+            root.Add(new XAttribute("version", "2.0"));
+
+            var defs = new XElement(ns + "defs");
 
             foreach (var brush in doc.Swatches)
                 defs.Add(brush.GetElement());

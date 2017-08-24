@@ -19,8 +19,8 @@ namespace Ibinimator.Service
             {
                 var sfd = new SaveFileDialog
                 {
-                    DefaultExt = ".iba",
-                    Filter = "Ibinimation Project|.iba"
+                    DefaultExt = ".svg",
+                    Filter = "SVG file|.svg"
                 };
 
                 await App.Dispatcher.InvokeAsync(() => sfd.ShowDialog());

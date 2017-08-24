@@ -28,7 +28,7 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Path";
 
-        public override string ElementName => "path";
+        protected override string ElementName => "path";
 
         public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
 
@@ -64,12 +64,15 @@ namespace Ibinimator.Model
                     {
                         case BezierNode bn:
                             pathData +=
-                                $"C {bn.Control1.X},{bn.Control1.Y} {bn.Control2.X},{bn.Control2.Y} {bn.X},{bn.Y}";
+                                $" C {bn.Control1.X},{bn.Control1.Y} {bn.Control2.X},{bn.Control2.Y} {bn.X},{bn.Y}";
                             break;
                         case PathNode pn:
-                            pathData += $"L {pn.X},{pn.Y}";
+                            pathData += $" L {pn.X},{pn.Y}";
                             break;
                     }
+
+                if (Closed)
+                    pathData += " Z";
 
                 element.Add(new XAttribute("d", pathData));
             }

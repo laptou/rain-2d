@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
@@ -13,5 +14,6 @@ namespace Ibinimator.Service
         BrushInfo Stroke { get; set; }
         StrokeStyleProperties1 StrokeStyle { get; set; }
         float StrokeWidth { get; set; }
+        ObservableCollection<float> StrokeDashes { get; }
     }
 }
