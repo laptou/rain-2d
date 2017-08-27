@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ibinimator.View;
 using SharpDX;
+using SharpDX.Direct2D1;
+using Ellipse = Ibinimator.Model.Ellipse;
 using Group = Ibinimator.Model.Group;
+using Layer = Ibinimator.Model.Layer;
 using Path = Ibinimator.Model.Path;
 using Rectangle = Ibinimator.Model.Rectangle;
 
@@ -23,7 +26,9 @@ namespace Ibinimator.Service
 
     public static class SvgNames
     {
-        public static readonly XNamespace Namespace = XNamespace.Get("http://www.w3.org/2000/svg");
+        public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
+        public static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
+
         public static readonly XName Svg = Namespace + "svg";
         public static readonly XName Defs = Namespace + "defs";
         public static readonly XName Rect = Namespace + "rect";
@@ -38,13 +43,14 @@ namespace Ibinimator.Service
         public static readonly XName SolidColor = Namespace + "solidColor";
         public static readonly XName LinearGradient = Namespace + "linearGradient";
         public static readonly XName RadialGradient = Namespace + "radialGradient";
+        public static readonly XName Stop = Namespace + "stop";
     }
 
     public static class SvgSerializer
     {
         public static Document DeserializeDocument(XDocument xdoc)
         {
-            return Parse<Document>(xdoc.Root);
+            return Parse<Document>(xdoc.Root, null, xdoc.Root);
         }
 
         public static XDocument SerializeDocument(Document doc)
@@ -122,35 +128,42 @@ namespace Ibinimator.Service
             return values;
         }
 
-        private static T Parse<T>(XElement element) where T : class
+        private static T Parse<T>(XElement element, Document doc, XContainer root) where T : class
         {
-            if (element.Attribute("style") != null)
+            var style = element.Attribute("style")?.Value;
+            if (style != null)
             {
-                var style = element.Attribute("style").Value;
                 var rules =
-                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.]+);?")
+                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.,]+);?")
                     select (name: match.Groups[1].Value, value: match.Groups[2].Value);
 
                 foreach (var rule in rules)
                     element.SetAttributeValue(rule.name, rule.value);
             }
 
+            var href = element.Attribute(SvgNames.XLink + "href")?.Value;
+            
             if (element.Name == SvgNames.Svg)
             {
                 var document = new Document();
-                var defs = Parse<object[]>(element.Element(SvgNames.Defs));
+                var defs = Parse<object[]>(element.Element(SvgNames.Defs), document, root);
 
-                //document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
+                document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
                 document.Root = new Group();
 
                 foreach (var layerElement in
                     element.Elements().Where(xe => SvgNames.Visuals.Contains(xe.Name)))
-                    document.Root.Add(Parse<Layer>(layerElement));
+                    document.Root.Add(Parse<Layer>(layerElement, document, root));
 
                 return document as T;
             }
 
             #region Defs
+
+            if (element.Name == SvgNames.Defs)
+            {
+                return element.Elements().Select(def => Parse<object>(def, doc, root)).ToArray() as T;
+            }
 
             if (element.Name == SvgNames.SolidColor)
             {
@@ -166,13 +179,32 @@ namespace Ibinimator.Service
             if (element.Name == SvgNames.LinearGradient || element.Name == SvgNames.RadialGradient)
             {
                 var info = new GradientBrushInfo();
+
+                if (href != null)
+                    info = Resolve(root, href) as GradientBrushInfo ?? info;
+
                 info.Name = element.Attribute("id")?.Value;
+
+                info.StartPoint = new Vector2(ReadFloat(element, "x1"), ReadFloat(element, "y1"));
+                info.EndPoint = new Vector2(ReadFloat(element, "x2"), ReadFloat(element, "y2"));
 
                 if (element.Attribute("opacity") != null)
                     info.Opacity = ReadFloat(element, "opacity");
 
+                foreach (var stop in element.Elements(SvgNames.Stop))
+                    info.Stops.Add((GradientStop)Parse<object>(stop, doc, root));
 
                 return info as T;
+            }
+
+            if (element.Name == SvgNames.Stop)
+            {
+                var stop = new GradientStop();
+                var color = ReadColor(element, "stop-color");
+                color.Alpha = ReadFloat(element, "stop-opacity", 1);
+                stop.Color = color;
+                stop.Position = ReadFloat(element, "offset", 1);
+                return stop as T;
             }
 
             #endregion
@@ -247,7 +279,7 @@ namespace Ibinimator.Service
                     var group = new Group();
 
                     foreach (var layerElement in element.Elements())
-                        group.Add(Parse<Layer>(layerElement));
+                        group.Add(Parse<Layer>(layerElement, doc, root));
 
                     layer = group;
                 }
@@ -258,16 +290,91 @@ namespace Ibinimator.Service
 
                 if (layer is Shape shape)
                 {
-                    var fillValue = element.Attribute("fill")?.Value ?? "";
+                    var fillValue = element.Attribute("fill")?.Value;
 
-                    if (fillValue.StartsWith("url"))
-                        throw new NotImplementedException();
-
-                    shape.FillBrush = new SolidColorBrushInfo
+                    if (!string.IsNullOrWhiteSpace(fillValue))
                     {
-                        Color = ReadColor(element, "fill"),
-                        Opacity = ReadFloat(element, "fill-opacity", 1)
-                    };
+                        if (fillValue.StartsWith("url"))
+                        {
+                            var id = fillValue.Replace("url(#", "").Replace(")", "");
+                            shape.FillBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
+                        }
+                        else
+                        {
+                            shape.FillBrush = new SolidColorBrushInfo
+                            {
+                                Color = ReadColor(element, "fill"),
+                                Opacity = ReadFloat(element, "fill-opacity", 1)
+                            };
+                        }
+                    }
+
+                    var strokeValue = element.Attribute("stroke")?.Value;
+
+                    if (!string.IsNullOrWhiteSpace(strokeValue))
+                    {
+                        if (strokeValue.StartsWith("url"))
+                        {
+                            var id = strokeValue.Replace("url(#", "").Replace(")", "");
+                            shape.StrokeBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
+                        }
+                        else
+                        {
+                            shape.StrokeBrush = new SolidColorBrushInfo
+                            {
+                                Color = ReadColor(element, "stroke"),
+                                Opacity = ReadFloat(element, "stroke-opacity", 1)
+                            };
+                        }
+                    }
+
+                    shape.StrokeWidth = ReadFloat(element, "stroke-width");
+
+                    var strokeStyle = new StrokeStyleProperties1();
+
+                    if (element.Attribute("stroke-dasharray") != null)
+                    {
+                        strokeStyle.DashStyle = DashStyle.Custom;
+                        shape.StrokeDashes =
+                            new ObservableCollection<float>(
+                                ReadFloats(element, "stroke-dasharray")
+                                    .Select(f => f / Math.Max(shape.StrokeWidth, 1e-10f)));
+                    }
+
+                    switch ((string)element.Attribute("stroke-linejoin"))
+                    {
+                        case "miter":
+                            strokeStyle.LineJoin = LineJoin.Miter;
+                            break;
+                        case "bevel":
+                            strokeStyle.LineJoin = LineJoin.Bevel;
+                            break;
+                        case "round":
+                            strokeStyle.LineJoin = LineJoin.Round;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    switch ((string)element.Attribute("stroke-linecap"))
+                    {
+                        case "butt":
+                            strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Flat;
+                            break;
+                        case "square":
+                            strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Square;
+                            break;
+                        case "round":
+                            strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Round;
+                            break;
+                        case "triangle":
+                            strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Triangle;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    shape.StrokeStyle = strokeStyle;
                 }
 
                 layer.Name = element.Attribute("id")?.Value;
@@ -276,8 +383,6 @@ namespace Ibinimator.Service
 
                 if (transform != null)
                 {
-                    var transformValues = Extract(transform);
-
                     if (transform.StartsWith("rotate"))
                         layer.Rotation = ReadFloat(element, "transform");
 
@@ -316,6 +421,26 @@ namespace Ibinimator.Service
             return null;
         }
 
+        private static object Resolve(XContainer doc, string iri)
+        {
+            var parts = iri.Split(new [] {'#'}, StringSplitOptions.RemoveEmptyEntries);
+            var name = parts.LastOrDefault();
+
+            if (name == null) return null;
+
+            if (parts.Length == 2)
+                return 
+                    Resolve(
+                        XDocument.Load(
+                            File.Open(parts[0], FileMode.Open, FileAccess.Read)), "#" + parts[1]);
+
+            var element = 
+                doc.Descendants()
+                    .FirstOrDefault(x => (string) x.Attribute("id") == name);
+
+            return element == null ? null : Parse<object>(element, null, doc);
+        }
+
         private static Color4 ReadColor(XElement element, string attr)
         {
             var value = element.Attribute(attr)?.Value ?? "";
@@ -345,9 +470,16 @@ namespace Ibinimator.Service
 
             if (input == null) return defaultValue;
 
-            var value = Extract(input);
+            var value = Extract(input, UnitType.None, 1);
 
-            return value.Length > 1 ? value[0] : defaultValue;
+            return value.Length > 0 ? value[0] : defaultValue;
+        }
+
+        private static float[] ReadFloats(XElement element, string attr)
+        {
+            var input = element.Attribute(attr)?.Value;
+
+            return input == null ? new float[0] : Extract(input, UnitType.None, 1);
         }
 
         private static Matrix3x2 ReadMatrix(XElement element, string attr)
@@ -378,7 +510,7 @@ namespace Ibinimator.Service
             var nodes = new List<PathNode>();
 
             var commands = Regex.Matches(data ?? "",
-                @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*))*");
+                @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))*");
             var (start, pos, control, control2) = (Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero);
             var lastInstruction = PathDataInstruction.Close;
 
