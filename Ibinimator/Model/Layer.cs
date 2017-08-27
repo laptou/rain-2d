@@ -381,6 +381,10 @@ namespace Ibinimator.Model
                 element.Add(new XAttribute("id", Name));
 
             element.Add(new XAttribute("opacity", Opacity));
+
+            // extract transform w/o scale
+            // in SVG, transform is also applied to stroke
+            // which is unnacceptable
             element.Add(new XAttribute("transform", Transform.ToCss()));
 
             return element;

@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 using Layer = Ibinimator.Model.Layer;
@@ -12,7 +13,7 @@ namespace Ibinimator.Service
     public interface ISelectionManager : IArtViewManager, INotifyPropertyChanged
     {
         Bitmap Cursor { get; set; }
-        Layer Root { get; }
+        Group Root { get; }
         IList<Layer> Selection { get; }
         RectangleF SelectionBounds { get; }
         float SelectionRotation { get; }

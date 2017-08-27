@@ -91,11 +91,11 @@ namespace Ibinimator.Model
 
         public string Type => System.IO.Path.GetExtension(Path);
 
-        public static event PropertyChangedEventHandler Updated;
+        public event PropertyChangedEventHandler Updated;
 
         private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Updated?.Invoke(Root, e);
+            Updated?.Invoke(sender, e);
         }
     }
 }

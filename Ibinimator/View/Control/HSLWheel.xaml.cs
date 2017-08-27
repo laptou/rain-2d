@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace Ibinimator.View.Control
 {

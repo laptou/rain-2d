@@ -209,31 +209,6 @@ namespace Ibinimator.ViewModel
 
             public Brush StrokeBrush => _parent.BrushManager.Stroke?.ToWpf();
 
-            public float StrokeWidth
-            {
-                get => _parent.BrushManager.StrokeWidth;
-                set => _parent.BrushManager.StrokeWidth = value;
-            }
-
-            public StrokeStyleProperties1 StrokeStyle
-            {
-                get => _parent.BrushManager.StrokeStyle;
-                set => _parent.BrushManager.StrokeStyle = value;
-            }
-
-            public ObservableCollection<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
-
-            public DashStyle StrokeDash
-            {
-                get => StrokeStyle.DashStyle;
-                set
-                {
-                    var ss = StrokeStyle;
-                    ss.DashStyle = value;
-                    StrokeStyle = ss;
-                }
-            }
-
             public CapStyle StrokeCap
             {
                 get => StrokeStyle.StartCap;
@@ -247,6 +222,19 @@ namespace Ibinimator.ViewModel
                 }
             }
 
+            public DashStyle StrokeDash
+            {
+                get => StrokeStyle.DashStyle;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.DashStyle = value;
+                    StrokeStyle = ss;
+                }
+            }
+
+            public ObservableCollection<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
+
             public LineJoin StrokeJoin
             {
                 get => StrokeStyle.LineJoin;
@@ -258,6 +246,18 @@ namespace Ibinimator.ViewModel
                         ss.MiterLimit = StrokeWidth;
                     StrokeStyle = ss;
                 }
+            }
+
+            public StrokeStyleProperties1 StrokeStyle
+            {
+                get => _parent.BrushManager.StrokeStyle;
+                set => _parent.BrushManager.StrokeStyle = value;
+            }
+
+            public float StrokeWidth
+            {
+                get => _parent.BrushManager.StrokeWidth;
+                set => _parent.BrushManager.StrokeWidth = value;
             }
 
             private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)

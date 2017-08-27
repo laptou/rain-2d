@@ -17,7 +17,7 @@ namespace Ibinimator.Service
         public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
             ArtView = artView;
-            StrokeDashes = new ObservableCollection<float>(new float [] { 0, 0, 0, 0 });
+            StrokeDashes = new ObservableCollection<float>(new float[] {0, 0, 0, 0});
 
             selectionManager.Updated += (sender, args) =>
             {
@@ -52,6 +52,12 @@ namespace Ibinimator.Service
             set => Set(value);
         }
 
+        public ObservableCollection<float> StrokeDashes
+        {
+            get => Get<ObservableCollection<float>>();
+            private set => Set(value);
+        }
+
         public StrokeStyleProperties1 StrokeStyle
         {
             get => Get<StrokeStyleProperties1>();
@@ -62,12 +68,6 @@ namespace Ibinimator.Service
         {
             get => Get<float>();
             set => Set(value);
-        }
-
-        public ObservableCollection<float> StrokeDashes
-        {
-            get => Get<ObservableCollection<float>>();
-            private set => Set(value);
         }
 
         #endregion

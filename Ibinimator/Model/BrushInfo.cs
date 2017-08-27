@@ -40,7 +40,7 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        public float Opacity
+        public virtual float Opacity
         {
             get => Get<float>();
             set => Set(value);
@@ -87,9 +87,7 @@ namespace Ibinimator.Model
             var element = new XElement(ElementName);
 
             if (Name != null)
-                element.Add(new XAttribute("id", Name));
-
-            element.Add(new XAttribute("opacity", Opacity));
+                element.SetAttributeValue("id", Name);
 
             return element;
         }
@@ -101,7 +99,22 @@ namespace Ibinimator.Model
         public Color4 Color
         {
             get => Get<Color4>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(Opacity));
+            }
+        }
+
+        public override float Opacity
+        {
+            get => Color.Alpha;
+            set
+            {
+                var color = Color;
+                color.Alpha = value;
+                Color = color;
+            }
         }
 
         protected override string ElementName => "solidColor";
@@ -109,8 +122,8 @@ namespace Ibinimator.Model
         public override XElement GetElement()
         {
             var def = new XElement("solidColor");
-            def.Add(new XAttribute("solid-color", Color.ToCss()));
-            def.Add(new XAttribute("solid-opacity", Color.Alpha));
+            def.SetAttributeValue("solid-color", Color.ToCss());
+            def.SetAttributeValue("solid-opacity", Opacity);
             return def;
         }
 
@@ -187,18 +200,18 @@ namespace Ibinimator.Model
             switch (GradientType)
             {
                 case GradientBrushType.Linear:
-                    def.Add(new XAttribute("x1", StartPoint.X));
-                    def.Add(new XAttribute("y1", StartPoint.Y));
-                    def.Add(new XAttribute("x2", EndPoint.X));
-                    def.Add(new XAttribute("y2", EndPoint.Y));
+                    def.SetAttributeValue("x1", StartPoint.X);
+                    def.SetAttributeValue("y1", StartPoint.Y);
+                    def.SetAttributeValue("x2", EndPoint.X);
+                    def.SetAttributeValue("y2", EndPoint.Y);
                     break;
                 case GradientBrushType.Radial:
                     def = new XElement("radialGradient");
-                    def.Add(new XAttribute("cx", StartPoint.X));
-                    def.Add(new XAttribute("cy", StartPoint.Y));
-                    def.Add(new XAttribute("r", Vector2.Distance(StartPoint, EndPoint)));
-                    def.Add(new XAttribute("fx", Focus.X));
-                    def.Add(new XAttribute("fy", Focus.Y));
+                    def.SetAttributeValue("cx", StartPoint.X);
+                    def.SetAttributeValue("cy", StartPoint.Y);
+                    def.SetAttributeValue("r", Vector2.Distance(StartPoint, EndPoint));
+                    def.SetAttributeValue("fx", Focus.X);
+                    def.SetAttributeValue("fy", Focus.Y);
                     break;
             }
 
@@ -210,22 +223,24 @@ namespace Ibinimator.Model
                         new XAttribute("stop-opacity", stop.Color.A)
                     ));
 
-            def.Add(new XAttribute("gradientTransform", Transform.ToCss()));
+            def.SetAttributeValue("gradientTransform", Transform.ToCss());
 
             switch (ExtendMode)
             {
                 case ExtendMode.Clamp:
-                    def.Add(new XAttribute("spreadMethod", "pad"));
+                    def.SetAttributeValue("spreadMethod", "pad");
                     break;
                 case ExtendMode.Wrap:
-                    def.Add(new XAttribute("spreadMethod", "repeat"));
+                    def.SetAttributeValue("spreadMethod", "repeat");
                     break;
                 case ExtendMode.Mirror:
-                    def.Add(new XAttribute("spreadMethod", "reflect"));
+                    def.SetAttributeValue("spreadMethod", "reflect");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            def.SetAttributeValue("opacity", Opacity);
 
             return def;
         }

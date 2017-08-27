@@ -107,12 +107,12 @@ namespace Ibinimator.ViewModel
             set
             {
                 if (ViewManager != null)
-                    ViewManager.LayerUpdated -= LayerUpdated;
+                    ViewManager.DocumentUpdated -= LayerUpdated;
 
                 Set(value);
 
                 if (ViewManager != null)
-                    ViewManager.LayerUpdated += LayerUpdated;
+                    ViewManager.DocumentUpdated += LayerUpdated;
             }
         }
 

@@ -18,15 +18,23 @@ namespace Ibinimator.Service
             Zoom = 1;
         }
 
-        public Document Document
-        {
-            get => Get<Document>();
-            set => Set(value);
-        }
-
         #region IViewManager Members
 
         public ArtView ArtView { get; }
+
+        public Document Document
+        {
+            get => Get<Document>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(Root));
+                value.Updated -= OnDocumentUpdated;
+                value.Updated += OnDocumentUpdated;
+            }
+        }
+
+        public event PropertyChangedEventHandler DocumentUpdated;
 
         public Vector2 FromArtSpace(Vector2 v)
         {
@@ -42,8 +50,6 @@ namespace Ibinimator.Service
             v.Location -= Pan;
             return v;
         }
-
-        public event PropertyChangedEventHandler LayerUpdated;
 
         public Vector2 Pan
         {
@@ -94,9 +100,9 @@ namespace Ibinimator.Service
 
         #endregion
 
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
-            LayerUpdated?.Invoke(sender, propertyChangedEventArgs);
+            DocumentUpdated?.Invoke(sender, e);
         }
 
         private void Update()

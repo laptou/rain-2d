@@ -64,7 +64,7 @@ namespace Ibinimator.View.Control
                     CacheManager.LoadBitmaps(RenderTarget);
 
                     if (ViewManager?.Root != null)
-                        CacheManager.BindRoot(ViewManager.Root);
+                        CacheManager.Bind(ViewManager.Document);
                 }
             }
 
@@ -80,10 +80,11 @@ namespace Ibinimator.View.Control
             if (interfaces.Contains(typeof(IViewManager)))
             {
                 ViewManager = (IViewManager) manager;
+                ViewManager.DocumentUpdated += (s, e) => CacheManager?.Bind(ViewManager.Document);
 
                 CacheManager?.ResetLayerCache();
                 if (ViewManager?.Root != null)
-                    CacheManager?.BindRoot(ViewManager.Root);
+                    CacheManager?.Bind(ViewManager.Document);
             }
 
             InvalidateSurface();
@@ -196,7 +197,7 @@ namespace Ibinimator.View.Control
             CacheManager?.LoadBitmaps(target);
 
             if (ViewManager?.Root != null)
-                CacheManager?.BindRoot(ViewManager.Root);
+                CacheManager?.Bind(ViewManager.Document);
         }
 
         protected override void Render(RenderTarget target)

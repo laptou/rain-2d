@@ -13,8 +13,8 @@ namespace Ibinimator.Model
     public abstract class Model : INotifyPropertyChanged,
         INotifyPropertyChanging
     {
+        private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
-        private Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
 
         #region INotifyPropertyChanged Members
 
@@ -101,14 +101,12 @@ namespace Ibinimator.Model
                 var old = Get<INotifyCollectionChanged>(propertyName);
 
                 if (old != null && _handlers.ContainsKey(propertyName))
-                    old.CollectionChanged -= (NotifyCollectionChangedEventHandler)_handlers[propertyName];
+                    old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
-                _handlers[propertyName] = new NotifyCollectionChangedEventHandler((s, e) =>
-                {
-                    RaisePropertyChanged(propertyName);
-                });
+                _handlers[propertyName] =
+                    new NotifyCollectionChangedEventHandler((s, e) => { RaisePropertyChanged(propertyName); });
 
-                collection.CollectionChanged += (NotifyCollectionChangedEventHandler)_handlers[propertyName];
+                collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }
 
             RaisePropertyChanging(propertyName);
@@ -137,6 +135,5 @@ namespace Ibinimator.Model
 
             RaisePropertyChanged(propertyName);
         }
-
     }
 }

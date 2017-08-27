@@ -48,6 +48,13 @@ namespace Ibinimator.Service
 
         public ArtView ArtView { get; set; }
 
+        public void Bind(Document doc)
+        {
+            doc.Updated -= OnLayerPropertyChanged;
+            doc.Updated += OnLayerPropertyChanged;
+            BindLayer(doc.Root);
+        }
+
         public Brush BindBrush(Shape shape, BrushInfo brush)
         {
             if (brush == null) return null;
@@ -79,15 +86,15 @@ namespace Ibinimator.Service
                 if (shape.StrokeBrush != null)
                     lock (_strokes)
                     {
-                        if(shape.StrokeStyle.DashStyle == DashStyle.Custom)
-                            _strokes[shape] = 
+                        if (shape.StrokeStyle.DashStyle == DashStyle.Custom)
+                            _strokes[shape] =
                                 (
-                                    BindBrush(shape, shape.StrokeBrush),
-                                    shape.StrokeWidth,
-                                    new StrokeStyle1(
-                                        target.Factory.QueryInterface<Factory1>(), 
-                                        shape.StrokeStyle, 
-                                        shape.StrokeDashes.ToArray()
+                                BindBrush(shape, shape.StrokeBrush),
+                                shape.StrokeWidth,
+                                new StrokeStyle1(
+                                    target.Factory.QueryInterface<Factory1>(),
+                                    shape.StrokeStyle,
+                                    shape.StrokeDashes.ToArray()
                                 ));
                         else
                             _strokes[shape] =
@@ -110,13 +117,6 @@ namespace Ibinimator.Service
                     (sender, layer1) =>
                         BindLayer(layer1);
             }
-        }
-
-        public void BindRoot(Layer root)
-        {
-            root.PropertyChanged -= OnLayerPropertyChanged;
-            root.PropertyChanged += OnLayerPropertyChanged;
-            BindLayer(root);
         }
 
         public Bitmap GetBitmap(string key)
@@ -422,8 +422,8 @@ namespace Ibinimator.Service
                         var stroke = _strokes.TryGet(shape);
                         stroke.style?.Dispose();
 
-                        if(shape.StrokeStyle.DashStyle == DashStyle.Custom)
-                            stroke.style = 
+                        if (shape.StrokeStyle.DashStyle == DashStyle.Custom)
+                            stroke.style =
                                 new StrokeStyle1(
                                     ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
                                     shape.StrokeStyle,

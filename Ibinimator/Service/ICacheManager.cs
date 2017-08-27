@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
@@ -10,8 +9,9 @@ using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
-    public interface ICacheManager : IArtViewManager, INotifyPropertyChanged
+    public interface ICacheManager : IArtViewManager
     {
+        void Bind(Document root);
         Brush BindBrush(Shape shape, BrushInfo brush);
         void BindLayer(Layer layer);
 
@@ -26,6 +26,5 @@ namespace Ibinimator.Service
         void ResetAll();
         void ResetLayerCache();
         void UpdateLayer(Layer layer, string property);
-        void BindRoot(Layer root);
     }
 }

@@ -55,7 +55,7 @@ namespace Ibinimator.Service
                 Updated?.Invoke(this, null);
             };
 
-            viewManager.LayerUpdated += (sender, args) =>
+            viewManager.DocumentUpdated += (sender, args) =>
             {
                 var layer = (Layer) sender;
                 if (args.PropertyName == nameof(Layer.Selected))
@@ -183,9 +183,20 @@ namespace Ibinimator.Service
                 if (!_moved)
                 {
                     var hit =
-                        Root.Hit(
-                            ArtView.RenderTarget.Factory, pos,
-                            Matrix3x2.Identity, !modifiers.HasFlag(ModifierKeys.Alt));
+                        Selection
+                            .OfType<Group>()
+                            .Select(g =>
+                                g.Hit(
+                                    ArtView.RenderTarget.Factory,
+                                    pos, Matrix3x2.Identity,
+                                    false))
+                            .FirstOrDefault() ??
+                        Root.SubLayers.Select(
+                                l => l.Hit(
+                                    ArtView.RenderTarget.Factory,
+                                    pos, Matrix3x2.Identity,
+                                    !modifiers.HasFlag(ModifierKeys.Alt)))
+                            .FirstOrDefault();
 
                     if (!modifiers.HasFlag(ModifierKeys.Shift))
                         ClearSelection();
@@ -255,7 +266,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public Layer Root => ArtView.ViewManager.Root;
+        public Group Root => ArtView.ViewManager.Root;
         IList<Layer> ISelectionManager.Selection => Selection;
         public RectangleF SelectionBounds { get; set; }
         public float SelectionRotation { get; set; }

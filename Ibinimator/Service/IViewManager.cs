@@ -10,13 +10,14 @@ namespace Ibinimator.Service
 {
     public interface IViewManager : IArtViewManager, INotifyPropertyChanged
     {
+        Document Document { get; set; }
         Vector2 Pan { get; set; }
 
         Group Root { get; set; }
         Matrix3x2 Transform { get; }
         float Zoom { get; set; }
 
-        event PropertyChangedEventHandler LayerUpdated;
+        event PropertyChangedEventHandler DocumentUpdated;
         Vector2 FromArtSpace(Vector2 v);
         RectangleF FromArtSpace(RectangleF v);
 

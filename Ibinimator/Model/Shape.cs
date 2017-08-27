@@ -38,10 +38,10 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            element.Add(new XAttribute("cx", RadiusX));
-            element.Add(new XAttribute("cy", RadiusY));
-            element.Add(new XAttribute("rx", RadiusX));
-            element.Add(new XAttribute("ry", RadiusY));
+            element.SetAttributeValue("cx", RadiusX);
+            element.SetAttributeValue("cy", RadiusY);
+            element.SetAttributeValue("rx", RadiusX);
+            element.SetAttributeValue("ry", RadiusY);
 
             return element;
         }
@@ -91,10 +91,10 @@ namespace Ibinimator.Model
         {
             var element = base.GetElement();
 
-            element.Add(new XAttribute("x", 0));
-            element.Add(new XAttribute("y", 0));
-            element.Add(new XAttribute("width", Width));
-            element.Add(new XAttribute("height", Height));
+            element.SetAttributeValue("x", 0);
+            element.SetAttributeValue("y", 0);
+            element.SetAttributeValue("width", Width);
+            element.SetAttributeValue("height", Height);
 
             return element;
         }
@@ -114,7 +114,7 @@ namespace Ibinimator.Model
     {
         protected Shape()
         {
-            StrokeDashes = new ObservableCollection<float>(new float[] { 0, 0, 0, 0 });
+            StrokeDashes = new ObservableCollection<float>(new float[] {0, 0, 0, 0});
             StrokeStyle = new StrokeStyleProperties1
             {
                 TransformType = StrokeTransformType.Fixed
@@ -128,6 +128,16 @@ namespace Ibinimator.Model
         {
             get => Get<BrushInfo>();
             set => Set(value);
+        }
+
+        public FillMode FillMode
+        {
+            get => Get<FillMode>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("Geometry");
+            }
         }
 
         [XmlElement]
@@ -165,11 +175,59 @@ namespace Ibinimator.Model
             var element = base.GetElement();
 
             if (FillBrush != null)
-                element.Add(new XAttribute("fill", FillBrush.GetReference()));
+            {
+                element.SetAttributeValue("fill", FillBrush.GetReference());
+                element.SetAttributeValue("fill-opacity", FillBrush.Opacity);
+            }
             if (StrokeBrush != null)
-                element.Add(new XAttribute("stroke", StrokeBrush.GetReference()));
+            {
+                element.SetAttributeValue("stroke", StrokeBrush.GetReference());
+                element.SetAttributeValue("stroke-opacity", StrokeBrush.Opacity);
+            }
 
-            element.Add(new XAttribute("stroke-width", StrokeWidth));
+            element.SetAttributeValue("stroke-width", StrokeWidth);
+            element.SetAttributeValue("vector-effect", "non-scaling-stroke");
+
+            if (StrokeStyle.DashStyle != DashStyle.Solid)
+                element.SetAttributeValue(
+                    "stroke-dasharray",
+                    string.Join(
+                        ", ",
+                        StrokeDashes.Select(d => d * StrokeWidth)));
+
+            switch (StrokeStyle.LineJoin)
+            {
+                case LineJoin.Miter:
+                    element.SetAttributeValue("stroke-linejoin", "miter");
+                    break;
+                case LineJoin.Bevel:
+                    element.SetAttributeValue("stroke-linejoin", "bevel");
+                    break;
+                case LineJoin.Round:
+                    element.SetAttributeValue("stroke-linejoin", "round");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            switch (StrokeStyle.StartCap)
+            {
+                case CapStyle.Flat:
+                    element.SetAttributeValue("stroke-linecap", "butt");
+                    break;
+                case CapStyle.Square:
+                    element.SetAttributeValue("stroke-linecap", "square");
+                    break;
+                case CapStyle.Round:
+                    element.SetAttributeValue("stroke-linecap", "round");
+                    break;
+                case CapStyle.Triangle:
+                    // warning: not part of SVG standard
+                    element.SetAttributeValue("stroke-linecap", "triangle");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
 
             return element;
         }

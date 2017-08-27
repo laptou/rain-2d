@@ -12,8 +12,8 @@ namespace Ibinimator.Service
     {
         BrushInfo Fill { get; set; }
         BrushInfo Stroke { get; set; }
+        ObservableCollection<float> StrokeDashes { get; }
         StrokeStyleProperties1 StrokeStyle { get; set; }
         float StrokeWidth { get; set; }
-        ObservableCollection<float> StrokeDashes { get; }
     }
 }

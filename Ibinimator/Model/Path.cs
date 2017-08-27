@@ -22,15 +22,28 @@ namespace Ibinimator.Model
         [XmlAttribute]
         public bool Closed
         {
-            get => Get<bool>();
-            set => Set(value);
+            get => Nodes.LastOrDefault() is CloseNode;
+            set
+            {
+                if (Closed && !value)
+                {
+                    Nodes.RemoveAt(Nodes.Count - 1);
+                    RaisePropertyChanged(nameof(Closed));
+                }
+
+                if (!Closed && value)
+                {
+                    Nodes.Add(new CloseNode());
+                    RaisePropertyChanged(nameof(Closed));
+                }
+            }
         }
 
         public override string DefaultName => "Path";
 
-        protected override string ElementName => "path";
-
         public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
+
+        protected override string ElementName => "path";
 
         public override RectangleF GetBounds()
         {
@@ -42,6 +55,7 @@ namespace Ibinimator.Model
 
             Parallel.ForEach(Nodes, node =>
             {
+                if (node is CloseNode) return;
                 if (node.X < x1) x1 = node.X;
                 if (node.Y < y1) y1 = node.Y;
                 if (node.X > x2) x2 = node.X;
@@ -57,22 +71,38 @@ namespace Ibinimator.Model
 
             if (Nodes.Count > 0)
             {
-                var pathData = $"M {Nodes.First().X},{Nodes.First().Y}";
+                var begin = true;
+                var pathData = "";
 
-                foreach (var pathNode in Nodes.Skip(1))
+                foreach (var pathNode in Nodes)
+                {
+                    if (begin)
+                    {
+                        pathData += $" M {Nodes.First().X},{Nodes.First().Y}";
+                        begin = false;
+                        continue;
+                    }
+
                     switch (pathNode)
                     {
-                        case BezierNode bn:
-                            pathData +=
-                                $" C {bn.Control1.X},{bn.Control1.Y} {bn.Control2.X},{bn.Control2.Y} {bn.X},{bn.Y}";
+                        case CloseNode c:
+                            pathData += $" Z";
+                            begin = true;
+                            break;
+                        case QuadraticPathNode qn:
+                            pathData += $" Q {qn.Control.X},{qn.Control.Y}" +
+                                        $" {qn.X},{qn.Y}";
+                            break;
+                        case CubicPathNode cn:
+                            pathData += $" C {cn.Control1.X},{cn.Control1.Y}" +
+                                        $" {cn.Control2.X},{cn.Control2.Y}" +
+                                        $" {cn.X},{cn.Y}";
                             break;
                         case PathNode pn:
                             pathData += $" L {pn.X},{pn.Y}";
                             break;
                     }
-
-                if (Closed)
-                    pathData += " Z";
+                }
 
                 element.Add(new XAttribute("d", pathData));
             }
@@ -87,15 +117,29 @@ namespace Ibinimator.Model
 
             if (Nodes.Count > 0)
             {
-                gs.SetFillMode(FillMode.Winding);
+                gs.SetFillMode(FillMode);
 
-                gs.BeginFigure(Nodes[0].Position, FigureBegin.Filled);
+                var begin = true;
 
-                for (var i = 1; i < Nodes.Count; i++)
-                    switch (Nodes[i])
+                foreach (var node in Nodes)
+                {
+                    if (begin)
                     {
-                        case BezierNode bn:
-                            // var prevHandle = (Nodes[i - 1] as BezierNode)?.Control ?? Nodes[i - 1].Position;
+                        gs.BeginFigure(node.Position, FigureBegin.Filled);
+                        begin = false;
+                    }
+
+                    switch (node)
+                    {
+                        case QuadraticPathNode cn:
+                            gs.AddQuadraticBezier(new QuadraticBezierSegment
+                            {
+                                Point1 = cn.Control,
+                                Point2 = cn.Position
+                            });
+                            break;
+
+                        case CubicPathNode bn:
                             gs.AddBezier(new BezierSegment
                             {
                                 Point1 = bn.Control1,
@@ -104,12 +148,19 @@ namespace Ibinimator.Model
                             });
                             break;
 
+                        case CloseNode _:
+                            gs.EndFigure(FigureEnd.Closed);
+                            begin = true;
+                            break;
+
                         case PathNode pn:
                             gs.AddLine(pn.Position);
                             break;
                     }
+                }
 
-                gs.EndFigure(Closed ? FigureEnd.Closed : FigureEnd.Open);
+                if (!Closed)
+                    gs.EndFigure(FigureEnd.Open);
             }
 
             gs.Close();
@@ -119,7 +170,7 @@ namespace Ibinimator.Model
     }
 
     [Serializable]
-    public class BezierNode : PathNode
+    public class CubicPathNode : PathNode
     {
         public Vector2 Control1
         {
@@ -132,6 +183,20 @@ namespace Ibinimator.Model
             get => Get<Vector2>();
             set => Set(value);
         }
+    }
+
+    [Serializable]
+    public class QuadraticPathNode : PathNode
+    {
+        public Vector2 Control
+        {
+            get => Get<Vector2>();
+            set => Set(value);
+        }
+    }
+
+    public class CloseNode : PathNode
+    {
     }
 
     [Serializable]

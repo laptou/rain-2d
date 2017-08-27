@@ -165,6 +165,9 @@ namespace Ibinimator.Test
 
             m = Matrix3x2.Scaling(2, -1);
             Verify(m);
+
+            m = Matrix3x2.Skew(45, 0);
+            Verify(m);
         }
 
         private void AreEqual(Vector2 expected, Vector2 actual, float delta)

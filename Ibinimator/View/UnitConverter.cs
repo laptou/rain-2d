@@ -12,6 +12,21 @@ namespace Ibinimator.View
 {
     public class UnitConverter : DependencyObject, IValueConverter
     {
+        private static readonly Dictionary<Unit, float> Factors = new Dictionary<Unit, float>
+        {
+            [Unit.Radians] = 1f,
+            [Unit.Degrees] = 360f / MathUtils.TwoPi,
+            [Unit.Pixels] = 1f,
+            [Unit.Points] = 96f / 72f,
+            [Unit.Inches] = 96f,
+            [Unit.Centimeters] = 96f / 2.54f,
+            [Unit.Millimeters] = 96f / 25.4f,
+            [Unit.Milliseconds] = 0.001f,
+            [Unit.Seconds] = 1,
+            [Unit.Minutes] = 60,
+            [Unit.Hours] = 3600
+        };
+
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SourceUnitProperty =
             DependencyProperty.Register("SourceUnit", typeof(Unit), typeof(UnitConverter),
@@ -61,18 +76,10 @@ namespace Ibinimator.View
 
         #endregion
 
-        public float ConversionFactor(Unit source, Unit target)
+        public static float ConversionFactor(Unit source, Unit target)
         {
-            var factor = new Dictionary<Unit, float>
-            {
-                [Unit.Radians] = 1f,
-                [Unit.Degrees] = 360f / MathUtils.TwoPi,
-                [Unit.Pixels] = 1f,
-                [Unit.Inches] = 96f,
-                [Unit.Centimeters] = 96f / 2.54f
-            };
-
-            return factor[target] / factor[source];
+            if (source == Unit.None || target == Unit.None) return 1;
+            return Factors[target] / Factors[source];
         }
 
         public string Format(float value, Unit target)
@@ -91,6 +98,32 @@ namespace Ibinimator.View
                     return $"{value:N1} cm";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, null);
+            }
+        }
+
+        public static Unit GetUnit(string suffix, UnitType type)
+        {
+            switch (suffix)
+            {
+                case "" when type == UnitType.Angle: return Unit.Radians;
+                case "px":
+                case "" when type == UnitType.Length: return Unit.Pixels;
+                case "s":
+                case "" when type == UnitType.Time: return Unit.Seconds;
+
+                case "pt": return Unit.Points;
+                case "mm": return Unit.Millimeters;
+                case "cm": return Unit.Centimeters;
+                case "in": return Unit.Inches;
+
+                case "ms": return Unit.Milliseconds;
+                case "f": return Unit.Frames;
+                case "m": return Unit.Minutes;
+                case "h": return Unit.Hours;
+
+                case "deg":
+                case "\u00B0": return Unit.Degrees;
+                default: return Unit.None;
             }
         }
 
