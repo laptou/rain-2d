@@ -72,27 +72,7 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds()
         {
-            switch (SubLayers.Count)
-            {
-                case 0:
-                    return RectangleF.Empty;
-                default:
-                    var first = SubLayers[0].GetRelativeBounds();
-
-                    float x1 = first.Left, y1 = first.Top, x2 = first.Right, y2 = first.Bottom;
-
-                    Parallel.ForEach(SubLayers.Skip(1), layer =>
-                    {
-                        var bounds = layer.GetRelativeBounds();
-
-                        if (bounds.Left < x1) x1 = bounds.Left;
-                        if (bounds.Top < y1) y1 = bounds.Top;
-                        if (bounds.Right > x2) x2 = bounds.Right;
-                        if (bounds.Bottom > y2) y2 = bounds.Bottom;
-                    });
-
-                    return new RectangleF(x1, y1, x2 - x1, y2 - y1);
-            }
+            throw new InvalidOperationException();
         }
 
         public override XElement GetElement()
@@ -137,8 +117,14 @@ namespace Ibinimator.Model
         {
             lock (this)
             {
+                var transform = target.Transform;
+
+                target.Transform = Transform * target.Transform;
+
                 foreach (var layer in SubLayers.Reverse())
                     layer.Render(target, helper);
+
+                target.Transform = transform;
             }
         }
 
@@ -181,7 +167,7 @@ namespace Ibinimator.Model
         }
 
         [XmlAttribute]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; } = Guid.NewGuid();
 
         [XmlElement]
         public Layer Mask
@@ -356,23 +342,6 @@ namespace Ibinimator.Model
             return new RectangleF(0, 0, Width, Height);
         }
 
-        public RectangleF GetAbsoluteBounds()
-        {
-            var r = MathUtils.Bounds(GetBounds(), AbsoluteTransform);
-
-            return r;
-        }
-
-        public RectangleF GetAxisAlignedBounds()
-        {
-            var decomp = AbsoluteTransform.Decompose();
-
-            var r = MathUtils.Bounds(GetBounds(),
-                Matrix3x2.Scaling(decomp.scale) * Matrix3x2.Translation(decomp.translation));
-
-            return r;
-        }
-
         public override XElement GetElement()
         {
             var element = new XElement(XNamespace.Get("http://www.w3.org/2000/svg") + ElementName);
@@ -390,13 +359,6 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public RectangleF GetRelativeBounds()
-        {
-            var r = MathUtils.Bounds(GetBounds(), Transform);
-
-            return r;
-        }
-
         public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
         {
             return Hit<Layer>(factory, point, world, includeMe);
@@ -409,6 +371,11 @@ namespace Ibinimator.Model
                 Matrix3x2.Skew(0, Shear) *
                 Matrix3x2.Rotation(Rotation) *
                 Matrix3x2.Translation(Position);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
         }
     }
 }

@@ -16,6 +16,7 @@ using Group = Ibinimator.Model.Group;
 using Layer = Ibinimator.Model.Layer;
 using Path = Ibinimator.Model.Path;
 using Rectangle = Ibinimator.Model.Rectangle;
+using Resource = Ibinimator.Model.Resource;
 
 namespace Ibinimator.Service
 {
@@ -48,6 +49,71 @@ namespace Ibinimator.Service
 
     public static class SvgSerializer
     {
+        private static string[] _presentationAttributes = 
+        {
+            "alignment-baseline",
+            "baseline-shift",
+            "clip",
+            "clip-path",
+            "clip-rule",
+            "color",
+            "color-interpolation",
+            "color-interpolation-filters",
+            "color-profile",
+            "color-rendering",
+            "cursor",
+            "direction",
+            "display",
+            "dominant-baseline",
+            "enable-background",
+            "fill",
+            "fill-opacity",
+            "fill-rule",
+            "filter",
+            "flood-color",
+            "flood-opacity",
+            "font",
+            "font-family",
+            "font-size",
+            "font-size-adjust",
+            "font-stretch",
+            "font-style",
+            "font-variant",
+            "font-weight",
+            "glyph-orientation-horizontal",
+            "glyph-orientation-vertical",
+            "image-rendering",
+            "kerning",
+            "letter-spacing",
+            "lighting-color",
+            "marker",
+            "marker-end",
+            "marker-mid",
+            "marker-start",
+            "mask",
+            "opacity",
+            "overflow",
+            "pointer-events",
+            "shape-rendering",
+            "stop-color",
+            "stop-opacity",
+            "stroke",
+            "stroke-dasharray",
+            "stroke-dashoffset",
+            "stroke-linecap",
+            "stroke-linejoin",
+            "stroke-miterlimit",
+            "stroke-opacity",
+            "stroke-width",
+            "text-anchor",
+            "text-decoration",
+            "text-rendering",
+            "unicode-bidi",
+            "visibility",
+            "word-spacing",
+            "writing-mode"
+        };
+
         public static Document DeserializeDocument(XDocument xdoc)
         {
             return Parse<Document>(xdoc.Root, null, xdoc.Root);
@@ -128,32 +194,51 @@ namespace Ibinimator.Service
             return values;
         }
 
-        private static T Parse<T>(XElement element, Document doc, XContainer root) where T : class
+        private static T Parse<T>(
+            XElement element, Document doc, 
+            XContainer root, IReadOnlyDictionary<XName, string> ctx,
+            Matrix3x2 world) where T : class
         {
+            var attrs = ctx
+                .Where(x => Array.BinarySearch(_presentationAttributes, x.Key.LocalName) > 0)
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            foreach (var attr in element.Attributes())
+            {
+                if (attr.Name == "style") continue;
+
+                attrs[attr.Name] = attr.Value;
+            }
+
             var style = element.Attribute("style")?.Value;
             if (style != null)
             {
                 var rules =
-                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.,]+);?")
+                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.\, ]+);?")
                     select (name: match.Groups[1].Value, value: match.Groups[2].Value);
 
                 foreach (var rule in rules)
-                    element.SetAttributeValue(rule.name, rule.value);
+                    attrs[rule.name] = rule.value;
             }
 
-            var href = element.Attribute(SvgNames.XLink + "href")?.Value;
+            attrs.TryGetValue(SvgNames.XLink + "href", out var href);
             
             if (element.Name == SvgNames.Svg)
             {
                 var document = new Document();
-                var defs = Parse<object[]>(element.Element(SvgNames.Defs), document, root);
+                var defElement = element.Element(SvgNames.Defs);
 
-                document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
+                if (defElement != null)
+                {
+                    var defs = Parse<object[]>(defElement, document, root, attrs, Matrix3x2.Identity);
+                    document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
+                }
+
                 document.Root = new Group();
 
                 foreach (var layerElement in
                     element.Elements().Where(xe => SvgNames.Visuals.Contains(xe.Name)))
-                    document.Root.Add(Parse<Layer>(layerElement, document, root));
+                    document.Root.Add(Parse<Layer>(layerElement, document, root, attrs, Matrix3x2.Identity));
 
                 return document as T;
             }
@@ -162,16 +247,23 @@ namespace Ibinimator.Service
 
             if (element.Name == SvgNames.Defs)
             {
-                return element.Elements().Select(def => Parse<object>(def, doc, root)).ToArray() as T;
+                return element.Elements().Select(elem =>
+                {
+                    var def = Parse<object>(elem, doc, root, attrs, Matrix3x2.Identity);
+
+                    if(def is Resource res)
+                        res.Scope = Resource.ResoureScope.Document;
+
+                    return def;
+
+                }).ToArray() as T;
             }
 
             if (element.Name == SvgNames.SolidColor)
             {
                 var info = new SolidColorBrushInfo();
-                info.Color = ReadColor(element, "solid-color");
-
-                if (element.Attribute("solid-opacity") != null)
-                    info.Opacity = ReadFloat(element, "solid-opacity");
+                info.Color = ReadColor(attrs, "solid-color");
+                info.Opacity = ReadFloat(attrs, "solid-opacity");
 
                 return info as T;
             }
@@ -185,14 +277,14 @@ namespace Ibinimator.Service
 
                 info.Name = element.Attribute("id")?.Value;
 
-                info.StartPoint = new Vector2(ReadFloat(element, "x1"), ReadFloat(element, "y1"));
-                info.EndPoint = new Vector2(ReadFloat(element, "x2"), ReadFloat(element, "y2"));
+                info.StartPoint = new Vector2(ReadFloat(attrs, "x1"), ReadFloat(attrs, "y1"));
+                info.EndPoint = new Vector2(ReadFloat(attrs, "x2"), ReadFloat(attrs, "y2"));
 
                 if (element.Attribute("opacity") != null)
-                    info.Opacity = ReadFloat(element, "opacity");
+                    info.Opacity = ReadFloat(attrs, "opacity");
 
                 foreach (var stop in element.Elements(SvgNames.Stop))
-                    info.Stops.Add((GradientStop)Parse<object>(stop, doc, root));
+                    info.Stops.Add((GradientStop)Parse<object>(stop, doc, root, attrs, Matrix3x2.Identity));
 
                 return info as T;
             }
@@ -200,10 +292,10 @@ namespace Ibinimator.Service
             if (element.Name == SvgNames.Stop)
             {
                 var stop = new GradientStop();
-                var color = ReadColor(element, "stop-color");
-                color.Alpha = ReadFloat(element, "stop-opacity", 1);
+                var color = ReadColor(attrs, "stop-color");
+                color.Alpha = ReadFloat(attrs, "stop-opacity", 1);
                 stop.Color = color;
-                stop.Position = ReadFloat(element, "offset", 1);
+                stop.Position = ReadFloat(attrs, "offset", 1);
                 return stop as T;
             }
 
@@ -219,9 +311,11 @@ namespace Ibinimator.Service
                 {
                     var rect = new Rectangle();
 
-                    rect.Height = ReadFloat(element, "height");
-                    rect.Width = ReadFloat(element, "width");
-                    rect.Position = new Vector2(ReadFloat(element, "x"), ReadFloat(element, "y"));
+                    rect.Height = ReadFloat(attrs, "height");
+                    rect.Width = ReadFloat(attrs, "width");
+                    rect.Position = new Vector2(
+                        ReadFloat(attrs, "x"), 
+                        ReadFloat(attrs, "y"));
 
                     layer = rect;
                 }
@@ -229,12 +323,12 @@ namespace Ibinimator.Service
                 {
                     var ellipse = new Ellipse();
 
-                    ellipse.RadiusX = ReadFloat(element, "rx");
-                    ellipse.RadiusY = ReadFloat(element, "ry");
+                    ellipse.RadiusX = ReadFloat(attrs, "rx");
+                    ellipse.RadiusY = ReadFloat(attrs, "ry");
                     ellipse.Position =
                         new Vector2(
-                            ReadFloat(element, "cx") - ellipse.RadiusX,
-                            ReadFloat(element, "cy") - ellipse.RadiusY
+                            ReadFloat(attrs, "cx") - ellipse.RadiusX,
+                            ReadFloat(attrs, "cy") - ellipse.RadiusY
                         );
 
                     layer = ellipse;
@@ -243,12 +337,12 @@ namespace Ibinimator.Service
                 {
                     var ellipse = new Ellipse();
 
-                    ellipse.RadiusX = ReadFloat(element, "r");
+                    ellipse.RadiusX = ReadFloat(attrs, "r");
                     ellipse.RadiusY = ellipse.RadiusX;
                     ellipse.Position =
                         new Vector2(
-                            ReadFloat(element, "cx") - ellipse.RadiusX,
-                            ReadFloat(element, "cy") - ellipse.RadiusY
+                            ReadFloat(attrs, "cx") - ellipse.RadiusX,
+                            ReadFloat(attrs, "cy") - ellipse.RadiusY
                         );
 
                     layer = ellipse;
@@ -264,7 +358,7 @@ namespace Ibinimator.Service
                 {
                     var path = new Path();
                     var points =
-                        from point in (element.Attribute("points")?.Value ?? "").Split(' ')
+                        from point in attrs["points"].Split(' ')
                         let xy = point.Split(',').Select(float.Parse).ToArray()
                         select new Vector2(xy[0], xy[1]);
 
@@ -278,8 +372,8 @@ namespace Ibinimator.Service
                 {
                     var group = new Group();
 
-                    foreach (var layerElement in element.Elements())
-                        group.Add(Parse<Layer>(layerElement, doc, root));
+                    foreach (var layerElement in element.Elements().Reverse())
+                        group.Add(Parse<Layer>(layerElement, doc, root, attrs, Matrix3x2.Identity));
 
                     layer = group;
                 }
@@ -290,9 +384,8 @@ namespace Ibinimator.Service
 
                 if (layer is Shape shape)
                 {
-                    var fillValue = element.Attribute("fill")?.Value;
-
-                    if (!string.IsNullOrWhiteSpace(fillValue))
+                    if (attrs.TryGetValue("fill", out var fillValue) &&
+                        !string.IsNullOrWhiteSpace(fillValue))
                     {
                         if (fillValue.StartsWith("url"))
                         {
@@ -303,15 +396,14 @@ namespace Ibinimator.Service
                         {
                             shape.FillBrush = new SolidColorBrushInfo
                             {
-                                Color = ReadColor(element, "fill"),
-                                Opacity = ReadFloat(element, "fill-opacity", 1)
+                                Color = ReadColor(attrs, "fill"),
+                                Opacity = ReadFloat(attrs, "fill-opacity", 1)
                             };
                         }
                     }
-
-                    var strokeValue = element.Attribute("stroke")?.Value;
-
-                    if (!string.IsNullOrWhiteSpace(strokeValue))
+                    
+                    if (attrs.TryGetValue("stroke", out var strokeValue) &&
+                        !string.IsNullOrWhiteSpace(strokeValue))
                     {
                         if (strokeValue.StartsWith("url"))
                         {
@@ -322,26 +414,28 @@ namespace Ibinimator.Service
                         {
                             shape.StrokeBrush = new SolidColorBrushInfo
                             {
-                                Color = ReadColor(element, "stroke"),
-                                Opacity = ReadFloat(element, "stroke-opacity", 1)
+                                Color = ReadColor(attrs, "stroke"),
+                                Opacity = ReadFloat(attrs, "stroke-opacity", 1)
                             };
                         }
                     }
 
-                    shape.StrokeWidth = ReadFloat(element, "stroke-width");
+                    shape.StrokeWidth = ReadFloat(attrs, "stroke-width", 1);
 
                     var strokeStyle = new StrokeStyleProperties1();
 
-                    if (element.Attribute("stroke-dasharray") != null)
+                    if (attrs.ContainsKey("stroke-dasharray"))
                     {
                         strokeStyle.DashStyle = DashStyle.Custom;
                         shape.StrokeDashes =
                             new ObservableCollection<float>(
-                                ReadFloats(element, "stroke-dasharray")
+                                ReadFloats(attrs, "stroke-dasharray")
                                     .Select(f => f / Math.Max(shape.StrokeWidth, 1e-10f)));
                     }
 
-                    switch ((string)element.Attribute("stroke-linejoin"))
+                    attrs.TryGetValue("stroke-linejoin", out var lineJoin);
+
+                    switch (lineJoin)
                     {
                         case "miter":
                             strokeStyle.LineJoin = LineJoin.Miter;
@@ -356,7 +450,9 @@ namespace Ibinimator.Service
                             break;
                     }
 
-                    switch ((string)element.Attribute("stroke-linecap"))
+                    attrs.TryGetValue("stroke-linecap", out var lineCap);
+
+                    switch (lineCap)
                     {
                         case "butt":
                             strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Flat;
@@ -370,8 +466,6 @@ namespace Ibinimator.Service
                         case "triangle":
                             strokeStyle.StartCap = strokeStyle.EndCap = strokeStyle.DashCap = CapStyle.Triangle;
                             break;
-                        default:
-                            break;
                     }
 
                     shape.StrokeStyle = strokeStyle;
@@ -379,32 +473,48 @@ namespace Ibinimator.Service
 
                 layer.Name = element.Attribute("id")?.Value;
 
-                var transform = element.Attribute("transform")?.Value;
+                attrs.TryGetValue("transform", out var transforms);
 
-                if (transform != null)
+                if (transforms != null)
                 {
-                    if (transform.StartsWith("rotate"))
-                        layer.Rotation = ReadFloat(element, "transform");
-
-                    if (transform.StartsWith("translate"))
-                        layer.Position += ReadVector(element, "transform");
-
-                    if (transform.StartsWith("scale"))
-                        layer.Scale *= ReadVector(element, "transform");
-
-                    if (transform.StartsWith("skewY"))
-                        layer.Shear += ReadFloat(element, "transform");
-
-                    if (transform.StartsWith("skewX"))
+                    foreach (var transform in transforms.Split())
                     {
-                        layer.Shear += ReadFloat(element, "transform");
-                        layer.Rotation += -layer.Shear;
-                    }
+                        var mat = Matrix3x2.Identity;
 
-                    if (transform.StartsWith("matrix"))
-                    {
-                        var m = ReadMatrix(element, "transform");
-                        var d = m.Decompose();
+                        if (transform.StartsWith("rotate"))
+                        {
+                            var rotation = ReadFloats(attrs, "transform");
+
+                            if (rotation.Length > 0)
+                                mat = Matrix3x2.Rotation(MathUtil.RadiansToDegrees(-rotation[0]));
+
+                            if (rotation.Length > 2)
+                            {
+                                mat = 
+                                    Matrix3x2.Rotation(
+                                        MathUtil.RadiansToDegrees(-rotation[0]),
+                                        new Vector2(
+                                            rotation[1],
+                                            rotation[2]));
+                            }
+                        }
+
+                        if (transform.StartsWith("translate"))
+                            mat = Matrix3x2.Translation(ReadVector(transform));
+
+                        if (transform.StartsWith("scale"))
+                            mat = Matrix3x2.Scaling(ReadVector(transform));
+
+                        if (transform.StartsWith("skewY"))
+                            mat = Matrix3x2.Skew(0, MathUtil.RadiansToDegrees(Extract(transform)[0]));
+
+                        if (transform.StartsWith("skewX"))
+                            mat = Matrix3x2.Skew(MathUtil.RadiansToDegrees(Extract(transform)[0]), 0);
+
+                        if (transform.StartsWith("matrix"))
+                            mat = new Matrix3x2(Extract(transform));
+                        
+                        var d = mat.Decompose();
                         layer.Scale *= d.scale;
                         layer.Rotation += d.rotation;
                         layer.Shear += d.skew;
@@ -416,7 +526,6 @@ namespace Ibinimator.Service
             }
 
             #endregion
-
 
             return null;
         }
@@ -441,17 +550,57 @@ namespace Ibinimator.Service
             return element == null ? null : Parse<object>(element, null, doc);
         }
 
-        private static Color4 ReadColor(XElement element, string attr)
+        private static T Parse<T>(XElement element, Document doc, XContainer root) where T : class
         {
-            var value = element.Attribute(attr)?.Value ?? "";
+            return Parse<T>(element, doc, root, new Dictionary<XName, string>(), Matrix3x2.Identity);
+        }
+
+        private static List<(string[] selectors, IDictionary<string, string> rules)> ParseStyle(string style)
+        {
+            var data = Regex.Matches(style, "(?:([#*\\.]?[a-z-]\\w+|[#*\\.])(\\:[a-z][\\w\\(\\)\\[\\]]+)?\\s*,?\\s+)+\\{(?:\\s*([a-z-]+)\\s*:\\s*([\\w%\"\'-]+)\\s*;?)+\\}", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var dict = new List<(string[] selectors, IDictionary<string, string> rules)>();
+
+            foreach (Match match in data)
+            {
+                var selectors = 
+                    match.Groups[1].Captures
+                    .OfType<Capture>()
+                    .Select(c => c.Value)
+                    .ToArray();
+
+                var rules = new Dictionary<string, string>();
+
+                for (var i = 0; i < match.Groups[3].Captures.Count; i++)
+                    rules.Add(match.Groups[3].Captures[i].Value, match.Groups[4].Captures[i].Value);
+
+                dict.Add((selectors, rules));
+            }
+
+            return dict;
+        }
+
+        private static Color4 ReadColor(IDictionary<XName, string> attrs, XName attr)
+        {
+            if(!attrs.TryGetValue(attr, out var value)) return Color4.Black;
 
             if (value.StartsWith("#"))
             {
-                var r = Convert.ToByte(value.Substring(1, 2), 16) / 255f;
-                var g = Convert.ToByte(value.Substring(3, 2), 16) / 255f;
-                var b = Convert.ToByte(value.Substring(5, 2), 16) / 255f;
+                if (value.Length == 7)
+                {
+                    var r = Convert.ToByte(value.Substring(1, 2), 16) / 255f;
+                    var g = Convert.ToByte(value.Substring(3, 2), 16) / 255f;
+                    var b = Convert.ToByte(value.Substring(5, 2), 16) / 255f;
 
-                return new Color4(r, g, b, 1);
+                    return new Color4(r, g, b, 1);
+                }
+                if (value.Length == 4)
+                {
+                    var r = Convert.ToByte(value.Substring(1, 1), 16) / 15f;
+                    var g = Convert.ToByte(value.Substring(2, 1), 16) / 15f;
+                    var b = Convert.ToByte(value.Substring(3, 1), 16) / 15f;
+
+                    return new Color4(r, g, b, 1);
+                }
             }
 
             var values = Extract(value, UnitType.None, 255).Select(v => v / 255).ToArray();
@@ -461,30 +610,30 @@ namespace Ibinimator.Service
             if (values.Length == 4)
                 return new Color4(values);
 
-            throw new FormatException();
+            return new Color4();
         }
 
-        private static float ReadFloat(XElement element, string attr, float defaultValue = 0)
+        private static float ReadFloat(IDictionary<XName, string> attrs, XName attr, float defaultValue = 0)
         {
-            var input = element.Attribute(attr)?.Value;
-
-            if (input == null) return defaultValue;
+            if(!attrs.TryGetValue(attr, out var input)) return defaultValue;
 
             var value = Extract(input, UnitType.None, 1);
 
             return value.Length > 0 ? value[0] : defaultValue;
         }
 
-        private static float[] ReadFloats(XElement element, string attr)
+        private static float[] ReadFloats(IDictionary<XName, string> attrs, XName attr)
         {
-            var input = element.Attribute(attr)?.Value;
+            if (!attrs.TryGetValue(attr, out var input)) return new float[0];
 
             return input == null ? new float[0] : Extract(input, UnitType.None, 1);
         }
 
-        private static Matrix3x2 ReadMatrix(XElement element, string attr)
+        private static Matrix3x2 ReadMatrix(IDictionary<XName, string> attrs, XName attr)
         {
-            var values = Extract(element.Attribute(attr)?.Value);
+            if (!attrs.TryGetValue(attr, out var input)) return Matrix.Identity;
+
+            var values = Extract(input);
 
             if (values.Length == 6)
                 return new Matrix3x2(values);
@@ -492,14 +641,26 @@ namespace Ibinimator.Service
             throw new FormatException();
         }
 
-        private static Vector2 ReadVector(XElement element, string attr)
+        private static Vector2 ReadVector(IDictionary<XName, string> attrs, XName attr)
         {
-            var values = Extract(element.Attribute(attr)?.Value);
+            if (!attrs.TryGetValue(attr, out var input)) return Vector2.Zero;
 
-            if (values.Length == 2)
-                return new Vector2(values);
+            return ReadVector(input);
+        }
 
-            throw new FormatException();
+        private static Vector2 ReadVector(string input)
+        {
+            var values = Extract(input);
+
+            switch (values.Length)
+            {
+                case 2:
+                    return new Vector2(values[0], values[1]);
+                case 1:
+                    return new Vector2(values[0]);
+                default:
+                    throw new FormatException();
+            }
         }
     }
 
@@ -580,6 +741,12 @@ namespace Ibinimator.Service
                         {
                             start = pos;
                             instruction = PathDataInstruction.Close;
+                        }
+                        else if (lastInstruction != PathDataInstruction.Move)
+                        {
+                            start = pos;
+                            instruction = PathDataInstruction.Close;
+                            nodes.Add(new CloseNode { Open = true });
                         }
 
                         if (coordinates.Count >= 2)
@@ -668,7 +835,11 @@ namespace Ibinimator.Service
                     case PathDataInstruction.ShortQuadratic:
                         while (coordinates.Count >= 2)
                         {
-                            control = pos - (control - pos);
+                            if (lastInstruction == PathDataInstruction.Quadratic ||
+                                lastInstruction == PathDataInstruction.ShortQuadratic)
+                                control = pos - (control - pos);
+                            else
+                                control = pos;
 
                             if (relative)
                                 pos += new Vector2(coordinates.Pop(), coordinates.Pop());
@@ -716,7 +887,11 @@ namespace Ibinimator.Service
                     case PathDataInstruction.ShortCubic:
                         while (coordinates.Count >= 4)
                         {
-                            control = pos - (control - pos);
+                            if (lastInstruction == PathDataInstruction.Cubic ||
+                                lastInstruction == PathDataInstruction.ShortCubic)
+                                control = pos - (control2 - pos);
+                            else
+                                control = pos;
 
                             if (relative)
                             {
@@ -742,7 +917,28 @@ namespace Ibinimator.Service
                     #endregion
 
                     case PathDataInstruction.Arc:
-                        throw new NotImplementedException("Arc instructions in paths are not supported yet.");
+                        while (coordinates.Count >= 7)
+                        {
+                            var node = new ArcPathNode
+                            {
+                                RadiusX = coordinates.Pop(),
+                                RadiusY = coordinates.Pop(),
+                                Rotation = coordinates.Pop(),
+                                LargeArc = coordinates.Pop() == 1,
+                                Clockwise = coordinates.Pop() == 1
+                            };
+
+                            if (relative)
+                                pos += new Vector2(coordinates.Pop(), coordinates.Pop());
+                            else
+                                pos = new Vector2(coordinates.Pop(), coordinates.Pop());
+
+                            node.X = pos.X;
+                            node.Y = pos.Y;
+
+                            nodes.Add(node);
+                        }
+                        break;
 
                     case PathDataInstruction.Close:
                         nodes.Add(new CloseNode());

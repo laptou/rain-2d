@@ -48,6 +48,10 @@
         <KeyBinding Gesture="CTRL+O"
                     Command="{x:Static service:FileCommands.OpenCommand}"
                     CommandParameter="{Binding ViewManager}" />
+
+        <KeyBinding Key="P"
+                    Command="{Binding SelectToolCommand}"
+                    CommandParameter="{x:Static service:ToolType.Pencil}" />
     </Window.InputBindings>
     <Window.Style>
         <Style TargetType="{x:Type Window}">

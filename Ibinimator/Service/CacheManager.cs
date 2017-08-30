@@ -124,9 +124,28 @@ namespace Ibinimator.Service
             return _bitmaps[key];
         }
 
+        public RectangleF GetAbsoluteBounds(Layer layer)
+        {
+            return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
+        }
+
+        public RectangleF GetRelativeBounds(Layer layer)
+        {
+            return MathUtils.Bounds(GetBounds(layer), layer.Transform);
+        }
+
         public RectangleF GetBounds(Layer layer)
         {
-            return Get(_bounds, layer, l => l.GetAbsoluteBounds());
+            return Get(_bounds, layer, l =>
+            {
+                if (l is Group g)
+                    return g.SubLayers
+                        .AsParallel()
+                        .Select(GetRelativeBounds)
+                        .Aggregate(RectangleF.Union);
+
+                return l.GetBounds();
+            });
         }
 
         public Brush GetBrush(string key)
@@ -146,10 +165,21 @@ namespace Ibinimator.Service
 
         public (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target)
         {
-            return Get(_strokes, layer, l => (
-                l.StrokeBrush.ToDirectX(target),
-                l.StrokeWidth,
-                new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle)));
+            return Get(_strokes, layer, l =>
+            {
+                if (l.StrokeStyle.DashStyle == DashStyle.Solid)
+                {
+                    return (
+                        l.StrokeBrush.ToDirectX(target),
+                        l.StrokeWidth,
+                        new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle));
+                }
+
+                return (
+                    l.StrokeBrush.ToDirectX(target),
+                    l.StrokeWidth,
+                    new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle, l.StrokeDashes.ToArray()));
+            });
         }
 
         public void LoadBitmaps(RenderTarget target)
@@ -165,7 +195,7 @@ namespace Ibinimator.Service
         {
             foreach (DictionaryEntry entry in Application.Current.Resources)
                 if (entry.Value is Color color)
-                    _brushes[entry.Key as string] =
+                    _brushes[(string)entry.Key] =
                         new SolidColorBrush(
                             target,
                             new RawColor4(
@@ -181,14 +211,14 @@ namespace Ibinimator.Service
 
             lock (_brushes)
             {
-                foreach (var (name, brush) in _brushes.AsTuples())
+                foreach (var (_, brush) in _brushes.AsTuples())
                     brush?.Dispose();
                 _brushes.Clear();
             }
 
             lock (_bitmaps)
             {
-                foreach (var (name, bitmap) in _bitmaps.AsTuples()) bitmap?.Dispose();
+                foreach (var (_, bitmap) in _bitmaps.AsTuples()) bitmap?.Dispose();
                 _bitmaps.Clear();
             }
         }
@@ -197,7 +227,7 @@ namespace Ibinimator.Service
         {
             lock (_brushBindings)
             {
-                foreach (var (brushInfo, (shape, brush)) in _brushBindings.AsTuples())
+                foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
                 {
                     brushInfo.PropertyChanged -= OnBrushPropertyChanged;
                     brush?.Dispose();
@@ -207,19 +237,19 @@ namespace Ibinimator.Service
 
             lock (_geometries)
             {
-                foreach (var (layer, geometry) in _geometries.AsTuples()) geometry?.Dispose();
+                foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
                 _geometries.Clear();
             }
 
             lock (_fills)
             {
-                foreach (var (layer, fill) in _fills.AsTuples()) fill?.Dispose();
+                foreach (var (_, fill) in _fills.AsTuples()) fill?.Dispose();
                 _fills.Clear();
             }
 
             lock (_strokes)
             {
-                foreach (var (layer, (stroke, width, style)) in _strokes.AsTuples())
+                foreach (var (_, (stroke, _, style)) in _strokes.AsTuples())
                 {
                     stroke?.Dispose();
                     style?.Dispose();
@@ -249,7 +279,7 @@ namespace Ibinimator.Service
                             break;
 
                         case nameof(Layer.Transform):
-                            _bounds[layer] = layer.GetAbsoluteBounds();
+                            _bounds[layer] = layer.GetBounds();
 
                             InvalidateLayer(layer);
                             break;
@@ -287,6 +317,7 @@ namespace Ibinimator.Service
                         _fills[shape]?.Dispose();
                         _fills.Remove(shape);
                     }
+
                 if (shape.StrokeBrush != null)
                     lock (_strokes)
                     {
@@ -294,6 +325,17 @@ namespace Ibinimator.Service
                         _strokes[shape].style.Dispose();
                         _strokes.Remove(shape);
                     }
+                
+                lock (_geometries)
+                {
+                    _geometries[shape].Dispose();
+                    _geometries.Remove(shape);
+                }
+            }
+
+            lock (_bounds)
+            {
+                _bounds.Remove(layer);
             }
 
             if (layer is Group group)
@@ -303,14 +345,11 @@ namespace Ibinimator.Service
 
         private TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
         {
-            lock (dict)
-            {
-                if (dict.TryGetValue(key, out TV value) &&
-                    (value as DisposeBase)?.IsDisposed != true)
-                    return value;
+            if (dict.TryGetValue(key, out TV value) &&
+                (value as DisposeBase)?.IsDisposed != true)
+                return value;
 
-                return dict[key] = fallback(key);
-            }
+            return dict[key] = fallback(key);
         }
 
         private void InvalidateLayer(Layer layer)
@@ -386,7 +425,7 @@ namespace Ibinimator.Service
                         _geometries.TryGet(shape)?.Dispose();
                         _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
                     }
-                    break;
+                    goto case "Bounds";
 
                 case nameof(Shape.FillBrush):
                     lock (_fills)
@@ -438,8 +477,18 @@ namespace Ibinimator.Service
                     }
                     break;
 
-                case nameof(Layer.Transform):
-                    _bounds[layer] = layer.GetAbsoluteBounds();
+                case "Bounds":
+                    lock (_bounds)
+                    {
+                        if (layer is Group g)
+                            _bounds[layer] =
+                                g.SubLayers
+                                    .AsParallel()
+                                    .Select(GetRelativeBounds)
+                                    .Aggregate(RectangleF.Union);
+                        else
+                            _bounds[layer] = layer.GetBounds();
+                    }
                     break;
             }
 

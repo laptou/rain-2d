@@ -247,6 +247,8 @@ namespace Ibinimator.Model
 
         public override Brush ToDirectX(RenderTarget target)
         {
+            if (Stops.Count == 0) return null;
+
             switch (GradientType)
             {
                 case GradientBrushType.Linear:
@@ -284,9 +286,7 @@ namespace Ibinimator.Model
                     return new WPF.LinearGradientBrush(
                         new WPF.GradientStopCollection(
                             Stops.Select(s => new WPF.GradientStop(
-                                ColorUtils.ToWpf(s.Color), s.Position))),
-                        new Point(StartPoint.X, StartPoint.Y),
-                        new Point(EndPoint.X, EndPoint.Y));
+                                ColorUtils.ToWpf(s.Color), s.Position))));
                 case GradientBrushType.Radial:
                     return new WPF.RadialGradientBrush(
                         new WPF.GradientStopCollection(

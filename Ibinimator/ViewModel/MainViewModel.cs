@@ -37,6 +37,7 @@ namespace Ibinimator.ViewModel
             artView.SetManager(HistoryManager);
 
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
+            SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
             JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
         }
 
@@ -92,6 +93,8 @@ namespace Ibinimator.ViewModel
         }
 
         public DelegateCommand<Layer> SelectLayerCommand { get; }
+
+        public DelegateCommand<ToolType> SelectToolCommand { get; }
 
         public IToolManager ToolManager
         {

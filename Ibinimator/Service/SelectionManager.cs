@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using Ibinimator.Shared;
 using System.Linq;
@@ -51,8 +52,14 @@ namespace Ibinimator.Service
             Selection = new ObservableCollection<Layer>();
             Selection.CollectionChanged += (sender, args) =>
             {
-                Update(true);
-                Updated?.Invoke(this, null);
+                Task.Run(async () =>
+                {
+                    Update(true);
+
+                    if (Updated != null)
+                        await Task.Factory.FromAsync<object, EventArgs>(
+                            Updated.BeginInvoke, Updated.EndInvoke, null, null, null);
+                });
             };
 
             viewManager.DocumentUpdated += (sender, args) =>
@@ -71,8 +78,14 @@ namespace Ibinimator.Service
 
             historyManager.TimeChanged += (sender, args) =>
             {
-                Update(true);
-                Updated?.Invoke(this, null);
+                Task.Run(async () =>
+                {
+                    Update(true);
+
+                    if (Updated != null)
+                        await Task.Factory.FromAsync<object, EventArgs>(
+                            Updated.BeginInvoke, Updated.EndInvoke, null, null, null);
+                });
             };
         }
 
@@ -134,7 +147,6 @@ namespace Ibinimator.Service
 
                 var history = ArtView.HistoryManager;
                 _watcher = history.BeginRecord(Root);
-                Update(false);
             }
         }
 
@@ -192,7 +204,8 @@ namespace Ibinimator.Service
                                     false))
                             .FirstOrDefault() ??
                         Root.SubLayers.Select(
-                                l => l.Hit(
+                                l => 
+                                l.Hit(
                                     ArtView.RenderTarget.Factory,
                                     pos, Matrix3x2.Identity,
                                     !modifiers.HasFlag(ModifierKeys.Alt)))
@@ -212,7 +225,10 @@ namespace Ibinimator.Service
                 {
                     Parallel.ForEach(Root.Flatten(), layer =>
                     {
-                        var bounds = ArtView.CacheManager.GetBounds(layer);
+                        var bounds = 
+                            MathUtils.Bounds(
+                                ArtView.CacheManager.GetBounds(layer), 
+                                layer.WorldTransform);
                         _selectionBox.Contains(ref bounds, out bool contains);
                         layer.Selected = layer.Selected || contains;
                     });
@@ -249,10 +265,10 @@ namespace Ibinimator.Service
                     foreach (var layer in Selection)
                         if (layer is Shape shape)
                         {
-                            target.Transform *= shape.AbsoluteTransform;
+                            target.Transform = shape.AbsoluteTransform * target.Transform;
                             target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), cache.GetBrush("A1"), 1f,
                                 _selectionStroke);
-                            target.Transform *= Matrix3x2.Invert(shape.AbsoluteTransform);
+                            target.Transform = Matrix3x2.Invert(shape.AbsoluteTransform) * target.Transform;
                         }
 
                     DrawBounds(SelectionBounds, distort, cache.GetBrush("A1"));
@@ -301,9 +317,18 @@ namespace Ibinimator.Service
                         break;
 
                     case 1:
-                        bounds = Selection[0].GetAxisAlignedBounds();
                         var transform = Selection[0].AbsoluteTransform.Decompose();
-                        var origin = transform.translation;
+                        var local = ArtView.CacheManager.GetBounds(Selection[0]);
+
+                        bounds =
+                            MathUtils.Bounds(
+                                local,
+                                Matrix3x2.Scaling(transform.scale) *
+                                Matrix3x2.Translation(transform.translation));
+
+                        var center = Matrix3x2.TransformPoint(Selection[0].AbsoluteTransform, local.Center);
+
+                        bounds.Offset(center - bounds.Center);
 
                         if (reset)
                         {
@@ -311,35 +336,16 @@ namespace Ibinimator.Service
                             SelectionShear = transform.skew;
                         }
 
-                        var delta =
-                            MathUtils.Rotate(
-                                MathUtils.ShearX(
-                                    bounds.Center,
-                                    origin,
-                                    SelectionShear),
-                                origin,
-                                SelectionRotation) -
-                            bounds.Center;
 
-                        bounds.Offset(delta);
+                        //bounds.Offset(delta);
                         break;
 
                     default:
-                        bounds = ArtView.CacheManager.GetBounds(Selection[0]);
-                        (float x1, float y1, float x2, float y2) =
-                            (bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
-
-                        Parallel.ForEach(Selection.Skip(1), l =>
-                        {
-                            var b = ArtView.CacheManager.GetBounds(l);
-
-                            if (b.Left < x1) x1 = b.Left;
-                            if (b.Top < y1) y1 = b.Top;
-                            if (b.Right > x2) x2 = b.Right;
-                            if (b.Bottom > y2) y2 = b.Bottom;
-                        });
-
-                        bounds = new RectangleF(x1, y1, x2 - x1, y2 - y1);
+                        bounds = 
+                            Selection
+                                .AsParallel()
+                                .Select(l => ArtView.CacheManager.GetAbsoluteBounds(l))
+                                .Aggregate(RectangleF.Union);
 
                         if (reset)
                         {
@@ -595,8 +601,7 @@ namespace Ibinimator.Service
             foreach (var layer in Selection)
                 lock (layer)
                 {
-                    var layerTransform =
-                        layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
+                    var layerTransform = layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
                     var delta = layerTransform.Decompose();
 
                     layer.Scale = delta.scale;

@@ -234,24 +234,35 @@ namespace Ibinimator.Model
 
         public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
         {
-            if (this is T)
-                using (var geometry = GetGeometry(factory))
-                {
-                    if (FillBrush != null &&
-                        geometry.FillContainsPoint(point, AbsoluteTransform, geometry.FlatteningTolerance))
-                        return this as T;
+            if (!(this is T)) return null;
 
-                    if (StrokeBrush != null && geometry.StrokeContainsPoint(point, StrokeWidth, null, AbsoluteTransform,
-                            geometry.FlatteningTolerance))
-                        return this as T;
-                }
+            using (var geometry = GetGeometry(factory))
+            {
+                if (FillBrush != null &&
+                    geometry.FillContainsPoint(
+                        point, 
+                        AbsoluteTransform, 
+                        geometry.FlatteningTolerance))
+                    return this as T;
+
+                if (StrokeBrush != null && 
+                    geometry.StrokeContainsPoint(
+                        point, 
+                        StrokeWidth, 
+                        null, 
+                        AbsoluteTransform,
+                        geometry.FlatteningTolerance))
+                    return this as T;
+            }
 
             return null;
         }
 
         public override void Render(RenderTarget target, ICacheManager cacheHelper)
         {
-            target.Transform *= AbsoluteTransform;
+            var transform = target.Transform;
+
+            target.Transform = Transform * target.Transform;
 
             if (FillBrush != null)
                 target.FillGeometry(cacheHelper.GetGeometry(this), cacheHelper.GetFill(this));
@@ -267,7 +278,7 @@ namespace Ibinimator.Model
                     stroke.style);
             }
 
-            target.Transform *= Matrix3x2.Invert(AbsoluteTransform);
+            target.Transform = transform;
         }
     }
 }

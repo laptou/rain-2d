@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -148,8 +149,19 @@ namespace Ibinimator.Model
                             });
                             break;
 
-                        case CloseNode _:
-                            gs.EndFigure(FigureEnd.Closed);
+                        case ArcPathNode an:
+                            gs.AddArc(new ArcSegment
+                            {
+                                ArcSize = an.LargeArc ? ArcSize.Large : ArcSize.Small,
+                                Point = an.Position,
+                                Size = new Size2F(an.RadiusX, an.RadiusY), 
+                                RotationAngle = an.Rotation,
+                                SweepDirection = an.Clockwise ? SweepDirection.Clockwise : SweepDirection.CounterClockwise
+                            });
+                            break;
+
+                        case CloseNode close:
+                            gs.EndFigure(close.Open ? FigureEnd.Open : FigureEnd.Closed);
                             begin = true;
                             break;
 
@@ -197,6 +209,44 @@ namespace Ibinimator.Model
 
     public class CloseNode : PathNode
     {
+        public bool Open
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+    }
+
+    public class ArcPathNode : PathNode
+    {
+        public float RadiusX
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        public float RadiusY
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        public bool LargeArc
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+        
+        public bool Clockwise
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
+        public float Rotation
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
     }
 
     [Serializable]
