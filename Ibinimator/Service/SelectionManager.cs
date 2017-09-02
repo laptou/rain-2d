@@ -52,13 +52,10 @@ namespace Ibinimator.Service
             Selection = new ObservableCollection<Layer>();
             Selection.CollectionChanged += (sender, args) =>
             {
-                Task.Run(async () =>
+                Task.Run(() =>
                 {
                     Update(true);
-
-                    if (Updated != null)
-                        await Task.Factory.FromAsync<object, EventArgs>(
-                            Updated.BeginInvoke, Updated.EndInvoke, null, null, null);
+                    Updated?.Invoke(this, null);
                 });
             };
 
@@ -78,13 +75,10 @@ namespace Ibinimator.Service
 
             historyManager.TimeChanged += (sender, args) =>
             {
-                Task.Run(async () =>
+                Task.Run(() =>
                 {
                     Update(true);
-
-                    if (Updated != null)
-                        await Task.Factory.FromAsync<object, EventArgs>(
-                            Updated.BeginInvoke, Updated.EndInvoke, null, null, null);
+                    Updated?.Invoke(this, null);
                 });
             };
         }
@@ -113,7 +107,7 @@ namespace Ibinimator.Service
 
         public void MouseDown(Vector2 pos)
         {
-            lock (this)
+            using (new WeakLock(this))
             {
                 _moved = false;
 
@@ -154,7 +148,7 @@ namespace Ibinimator.Service
         {
             var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
 
-            lock (this)
+            using (new WeakLock(this))
             {
                 _moved = true;
 
@@ -182,7 +176,7 @@ namespace Ibinimator.Service
             // UI thread is blocking on us
             var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
 
-            lock (this)
+            using (new WeakLock(this))
             {
                 if (_accumulatedTransform != Matrix3x2.Identity)
                 {
@@ -252,7 +246,7 @@ namespace Ibinimator.Service
                 target.Transform *= Matrix3x2.Invert(transform);
             }
 
-            lock (_render)
+            using (new WeakLock(_render))
             {
                 if (Selection.Count > 0)
                 {
@@ -304,7 +298,7 @@ namespace Ibinimator.Service
 
         public void Update(bool reset)
         {
-            lock (_render)
+            using (new WeakLock(_render))
             {
                 InvalidateSurface();
 
@@ -356,9 +350,9 @@ namespace Ibinimator.Service
                 }
 
                 SelectionBounds = bounds;
-
-                InvalidateSurface();
             }
+
+            InvalidateSurface();
         }
 
         public event EventHandler Updated;

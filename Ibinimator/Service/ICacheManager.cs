@@ -25,6 +25,7 @@ namespace Ibinimator.Service
         void LoadBrushes(RenderTarget target);
         void ResetAll();
         void ResetLayerCache();
-        void UpdateLayer(Layer layer, string property);
+        RectangleF GetAbsoluteBounds(Layer layer);
+        RectangleF GetRelativeBounds(Layer layer);
     }
 }

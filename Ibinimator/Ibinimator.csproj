@@ -146,6 +146,7 @@
     <Compile Include="Service\IArtViewManager.cs" />
     <Compile Include="Service\IHistoryManager.cs" />
     <Compile Include="Service\IRecorder.cs" />
+    <Compile Include="Service\WeakLock.cs" />
     <Compile Include="Service\SelectionCommands.cs" />
     <Compile Include="Service\FileService.cs" />
     <Compile Include="Service\SvgSerializer.cs" />

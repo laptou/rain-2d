@@ -26,6 +26,7 @@ namespace Ibinimator.Service
     public class CacheManager : Model.Model, ICacheManager
     {
         private readonly Dictionary<string, Bitmap> _bitmaps = new Dictionary<string, Bitmap>();
+        private readonly Dictionary<Layer, BitmapRenderTarget> _renders = new Dictionary<Layer, BitmapRenderTarget>();
         private readonly Dictionary<Layer, RectangleF> _bounds = new Dictionary<Layer, RectangleF>();
 
         private readonly Dictionary<BrushInfo, (Shape shape, Brush brush)> _brushBindings =
@@ -258,51 +259,16 @@ namespace Ibinimator.Service
             }
         }
 
-        public async void UpdateLayer(Layer layer, string property)
+        public Bitmap GetRender(Layer layer)
         {
-            await Task.Run(() =>
+            return Get(_renders, layer, l =>
             {
-                lock (layer)
-                {
-                    var shape = layer as Shape;
-
-                    switch (property)
-                    {
-                        case "Geometry":
-                            _geometries.TryGetValue(shape, out Geometry geometry);
-                            geometry?.Dispose();
-
-                            if (shape != null)
-                                _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
-
-                            InvalidateLayer(layer);
-                            break;
-
-                        case nameof(Layer.Transform):
-                            _bounds[layer] = layer.GetBounds();
-
-                            InvalidateLayer(layer);
-                            break;
-
-                        case nameof(Shape.FillBrush):
-                            _fills.TryGetValue(shape, out Brush fill);
-                            fill?.Dispose();
-                            _fills[shape] = shape.FillBrush?.ToDirectX(ArtView.RenderTarget);
-                            InvalidateLayer(layer);
-                            break;
-
-                        case nameof(Shape.StrokeBrush):
-                            _strokes.TryGetValue(shape, out (Brush brush, float, StrokeStyle) stroke);
-                            stroke.brush?.Dispose();
-                            stroke.brush = shape.StrokeBrush?.ToDirectX(ArtView.RenderTarget);
-                            InvalidateLayer(layer);
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-            });
+                var bmp = new BitmapRenderTarget(
+                            ArtView.RenderTarget,
+                            CompatibleRenderTargetOptions.GdiCompatible);
+                layer.Render(bmp, this);
+                return bmp;
+            }).Bitmap;
         }
 
         #endregion
@@ -414,7 +380,7 @@ namespace Ibinimator.Service
 
         private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var layer = sender as Layer;
+            var layer = (Layer) sender;
             var shape = sender as Shape;
 
             switch (e.PropertyName)
@@ -433,7 +399,7 @@ namespace Ibinimator.Service
                         _fills.TryGet(shape)?.Dispose();
                         _fills[shape] = BindBrush(shape, shape.FillBrush);
                     }
-                    break;
+                    goto case "Render";
 
                 case nameof(Shape.StrokeBrush):
                     lock (_strokes)
@@ -443,7 +409,7 @@ namespace Ibinimator.Service
                         stroke.brush = BindBrush(shape, shape.StrokeBrush);
                         _strokes[shape] = stroke;
                     }
-                    break;
+                    goto case "Render";
 
                 case nameof(Shape.StrokeWidth):
                     lock (_strokes)
@@ -452,7 +418,7 @@ namespace Ibinimator.Service
                         stroke.width = shape.StrokeWidth;
                         _strokes[shape] = stroke;
                     }
-                    break;
+                    goto case "Render";
 
                 case nameof(Shape.StrokeStyle):
                 case nameof(Shape.StrokeDashes):
@@ -475,7 +441,7 @@ namespace Ibinimator.Service
 
                         _strokes[shape] = stroke;
                     }
-                    break;
+                    goto case "Render";
 
                 case "Bounds":
                     lock (_bounds)
@@ -489,6 +455,11 @@ namespace Ibinimator.Service
                         else
                             _bounds[layer] = layer.GetBounds();
                     }
+                    goto case "Render";
+
+                case "Render":
+                    _renders[layer].Clear(null);
+                    layer.Render(_renders[layer], this);
                     break;
             }
 

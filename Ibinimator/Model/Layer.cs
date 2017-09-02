@@ -113,7 +113,7 @@ namespace Ibinimator.Model
             LayerRemoved?.Invoke(this, child);
         }
 
-        public override void Render(RenderTarget target, ICacheManager helper)
+        public override void Render(RenderTarget target, ICacheManager cache)
         {
             lock (this)
             {
@@ -122,7 +122,10 @@ namespace Ibinimator.Model
                 target.Transform = Transform * target.Transform;
 
                 foreach (var layer in SubLayers.Reverse())
-                    layer.Render(target, helper);
+                    target.DrawBitmap(
+                        cache.GetRender(layer), 
+                        1, 
+                        BitmapInterpolationMode.Linear);
 
                 target.Transform = transform;
             }

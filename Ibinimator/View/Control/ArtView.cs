@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.View.Control
 {
@@ -204,22 +205,30 @@ namespace Ibinimator.View.Control
         {
             target.Clear(Color4.White);
 
-            target.Transform = ViewManager?.Transform ?? Matrix.Identity;
+            if (ViewManager == null) return;
 
-            ViewManager?.Root?.Render(target, CacheManager);
+            target.Transform = ViewManager.Transform;
 
-            SelectionManager?.Render(target, CacheManager);
+            target.DrawBitmap(
+                CacheManager.GetRender(ViewManager.Root),
+                1,
+                BitmapInterpolationMode.Linear);
 
-            ToolManager?.Tool?.Render(target, CacheManager);
+            if (SelectionManager == null) return;
 
-            if (ToolManager?.Tool?.Cursor != null)
-            {
-                target.Transform =
-                    Matrix3x2.Scaling(1f / 3) *
-                    Matrix3x2.Rotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
-                    Matrix3x2.Translation(_lastPosition - new Vector2(8));
-                target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
-            }
+            SelectionManager.Render(target, CacheManager);
+
+            if (ToolManager?.Tool == null) return;
+
+            ToolManager.Tool.Render(target, CacheManager);
+
+            if (ToolManager.Tool.Cursor == null) return;
+
+            target.Transform =
+                Matrix3x2.Scaling(1f / 3) *
+                Matrix3x2.Rotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
+                Matrix3x2.Translation(_lastPosition - new Vector2(8));
+            target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
