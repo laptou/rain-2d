@@ -49,7 +49,7 @@ namespace Ibinimator.Service
 
     public static class SvgSerializer
     {
-        private static readonly string[] _presentationAttributes =
+        private static readonly string[] PresentationAttributes =
         {
             "alignment-baseline",
             "baseline-shift",
@@ -196,11 +196,10 @@ namespace Ibinimator.Service
 
         private static T Parse<T>(
             XElement element, Document doc,
-            XContainer root, IReadOnlyDictionary<XName, string> ctx,
-            Matrix3x2 world) where T : class
+            XContainer root, IReadOnlyDictionary<XName, string> ctx) where T : class
         {
             var attrs = ctx
-                .Where(x => Array.BinarySearch(_presentationAttributes, x.Key.LocalName) > 0)
+                .Where(x => Array.BinarySearch(PresentationAttributes, x.Key.LocalName) > 0)
                 .ToDictionary(x => x.Key, x => x.Value);
 
             foreach (var attr in element.Attributes())
@@ -230,7 +229,7 @@ namespace Ibinimator.Service
 
                 if (defElement != null)
                 {
-                    var defs = Parse<object[]>(defElement, document, root, attrs, Matrix3x2.Identity);
+                    var defs = Parse<object[]>(defElement, document, root, attrs);
                     document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
                 }
 
@@ -238,7 +237,7 @@ namespace Ibinimator.Service
 
                 foreach (var layerElement in
                     element.Elements().Where(xe => SvgNames.Visuals.Contains(xe.Name)))
-                    document.Root.Add(Parse<Layer>(layerElement, document, root, attrs, Matrix3x2.Identity));
+                    document.Root.Add(Parse<Layer>(layerElement, document, root, attrs));
 
                 return document as T;
             }
@@ -248,7 +247,7 @@ namespace Ibinimator.Service
             if (element.Name == SvgNames.Defs)
                 return element.Elements().Select(elem =>
                 {
-                    var def = Parse<object>(elem, doc, root, attrs, Matrix3x2.Identity);
+                    var def = Parse<object>(elem, doc, root, attrs);
 
                     if (def is Resource res)
                         res.Scope = Resource.ResoureScope.Document;
@@ -259,6 +258,7 @@ namespace Ibinimator.Service
             if (element.Name == SvgNames.SolidColor)
             {
                 var info = new SolidColorBrushInfo();
+
                 info.Color = ReadColor(attrs, "solid-color");
                 info.Opacity = ReadFloat(attrs, "solid-opacity");
 
@@ -281,7 +281,7 @@ namespace Ibinimator.Service
                     info.Opacity = ReadFloat(attrs, "opacity");
 
                 foreach (var stop in element.Elements(SvgNames.Stop))
-                    info.Stops.Add((GradientStop) Parse<object>(stop, doc, root, attrs, Matrix3x2.Identity));
+                    info.Stops.Add((GradientStop) Parse<object>(stop, doc, root, attrs));
 
                 return info as T;
             }
@@ -370,7 +370,7 @@ namespace Ibinimator.Service
                     var group = new Group();
 
                     foreach (var layerElement in element.Elements().Reverse())
-                        group.Add(Parse<Layer>(layerElement, doc, root, attrs, Matrix3x2.Identity));
+                        group.Add(Parse<Layer>(layerElement, doc, root, attrs));
 
                     layer = group;
                 }
@@ -521,7 +521,7 @@ namespace Ibinimator.Service
 
         private static T Parse<T>(XElement element, Document doc, XContainer root) where T : class
         {
-            return Parse<T>(element, doc, root, new Dictionary<XName, string>(), Matrix3x2.Identity);
+            return Parse<T>(element, doc, root, new Dictionary<XName, string>());
         }
 
         private static List<(string[] selectors, IDictionary<string, string> rules)> ParseStyle(string style)

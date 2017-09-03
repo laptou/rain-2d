@@ -12,7 +12,7 @@ using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
 {
-    public class Group : Layer
+    public class Group : Layer, IContainerLayer
     {
         public override string DefaultName => "Group";
 
@@ -84,13 +84,15 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
+        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
             T hit = null;
 
+            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
+
             foreach (var layer in SubLayers)
             {
-                var result = layer.Hit<T>(factory, point, world, includeMe);
+                var result = layer.Hit<T>(cache, point, includeMe);
                 if (result != null) hit = result;
             }
 
@@ -135,10 +137,8 @@ namespace Ibinimator.Model
             RaisePropertyChanging(sender, e);
         }
     }
-
-    [XmlInclude(typeof(Group))]
-    [XmlInclude(typeof(Shape))]
-    public abstract class Layer : Resource
+    
+    public abstract class Layer : Resource, ILayer
     {
         protected Layer()
         {
@@ -147,34 +147,33 @@ namespace Ibinimator.Model
             UpdateTransform();
         }
 
-        [XmlIgnore]
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
-        [XmlIgnore]
         public virtual string DefaultName => "Layer";
 
         [Undoable]
         [Animatable]
-        [XmlAttribute]
-        [DefaultValue(0f)]
         public virtual float Height
         {
             get => Get<float>();
             set => Set(value);
         }
 
-        [XmlAttribute]
         public Guid Id { get; } = Guid.NewGuid();
 
-        [XmlElement]
-        public Layer Mask
+        public ILayer Mask
         {
-            get => Get<Layer>();
+            get => Get<ILayer>();
+            set => Set(value);
+        }
+
+        public IGeometricLayer Clip
+        {
+            get => Get<IGeometricLayer>();
             set => Set(value);
         }
 
         [Undoable]
-        [XmlAttribute]
         public string Name
         {
             get => Get<string>();
@@ -183,7 +182,6 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlAttribute]
         public float Opacity
         {
             get => Get<float>();
@@ -191,7 +189,6 @@ namespace Ibinimator.Model
         }
 
         [Undoable]
-        [XmlIgnore]
         public Group Parent
         {
             get => Get<Group>();
@@ -200,7 +197,6 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlIgnore]
         public Vector2 Position
         {
             get => Get<Vector2>();
@@ -213,8 +209,6 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlAttribute]
-        [DefaultValue(0f)]
         public float Rotation
         {
             get => Get<float>();
@@ -227,7 +221,6 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlIgnore]
         public Vector2 Scale
         {
             get => Get<Vector2>();
@@ -238,24 +231,18 @@ namespace Ibinimator.Model
             }
         }
 
-        [XmlAttribute]
-        [DefaultValue(1f)]
         public float ScaleX
         {
             get => Scale.X;
             set => Scale = new Vector2(value, Scale.Y);
         }
 
-        [XmlAttribute]
-        [DefaultValue(1f)]
         public float ScaleY
         {
             get => Scale.Y;
             set => Scale = new Vector2(Scale.X, value);
         }
 
-        [XmlAttribute]
-        [DefaultValue(false)]
         public bool Selected
         {
             get => Get<bool>();
@@ -264,8 +251,6 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlAttribute]
-        [DefaultValue(0f)]
         public float Shear
         {
             get => Get<float>();
@@ -285,25 +270,20 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        [XmlAttribute]
-        [DefaultValue(0F)]
         public virtual float Width
         {
             get => Get<float>();
             set => Set(value);
         }
 
-        [XmlIgnore]
         public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;
 
-        [XmlAttribute]
         public float X
         {
             get => Position.X;
             set => Position = new Vector2(value, Y);
         }
 
-        [XmlAttribute]
         public float Y
         {
             get => Position.Y;
@@ -312,9 +292,9 @@ namespace Ibinimator.Model
 
         protected abstract string ElementName { get; }
 
-        public abstract T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe) where T : Layer;
+        public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
 
-        public abstract void Render(RenderTarget target, ICacheManager helper);
+        public abstract void Render(RenderTarget target, ICacheManager cache);
 
         public virtual Layer Find(Guid id)
         {
@@ -361,9 +341,9 @@ namespace Ibinimator.Model
             return Id.GetHashCode();
         }
 
-        public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
+        public Layer Hit(ICacheManager cache, Vector2 point, bool includeMe)
         {
-            return Hit<Layer>(factory, point, world, includeMe);
+            return Hit<Layer>(cache, point, includeMe);
         }
 
         private void UpdateTransform()

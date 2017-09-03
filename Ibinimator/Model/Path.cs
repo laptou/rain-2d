@@ -177,6 +177,7 @@ namespace Ibinimator.Model
             }
 
             gs.Close();
+            gs.Dispose();
 
             return pg;
         }

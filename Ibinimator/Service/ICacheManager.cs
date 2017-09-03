@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.DirectWrite;
 using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
@@ -12,17 +13,19 @@ namespace Ibinimator.Service
     public interface ICacheManager : IArtViewManager
     {
         void Bind(Document root);
-        Brush BindBrush(Shape shape, BrushInfo brush);
-        void BindLayer(Layer layer);
-        RectangleF GetAbsoluteBounds(Layer layer);
+        Brush BindBrush(ILayer shape, BrushInfo brush);
+        void BindLayer(ILayer layer);
+
+        RectangleF GetAbsoluteBounds(ILayer layer);
+        RectangleF GetRelativeBounds(ILayer layer);
+        RectangleF GetBounds(ILayer layer);
 
         Bitmap GetBitmap(string key);
-        RectangleF GetBounds(Layer layer);
         Brush GetBrush(string key);
-        Brush GetFill(Shape layer);
-        Geometry GetGeometry(Shape layer);
-        RectangleF GetRelativeBounds(Layer layer);
-        (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target);
+        Brush GetFill(IFilledLayer layer);
+        Geometry GetGeometry(IGeometricLayer layer);
+        TextLayout GetTextLayout(ITextLayer text);
+        (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer, RenderTarget target);
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);
         void ResetAll();

@@ -263,7 +263,7 @@ namespace Ibinimator.Service
         {
             if (CurrentPath == null)
             {
-                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, Matrix3x2.Identity, true);
+                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, true);
 
                 if (hit != null)
                 {

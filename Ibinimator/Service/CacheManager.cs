@@ -11,9 +11,11 @@ using Ibinimator.Model;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.DirectWrite;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
+using BitmapRenderTarget = SharpDX.Direct2D1.BitmapRenderTarget;
 using Color = System.Windows.Media.Color;
 using Factory1 = SharpDX.Direct2D1.Factory1;
 using Image = System.Drawing.Image;
@@ -26,19 +28,19 @@ namespace Ibinimator.Service
     public class CacheManager : Model.Model, ICacheManager
     {
         private readonly Dictionary<string, Bitmap> _bitmaps = new Dictionary<string, Bitmap>();
-        private readonly Dictionary<Layer, RectangleF> _bounds = new Dictionary<Layer, RectangleF>();
+        private readonly Dictionary<ILayer, RectangleF> _bounds = new Dictionary<ILayer, RectangleF>();
 
-        private readonly Dictionary<BrushInfo, (Shape shape, Brush brush)> _brushBindings =
-            new Dictionary<BrushInfo, (Shape, Brush)>();
+        private readonly Dictionary<BrushInfo, (ILayer layer, Brush brush)> _brushBindings =
+            new Dictionary<BrushInfo, (ILayer, Brush)>();
 
         private readonly Dictionary<string, Brush> _brushes = new Dictionary<string, Brush>();
 
-        private readonly Dictionary<Shape, Brush> _fills = new Dictionary<Shape, Brush>();
-        private readonly Dictionary<Shape, Geometry> _geometries = new Dictionary<Shape, Geometry>();
-        private readonly Dictionary<Layer, BitmapRenderTarget> _renders = new Dictionary<Layer, BitmapRenderTarget>();
+        private readonly Dictionary<IFilledLayer, Brush> _fills = new Dictionary<IFilledLayer, Brush>();
+        private readonly Dictionary<IStrokedLayer, (Brush brush, float width, StrokeStyle style)> _strokes =
+            new Dictionary<IStrokedLayer, (Brush, float, StrokeStyle)>();
 
-        private readonly Dictionary<Shape, (Brush brush, float width, StrokeStyle style)> _strokes =
-            new Dictionary<Shape, (Brush, float, StrokeStyle)>();
+        private readonly Dictionary<IGeometricLayer, Geometry> _geometries = new Dictionary<IGeometricLayer, Geometry>();
+        private readonly Dictionary<ITextLayer, TextLayout> _texts = new Dictionary<ITextLayer, TextLayout>();
 
         public CacheManager(ArtView artView)
         {
@@ -56,60 +58,55 @@ namespace Ibinimator.Service
             BindLayer(doc.Root);
         }
 
-        public Brush BindBrush(Shape shape, BrushInfo brush)
+        public Brush BindBrush(ILayer shape, BrushInfo brush)
         {
             if (brush == null) return null;
 
             var target = ArtView.RenderTarget;
 
             var fill = brush.ToDirectX(target);
+
             brush.PropertyChanged += OnBrushPropertyChanged;
 
-            lock (_brushBindings)
-            {
-                _brushBindings[brush] = (shape, fill);
-            }
+            lock (_brushBindings) _brushBindings[brush] = (shape, fill);
 
             return fill;
         }
 
-        public void BindLayer(Layer layer)
+        public void BindLayer(ILayer layer)
         {
             var target = ArtView.RenderTarget;
 
-            if (layer is Shape shape)
+            if (layer is IFilledLayer filled && filled.FillBrush != null)
+                lock (_fills) _fills[filled] = BindBrush(filled, filled.FillBrush);
+
+            if (layer is IStrokedLayer stroked && stroked.StrokeBrush != null)
             {
-                if (shape.FillBrush != null)
-                    lock (_fills)
-                    {
-                        _fills[shape] = BindBrush(shape, shape.FillBrush);
-                    }
-                if (shape.StrokeBrush != null)
-                    lock (_strokes)
-                    {
-                        if (shape.StrokeStyle.DashStyle == DashStyle.Custom)
-                            _strokes[shape] =
-                                (
-                                BindBrush(shape, shape.StrokeBrush),
-                                shape.StrokeWidth,
-                                new StrokeStyle1(
-                                    target.Factory.QueryInterface<Factory1>(),
-                                    shape.StrokeStyle,
-                                    shape.StrokeDashes.ToArray()
-                                ));
-                        else
-                            _strokes[shape] =
-                                (
-                                BindBrush(shape, shape.StrokeBrush),
-                                shape.StrokeWidth,
-                                new StrokeStyle1(
-                                    target.Factory.QueryInterface<Factory1>(),
-                                    shape.StrokeStyle
-                                ));
-                    }
+                lock (_strokes)
+                {
+                    if (stroked.StrokeStyle.DashStyle == DashStyle.Custom)
+                        _strokes[stroked] =
+                            (
+                            BindBrush(stroked, stroked.StrokeBrush),
+                            stroked.StrokeWidth,
+                            new StrokeStyle1(
+                                target.Factory.QueryInterface<Factory1>(),
+                                stroked.StrokeStyle,
+                                stroked.StrokeDashes.ToArray()
+                            ));
+                    else
+                        _strokes[stroked] =
+                            (
+                            BindBrush(stroked, stroked.StrokeBrush),
+                            stroked.StrokeWidth,
+                            new StrokeStyle1(
+                                target.Factory.QueryInterface<Factory1>(),
+                                stroked.StrokeStyle
+                            ));
+                }
             }
 
-            if (layer is Group group)
+            if (layer is IContainerLayer group)
             {
                 foreach (var subLayer in group.SubLayers)
                     BindLayer(subLayer);
@@ -120,7 +117,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public RectangleF GetAbsoluteBounds(Layer layer)
+        public RectangleF GetAbsoluteBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
         }
@@ -130,13 +127,13 @@ namespace Ibinimator.Service
             return _bitmaps[key];
         }
 
-        public RectangleF GetBounds(Layer layer)
+        public RectangleF GetBounds(ILayer layer)
         {
             return Get(_bounds, layer, l =>
             {
                 if (l is Group g)
                     return g.SubLayers
-                        .Select(GetRelativeBounds)
+                        .Select(layer1 => GetRelativeBounds(layer1))
                         .Aggregate(RectangleF.Union);
 
                 return l.GetBounds();
@@ -148,22 +145,27 @@ namespace Ibinimator.Service
             return _brushes[key];
         }
 
-        public Brush GetFill(Shape layer)
+        public Brush GetFill(IFilledLayer layer)
         {
             return Get(_fills, layer, l => l.FillBrush.ToDirectX(ArtView.RenderTarget));
         }
 
-        public Geometry GetGeometry(Shape layer)
+        public Geometry GetGeometry(IGeometricLayer layer)
         {
-            return Get(_geometries, layer, l => l.GetGeometry(ArtView.RenderTarget.Factory));
+            return Get(_geometries, layer, l => l.GetGeometry(ArtView.Direct2DFactory));
         }
 
-        public RectangleF GetRelativeBounds(Layer layer)
+        public TextLayout GetTextLayout(ITextLayer text)
+        {
+            return Get(_texts, text, t => t.GetLayout(ArtView.DirectWriteFactory));
+        }
+
+        public RectangleF GetRelativeBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
         }
 
-        public (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target)
+        public (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer, RenderTarget target)
         {
             return Get(_strokes, layer, l =>
             {
@@ -224,19 +226,22 @@ namespace Ibinimator.Service
 
         public void ResetLayerCache()
         {
-            lock (_renders)
+            lock (_texts)
             {
-                foreach (var (_, render) in _renders.AsTuples())
-                    render.Dispose();
+                foreach (var (_, layout) in _texts.AsTuples())
+                {
+                    layout.Dispose();
+                }
 
-                _renders.Clear();
+                _texts.Clear();
             }
 
             lock (_brushBindings)
             {
                 foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
                 {
-                    brushInfo.PropertyChanged -= OnBrushPropertyChanged;
+                    if (brushInfo != null)
+                        brushInfo.PropertyChanged -= OnBrushPropertyChanged;
                     brush?.Dispose();
                 }
                 _brushBindings.Clear();
@@ -315,16 +320,14 @@ namespace Ibinimator.Service
             }
         }
 
-        private void InvalidateLayer(Layer layer)
-        {
-            ArtView.InvalidateSurface();
-        }
-
         private Bitmap LoadBitmap(RenderTarget target, string name)
         {
-            using (var stream = Application
-                .GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative))
-                .Stream)
+            var streamResourceInfo = Application
+                .GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative));
+
+            if (streamResourceInfo == null) return null;
+
+            using (var stream = streamResourceInfo.Stream)
             {
                 using (var bitmap = (System.Drawing.Bitmap) Image.FromStream(stream))
                 {
@@ -341,7 +344,8 @@ namespace Ibinimator.Service
 
                     using (var temp = new DataStream(data.Scan0, bitmap.Width * sizeof(int), true, true))
                     {
-                        var bmp = new Bitmap(target, new Size2(sourceArea.Width, sourceArea.Height), temp, data.Stride,
+                        var bmp = new Bitmap(target, new Size2(sourceArea.Width, sourceArea.Height), temp,
+                            data.Stride,
                             bitmapProperties);
 
                         bitmap.UnlockBits(data);
@@ -372,80 +376,111 @@ namespace Ibinimator.Service
                     break;
             }
 
-            InvalidateLayer(shape);
+            ArtView.InvalidateSurface();
         }
 
         private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var layer = (Layer) sender;
-            var shape = sender as Shape;
 
             switch (e.PropertyName)
             {
                 case "Geometry":
                     lock (_geometries)
                     {
-                        _geometries.TryGet(shape)?.Dispose();
-                        _geometries[shape] = shape.GetGeometry(ArtView.RenderTarget.Factory);
+                        if (layer is IGeometricLayer geom)
+                        {
+                            _geometries.TryGet(geom)?.Dispose();
+                            _geometries[geom] = geom.GetGeometry(ArtView.RenderTarget.Factory);
+                        }
                     }
                     goto case "Bounds";
 
-                case nameof(Shape.FillBrush):
+                case nameof(IFilledLayer.FillBrush):
                     lock (_fills)
                     {
-                        _fills.TryGet(shape)?.Dispose();
-                        _fills[shape] = BindBrush(shape, shape.FillBrush);
+                        if (layer is IFilledLayer shape)
+                        {
+                            _fills.TryGet(shape)?.Dispose();
+                            _fills[shape] = BindBrush(shape, shape.FillBrush);
+                        }
                     }
                     break;
 
-                case nameof(Shape.StrokeBrush):
+                case nameof(IStrokedLayer.StrokeBrush):
                     lock (_strokes)
                     {
-                        var stroke = _strokes.TryGet(shape);
-                        stroke.brush?.Dispose();
-                        stroke.brush = BindBrush(shape, shape.StrokeBrush);
-                        _strokes[shape] = stroke;
+                        if (layer is IStrokedLayer shape)
+                        {
+                            var stroke = _strokes.TryGet(shape);
+                            stroke.brush?.Dispose();
+                            stroke.brush = BindBrush(shape, shape.StrokeBrush);
+                            _strokes[shape] = stroke;
+                        }
                     }
                     break;
 
-                case nameof(Shape.StrokeWidth):
+                case nameof(IStrokedLayer.StrokeWidth):
                     lock (_strokes)
                     {
-                        var stroke = _strokes.TryGet(shape);
-                        stroke.width = shape.StrokeWidth;
-                        _strokes[shape] = stroke;
+                        if (layer is IStrokedLayer shape)
+                        {
+                            var stroke = _strokes.TryGet(shape);
+                            stroke.width = shape.StrokeWidth;
+                            _strokes[shape] = stroke;
+                        }
                     }
                     break;
 
-                case nameof(Shape.StrokeStyle):
-                case nameof(Shape.StrokeDashes):
+                case nameof(IStrokedLayer.StrokeStyle):
+                case nameof(IStrokedLayer.StrokeDashes):
                     lock (_strokes)
                     {
-                        var stroke = _strokes.TryGet(shape);
-                        stroke.style?.Dispose();
+                        if (layer is IStrokedLayer shape)
+                        {
+                            var stroke = _strokes.TryGet(shape);
+                            stroke.style?.Dispose();
 
-                        if (shape.StrokeStyle.DashStyle == DashStyle.Custom)
-                            stroke.style =
-                                new StrokeStyle1(
-                                    ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
-                                    shape.StrokeStyle,
-                                    shape.StrokeDashes.ToArray());
-                        else
-                            stroke.style =
-                                new StrokeStyle1(
-                                    ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
-                                    shape.StrokeStyle);
+                            if (shape.StrokeStyle.DashStyle == DashStyle.Custom)
+                                stroke.style =
+                                    new StrokeStyle1(
+                                        ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                                        shape.StrokeStyle,
+                                        shape.StrokeDashes.ToArray());
+                            else
+                                stroke.style =
+                                    new StrokeStyle1(
+                                        ArtView.RenderTarget.Factory.QueryInterface<Factory1>(),
+                                        shape.StrokeStyle);
 
-                        _strokes[shape] = stroke;
+                            _strokes[shape] = stroke;
+                        }
                     }
                     break;
+
+                case nameof(ITextLayer.Value):
+                case nameof(ITextLayer.FontSize):
+                case nameof(ITextLayer.FontWeight):
+                case nameof(ITextLayer.FontStyle):
+                case nameof(ITextLayer.FontStretch):
+                case nameof(ITextLayer.FontFamilyName):
+                    lock (_texts)
+                    {
+                        if (layer is ITextLayer text)
+                        {
+                            _texts.TryGet(text)?.Dispose();
+                            _texts[text] = text.GetLayout(ArtView.DirectWriteFactory);
+                        }
+                    }
+                    goto case "Bounds";
 
                 case "Bounds":
                     lock (_bounds)
                     {
-                        if (layer is Group g)
+                        if (layer is IContainerLayer g)
                             _bounds[layer] =
-                                g.SubLayers.Select(GetRelativeBounds)
+                                g.SubLayers
+                                    .Select(GetRelativeBounds)
                                     .Aggregate(RectangleF.Union);
                         else
                             _bounds[layer] = layer.GetBounds();
@@ -461,7 +496,7 @@ namespace Ibinimator.Service
                     break;
             }
 
-            InvalidateLayer(layer);
+            ArtView.InvalidateSurface();
         }
     }
 }

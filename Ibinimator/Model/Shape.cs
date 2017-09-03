@@ -110,7 +110,7 @@ namespace Ibinimator.Model
     [XmlInclude(typeof(Rectangle))]
     [XmlInclude(typeof(Ellipse))]
     [XmlInclude(typeof(Path))]
-    public abstract class Shape : Layer
+    public abstract class Shape : Layer, IGeometricLayer
     {
         protected Shape()
         {
@@ -123,7 +123,6 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Shape";
 
-        [XmlElement]
         public BrushInfo FillBrush
         {
             get => Get<BrushInfo>();
@@ -140,7 +139,6 @@ namespace Ibinimator.Model
             }
         }
 
-        [XmlElement]
         public BrushInfo StrokeBrush
         {
             get => Get<BrushInfo>();
@@ -153,15 +151,12 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        [XmlElement]
         public StrokeStyleProperties1 StrokeStyle
         {
             get => Get<StrokeStyleProperties1>();
             set => Set(value);
         }
 
-        [XmlAttribute]
-        [DefaultValue(0)]
         public float StrokeWidth
         {
             get => Get<float>();
@@ -232,28 +227,29 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public override T Hit<T>(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
+        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
             if (!(this is T)) return null;
 
-            using (var geometry = GetGeometry(factory))
-            {
-                if (FillBrush != null &&
-                    geometry.FillContainsPoint(
-                        point,
-                        AbsoluteTransform,
-                        geometry.FlatteningTolerance))
-                    return this as T;
+            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
 
-                if (StrokeBrush != null &&
-                    geometry.StrokeContainsPoint(
-                        point,
-                        StrokeWidth,
-                        null,
-                        AbsoluteTransform,
-                        geometry.FlatteningTolerance))
-                    return this as T;
-            }
+            var geometry = cache.GetGeometry(this);
+
+            if (FillBrush != null &&
+                geometry.FillContainsPoint(
+                    point,
+                    AbsoluteTransform,
+                    geometry.FlatteningTolerance))
+                return this as T;
+
+            if (StrokeBrush != null &&
+                geometry.StrokeContainsPoint(
+                    point,
+                    StrokeWidth,
+                    null, 
+                    AbsoluteTransform,
+                    geometry.FlatteningTolerance))
+                return this as T;
 
             return null;
         }

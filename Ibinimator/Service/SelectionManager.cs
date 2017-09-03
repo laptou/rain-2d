@@ -117,8 +117,7 @@ namespace Ibinimator.Service
                     var hit = test.handle != null;
 
                     if (!hit)
-                        if (Selection.Any(l => l.Hit(ArtView.RenderTarget.Factory, pos,
-                                                   l.WorldTransform, true) != null))
+                        if (Selection.Any(l => l.Hit(ArtView.RenderTarget.Factory, pos, true) != null))
                         {
                             _transformHandle = SelectionResizeHandle.Translation;
                             hit = true;
@@ -193,14 +192,14 @@ namespace Ibinimator.Service
                             .Select(g =>
                                 g.Hit(
                                     ArtView.RenderTarget.Factory,
-                                    pos, Matrix3x2.Identity,
+                                    pos,
                                     false))
                             .FirstOrDefault() ??
                         Root.SubLayers.Select(
                                 l =>
                                     l.Hit(
                                         ArtView.RenderTarget.Factory,
-                                        pos, Matrix3x2.Identity,
+                                        pos,
                                         !modifiers.HasFlag(ModifierKeys.Alt)))
                             .FirstOrDefault();
 
