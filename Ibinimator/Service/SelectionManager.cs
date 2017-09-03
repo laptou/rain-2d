@@ -568,6 +568,8 @@ namespace Ibinimator.Service
         private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate,
             float shear, Vector2 origin, bool makeRecord)
         {
+            var wlock = new WeakLock(_render);
+
             var size = new Vector2(
                 Math.Abs(SelectionBounds.Width),
                 Math.Abs(SelectionBounds.Height));
@@ -593,6 +595,7 @@ namespace Ibinimator.Service
             }
 
             foreach (var layer in Selection)
+            {
                 lock (layer)
                 {
                     var layerTransform = layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
@@ -603,6 +606,7 @@ namespace Ibinimator.Service
                     layer.Position = delta.translation;
                     layer.Shear = delta.skew;
                 }
+            }
 
             var sb = SelectionBounds;
             var tl = MathUtils.Scale(sb.TopLeft, origin, scale);
@@ -629,6 +633,8 @@ namespace Ibinimator.Service
 
             Updated?.Invoke(this, null);
             InvalidateSurface();
+
+            wlock.Dispose();
 
             return transform;
         }

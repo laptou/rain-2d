@@ -258,27 +258,27 @@ namespace Ibinimator.Model
             return null;
         }
 
-        public override void Render(RenderTarget target, ICacheManager cacheHelper)
+        public override void Render(RenderTarget target, ICacheManager cache)
         {
-            var transform = target.Transform;
-
             target.Transform = Transform * target.Transform;
 
             if (FillBrush != null)
-                target.FillGeometry(cacheHelper.GetGeometry(this), cacheHelper.GetFill(this));
+                target.FillGeometry(
+                    cache.GetGeometry(this), 
+                    cache.GetFill(this));
 
             if (StrokeBrush != null)
             {
-                var stroke = cacheHelper.GetStroke(this, target);
+                var stroke = cache.GetStroke(this, target);
 
                 target.DrawGeometry(
-                    cacheHelper.GetGeometry(this),
+                    cache.GetGeometry(this),
                     stroke.brush,
                     stroke.width,
                     stroke.style);
             }
 
-            target.Transform = transform;
+            target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
     }
 }

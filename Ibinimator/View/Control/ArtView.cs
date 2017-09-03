@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Service;
@@ -14,6 +15,10 @@ namespace Ibinimator.View.Control
     public class ArtView : D2DImage
     {
         private Factory _factory;
+        private readonly Stack<(long time, MouseEventType type, Vector2 position)> _events 
+            = new Stack<(long, MouseEventType, Vector2)>();
+        private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
+        private bool _eventLoop;
         private Vector2 _lastPosition;
 
         public ArtView()
@@ -22,7 +27,55 @@ namespace Ibinimator.View.Control
             Focusable = true;
 
             RenderTargetBound += OnRenderTargetBound;
+            Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _eventLoop = true;
+
+            var evtThread = new Thread(EventLoop);
+            evtThread.Start();
+        }
+
+        private void EventLoop()
+        {
+            while (_eventLoop)
+            {
+                while (_eventLoop)
+                {
+                    (long time, MouseEventType type, Vector2 position) evt;
+
+                    lock (_events)
+                    {
+                        if (_events.Count == 0) break;
+                        evt = _events.Pop();
+                    }
+
+                    switch (evt.type)
+                    {
+                        case MouseEventType.Down:
+                            ToolManager.MouseDown(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        case MouseEventType.Up:
+                            ToolManager.MouseUp(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        case MouseEventType.Move:
+                            ToolManager.MouseMove(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                Dispatcher.Invoke(() => 
+                    Cursor = ToolManager?.Tool?.Cursor != null ? 
+                    Cursors.None : 
+                    Cursors.Arrow);
+
+                _eventFlag.WaitOne(1000);
+            }
         }
 
         public IBrushManager BrushManager { get; private set; }
@@ -121,51 +174,49 @@ namespace Ibinimator.View.Control
                 await Task.Run(() => ToolManager.KeyUp(e));
         }
 
-        protected override async void OnPreviewMouseDown(MouseButtonEventArgs e)
+        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
 
             CaptureMouse();
 
-            if (ViewManager == null) return;
+            var pos = e.GetPosition(this);
+            var vec = new Vector2((float)pos.X, (float)pos.Y);
 
-            var pos1 = e.GetPosition(this);
-            var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
+            lock (_events)
+                _events.Push((DateTime.Now.Ticks, MouseEventType.Down, vec));
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.MouseDown(pos));
+            _eventFlag.Set();
         }
 
-        protected override async void OnPreviewMouseMove(MouseEventArgs e)
+        protected override void OnPreviewMouseMove(MouseEventArgs e)
         {
             base.OnPreviewMouseMove(e);
 
-            if (ViewManager == null) return;
+            var pos = e.GetPosition(this);
+            var vec = new Vector2((float)pos.X, (float)pos.Y);
 
-            var pos1 = e.GetPosition(this);
-            var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
+            lock(_events)
+                _events.Push((DateTime.Now.Ticks, MouseEventType.Move, vec));
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.MouseMove(pos));
+            _eventFlag.Set();
 
-            Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow;
-
-            _lastPosition = pos;
+            _lastPosition = vec;
         }
 
-        protected override async void OnPreviewMouseUp(MouseButtonEventArgs e)
+        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseUp(e);
 
             ReleaseMouseCapture();
 
-            if (ViewManager == null) return;
+            var pos = e.GetPosition(this);
+            var vec = new Vector2((float)pos.X, (float)pos.Y);
 
-            var pos1 = e.GetPosition(this);
-            var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
+            lock (_events)
+                _events.Push((DateTime.Now.Ticks, MouseEventType.Up, vec));
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.MouseUp(pos));
+            _eventFlag.Set();
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
@@ -209,10 +260,7 @@ namespace Ibinimator.View.Control
 
             target.Transform = ViewManager.Transform;
 
-            target.DrawBitmap(
-                CacheManager.GetRender(ViewManager.Root),
-                1,
-                BitmapInterpolationMode.Linear);
+            ViewManager.Root.Render(target, CacheManager);
 
             if (SelectionManager == null) return;
 
@@ -234,6 +282,12 @@ namespace Ibinimator.View.Control
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             CacheManager?.ResetAll();
+            _eventLoop = false;
         }
+    }
+
+    public enum MouseEventType
+    {
+        Down, Up, Move
     }
 }

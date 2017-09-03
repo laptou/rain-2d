@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using Ibinimator.Shared;
 using System.Linq;
@@ -26,7 +27,6 @@ namespace Ibinimator.Service
     public class CacheManager : Model.Model, ICacheManager
     {
         private readonly Dictionary<string, Bitmap> _bitmaps = new Dictionary<string, Bitmap>();
-        private readonly Dictionary<Layer, BitmapRenderTarget> _renders = new Dictionary<Layer, BitmapRenderTarget>();
         private readonly Dictionary<Layer, RectangleF> _bounds = new Dictionary<Layer, RectangleF>();
 
         private readonly Dictionary<BrushInfo, (Shape shape, Brush brush)> _brushBindings =
@@ -36,6 +36,7 @@ namespace Ibinimator.Service
 
         private readonly Dictionary<Shape, Brush> _fills = new Dictionary<Shape, Brush>();
         private readonly Dictionary<Shape, Geometry> _geometries = new Dictionary<Shape, Geometry>();
+        private readonly Dictionary<Layer, BitmapRenderTarget> _renders = new Dictionary<Layer, BitmapRenderTarget>();
 
         private readonly Dictionary<Shape, (Brush brush, float width, StrokeStyle style)> _strokes =
             new Dictionary<Shape, (Brush, float, StrokeStyle)>();
@@ -120,19 +121,14 @@ namespace Ibinimator.Service
             }
         }
 
-        public Bitmap GetBitmap(string key)
-        {
-            return _bitmaps[key];
-        }
-
         public RectangleF GetAbsoluteBounds(Layer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
         }
 
-        public RectangleF GetRelativeBounds(Layer layer)
+        public Bitmap GetBitmap(string key)
         {
-            return MathUtils.Bounds(GetBounds(layer), layer.Transform);
+            return _bitmaps[key];
         }
 
         public RectangleF GetBounds(Layer layer)
@@ -141,7 +137,6 @@ namespace Ibinimator.Service
             {
                 if (l is Group g)
                     return g.SubLayers
-                        .AsParallel()
                         .Select(GetRelativeBounds)
                         .Aggregate(RectangleF.Union);
 
@@ -164,22 +159,26 @@ namespace Ibinimator.Service
             return Get(_geometries, layer, l => l.GetGeometry(ArtView.RenderTarget.Factory));
         }
 
+        public RectangleF GetRelativeBounds(Layer layer)
+        {
+            return MathUtils.Bounds(GetBounds(layer), layer.Transform);
+        }
+
         public (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target)
         {
             return Get(_strokes, layer, l =>
             {
                 if (l.StrokeStyle.DashStyle == DashStyle.Solid)
-                {
                     return (
                         l.StrokeBrush.ToDirectX(target),
                         l.StrokeWidth,
                         new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle));
-                }
 
                 return (
                     l.StrokeBrush.ToDirectX(target),
                     l.StrokeWidth,
-                    new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle, l.StrokeDashes.ToArray()));
+                    new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle,
+                        l.StrokeDashes.ToArray()));
             });
         }
 
@@ -196,7 +195,7 @@ namespace Ibinimator.Service
         {
             foreach (DictionaryEntry entry in Application.Current.Resources)
                 if (entry.Value is Color color)
-                    _brushes[(string)entry.Key] =
+                    _brushes[(string) entry.Key] =
                         new SolidColorBrush(
                             target,
                             new RawColor4(
@@ -226,6 +225,14 @@ namespace Ibinimator.Service
 
         public void ResetLayerCache()
         {
+            lock (_renders)
+            {
+                foreach (var (_, render) in _renders.AsTuples())
+                    render.Dispose();
+
+                _renders.Clear();
+            }
+
             lock (_brushBindings)
             {
                 foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
@@ -259,18 +266,6 @@ namespace Ibinimator.Service
             }
         }
 
-        public Bitmap GetRender(Layer layer)
-        {
-            return Get(_renders, layer, l =>
-            {
-                var bmp = new BitmapRenderTarget(
-                            ArtView.RenderTarget,
-                            CompatibleRenderTargetOptions.GdiCompatible);
-                layer.Render(bmp, this);
-                return bmp;
-            }).Bitmap;
-        }
-
         #endregion
 
         public void UnbindLayer(Layer layer)
@@ -291,7 +286,7 @@ namespace Ibinimator.Service
                         _strokes[shape].style.Dispose();
                         _strokes.Remove(shape);
                     }
-                
+
                 lock (_geometries)
                 {
                     _geometries[shape].Dispose();
@@ -309,13 +304,16 @@ namespace Ibinimator.Service
                     UnbindLayer(subLayer);
         }
 
-        private TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
+        private static TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
         {
-            if (dict.TryGetValue(key, out TV value) &&
-                (value as DisposeBase)?.IsDisposed != true)
-                return value;
+            lock (dict)
+            {
+                if (dict.TryGetValue(key, out TV value) &&
+                    (value as DisposeBase)?.IsDisposed != true)
+                    return value;
 
-            return dict[key] = fallback(key);
+                return dict[key] = fallback(key);
+            }
         }
 
         private void InvalidateLayer(Layer layer)
@@ -399,7 +397,7 @@ namespace Ibinimator.Service
                         _fills.TryGet(shape)?.Dispose();
                         _fills[shape] = BindBrush(shape, shape.FillBrush);
                     }
-                    goto case "Render";
+                    break;
 
                 case nameof(Shape.StrokeBrush):
                     lock (_strokes)
@@ -409,7 +407,7 @@ namespace Ibinimator.Service
                         stroke.brush = BindBrush(shape, shape.StrokeBrush);
                         _strokes[shape] = stroke;
                     }
-                    goto case "Render";
+                    break;
 
                 case nameof(Shape.StrokeWidth):
                     lock (_strokes)
@@ -418,7 +416,7 @@ namespace Ibinimator.Service
                         stroke.width = shape.StrokeWidth;
                         _strokes[shape] = stroke;
                     }
-                    goto case "Render";
+                    break;
 
                 case nameof(Shape.StrokeStyle):
                 case nameof(Shape.StrokeDashes):
@@ -441,25 +439,26 @@ namespace Ibinimator.Service
 
                         _strokes[shape] = stroke;
                     }
-                    goto case "Render";
+                    break;
 
                 case "Bounds":
                     lock (_bounds)
                     {
                         if (layer is Group g)
                             _bounds[layer] =
-                                g.SubLayers
-                                    .AsParallel()
-                                    .Select(GetRelativeBounds)
-                                    .Aggregate(RectangleF.Union);
+                                g.SubLayers.Select(GetRelativeBounds)
+                                           .Aggregate(RectangleF.Union);
                         else
                             _bounds[layer] = layer.GetBounds();
                     }
-                    goto case "Render";
 
-                case "Render":
-                    _renders[layer].Clear(null);
-                    layer.Render(_renders[layer], this);
+                    if (layer.Parent != null)
+                        OnLayerPropertyChanged(layer.Parent, new PropertyChangedEventArgs("Bounds"));
+                    break;
+
+                case nameof(Layer.Transform):
+                    if (layer.Parent != null)
+                        OnLayerPropertyChanged(layer.Parent, new PropertyChangedEventArgs("Bounds"));
                     break;
             }
 

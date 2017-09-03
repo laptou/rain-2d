@@ -117,17 +117,22 @@ namespace Ibinimator.Model
         {
             lock (this)
             {
-                var transform = target.Transform;
-
                 target.Transform = Transform * target.Transform;
 
                 foreach (var layer in SubLayers.Reverse())
-                    target.DrawBitmap(
-                        cache.GetRender(layer), 
-                        1, 
-                        BitmapInterpolationMode.Linear);
+                {
+                    //target.Transform = Matrix3x2.Translation(cache.GetRelativeBounds(layer).TopLeft) * target.Transform;
 
-                target.Transform = transform;
+                    //target.DrawBitmap(
+                    //    cache.GetRender(layer),
+                    //    1, BitmapInterpolationMode.Linear);
+
+                    //target.Transform = Matrix3x2.Translation(-cache.GetRelativeBounds(layer).TopLeft) * target.Transform;
+
+                    layer.Render(target, cache);
+                }
+
+                target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
             }
         }
 
