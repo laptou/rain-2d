@@ -240,16 +240,16 @@ namespace Ibinimator.Model
             {
                 if (FillBrush != null &&
                     geometry.FillContainsPoint(
-                        point, 
-                        AbsoluteTransform, 
+                        point,
+                        AbsoluteTransform,
                         geometry.FlatteningTolerance))
                     return this as T;
 
-                if (StrokeBrush != null && 
+                if (StrokeBrush != null &&
                     geometry.StrokeContainsPoint(
-                        point, 
-                        StrokeWidth, 
-                        null, 
+                        point,
+                        StrokeWidth,
+                        null,
                         AbsoluteTransform,
                         geometry.FlatteningTolerance))
                     return this as T;
@@ -264,7 +264,7 @@ namespace Ibinimator.Model
 
             if (FillBrush != null)
                 target.FillGeometry(
-                    cache.GetGeometry(this), 
+                    cache.GetGeometry(this),
                     cache.GetFill(this));
 
             if (StrokeBrush != null)

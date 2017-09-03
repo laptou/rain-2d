@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
-using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -120,17 +119,7 @@ namespace Ibinimator.Model
                 target.Transform = Transform * target.Transform;
 
                 foreach (var layer in SubLayers.Reverse())
-                {
-                    //target.Transform = Matrix3x2.Translation(cache.GetRelativeBounds(layer).TopLeft) * target.Transform;
-
-                    //target.DrawBitmap(
-                    //    cache.GetRender(layer),
-                    //    1, BitmapInterpolationMode.Linear);
-
-                    //target.Transform = Matrix3x2.Translation(-cache.GetRelativeBounds(layer).TopLeft) * target.Transform;
-
                     layer.Render(target, cache);
-                }
 
                 target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
             }
@@ -367,6 +356,11 @@ namespace Ibinimator.Model
             return element;
         }
 
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
         public Layer Hit(Factory factory, Vector2 point, Matrix3x2 world, bool includeMe)
         {
             return Hit<Layer>(factory, point, world, includeMe);
@@ -379,11 +373,6 @@ namespace Ibinimator.Model
                 Matrix3x2.Skew(0, Shear) *
                 Matrix3x2.Rotation(Rotation) *
                 Matrix3x2.Translation(Position);
-        }
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
         }
     }
 }

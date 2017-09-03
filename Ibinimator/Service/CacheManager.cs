@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing.Imaging;
 using Ibinimator.Shared;
 using System.Linq;
@@ -447,7 +446,7 @@ namespace Ibinimator.Service
                         if (layer is Group g)
                             _bounds[layer] =
                                 g.SubLayers.Select(GetRelativeBounds)
-                                           .Aggregate(RectangleF.Union);
+                                    .Aggregate(RectangleF.Union);
                         else
                             _bounds[layer] = layer.GetBounds();
                     }

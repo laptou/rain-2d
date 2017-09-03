@@ -9,7 +9,6 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Point = System.Windows.Point;
 using WPF = System.Windows.Media;
 
 namespace Ibinimator.Model

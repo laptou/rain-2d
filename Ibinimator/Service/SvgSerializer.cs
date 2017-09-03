@@ -49,7 +49,7 @@ namespace Ibinimator.Service
 
     public static class SvgSerializer
     {
-        private static string[] _presentationAttributes = 
+        private static readonly string[] _presentationAttributes =
         {
             "alignment-baseline",
             "baseline-shift",
@@ -195,7 +195,7 @@ namespace Ibinimator.Service
         }
 
         private static T Parse<T>(
-            XElement element, Document doc, 
+            XElement element, Document doc,
             XContainer root, IReadOnlyDictionary<XName, string> ctx,
             Matrix3x2 world) where T : class
         {
@@ -222,7 +222,7 @@ namespace Ibinimator.Service
             }
 
             attrs.TryGetValue(SvgNames.XLink + "href", out var href);
-            
+
             if (element.Name == SvgNames.Svg)
             {
                 var document = new Document();
@@ -246,18 +246,15 @@ namespace Ibinimator.Service
             #region Defs
 
             if (element.Name == SvgNames.Defs)
-            {
                 return element.Elements().Select(elem =>
                 {
                     var def = Parse<object>(elem, doc, root, attrs, Matrix3x2.Identity);
 
-                    if(def is Resource res)
+                    if (def is Resource res)
                         res.Scope = Resource.ResoureScope.Document;
 
                     return def;
-
                 }).ToArray() as T;
-            }
 
             if (element.Name == SvgNames.SolidColor)
             {
@@ -284,7 +281,7 @@ namespace Ibinimator.Service
                     info.Opacity = ReadFloat(attrs, "opacity");
 
                 foreach (var stop in element.Elements(SvgNames.Stop))
-                    info.Stops.Add((GradientStop)Parse<object>(stop, doc, root, attrs, Matrix3x2.Identity));
+                    info.Stops.Add((GradientStop) Parse<object>(stop, doc, root, attrs, Matrix3x2.Identity));
 
                 return info as T;
             }
@@ -314,7 +311,7 @@ namespace Ibinimator.Service
                     rect.Height = ReadFloat(attrs, "height");
                     rect.Width = ReadFloat(attrs, "width");
                     rect.Position = new Vector2(
-                        ReadFloat(attrs, "x"), 
+                        ReadFloat(attrs, "x"),
                         ReadFloat(attrs, "y"));
 
                     layer = rect;
@@ -386,7 +383,6 @@ namespace Ibinimator.Service
                 {
                     if (attrs.TryGetValue("fill", out var fillValue) &&
                         !string.IsNullOrWhiteSpace(fillValue))
-                    {
                         if (fillValue.StartsWith("url"))
                         {
                             var id = fillValue.Replace("url(#", "").Replace(")", "");
@@ -400,11 +396,9 @@ namespace Ibinimator.Service
                                 Opacity = ReadFloat(attrs, "fill-opacity", 1)
                             };
                         }
-                    }
-                    
+
                     if (attrs.TryGetValue("stroke", out var strokeValue) &&
                         !string.IsNullOrWhiteSpace(strokeValue))
-                    {
                         if (strokeValue.StartsWith("url"))
                         {
                             var id = strokeValue.Replace("url(#", "").Replace(")", "");
@@ -418,7 +412,6 @@ namespace Ibinimator.Service
                                 Opacity = ReadFloat(attrs, "stroke-opacity", 1)
                             };
                         }
-                    }
 
                     shape.StrokeWidth = ReadFloat(attrs, "stroke-width", 1);
 
@@ -476,7 +469,6 @@ namespace Ibinimator.Service
                 attrs.TryGetValue("transform", out var transforms);
 
                 if (transforms != null)
-                {
                     foreach (var transform in transforms.Split())
                     {
                         var mat = Matrix3x2.Identity;
@@ -489,14 +481,12 @@ namespace Ibinimator.Service
                                 mat = Matrix3x2.Rotation(MathUtil.RadiansToDegrees(-rotation[0]));
 
                             if (rotation.Length > 2)
-                            {
-                                mat = 
+                                mat =
                                     Matrix3x2.Rotation(
                                         MathUtil.RadiansToDegrees(-rotation[0]),
                                         new Vector2(
                                             rotation[1],
                                             rotation[2]));
-                            }
                         }
 
                         if (transform.StartsWith("translate"))
@@ -513,14 +503,13 @@ namespace Ibinimator.Service
 
                         if (transform.StartsWith("matrix"))
                             mat = new Matrix3x2(Extract(transform));
-                        
+
                         var d = mat.Decompose();
                         layer.Scale *= d.scale;
                         layer.Rotation += d.rotation;
                         layer.Shear += d.skew;
                         layer.Position += d.translation;
                     }
-                }
 
                 return layer as T;
             }
@@ -530,26 +519,6 @@ namespace Ibinimator.Service
             return null;
         }
 
-        private static object Resolve(XContainer doc, string iri)
-        {
-            var parts = iri.Split(new [] {'#'}, StringSplitOptions.RemoveEmptyEntries);
-            var name = parts.LastOrDefault();
-
-            if (name == null) return null;
-
-            if (parts.Length == 2)
-                return 
-                    Resolve(
-                        XDocument.Load(
-                            File.Open(parts[0], FileMode.Open, FileAccess.Read)), "#" + parts[1]);
-
-            var element = 
-                doc.Descendants()
-                    .FirstOrDefault(x => (string) x.Attribute("id") == name);
-
-            return element == null ? null : Parse<object>(element, null, doc);
-        }
-
         private static T Parse<T>(XElement element, Document doc, XContainer root) where T : class
         {
             return Parse<T>(element, doc, root, new Dictionary<XName, string>(), Matrix3x2.Identity);
@@ -557,16 +526,18 @@ namespace Ibinimator.Service
 
         private static List<(string[] selectors, IDictionary<string, string> rules)> ParseStyle(string style)
         {
-            var data = Regex.Matches(style, "(?:([#*\\.]?[a-z-]\\w+|[#*\\.])(\\:[a-z][\\w\\(\\)\\[\\]]+)?\\s*,?\\s+)+\\{(?:\\s*([a-z-]+)\\s*:\\s*([\\w%\"\'-]+)\\s*;?)+\\}", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var data = Regex.Matches(style,
+                "(?:([#*\\.]?[a-z-]\\w+|[#*\\.])(\\:[a-z][\\w\\(\\)\\[\\]]+)?\\s*,?\\s+)+\\{(?:\\s*([a-z-]+)\\s*:\\s*([\\w%\"\'-]+)\\s*;?)+\\}",
+                RegexOptions.IgnoreCase | RegexOptions.Multiline);
             var dict = new List<(string[] selectors, IDictionary<string, string> rules)>();
 
             foreach (Match match in data)
             {
-                var selectors = 
+                var selectors =
                     match.Groups[1].Captures
-                    .OfType<Capture>()
-                    .Select(c => c.Value)
-                    .ToArray();
+                        .OfType<Capture>()
+                        .Select(c => c.Value)
+                        .ToArray();
 
                 var rules = new Dictionary<string, string>();
 
@@ -581,7 +552,7 @@ namespace Ibinimator.Service
 
         private static Color4 ReadColor(IDictionary<XName, string> attrs, XName attr)
         {
-            if(!attrs.TryGetValue(attr, out var value)) return Color4.Black;
+            if (!attrs.TryGetValue(attr, out var value)) return Color4.Black;
 
             if (value.StartsWith("#"))
             {
@@ -615,7 +586,7 @@ namespace Ibinimator.Service
 
         private static float ReadFloat(IDictionary<XName, string> attrs, XName attr, float defaultValue = 0)
         {
-            if(!attrs.TryGetValue(attr, out var input)) return defaultValue;
+            if (!attrs.TryGetValue(attr, out var input)) return defaultValue;
 
             var value = Extract(input, UnitType.None, 1);
 
@@ -661,6 +632,26 @@ namespace Ibinimator.Service
                 default:
                     throw new FormatException();
             }
+        }
+
+        private static object Resolve(XContainer doc, string iri)
+        {
+            var parts = iri.Split(new[] {'#'}, StringSplitOptions.RemoveEmptyEntries);
+            var name = parts.LastOrDefault();
+
+            if (name == null) return null;
+
+            if (parts.Length == 2)
+                return
+                    Resolve(
+                        XDocument.Load(
+                            File.Open(parts[0], FileMode.Open, FileAccess.Read)), "#" + parts[1]);
+
+            var element =
+                doc.Descendants()
+                    .FirstOrDefault(x => (string) x.Attribute("id") == name);
+
+            return element == null ? null : Parse<object>(element, null, doc);
         }
     }
 
@@ -746,7 +737,7 @@ namespace Ibinimator.Service
                         {
                             start = pos;
                             instruction = PathDataInstruction.Close;
-                            nodes.Add(new CloseNode { Open = true });
+                            nodes.Add(new CloseNode {Open = true});
                         }
 
                         if (coordinates.Count >= 2)

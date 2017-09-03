@@ -85,7 +85,7 @@ namespace Ibinimator.Service
         public Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
-            set => Set(value);
+            private set => Set(value);
         }
 
         public float Zoom

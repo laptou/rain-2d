@@ -8,17 +8,18 @@ using System.Windows.Input;
 using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage
     {
-        private Factory _factory;
-        private readonly Stack<(long time, MouseEventType type, Vector2 position)> _events 
-            = new Stack<(long, MouseEventType, Vector2)>();
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
+
+        private readonly Stack<(long time, MouseEventType type, Vector2 position)> _events
+            = new Stack<(long, MouseEventType, Vector2)>();
+
         private bool _eventLoop;
+        private Factory _factory;
         private Vector2 _lastPosition;
 
         public ArtView()
@@ -29,53 +30,6 @@ namespace Ibinimator.View.Control
             RenderTargetBound += OnRenderTargetBound;
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            _eventLoop = true;
-
-            var evtThread = new Thread(EventLoop);
-            evtThread.Start();
-        }
-
-        private void EventLoop()
-        {
-            while (_eventLoop)
-            {
-                while (_eventLoop)
-                {
-                    (long time, MouseEventType type, Vector2 position) evt;
-
-                    lock (_events)
-                    {
-                        if (_events.Count == 0) break;
-                        evt = _events.Pop();
-                    }
-
-                    switch (evt.type)
-                    {
-                        case MouseEventType.Down:
-                            ToolManager.MouseDown(ViewManager.ToArtSpace(evt.position));
-                            break;
-                        case MouseEventType.Up:
-                            ToolManager.MouseUp(ViewManager.ToArtSpace(evt.position));
-                            break;
-                        case MouseEventType.Move:
-                            ToolManager.MouseMove(ViewManager.ToArtSpace(evt.position));
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                Dispatcher.Invoke(() => 
-                    Cursor = ToolManager?.Tool?.Cursor != null ? 
-                    Cursors.None : 
-                    Cursors.Arrow);
-
-                _eventFlag.WaitOne(1000);
-            }
         }
 
         public IBrushManager BrushManager { get; private set; }
@@ -181,10 +135,12 @@ namespace Ibinimator.View.Control
             CaptureMouse();
 
             var pos = e.GetPosition(this);
-            var vec = new Vector2((float)pos.X, (float)pos.Y);
+            var vec = new Vector2((float) pos.X, (float) pos.Y);
 
             lock (_events)
+            {
                 _events.Push((DateTime.Now.Ticks, MouseEventType.Down, vec));
+            }
 
             _eventFlag.Set();
         }
@@ -194,10 +150,12 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseMove(e);
 
             var pos = e.GetPosition(this);
-            var vec = new Vector2((float)pos.X, (float)pos.Y);
+            var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock(_events)
+            lock (_events)
+            {
                 _events.Push((DateTime.Now.Ticks, MouseEventType.Move, vec));
+            }
 
             _eventFlag.Set();
 
@@ -211,10 +169,12 @@ namespace Ibinimator.View.Control
             ReleaseMouseCapture();
 
             var pos = e.GetPosition(this);
-            var vec = new Vector2((float)pos.X, (float)pos.Y);
+            var vec = new Vector2((float) pos.X, (float) pos.Y);
 
             lock (_events)
+            {
                 _events.Push((DateTime.Now.Ticks, MouseEventType.Up, vec));
+            }
 
             _eventFlag.Set();
         }
@@ -230,9 +190,9 @@ namespace Ibinimator.View.Control
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 ViewManager.Zoom *= scale;
             else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                ViewManager.Pan += new Vector2(e.Delta / 100f, 0);
+                ViewManager.Pan += new Vector2(e.Delta / 10f / ViewManager.Zoom, 0);
             else
-                ViewManager.Pan += new Vector2(0, e.Delta / 100f);
+                ViewManager.Pan += new Vector2(0, e.Delta / 10f / ViewManager.Zoom);
 
             InvalidateSurface();
 
@@ -279,6 +239,51 @@ namespace Ibinimator.View.Control
             target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
         }
 
+        private void EventLoop()
+        {
+            while (_eventLoop)
+            {
+                while (_eventLoop)
+                {
+                    (long time, MouseEventType type, Vector2 position) evt;
+
+                    lock (_events)
+                    {
+                        if (_events.Count == 0) break;
+                        evt = _events.Pop();
+                    }
+
+                    switch (evt.type)
+                    {
+                        case MouseEventType.Down:
+                            ToolManager.MouseDown(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        case MouseEventType.Up:
+                            ToolManager.MouseUp(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        case MouseEventType.Move:
+                            ToolManager.MouseMove(ViewManager.ToArtSpace(evt.position));
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                Dispatcher.Invoke(() =>
+                    Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow);
+
+                _eventFlag.WaitOne(1000);
+            }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _eventLoop = true;
+
+            var evtThread = new Thread(EventLoop);
+            evtThread.Start();
+        }
+
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             CacheManager?.ResetAll();
@@ -288,6 +293,8 @@ namespace Ibinimator.View.Control
 
     public enum MouseEventType
     {
-        Down, Up, Move
+        Down,
+        Up,
+        Move
     }
 }

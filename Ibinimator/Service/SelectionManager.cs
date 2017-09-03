@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using Ibinimator.Shared;
 using System.Linq;
@@ -198,11 +197,11 @@ namespace Ibinimator.Service
                                     false))
                             .FirstOrDefault() ??
                         Root.SubLayers.Select(
-                                l => 
-                                l.Hit(
-                                    ArtView.RenderTarget.Factory,
-                                    pos, Matrix3x2.Identity,
-                                    !modifiers.HasFlag(ModifierKeys.Alt)))
+                                l =>
+                                    l.Hit(
+                                        ArtView.RenderTarget.Factory,
+                                        pos, Matrix3x2.Identity,
+                                        !modifiers.HasFlag(ModifierKeys.Alt)))
                             .FirstOrDefault();
 
                     if (!modifiers.HasFlag(ModifierKeys.Shift))
@@ -219,9 +218,9 @@ namespace Ibinimator.Service
                 {
                     Parallel.ForEach(Root.Flatten(), layer =>
                     {
-                        var bounds = 
+                        var bounds =
                             MathUtils.Bounds(
-                                ArtView.CacheManager.GetBounds(layer), 
+                                ArtView.CacheManager.GetBounds(layer),
                                 layer.WorldTransform);
                         _selectionBox.Contains(ref bounds, out bool contains);
                         layer.Selected = layer.Selected || contains;
@@ -335,7 +334,7 @@ namespace Ibinimator.Service
                         break;
 
                     default:
-                        bounds = 
+                        bounds =
                             Selection
                                 .AsParallel()
                                 .Select(l => ArtView.CacheManager.GetAbsoluteBounds(l))
@@ -595,7 +594,6 @@ namespace Ibinimator.Service
             }
 
             foreach (var layer in Selection)
-            {
                 lock (layer)
                 {
                     var layerTransform = layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
@@ -606,7 +604,6 @@ namespace Ibinimator.Service
                     layer.Position = delta.translation;
                     layer.Shear = delta.skew;
                 }
-            }
 
             var sb = SelectionBounds;
             var tl = MathUtils.Scale(sb.TopLeft, origin, scale);

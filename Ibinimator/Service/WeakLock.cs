@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,12 +17,16 @@ namespace Ibinimator.Service
             Monitor.TryEnter(obj);
         }
 
+        #region IDisposable Members
+
         public void Dispose()
         {
-            if(Monitor.IsEntered(_object))
+            if (Monitor.IsEntered(_object))
                 Monitor.Exit(_object);
 
             _object = null;
         }
+
+        #endregion
     }
 }

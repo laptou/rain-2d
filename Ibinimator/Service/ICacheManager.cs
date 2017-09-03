@@ -14,18 +14,18 @@ namespace Ibinimator.Service
         void Bind(Document root);
         Brush BindBrush(Shape shape, BrushInfo brush);
         void BindLayer(Layer layer);
+        RectangleF GetAbsoluteBounds(Layer layer);
 
         Bitmap GetBitmap(string key);
         RectangleF GetBounds(Layer layer);
         Brush GetBrush(string key);
         Brush GetFill(Shape layer);
         Geometry GetGeometry(Shape layer);
+        RectangleF GetRelativeBounds(Layer layer);
         (Brush brush, float width, StrokeStyle style) GetStroke(Shape layer, RenderTarget target);
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);
         void ResetAll();
         void ResetLayerCache();
-        RectangleF GetAbsoluteBounds(Layer layer);
-        RectangleF GetRelativeBounds(Layer layer);
     }
 }

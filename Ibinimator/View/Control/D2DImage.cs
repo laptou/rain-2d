@@ -267,7 +267,7 @@ namespace Ibinimator.View.Control
 
                     _device.ImmediateContext.Flush();
                 }
-                catch(SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
+                catch (SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
                 {
                     CreateAndBindTargets();
                 }

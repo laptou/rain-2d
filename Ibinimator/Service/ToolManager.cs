@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
-using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -204,10 +203,10 @@ namespace Ibinimator.Service
 
     public sealed class PencilTool : Model.Model, ITool
     {
+        private readonly List<PathNode> _selectedNodes = new List<PathNode>();
         private bool _alt;
         private Vector2 _lastPos;
         private bool _shift;
-        private readonly List<PathNode> _selectedNodes = new List<PathNode>();
 
         public PencilTool(IToolManager toolManager)
         {
@@ -314,12 +313,10 @@ namespace Ibinimator.Service
                         index += figure.Length;
 
                         if (start == node)
-                        {
                             if (CurrentPath.Nodes.ElementAtOrDefault(index) is CloseNode close)
                                 close.Open = !close.Open;
                             else
                                 CurrentPath.Nodes.Insert(index, new CloseNode());
-                        }
                     }
 
                     _selectedNodes.Clear();
@@ -337,11 +334,11 @@ namespace Ibinimator.Service
                             Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
                             Constrain(pos));
 
-                    newNode = new PathNode { X = cpos.X, Y = cpos.Y };
+                    newNode = new PathNode {X = cpos.X, Y = cpos.Y};
                 }
                 else
                 {
-                    newNode= new PathNode { X = tpos.X, Y = tpos.Y };
+                    newNode = new PathNode {X = tpos.X, Y = tpos.Y};
                 }
 
                 if (_selectedNodes.Count >= 2 && _alt)
@@ -352,7 +349,7 @@ namespace Ibinimator.Service
                     var lastIndex = CurrentPath.Nodes.IndexOf(last);
                     var secondIndex = CurrentPath.Nodes.IndexOf(second);
 
-                    if(Math.Abs(lastIndex - secondIndex) == 1)
+                    if (Math.Abs(lastIndex - secondIndex) == 1)
                     {
                         CurrentPath.Nodes.Insert(lastIndex - (lastIndex - secondIndex) + 1, newNode);
                         _selectedNodes.Insert(_selectedNodes.Count - 1, newNode);
@@ -411,7 +408,6 @@ namespace Ibinimator.Service
                         if (_selectedNodes.Contains(node) ||
                             _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i - 1, 0, nodes.Length))) ||
                             _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i + 1, 0, nodes.Length))))
-                        {
                             if (node is CubicPathNode cn)
                             {
                                 target.DrawEllipse(new Ellipse
@@ -437,20 +433,15 @@ namespace Ibinimator.Service
                                     RadiusY = 3
                                 }, cacheManager.GetBrush("A2"), 1, stroke);
                             }
-                        }
 
                         var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
 
                         if (_selectedNodes.Contains(node))
-                        {
                             target.FillRectangle(rect,
                                 rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A3"));
-                        }
                         else
-                        {
                             target.FillRectangle(rect,
                                 rect.Contains(_lastPos) ? cacheManager.GetBrush("L3") : cacheManager.GetBrush("L1"));
-                        }
 
                         target.DrawRectangle(rect,
                             i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2"),
