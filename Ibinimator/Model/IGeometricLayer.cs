@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Service;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
@@ -25,6 +26,6 @@ namespace Ibinimator.Model
 
     public interface IGeometricLayer : IFilledLayer, IStrokedLayer
     {
-        Geometry GetGeometry(Factory d2dFactory);
+        Geometry GetGeometry(ICacheManager cache);
     }
 }

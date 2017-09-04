@@ -15,6 +15,7 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
+using DW = SharpDX.DirectWrite;
 using Device = SharpDX.Direct3D11.Device;
 using Device1 = SharpDX.DXGI.Device1;
 using Resource = SharpDX.DXGI.Resource;
@@ -41,6 +42,7 @@ namespace Ibinimator.View.Control
 
         private readonly Stopwatch _renderTimer = new Stopwatch();
         private D2D.Factory _d2DFactory;
+        private DW.Factory _dwFactory;
         private D2D.RenderTarget _d2DRenderTarget;
         private Device _device;
         private int _frameCount;
@@ -49,7 +51,7 @@ namespace Ibinimator.View.Control
         private long _lastFrameTime;
         private long _lastRenderTime;
         private Texture2D _renderTarget;
-        private Dx11ImageSource _surface;
+        private DX11ImageSource _surface;
 
         protected D2DImage()
         {
@@ -66,6 +68,10 @@ namespace Ibinimator.View.Control
         }
 
         public Device Device => _device;
+
+        public D2D.Factory Direct2DFactory => _d2DFactory;
+
+        public DW.Factory DirectWriteFactory => _dwFactory;
 
         public bool EnableAntialiasing
         {
@@ -85,7 +91,7 @@ namespace Ibinimator.View.Control
             set => SetValue(RenderModeProperty, value);
         }
 
-        public Dx11ImageSource Surface => _surface;
+        public DX11ImageSource Surface => _surface;
 
         public event EventHandler<D2D.RenderTarget> RenderTargetBound;
 
@@ -146,9 +152,11 @@ namespace Ibinimator.View.Control
 
             Disposer.SafeDispose(ref _d2DRenderTarget);
             Disposer.SafeDispose(ref _d2DFactory);
+            Disposer.SafeDispose(ref _dwFactory);
             Disposer.SafeDispose(ref _renderTarget);
 
             _d2DFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
+            _dwFactory = new DW.Factory(DW.FactoryType.Shared);
 
             var width = (int) Math.Max(1, ActualWidth * _d2DFactory.DesktopDpi.Width / 96.0);
             var height = (int) Math.Max(1, ActualHeight * _d2DFactory.DesktopDpi.Height / 96.0);
@@ -193,6 +201,7 @@ namespace Ibinimator.View.Control
 
             Disposer.SafeDispose(ref _d2DRenderTarget);
             Disposer.SafeDispose(ref _d2DFactory);
+            Disposer.SafeDispose(ref _dwFactory);
             Disposer.SafeDispose(ref _surface);
             Disposer.SafeDispose(ref _renderTarget);
             Disposer.SafeDispose(ref _device);
@@ -278,7 +287,7 @@ namespace Ibinimator.View.Control
         {
             _device = new Device(DriverType.Hardware, DeviceCreationFlags.BgraSupport);
 
-            _surface = new Dx11ImageSource();
+            _surface = new DX11ImageSource();
             _surface.IsFrontBufferAvailableChanged += OnIsFrontBufferAvailableChanged;
 
             Source = _surface;
@@ -307,14 +316,14 @@ namespace Ibinimator.View.Control
         }
     }
 
-    public class Dx11ImageSource : D3DImage, IDisposable
+    public class DX11ImageSource : D3DImage, IDisposable
     {
         private static int _activeClients;
         private static D3D9.Direct3DEx _context;
         private static D3D9.DeviceEx _device;
         private D3D9.Texture _renderTarget;
 
-        public Dx11ImageSource()
+        public DX11ImageSource()
         {
             StartD3D();
             _activeClients++;

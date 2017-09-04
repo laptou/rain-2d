@@ -117,7 +117,7 @@ namespace Ibinimator.Service
                     var hit = test.handle != null;
 
                     if (!hit)
-                        if (Selection.Any(l => l.Hit(ArtView.RenderTarget.Factory, pos, true) != null))
+                        if (Selection.Any(l => l.Hit(ArtView.CacheManager, pos, true) != null))
                         {
                             _transformHandle = SelectionResizeHandle.Translation;
                             hit = true;
@@ -191,14 +191,14 @@ namespace Ibinimator.Service
                             .OfType<Group>()
                             .Select(g =>
                                 g.Hit(
-                                    ArtView.RenderTarget.Factory,
+                                    ArtView.CacheManager,
                                     pos,
                                     false))
                             .FirstOrDefault() ??
                         Root.SubLayers.Select(
                                 l =>
                                     l.Hit(
-                                        ArtView.RenderTarget.Factory,
+                                        ArtView.CacheManager,
                                         pos,
                                         !modifiers.HasFlag(ModifierKeys.Alt)))
                             .FirstOrDefault();
@@ -255,7 +255,7 @@ namespace Ibinimator.Service
                         Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center);
 
                     foreach (var layer in Selection)
-                        if (layer is Shape shape)
+                        if (layer is IGeometricLayer shape)
                         {
                             target.Transform = shape.AbsoluteTransform * target.Transform;
                             target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), cache.GetBrush("A1"), 1f,

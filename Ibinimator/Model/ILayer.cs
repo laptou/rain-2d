@@ -26,7 +26,7 @@ namespace Ibinimator.Model
         float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
 
-        RectangleF GetBounds();
+        RectangleF GetBounds(ICacheManager cache);
         XElement GetElement();
         Layer Hit(ICacheManager cache, Vector2 point, bool includeMe);
         T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;

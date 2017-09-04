@@ -133,10 +133,10 @@ namespace Ibinimator.Service
             {
                 if (l is Group g)
                     return g.SubLayers
-                        .Select(layer1 => GetRelativeBounds(layer1))
+                        .Select(GetRelativeBounds)
                         .Aggregate(RectangleF.Union);
 
-                return l.GetBounds();
+                return l.GetBounds(this);
             });
         }
 
@@ -152,7 +152,7 @@ namespace Ibinimator.Service
 
         public Geometry GetGeometry(IGeometricLayer layer)
         {
-            return Get(_geometries, layer, l => l.GetGeometry(ArtView.Direct2DFactory));
+            return Get(_geometries, layer, l => l.GetGeometry(this));
         }
 
         public TextLayout GetTextLayout(ITextLayer text)
@@ -165,18 +165,20 @@ namespace Ibinimator.Service
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
         }
 
-        public (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer, RenderTarget target)
+        public (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer)
         {
             return Get(_strokes, layer, l =>
             {
+                var target = ArtView.RenderTarget;
+
                 if (l.StrokeStyle.DashStyle == DashStyle.Solid)
                     return (
-                        l.StrokeBrush.ToDirectX(target),
+                        l.StrokeBrush?.ToDirectX(target),
                         l.StrokeWidth,
                         new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle));
 
                 return (
-                    l.StrokeBrush.ToDirectX(target),
+                    l.StrokeBrush?.ToDirectX(target),
                     l.StrokeWidth,
                     new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), l.StrokeStyle,
                         l.StrokeDashes.ToArray()));
@@ -274,27 +276,43 @@ namespace Ibinimator.Service
 
         public void UnbindLayer(Layer layer)
         {
-            if (layer is Shape shape)
+            if (layer is IFilledLayer filled)
             {
-                if (shape.FillBrush != null)
+                if (filled.FillBrush != null)
+                {
                     lock (_fills)
                     {
-                        _fills[shape]?.Dispose();
-                        _fills.Remove(shape);
+                        if (_fills.TryGetValue(filled, out var fill))
+                        {
+                            fill?.Dispose();
+                            _fills.Remove(filled);
+                        }
                     }
+                }
+            }
 
-                if (shape.StrokeBrush != null)
-                    lock (_strokes)
+            if(layer is IStrokedLayer stroked)
+            {
+                lock (_strokes)
+                {
+                    if (_strokes.TryGetValue(stroked, out var stroke))
                     {
-                        _strokes[shape].brush.Dispose();
-                        _strokes[shape].style.Dispose();
-                        _strokes.Remove(shape);
+                        stroke.brush?.Dispose();
+                        stroke.style?.Dispose();
+                        _strokes.Remove(stroked);
                     }
+                }
+            }
 
+            if (layer is IGeometricLayer geometric)
+            {
                 lock (_geometries)
                 {
-                    _geometries[shape].Dispose();
-                    _geometries.Remove(shape);
+                    if (_geometries.TryGetValue(geometric, out var geometry))
+                    {
+                        geometry.Dispose();
+                        _geometries.Remove(geometric);
+                    }
                 }
             }
 
@@ -303,7 +321,7 @@ namespace Ibinimator.Service
                 _bounds.Remove(layer);
             }
 
-            if (layer is Group group)
+            if (layer is IContainerLayer group)
                 foreach (var subLayer in group.SubLayers)
                     UnbindLayer(subLayer);
         }
@@ -312,8 +330,9 @@ namespace Ibinimator.Service
         {
             lock (dict)
             {
-                if (dict.TryGetValue(key, out TV value) &&
-                    (value as DisposeBase)?.IsDisposed != true)
+                if (dict.TryGetValue(key, out var value) &&
+                    (value as DisposeBase)?.IsDisposed != true &&
+                    value != null)
                     return value;
 
                 return dict[key] = fallback(key);
@@ -391,7 +410,7 @@ namespace Ibinimator.Service
                         if (layer is IGeometricLayer geom)
                         {
                             _geometries.TryGet(geom)?.Dispose();
-                            _geometries[geom] = geom.GetGeometry(ArtView.RenderTarget.Factory);
+                            _geometries[geom] = geom.GetGeometry(this);
                         }
                     }
                     goto case "Bounds";
@@ -464,6 +483,7 @@ namespace Ibinimator.Service
                 case nameof(ITextLayer.FontStyle):
                 case nameof(ITextLayer.FontStretch):
                 case nameof(ITextLayer.FontFamilyName):
+                case "TextLayout":
                     lock (_texts)
                     {
                         if (layer is ITextLayer text)
@@ -483,7 +503,7 @@ namespace Ibinimator.Service
                                     .Select(GetRelativeBounds)
                                     .Aggregate(RectangleF.Union);
                         else
-                            _bounds[layer] = layer.GetBounds();
+                            _bounds[layer] = layer.GetBounds(this);
                     }
 
                     if (layer.Parent != null)

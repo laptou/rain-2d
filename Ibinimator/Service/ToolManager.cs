@@ -263,7 +263,7 @@ namespace Ibinimator.Service
         {
             if (CurrentPath == null)
             {
-                var hit = Root.Hit<Path>(ArtView.RenderTarget.Factory, pos, true);
+                var hit = Root.Hit<Path>(ArtView.CacheManager, pos, true);
 
                 if (hit != null)
                 {

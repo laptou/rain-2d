@@ -379,51 +379,54 @@ namespace Ibinimator.Service
                     throw new InvalidDataException();
                 }
 
-                if (layer is Shape shape)
+                if (layer is IFilledLayer filled)
                 {
                     if (attrs.TryGetValue("fill", out var fillValue) &&
                         !string.IsNullOrWhiteSpace(fillValue))
                         if (fillValue.StartsWith("url"))
                         {
                             var id = fillValue.Replace("url(#", "").Replace(")", "");
-                            shape.FillBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
+                            filled.FillBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
                         }
                         else
                         {
-                            shape.FillBrush = new SolidColorBrushInfo
+                            filled.FillBrush = new SolidColorBrushInfo
                             {
                                 Color = ReadColor(attrs, "fill"),
                                 Opacity = ReadFloat(attrs, "fill-opacity", 1)
                             };
                         }
+                }
 
+                if (layer is IStrokedLayer stroked)
+                {
                     if (attrs.TryGetValue("stroke", out var strokeValue) &&
                         !string.IsNullOrWhiteSpace(strokeValue))
                         if (strokeValue.StartsWith("url"))
                         {
                             var id = strokeValue.Replace("url(#", "").Replace(")", "");
-                            shape.StrokeBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
+                            stroked.StrokeBrush = doc.Swatches.FirstOrDefault(s => s.Name == id);
                         }
                         else
                         {
-                            shape.StrokeBrush = new SolidColorBrushInfo
+                            stroked.StrokeBrush = new SolidColorBrushInfo
                             {
                                 Color = ReadColor(attrs, "stroke"),
                                 Opacity = ReadFloat(attrs, "stroke-opacity", 1)
                             };
                         }
 
-                    shape.StrokeWidth = ReadFloat(attrs, "stroke-width", 1);
+                    stroked.StrokeWidth = ReadFloat(attrs, "stroke-width", 1);
 
                     var strokeStyle = new StrokeStyleProperties1();
 
                     if (attrs.ContainsKey("stroke-dasharray"))
                     {
                         strokeStyle.DashStyle = DashStyle.Custom;
-                        shape.StrokeDashes =
+                        stroked.StrokeDashes =
                             new ObservableCollection<float>(
                                 ReadFloats(attrs, "stroke-dasharray")
-                                    .Select(f => f / Math.Max(shape.StrokeWidth, 1e-10f)));
+                                    .Select(f => f / Math.Max(stroked.StrokeWidth, 1e-10f)));
                     }
 
                     attrs.TryGetValue("stroke-linejoin", out var lineJoin);
@@ -461,7 +464,7 @@ namespace Ibinimator.Service
                             break;
                     }
 
-                    shape.StrokeStyle = strokeStyle;
+                    stroked.StrokeStyle = strokeStyle;
                 }
 
                 layer.Name = element.Attribute("id")?.Value;

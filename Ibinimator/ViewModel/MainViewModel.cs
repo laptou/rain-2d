@@ -181,8 +181,20 @@ namespace Ibinimator.ViewModel
                 }
             };
 
+            var t = new Text
+            {
+                Value = "hello world",
+                FillBrush = r2.FillBrush,
+                FontFamilyName = "Roboto",
+                FontSize = 32,
+                Width = 100,
+                Height = 100,
+                Position = new Vector2(200, 200)
+            };
+
             l.Position = new Vector2(100, 100);
 
+            ViewManager.Root.Add(t);
             ViewManager.Root.Add(l);
 
             l.Add(e);

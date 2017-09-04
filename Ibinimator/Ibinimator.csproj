@@ -136,6 +136,7 @@
     <Compile Include="Model\IContainerLayer.cs" />
     <Compile Include="Model\IGeometricLayer.cs" />
     <Compile Include="Model\ILayer.cs" />
+    <Compile Include="Model\ITextLayer.cs" />
     <Compile Include="Model\Layer.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Path.cs" />

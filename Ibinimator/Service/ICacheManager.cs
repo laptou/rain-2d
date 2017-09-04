@@ -25,7 +25,7 @@ namespace Ibinimator.Service
         Brush GetFill(IFilledLayer layer);
         Geometry GetGeometry(IGeometricLayer layer);
         TextLayout GetTextLayout(ITextLayer text);
-        (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer, RenderTarget target);
+        (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer);
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);
         void ResetAll();

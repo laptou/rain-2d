@@ -22,14 +22,21 @@ namespace Ibinimator.Service
             selectionManager.Updated += (sender, args) =>
             {
                 selecting = true;
-                if (ArtView.SelectionManager.Selection.LastOrDefault() is Shape shape)
+                var layer = ArtView.SelectionManager.Selection.LastOrDefault();
+
+                if (layer is IFilledLayer filled)
                 {
-                    Fill = shape.FillBrush;
-                    Stroke = shape.StrokeBrush;
-                    StrokeStyle = shape.StrokeStyle;
-                    StrokeWidth = shape.StrokeWidth;
-                    StrokeDashes = new ObservableCollection<float>(shape.StrokeDashes);
+                    Fill = filled.FillBrush;
                 }
+
+                if (layer is IStrokedLayer stroked)
+                {
+                    Stroke = stroked.StrokeBrush;
+                    StrokeStyle = stroked.StrokeStyle;
+                    StrokeWidth = stroked.StrokeWidth;
+                    StrokeDashes = new ObservableCollection<float>(stroked.StrokeDashes);
+                }
+
                 selecting = false;
             };
 
@@ -82,28 +89,28 @@ namespace Ibinimator.Service
             {
                 case nameof(Fill):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            shape.FillBrush = Fill;
+                        if (layer is IFilledLayer filled)
+                            filled.FillBrush = Fill;
                     break;
                 case nameof(Stroke):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            shape.StrokeBrush = Stroke;
+                        if (layer is IStrokedLayer stroked)
+                            stroked.StrokeBrush = Stroke;
                     break;
                 case nameof(StrokeStyle):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            shape.StrokeStyle = StrokeStyle;
+                        if (layer is IStrokedLayer stroked)
+                            stroked.StrokeStyle = StrokeStyle;
                     break;
                 case nameof(StrokeWidth):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            shape.StrokeWidth = StrokeWidth;
+                        if (layer is IStrokedLayer stroked)
+                            stroked.StrokeWidth = StrokeWidth;
                     break;
                 case nameof(StrokeDashes):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is Shape shape)
-                            shape.StrokeDashes = new ObservableCollection<float>(StrokeDashes);
+                        if (layer is IStrokedLayer stroked)
+                            stroked.StrokeDashes = new ObservableCollection<float>(StrokeDashes);
                     break;
             }
         }

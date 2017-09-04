@@ -46,10 +46,10 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public override Geometry GetGeometry(Factory factory)
+        public override Geometry GetGeometry(ICacheManager cache)
         {
             return new EllipseGeometry(
-                factory,
+                cache.ArtView.Direct2DFactory,
                 new SharpDX.Direct2D1.Ellipse(
                     new Vector2(RadiusX, RadiusY),
                     RadiusX,
@@ -99,10 +99,10 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public override Geometry GetGeometry(Factory factory)
+        public override Geometry GetGeometry(ICacheManager cache)
         {
             return new RectangleGeometry(
-                factory,
+                cache.ArtView.Direct2DFactory,
                 new RectangleF(0, 0, Width, Height));
         }
     }
@@ -163,7 +163,7 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        public abstract Geometry GetGeometry(Factory factory);
+        public abstract Geometry GetGeometry(ICacheManager factory);
 
         public override XElement GetElement()
         {
@@ -238,7 +238,7 @@ namespace Ibinimator.Model
             if (FillBrush != null &&
                 geometry.FillContainsPoint(
                     point,
-                    AbsoluteTransform,
+                    Matrix3x2.Identity,
                     geometry.FlatteningTolerance))
                 return this as T;
 
@@ -246,8 +246,8 @@ namespace Ibinimator.Model
                 geometry.StrokeContainsPoint(
                     point,
                     StrokeWidth,
-                    null, 
-                    AbsoluteTransform,
+                    null,
+                    Matrix3x2.Identity,
                     geometry.FlatteningTolerance))
                 return this as T;
 
@@ -265,7 +265,7 @@ namespace Ibinimator.Model
 
             if (StrokeBrush != null)
             {
-                var stroke = cache.GetStroke(this, target);
+                var stroke = cache.GetStroke(this);
 
                 target.DrawGeometry(
                     cache.GetGeometry(this),

@@ -69,7 +69,7 @@ namespace Ibinimator.Model
             }
         }
 
-        public override RectangleF GetBounds()
+        public override RectangleF GetBounds(ICacheManager cache)
         {
             throw new InvalidOperationException();
         }
@@ -221,7 +221,7 @@ namespace Ibinimator.Model
 
         [Undoable]
         [Animatable]
-        public Vector2 Scale
+        public virtual Vector2 Scale
         {
             get => Get<Vector2>();
             set
@@ -314,7 +314,7 @@ namespace Ibinimator.Model
             yield return this;
         }
 
-        public virtual RectangleF GetBounds()
+        public virtual RectangleF GetBounds(ICacheManager cache)
         {
             return new RectangleF(0, 0, Width, Height);
         }

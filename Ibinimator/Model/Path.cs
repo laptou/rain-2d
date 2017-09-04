@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -45,7 +46,7 @@ namespace Ibinimator.Model
 
         protected override string ElementName => "path";
 
-        public override RectangleF GetBounds()
+        public override RectangleF GetBounds(ICacheManager cache)
         {
             var first = Nodes.FirstOrDefault();
             float x1 = first?.X ?? 0,
@@ -110,9 +111,9 @@ namespace Ibinimator.Model
             return element;
         }
 
-        public override Geometry GetGeometry(Factory factory)
+        public override Geometry GetGeometry(ICacheManager cache)
         {
-            var pg = new PathGeometry(factory);
+            var pg = new PathGeometry(cache.ArtView.Direct2DFactory);
             var gs = pg.Open();
 
             if (Nodes.Count > 0)
