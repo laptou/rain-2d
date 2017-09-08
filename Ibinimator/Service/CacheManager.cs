@@ -492,7 +492,7 @@ namespace Ibinimator.Service
                             _texts[text] = text.GetLayout(ArtView.DirectWriteFactory);
                         }
                     }
-                    goto case "Bounds";
+                    goto case "Geometry";
 
                 case "Bounds":
                     lock (_bounds)

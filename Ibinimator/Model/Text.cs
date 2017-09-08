@@ -229,6 +229,8 @@ namespace Ibinimator.Model
 
     public class Text : Layer, ITextLayer, IGeometricLayer
     {
+        private readonly List<Format> _formats = new List<Format>();
+
         public Text()
         {
             FontWeight = DW.FontWeight.Normal;
@@ -237,7 +239,7 @@ namespace Ibinimator.Model
             FontSize = 12;
             FontFamilyName = "Arial";
 
-            StrokeDashes = new ObservableCollection<float>(new float[] { 0, 0, 0, 0 });
+            StrokeDashes = new ObservableCollection<float>(new float[] {0, 0, 0, 0});
             StrokeStyle = new D2D.StrokeStyleProperties1
             {
                 TransformType = D2D.StrokeTransformType.Fixed
@@ -266,6 +268,9 @@ namespace Ibinimator.Model
                 };
 
                 layout.Draw(ctx, gtr, 0, 0);
+
+                if (ctx.Geometries.Count == 0)
+                    return new D2D.PathGeometry(factory);
 
                 return new D2D.GeometryGroup(
                     factory,
@@ -432,11 +437,37 @@ namespace Ibinimator.Model
                     FontWeight,
                     FontStyle,
                     FontStretch,
-                    FontSize),
+                    FontSize * 96 / 72),
                 IsBlock ? Width : float.PositiveInfinity,
                 IsBlock ? Height : float.PositiveInfinity);
 
-            layout.SetFontWeight(DW.FontWeight.Bold, new DW.TextRange(0, 1));
+            foreach (var format in _formats)
+            {
+                var typography = new DW.Typography(dwFactory);
+
+                if (format.Superscript)
+                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
+
+                if (format.Subscript)
+                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
+
+                layout.SetTypography(typography, format.Range);
+
+                if (format.FontFamilyName != null)
+                    layout.SetFontFamilyName(format.FontFamilyName, format.Range);
+
+                if (format.FontSize != null)
+                    layout.SetFontSize(format.FontSize.Value, format.Range);
+
+                if (format.FontStretch != null)
+                    layout.SetFontStretch(format.FontStretch.Value, format.Range);
+
+                if (format.FontStyle != null)
+                    layout.SetFontStyle(format.FontStyle.Value, format.Range);
+
+                if (format.FontWeight != null)
+                    layout.SetFontWeight(format.FontWeight.Value, format.Range);
+            }
 
             return layout;
         }
@@ -448,6 +479,57 @@ namespace Ibinimator.Model
         }
 
         #endregion
+
+        public Format GetFormat(int position)
+        {
+            var i = 0;
+
+            do i++; while (i < _formats.Count && _formats[i].Range.StartPosition < position);
+
+            var format = _formats.ElementAtOrDefault(i);
+            return (format?.Range.Length > position - format?.Range.StartPosition ? format : null)?.Clone();
+        }
+
+        public void SetFormat(Format format)
+        {
+            var range = format.Range;
+            var start = range.StartPosition;
+            var current = range.StartPosition;
+            var end = range.StartPosition + range.Length;
+
+            while (current < end)
+            {
+                var oldFormat = GetFormat(current);
+
+                if (oldFormat != null)
+                {
+                    var oldRange = oldFormat.Range;
+
+                    if (oldRange.StartPosition < start && end < oldRange.StartPosition + oldRange.Length)
+                    {
+                        oldFormat.Range = new DW.TextRange(oldRange.StartPosition, start - oldRange.StartPosition);
+                        var oldFormat2 = oldFormat.Clone();
+                        oldFormat2.Range = new DW.TextRange(end, oldRange.StartPosition + oldRange.Length - end);
+                        _formats.Add(oldFormat2);
+                    }
+                    else if (oldRange.StartPosition < start)
+                    {
+                        oldFormat.Range = new DW.TextRange(oldRange.StartPosition, start - oldRange.StartPosition);
+                    }
+                    else if (end < oldRange.StartPosition + oldRange.Length)
+                    {
+                        oldFormat.Range = new DW.TextRange(end, oldRange.StartPosition + oldRange.Length - end);
+                    }
+                }
+
+                current++;
+            }
+
+            _formats.Add(format);
+            _formats.Sort((f1, f2) => f1.Range.StartPosition.CompareTo(f2.Range.StartPosition));
+
+            RaisePropertyChanged("TextLayout");
+        }
 
         private static int[] ToCodePoints(string str)
         {
@@ -466,5 +548,61 @@ namespace Ibinimator.Model
 
             return codePoints.ToArray();
         }
+
+        #region Nested type: Format
+
+        public sealed class Format
+        {
+            private bool _subscript;
+            private bool _superscript;
+
+            public string FontFamilyName { get; set; }
+
+            public float? FontSize { get; set; }
+
+            public DW.FontStretch? FontStretch { get; set; }
+
+            public DW.FontStyle? FontStyle { get; set; }
+
+            public DW.FontWeight? FontWeight { get; set; }
+
+            public DW.TextRange Range { get; set; }
+
+            public bool Subscript
+            {
+                get => _subscript;
+                set
+                {
+                    _subscript = value;
+                    if (value) Superscript = false;
+                }
+            }
+
+            public bool Superscript
+            {
+                get => _superscript;
+                set
+                {
+                    _superscript = value;
+                    if (value) Subscript = false;
+                }
+            }
+
+            public Format Clone()
+            {
+                return new Format
+                {
+                    Superscript = Superscript,
+                    Subscript = Subscript,
+                    FontSize = FontSize,
+                    FontFamilyName = FontFamilyName,
+                    FontStyle = FontStyle,
+                    FontStretch = FontStretch,
+                    FontWeight = FontWeight
+                };
+            }
+        }
+
+        #endregion
     }
 }

@@ -9,20 +9,29 @@ namespace Ibinimator.Shared
     {
         public static bool IsElementary(this Type type)
         {
-            return type == typeof(float) ||
-                   type == typeof(bool) ||
-                   type == typeof(byte) ||
-                   type == typeof(char) ||
-                   type == typeof(decimal) ||
-                   type == typeof(double) ||
-                   type == typeof(int) ||
-                   type == typeof(long) ||
-                   type == typeof(short) ||
-                   type == typeof(string) ||
-                   type == typeof(ushort) ||
-                   type == typeof(ulong) ||
-                   type == typeof(uint) ||
-                   type == typeof(sbyte);
+            return Type.GetTypeCode(type) != TypeCode.Object;
+        }
+
+        public static bool IsNumeric(this Type type)
+        {
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (Type.GetTypeCode(type))
+            {
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                case TypeCode.Decimal:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Ibinimator.View;
 
 namespace Ibinimator
 {
@@ -21,6 +22,8 @@ namespace Ibinimator
             InitializeComponent();
 
             SetDefaultFont();
+
+            Icon.Initialize();
         }
 
         public static Dispatcher Dispatcher => Current.Dispatcher;

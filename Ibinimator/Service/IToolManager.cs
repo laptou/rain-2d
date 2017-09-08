@@ -13,27 +13,28 @@ namespace Ibinimator.Service
     {
         ITool Tool { get; }
         ToolType Type { get; set; }
-        void KeyDown(KeyEventArgs keyEventArgs);
-        void KeyUp(KeyEventArgs keyEventArgs);
+        bool KeyDown(KeyEventArgs keyEventArgs);
+        bool KeyUp(KeyEventArgs keyEventArgs);
 
-        void MouseDown(Vector2 pos);
-        void MouseMove(Vector2 pos);
-        void MouseUp(Vector2 pos);
+        bool MouseDown(Vector2 pos);
+        bool MouseMove(Vector2 pos);
+        bool MouseUp(Vector2 pos);
     }
 
-    public interface ITool : INotifyPropertyChanged
+    public interface ITool : INotifyPropertyChanged, IDisposable
     {
         Bitmap Cursor { get; }
         float CursorRotate { get; }
         IToolManager Manager { get; }
         string Status { get; }
         ToolType Type { get; }
-        void KeyDown(Key key);
-        void KeyUp(Key key);
+        ToolOption[] Options { get; }
+        bool KeyDown(Key key);
+        bool KeyUp(Key key);
 
-        void MouseDown(Vector2 pos);
-        void MouseMove(Vector2 pos);
-        void MouseUp(Vector2 pos);
+        bool MouseDown(Vector2 pos);
+        bool MouseMove(Vector2 pos);
+        bool MouseUp(Vector2 pos);
         void Render(RenderTarget target, ICacheManager cacheManager);
     }
 

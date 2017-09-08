@@ -27,8 +27,9 @@ namespace Ibinimator.Service
 
             await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
 
-            var doc = SvgSerializer.DeserializeDocument(XDocument.Load(ofd.OpenFile()));
-            vm.Document = doc;
+            if (!string.IsNullOrWhiteSpace(ofd.FileName))
+                using (var stream = ofd.OpenFile())
+                    vm.Document = SvgSerializer.DeserializeDocument(XDocument.Load(stream));
         }
 
         private static async Task SaveAsync(IViewManager vm)

@@ -233,6 +233,10 @@ namespace Ibinimator.Model
 
             point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
 
+            var bounds = cache.GetBounds(this);
+
+            if (!bounds.Contains(point)) return null;
+
             var geometry = cache.GetGeometry(this);
 
             if (FillBrush != null &&

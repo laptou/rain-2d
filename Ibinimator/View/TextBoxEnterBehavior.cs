@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
@@ -49,10 +50,10 @@ namespace Ibinimator.View
 
         private static void OnAssociatedObjectKeyDown(object sender, KeyEventArgs e)
         {
-            if (sender is TextBox textBox)
+            if (sender is FrameworkElement element)
             {
                 if (e.Key == Key.Return)
-                    textBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
                 if (e.Key == Key.Escape)
                     Keyboard.ClearFocus();

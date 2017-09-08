@@ -112,20 +112,18 @@ namespace Ibinimator.View.Control
             Keyboard.ClearFocus();
         }
 
-        protected override async void OnPreviewKeyDown(KeyEventArgs e)
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.KeyDown(e));
+            e.Handled = ToolManager?.KeyDown(e) == true;
         }
 
-        protected override async void OnPreviewKeyUp(KeyEventArgs e)
+        protected override void OnPreviewKeyUp(KeyEventArgs e)
         {
             base.OnPreviewKeyUp(e);
 
-            if (ToolManager != null)
-                await Task.Run(() => ToolManager.KeyUp(e));
+            e.Handled = ToolManager?.KeyUp(e) == true;
         }
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -137,10 +135,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events)
-            {
-                _events.Push((DateTime.Now.Ticks, MouseEventType.Down, vec));
-            }
+            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Down, vec));
 
             _eventFlag.Set();
         }
@@ -152,10 +147,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events)
-            {
-                _events.Push((DateTime.Now.Ticks, MouseEventType.Move, vec));
-            }
+            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Move, vec));
 
             _eventFlag.Set();
 
@@ -171,10 +163,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events)
-            {
-                _events.Push((DateTime.Now.Ticks, MouseEventType.Up, vec));
-            }
+            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Up, vec));
 
             _eventFlag.Set();
         }
@@ -253,24 +242,28 @@ namespace Ibinimator.View.Control
                         evt = _events.Pop();
                     }
 
+                    var pos = ViewManager.ToArtSpace(evt.position);
+
                     switch (evt.type)
                     {
                         case MouseEventType.Down:
-                            ToolManager.MouseDown(ViewManager.ToArtSpace(evt.position));
+                            if(!ToolManager.MouseDown(pos))
+                                SelectionManager.MouseDown(pos);
                             break;
                         case MouseEventType.Up:
-                            ToolManager.MouseUp(ViewManager.ToArtSpace(evt.position));
+                            if(!ToolManager.MouseUp(pos))
+                                SelectionManager.MouseUp(pos);
                             break;
                         case MouseEventType.Move:
-                            ToolManager.MouseMove(ViewManager.ToArtSpace(evt.position));
+                            if(!ToolManager.MouseMove(pos))
+                                SelectionManager.MouseMove(pos);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
 
-                Dispatcher.Invoke(() =>
-                    Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow);
+                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow);
 
                 _eventFlag.WaitOne(1000);
             }

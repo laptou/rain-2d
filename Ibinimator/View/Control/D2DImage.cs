@@ -229,6 +229,8 @@ namespace Ibinimator.View.Control
 
             if (RenderMode == RenderMode.Constant || _invalidated)
             {
+                _invalidated = false;
+
                 _surface.Lock();
 
                 PrepareAndCallRender();
@@ -239,7 +241,6 @@ namespace Ibinimator.View.Control
                 _surface.Unlock();
 
                 _lastRenderTime = _renderTimer.ElapsedMilliseconds;
-                _invalidated = false;
             }
         }
 

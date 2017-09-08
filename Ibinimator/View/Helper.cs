@@ -18,14 +18,23 @@ namespace Ibinimator.View
                     ColorUtils.RgbaToColor(0, 0, 0, 1),
                     FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public static readonly DependencyPropertyKey AccentBrushPropertyKey = 
+            DependencyProperty.RegisterAttachedReadOnly("AccentBrush", typeof(SolidColorBrush), 
+                typeof(Helper), new PropertyMetadata(default(SolidColorBrush)));
+
         public static Color GetAccent(DependencyObject obj)
         {
             return (Color) obj.GetValue(AccentProperty);
         }
 
-        public static Brush GetAccentBrush(DependencyObject obj)
+        public static SolidColorBrush GetAccentBrush(DependencyObject obj)
         {
             return new SolidColorBrush(GetAccent(obj));
+        }
+
+        public static void SetAccentBrush(DependencyObject obj, SolidColorBrush value)
+        {
+            
         }
 
         public static void SetAccent(DependencyObject obj, Color value)

@@ -117,11 +117,16 @@ namespace Ibinimator.Service
                     var hit = test.handle != null;
 
                     if (!hit)
-                        if (Selection.Any(l => l.Hit(ArtView.CacheManager, pos, true) != null))
+                    {
+                        if (Selection.Any(l => l.Hit(
+                            ArtView.CacheManager, 
+                            Matrix3x2.TransformPoint(Matrix3x2.Invert(l.WorldTransform), pos), 
+                            true) != null))
                         {
                             _transformHandle = SelectionResizeHandle.Translation;
                             hit = true;
                         }
+                    }
 
                     if (!hit && !ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
                         ClearSelection();
@@ -176,7 +181,7 @@ namespace Ibinimator.Service
 
             using (new WeakLock(this))
             {
-                if (_accumulatedTransform != Matrix3x2.Identity)
+                if (_accumulatedTransform != Matrix3x2.Identity && _watcher != null)
                 {
                     _transformHandle = null;
 
@@ -189,19 +194,12 @@ namespace Ibinimator.Service
                     var hit =
                         Selection
                             .OfType<Group>()
-                            .Select(g =>
-                                g.Hit(
-                                    ArtView.CacheManager,
-                                    pos,
-                                    false))
-                            .FirstOrDefault() ??
+                            .Select(g => g.Hit(ArtView.CacheManager, pos, false))
+                            .FirstOrDefault(l => l != null) ??
                         Root.SubLayers.Select(
-                                l =>
-                                    l.Hit(
-                                        ArtView.CacheManager,
-                                        pos,
-                                        !modifiers.HasFlag(ModifierKeys.Alt)))
-                            .FirstOrDefault();
+                                l => l.Hit(ArtView.CacheManager,
+                                           pos, !modifiers.HasFlag(ModifierKeys.Alt)))
+                            .FirstOrDefault(l => l!= null);
 
                     if (!modifiers.HasFlag(ModifierKeys.Shift))
                         ClearSelection();
@@ -217,11 +215,8 @@ namespace Ibinimator.Service
                 {
                     Parallel.ForEach(Root.Flatten(), layer =>
                     {
-                        var bounds =
-                            MathUtils.Bounds(
-                                ArtView.CacheManager.GetBounds(layer),
-                                layer.WorldTransform);
-                        _selectionBox.Contains(ref bounds, out bool contains);
+                        var bounds = ArtView.CacheManager.GetAbsoluteBounds(layer);
+                        _selectionBox.Contains(ref bounds, out var contains);
                         layer.Selected = layer.Selected || contains;
                     });
 
@@ -461,7 +456,7 @@ namespace Ibinimator.Service
                     origin = SelectionBounds.Center;
                     var x = rpos - origin;
                     var angle = (float) Math.Atan2(x.Y, x.X) + MathUtil.PiOverTwo;
-                    rotate = angle;
+                    rotate = angle - SelectionShear;
                     // Trace.TraceInformation($"rotation: {rotate:F2}");
                     break;
             }

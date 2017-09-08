@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -10,7 +11,7 @@ using Ibinimator.Shared;
 
 namespace Ibinimator.View
 {
-    public class UnitConverter : DependencyObject, IValueConverter
+    public class UnitConverter : DependencyObject, IValueConverter, IMultiValueConverter
     {
         private static readonly Dictionary<Unit, float> Factors = new Dictionary<Unit, float>
         {
@@ -28,49 +29,49 @@ namespace Ibinimator.View
         };
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SourceUnitProperty =
-            DependencyProperty.Register("SourceUnit", typeof(Unit), typeof(UnitConverter),
+        public static readonly DependencyProperty BaseUnitProperty =
+            DependencyProperty.Register("BaseUnit", typeof(Unit), typeof(UnitConverter),
                 new PropertyMetadata(Unit.Radians));
 
-        public static readonly DependencyProperty TargetUnitProperty =
-            DependencyProperty.Register("TargetUnit", typeof(Unit), typeof(UnitConverter),
-                new PropertyMetadata(Unit.Degrees));
-
-        public Unit SourceUnit
+        public Unit BaseUnit
         {
-            get => (Unit) GetValue(SourceUnitProperty);
-            set => SetValue(SourceUnitProperty, value);
-        }
-
-        public Unit TargetUnit
-        {
-            get => (Unit) GetValue(TargetUnitProperty);
-            set => SetValue(TargetUnitProperty, value);
+            get => (Unit) GetValue(BaseUnitProperty);
+            set => SetValue(BaseUnitProperty, value);
         }
 
         #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is float input)
+            var unit = parameter as Unit? ?? BaseUnit;
+
+            if (value == null) return 0;
+
+            if (value.GetType().IsNumeric() || value is string)
+            {
+                var input = System.Convert.ToSingle(value);
+
                 if (Type.GetTypeCode(targetType) == TypeCode.String)
-                    return Format(input * ConversionFactor(SourceUnit, TargetUnit), TargetUnit);
-                else
-                    return input * ConversionFactor(SourceUnit, TargetUnit);
-            throw new InvalidOperationException();
+                    return Format(input, unit);
+
+                return input;
+            }
+
+            throw new ArgumentException();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            var unit = parameter as Unit? ?? BaseUnit;
+
             if (value is string input)
             {
-                var num = Unformat(input, TargetUnit) * ConversionFactor(TargetUnit, SourceUnit);
+                var num = Unformat(input, unit) * ConversionFactor(BaseUnit, unit);
                 if (!float.IsNaN(num)) return num;
             }
             else
-            {
-                return System.Convert.ToSingle(value) * ConversionFactor(TargetUnit, SourceUnit);
-            }
+                return System.Convert.ToSingle(value) * ConversionFactor(BaseUnit, unit);
+
             return Binding.DoNothing;
         }
 
@@ -92,10 +93,14 @@ namespace Ibinimator.View
                     return $"{value:N1} \u00B0";
                 case Unit.Pixels:
                     return $"{value:N1} px";
+                case Unit.Points:
+                    return $"{value:N1} pt";
                 case Unit.Inches:
                     return $"{value:N1} in";
                 case Unit.Centimeters:
                     return $"{value:N1} cm";
+                case Unit.Millimeters:
+                    return $"{value:N1} mm";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, null);
             }
@@ -129,24 +134,24 @@ namespace Ibinimator.View
 
         public float Unformat(string value, Unit target)
         {
-            var parts = value.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            var parts = Regex.Match(value, @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*([a-zA-Z%\u00B0]*)");
 
-            if (!float.TryParse(parts[0], out float num)) return float.NaN;
+            if (!float.TryParse(parts.Groups[1].Value, out var num)) return float.NaN;
 
             Unit source;
 
-            switch (parts.ElementAtOrDefault(1))
+            switch (parts.Groups[2].Value)
             {
-                case null:
-                    source = target;
-                    break;
-
                 case "\u00B0":
                     source = Unit.Degrees;
                     break;
 
                 case "px":
                     source = Unit.Pixels;
+                    break;
+
+                case "pt":
+                    source = Unit.Points;
                     break;
 
                 case "in":
@@ -158,10 +163,25 @@ namespace Ibinimator.View
                     break;
 
                 default:
-                    return float.NaN;
+                    source = Unit.None;
+                    break;
             }
 
-            return num * ConversionFactor(source, target);
+            return num / ConversionFactor(source, target);
+        }
+
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            return Convert(values[0], targetType, values.ElementAtOrDefault(1) ?? parameter, culture);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            return new[]
+            {
+                ConvertBack(value, targetTypes[0], parameter, culture),
+                BaseUnit
+            };
         }
     }
 }

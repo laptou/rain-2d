@@ -164,7 +164,6 @@ namespace Ibinimator.Service
             var function = Regex.Match(data, @"(\w+)\([\w\d,.%-]+\)").Groups[1].Value.ToLowerInvariant();
             var matches = Regex.Matches(data,
                 @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*(%|px|pt|in|mm|cm|ms|s|f|m|h|deg|\u00B0)?");
-
             var counter = 0;
             var inputs =
                 from Match match in matches
@@ -172,7 +171,7 @@ namespace Ibinimator.Service
                 value: float.Parse(match.Groups[1].Value),
                 unit: match.Groups[2].Value);
             var values = new float[matches.Count];
-
+            
             foreach (var input in inputs)
             {
                 var value = input.value;
