@@ -11,6 +11,7 @@
     xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
     xmlns:service="clr-namespace:Ibinimator.Service"
     xmlns:d2d="clr-namespace:SharpDX.Direct2D1;assembly=SharpDX.Direct2D1"
+    xmlns:ibinimator="clr-namespace:Ibinimator"
     x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
     mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized"
     Icon="/Ibinimator;component/Resources/logo.png">
@@ -83,14 +84,17 @@
                         <MenuItem Header="_File">
                             <MenuItem Header="_Open"
                                       Command="{x:Static service:FileCommands.OpenCommand}"
-                                      CommandParameter="{Binding ViewManager}"></MenuItem>
+                                      CommandParameter="{Binding ViewManager}" />
                             <MenuItem Header="_Save"
                                       Command="{x:Static service:FileCommands.SaveCommand}"
-                                      CommandParameter="{Binding ViewManager}"></MenuItem>
+                                      CommandParameter="{Binding ViewManager}" />
                         </MenuItem>
                         <MenuItem Header="_Edit" />
                         <MenuItem Header="_Time" />
                         <MenuItem Header="Te_xt" />
+                        <MenuItem Header="_Help">
+                            <MenuItem Header="_License" Command="{x:Static ibinimator:ViewCommands.LicenseCommand}"/>
+                        </MenuItem>
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
                                 <Setter Property="FontSize" Value="12"/>

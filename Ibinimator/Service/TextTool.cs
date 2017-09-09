@@ -10,17 +10,19 @@ using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
+using DW = SharpDX.DirectWrite;
 using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
     public sealed class TextTool : Model.Model, ITool
     {
-        private SharpDX.DirectWrite.Factory Factory => ArtView.DirectWriteFactory;
-        private readonly SharpDX.DirectWrite.FontCollection _dwFontCollection;
+        private DW.Factory Factory => ArtView.DirectWriteFactory;
+        private readonly DW.FontCollection _dwFontCollection;
 
-        private readonly Dictionary<string, (SharpDX.DirectWrite.FontStyle style, SharpDX.DirectWrite.FontStretch stretch, SharpDX.DirectWrite.FontWeight weight)>
-            _fontFaceDescriptions = new Dictionary<string, (SharpDX.DirectWrite.FontStyle, SharpDX.DirectWrite.FontStretch, SharpDX.DirectWrite.FontWeight)>();
+        private readonly Dictionary<string, (DW.FontStyle style, DW.FontStretch stretch, DW.FontWeight weight)>
+            _fontFaceDescriptions = new Dictionary<string, (DW.FontStyle, DW.FontStretch, DW.FontWeight)>();
 
         private readonly ToolOption<string> _fontFaceOption;
         private readonly ToolOption<string> _fontNameOption;
@@ -89,7 +91,7 @@ namespace Ibinimator.Service
                         CurrentText.SetFormat(new Text.Format
                         {
                             FontFamilyName = _fontNameOption.Value,
-                            Range = new SharpDX.DirectWrite.TextRange(_selectionIndex, _selectionRange)
+                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
                         });
                 }
             };
@@ -119,7 +121,7 @@ namespace Ibinimator.Service
                         CurrentText.SetFormat(new Text.Format
                         {
                             FontSize = _fontSizeOption.Value,
-                            Range = new SharpDX.DirectWrite.TextRange(_selectionIndex, _selectionRange)
+                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
                         });
                 }
             };
@@ -147,7 +149,7 @@ namespace Ibinimator.Service
                                 FontStretch = desc.stretch,
                                 FontStyle = desc.style,
                                 FontWeight = desc.weight,
-                                Range = new SharpDX.DirectWrite.TextRange(_selectionIndex, _selectionRange)
+                                Range = new DW.TextRange(_selectionIndex, _selectionRange)
                             });
                         }
                     }
@@ -182,7 +184,9 @@ namespace Ibinimator.Service
             if (CurrentText != null)
             {
                 var mods = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
+                var text = CurrentText.Value;
 
+                Text.Format format;
                 switch (key)
                 {
                     #region Navigation
@@ -209,11 +213,11 @@ namespace Ibinimator.Service
                     case Key.End:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
-                            _selectionRange = CurrentText.Value.Length - _selectionIndex;
+                            _selectionRange = text.Length - _selectionIndex;
                         }
                         else
                         {
-                            _selectionIndex = CurrentText.Value.Length;
+                            _selectionIndex = text.Length;
                             _selectionRange = 0;
                         }
                         break;
@@ -231,18 +235,19 @@ namespace Ibinimator.Service
                     #region Manipulation
 
                     case Key.Back:
+                        if (_selectionIndex == 0) break;
+
                         if (_selectionRange == 0)
-                            CurrentText.Value = CurrentText.Value.Remove(--_selectionIndex, 1);
+                            CurrentText.Remove(--_selectionIndex, 1);
                         else
-                            CurrentText.Value = CurrentText.Value.Remove(_selectionIndex, _selectionRange);
+                            CurrentText.Remove(_selectionIndex, _selectionRange);
 
                         _selectionRange = 0;
                         break;
                     case Key.Delete:
-                        if (_selectionRange == 0)
-                            CurrentText.Value = CurrentText.Value.Remove(_selectionIndex, 1);
-                        else
-                            CurrentText.Value = CurrentText.Value.Remove(_selectionIndex, _selectionRange);
+                        if (_selectionIndex + Math.Max(_selectionRange, 1) > text.Length) break;
+
+                         CurrentText.Remove(_selectionIndex, Math.Max(_selectionRange, 1));
 
                         _selectionRange = 0;
                         break;
@@ -254,6 +259,46 @@ namespace Ibinimator.Service
                     case Key.A when mods.HasFlag(ModifierKeys.Control):
                         _selectionIndex = 0;
                         _selectionRange = CurrentText.Value.Length;
+                        break;
+
+                    case Key.B when mods.HasFlag(ModifierKeys.Control):
+                        format = CurrentText.GetFormat(_selectionIndex);
+                        var weight = format?.FontWeight ?? CurrentText.FontWeight;
+                        CurrentText.SetFormat(new Text.Format
+                        {
+                            FontWeight = weight == DW.FontWeight.Normal ? DW.FontWeight.Bold : DW.FontWeight.Normal,
+                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
+                        });
+                        break;
+
+                    case Key.I when mods.HasFlag(ModifierKeys.Control):
+                        format = CurrentText.GetFormat(_selectionIndex);
+                        var style = format?.FontStyle ?? CurrentText.FontStyle;
+                        CurrentText.SetFormat(new Text.Format
+                        {
+                            FontStyle = style == DW.FontStyle.Normal ? DW.FontStyle.Italic : DW.FontStyle.Normal,
+                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
+                        });
+                        break;
+
+                    case Key.C when mods.HasFlag(ModifierKeys.Control):
+                        Clipboard.SetText(text.Substring(_selectionIndex, _selectionRange));
+                        break;
+
+                    case Key.X when mods.HasFlag(ModifierKeys.Control):
+                        Clipboard.SetText(text.Substring(_selectionIndex, _selectionRange));
+                        goto case Key.Back;
+
+                    case Key.V when mods.HasFlag(ModifierKeys.Control):
+                        if (_selectionRange > 0)
+                            CurrentText.Remove(_selectionIndex, _selectionRange);
+
+                        var pasted = Clipboard.GetText();
+                        
+                        CurrentText.Insert(_selectionIndex, pasted);
+
+                        _selectionRange = 0;
+                        _selectionIndex += pasted.Length;
                         break;
 
                     #endregion
@@ -406,13 +451,18 @@ namespace Ibinimator.Service
                 target.Transform = CurrentText.AbsoluteTransform * target.Transform;
 
                 if (DateTime.Now.Millisecond < 500)
-                    target.FillRectangle(
-                        new RectangleF(
-                            _caretPosition.X,
-                            _caretPosition.Y,
-                            _caretSize.Width,
-                            _caretSize.Height),
-                        cacheManager.GetBrush("T2"));
+                {
+                    using(new StrokeStyle1(
+                        target.Factory.QueryInterface<Factory1>(), 
+                        new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed}))
+                        target.DrawLine(
+                            _caretPosition,
+                            new Vector2(
+                                _caretPosition.X,
+                                _caretPosition.Y + _caretSize.Height),
+                            cacheManager.GetBrush("T2"),
+                            _caretSize.Width);
+                }
 
                 if (_selectionRange > 0)
                     target.FillRectangle(
@@ -440,9 +490,9 @@ namespace Ibinimator.Service
             if (CurrentText == null) return;
 
             if(_selectionRange > 0)
-                CurrentText.Value = CurrentText.Value.Remove(_selectionIndex, _selectionRange);
+                CurrentText.Remove(_selectionIndex, _selectionRange);
 
-            CurrentText.Value = CurrentText.Value.Insert(_selectionIndex, e.Text);
+            CurrentText.Insert(_selectionIndex, e.Text);
 
             _selectionIndex += e.Text.Length;
             _selectionRange = 0;

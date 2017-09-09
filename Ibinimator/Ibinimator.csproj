@@ -114,12 +114,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ZeroFormatter, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ZeroFormatter.1.6.4\lib\net45\ZeroFormatter.dll</HintPath>
-    </Reference>
-    <Reference Include="ZeroFormatter.Interfaces, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ZeroFormatter.Interfaces.1.6.4\lib\net45\ZeroFormatter.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -175,6 +169,7 @@
     <Compile Include="Shared\StreamExtensions.cs" />
     <Compile Include="Shared\TupleUtils.cs" />
     <Compile Include="Shared\TypeExtensions.cs" />
+    <Compile Include="ViewCommands.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -198,6 +193,9 @@
     <Compile Include="View\EnumTemplateSelector.cs" />
     <Compile Include="View\EnumToBooleanConverter.cs" />
     <Compile Include="View\Helper.cs" />
+    <Compile Include="View\LicenseView.xaml.cs">
+      <DependentUpon>LicenseView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -251,10 +249,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\ZeroFormatter.Analyzer.1.1.1\analyzers\dotnet\cs\ZeroFormatterAnalyzer.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="View\Control\HSLWheel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LicenseView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -335,6 +334,8 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Icon.cs</LastGenOutput>
     </Content>
+    <Resource Include="Resources\License\fastmember.txt" />
+    <Resource Include="Resources\License\sharpdx.txt" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
