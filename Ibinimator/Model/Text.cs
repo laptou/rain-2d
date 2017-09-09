@@ -569,15 +569,17 @@ namespace Ibinimator.Model
             return GetFormat(position, out var _);
         }
 
-        public Format GetFormat(int position, out int index)
+        public Format GetFormat(int position, out int i)
         {
-            var i = 0;
+            i = 0;
 
             do i++; while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
 
             var format = _formats.ElementAtOrDefault(--i);
-            index = i;
-            return format?.Range.Length > position - format?.Range.StartPosition ? format : null;
+            if (format == null) return null;
+
+            return format.Range.StartPosition + format.Range.Length > position
+                && position >= format.Range.StartPosition ? format : null;
         }
 
         public void SetFormat(Format format)

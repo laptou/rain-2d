@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Shared;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Model;
-using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
 using DW = SharpDX.DirectWrite;
 using Layer = Ibinimator.Model.Layer;
 
@@ -18,82 +17,70 @@ namespace Ibinimator.Service
 {
     public sealed class TextTool : Model.Model, ITool
     {
-        private DW.Factory Factory => ArtView.DirectWriteFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
         private readonly Dictionary<string, (DW.FontStyle style, DW.FontStretch stretch, DW.FontWeight weight)>
             _fontFaceDescriptions = new Dictionary<string, (DW.FontStyle, DW.FontStretch, DW.FontWeight)>();
 
-        private readonly ToolOption<string> _fontFaceOption;
+        private readonly ToolOption<string> _fontFamilyOption;
+
         private readonly ToolOption<string> _fontNameOption;
         private readonly ToolOption<float> _fontSizeOption;
 
+        private bool _autoSet;
+
         private Vector2 _caretPosition;
         private Size2F _caretSize;
+        private Vector2 _lastClickPos;
 
         private long _lastClickTime;
-        private Vector2 _lastClickPos;
         private bool _mouseDown;
 
         private int _selectionIndex;
         private int _selectionRange;
-        private Size2F _selectionSize;
+        private RectangleF[] _selectionRects = new RectangleF[0];
 
         public TextTool(IToolManager manager)
         {
             Manager = manager;
-            Manager.ArtView.SelectionManager.Updated += (_, e) => Update();
-            Manager.ArtView.TextInput += ArtViewOnTextInput;
             
+
             _dwFontCollection = Factory.GetSystemFontCollection(true);
 
             var fontNames = new List<string>();
 
             for (var i = 0; i < _dwFontCollection.FontFamilyCount; i++)
                 using (var dwFontFamily = _dwFontCollection.GetFontFamily(i))
+                {
                     fontNames.Add(dwFontFamily.FamilyNames.ToCurrentCulture());
+                }
 
             fontNames.Sort();
 
-            _fontNameOption = new ToolOption<string>("Font Family", ToolOptionType.Dropdown)
+            _fontFamilyOption = new ToolOption<string>("Font Family", ToolOptionType.Dropdown)
             {
                 Options = fontNames.ToArray(),
                 Value = fontNames.FirstOrDefault()
             };
 
-            _fontNameOption.PropertyChanged += (s, e) =>
+            _fontFamilyOption.PropertyChanged += (s, e) =>
             {
-                var fontFaces = new List<string>();
-                _fontFaceDescriptions.Clear();
+                UpdateFontFaces();
 
-                if (_dwFontCollection.FindFamilyName(_fontNameOption.Value, out var index))
-                {
-                    using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+                if (CurrentText == null || _fontFamilyOption.Value == null) return;
+
+                if (_autoSet) return;
+
+                if (_selectionRange == 0)
+                    CurrentText.FontFamilyName = _fontFamilyOption.Value;
+                else
+                    CurrentText.SetFormat(new Text.Format
                     {
-                        for (var i = 0; i < dwFamily.FontCount; i++)
-                            using (var dwFont = dwFamily.GetFont(i))
-                            {
-                                var name = dwFont.FaceNames.ToCurrentCulture();
-                                fontFaces.Add(name);
-                                _fontFaceDescriptions[name] =
-                                    (dwFont.Style, dwFont.Stretch, dwFont.Weight);
-                            }
-                    }
-                }
+                        FontFamilyName = _fontFamilyOption.Value,
+                        Range = new DW.TextRange(_selectionIndex, _selectionRange)
+                    });
 
-                _fontFaceOption.Options = fontFaces.ToArray();
-
-                if (CurrentText != null && _fontNameOption.Value != null)
-                {
-                    if(_selectionRange == 0)
-                        CurrentText.FontFamilyName = _fontNameOption.Value;
-                    else
-                        CurrentText.SetFormat(new Text.Format
-                        {
-                            FontFamilyName = _fontNameOption.Value,
-                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
-                        });
-                }
+                Update();
             };
 
             _fontSizeOption = new ToolOption<float>("Font Size", ToolOptionType.Number)
@@ -113,67 +100,103 @@ namespace Ibinimator.Service
 
             _fontSizeOption.PropertyChanged += (s, e) =>
             {
-                if (CurrentText != null)
-                {
-                    if (_selectionRange == 0)
-                        CurrentText.FontSize = _fontSizeOption.Value;
-                    else
-                        CurrentText.SetFormat(new Text.Format
-                        {
-                            FontSize = _fontSizeOption.Value,
-                            Range = new DW.TextRange(_selectionIndex, _selectionRange)
-                        });
-                }
+                if (CurrentText == null) return;
+
+                if (_autoSet) return;
+
+                if (_selectionRange == 0)
+                    CurrentText.FontSize = _fontSizeOption.Value;
+                else
+                    CurrentText.SetFormat(new Text.Format
+                    {
+                        FontSize = _fontSizeOption.Value,
+                        Range = new DW.TextRange(_selectionIndex, _selectionRange)
+                    });
+
+                Update();
             };
 
-            _fontFaceOption = new ToolOption<string>("Font Face", ToolOptionType.Dropdown);
+            _fontNameOption = new ToolOption<string>("Font Face", ToolOptionType.Dropdown);
 
-            _fontFaceOption.PropertyChanged += (s, e) =>
+            _fontNameOption.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(ToolOption.Value))
+                if (e.PropertyName != nameof(ToolOption.Value)) return;
+
+                if (CurrentText == null || _fontNameOption.Value == null) return;
+
+                if (_autoSet) return;
+
+                var desc = _fontNameOption.Value.Split(' ');
+                var (stretch, style, weight) =
+                    (DW.FontStretch.Normal, DW.FontStyle.Normal, DW.FontWeight.Normal);
+
+                foreach (var modifier in desc)
                 {
-                    if (CurrentText != null && _fontFaceOption.Value != null)
-                    {
-                        var desc = _fontFaceDescriptions[_fontFaceOption.Value];
-                        
-                        if (_selectionRange == 0)
-                        {
-                            CurrentText.FontStretch = desc.stretch;
-                            CurrentText.FontStyle = desc.style;
-                            CurrentText.FontWeight = desc.weight;
-                        }
-                        else
-                        {
-                            CurrentText.SetFormat(new Text.Format
-                            {
-                                FontStretch = desc.stretch,
-                                FontStyle = desc.style,
-                                FontWeight = desc.weight,
-                                Range = new DW.TextRange(_selectionIndex, _selectionRange)
-                            });
-                        }
-                    }
+                    // all enums contain "Normal", so this would cause problems
+                    if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
+                        continue;
+
+                    if (Enum.TryParse(modifier, true, out DW.FontStretch mStretch))
+                        stretch = mStretch;
+
+                    if (Enum.TryParse(modifier, true, out DW.FontStyle mStyle))
+                        style = mStyle;
+
+                    if (Enum.TryParse(modifier, true, out DW.FontWeight mWeight))
+                        weight = mWeight;
                 }
+
+                if (_selectionRange == 0)
+                {
+                    CurrentText.FontStretch = stretch;
+                    CurrentText.FontStyle = style;
+                    CurrentText.FontWeight = weight;
+                }
+                else
+                {
+                    CurrentText.SetFormat(new Text.Format
+                    {
+                        FontStretch = stretch,
+                        FontStyle = style,
+                        FontWeight = weight,
+                        Range = new DW.TextRange(_selectionIndex, _selectionRange)
+                    });
+                }
+
+                Update();
             };
 
             Options = new ToolOption[]
             {
-                _fontNameOption, _fontSizeOption, _fontFaceOption
+                _fontFamilyOption,
+                _fontSizeOption,
+                _fontNameOption
             };
 
+            Manager.ArtView.SelectionManager.Updated += (_, e) => Update();
+            Manager.ArtView.TextInput += ArtViewOnTextInput;
+
             Update();
-            UpdateCaret();
         }
 
         public Text CurrentText => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Text;
 
         private ArtView ArtView => Manager.ArtView;
+        private DW.Factory Factory => ArtView.DirectWriteFactory;
 
-        private long Now => DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+        private static long Now => DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         private Layer Root => ArtView.ViewManager.Root;
 
         #region ITool Members
+
+        public void Dispose()
+        {
+            _dwFontCollection?.Dispose();
+            Cursor?.Dispose();
+
+            Manager.ArtView.TextInput -= ArtViewOnTextInput;
+        }
 
         public Bitmap Cursor { get; private set; }
 
@@ -210,6 +233,73 @@ namespace Ibinimator.Service
                             _selectionRange = 0;
                         }
                         break;
+                    case Key.Down:
+                        if (mods.HasFlag(ModifierKeys.Shift))
+                        {
+                            var prev = text.Substring(0, _selectionIndex + _selectionRange)
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var end = text.Substring(_selectionIndex + _selectionRange)
+                                          .IndexOf("\n", StringComparison.Ordinal)
+                                      + _selectionIndex + _selectionRange;
+
+                            var next = text.Substring(end + 1)
+                                           .IndexOf("\n", StringComparison.Ordinal)
+                                       + end + 1;
+
+                            var pos = _selectionIndex + _selectionRange - prev;
+
+                            _selectionRange = Math.Min(next, end + pos) - _selectionIndex;
+                        }
+                        else
+                        {
+                            var prev = text
+                                .Substring(0, _selectionIndex)
+                                .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var end = text.Substring(_selectionIndex)
+                                          .IndexOf("\n", StringComparison.Ordinal)
+                                      + _selectionIndex;
+
+                            var next = text.Substring(end + 1)
+                                           .IndexOf("\n", StringComparison.Ordinal)
+                                       + end + 1;
+
+                            var pos = _selectionIndex - prev;
+
+                            _selectionIndex = Math.Min(next, end + pos);
+                            _selectionRange = 0;
+                        }
+                        break;
+                    case Key.Up:
+                        if (mods.HasFlag(ModifierKeys.Shift))
+                        {
+                            var start = text.Substring(0, _selectionIndex)
+                                .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var prev = text.Substring(0, start)
+                                .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var pos = _selectionIndex - prev;
+
+                            var selectionEnd = _selectionIndex + _selectionRange;
+                            _selectionIndex = Math.Max(0, start + pos);
+                            _selectionRange = selectionEnd - _selectionIndex;
+                        }
+                        else
+                        {
+                            var start = text.Substring(0, _selectionIndex)
+                                            .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var prev = text.Substring(0, start)
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
+
+                            var pos = _selectionIndex - prev;
+
+                            _selectionIndex = Math.Max(0, start + pos);
+                            _selectionRange = 0;
+                        }
+                        break;
                     case Key.End:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
@@ -229,13 +319,16 @@ namespace Ibinimator.Service
 
                         _selectionIndex = 0;
                         break;
+                    case Key.Escape:
+                        _selectionRange = 0;
+                        break;
 
                     #endregion
 
                     #region Manipulation
 
                     case Key.Back:
-                        if (_selectionIndex == 0) break;
+                        if (_selectionIndex == 0 && _selectionRange == 0) break;
 
                         if (_selectionRange == 0)
                             CurrentText.Remove(--_selectionIndex, 1);
@@ -247,7 +340,7 @@ namespace Ibinimator.Service
                     case Key.Delete:
                         if (_selectionIndex + Math.Max(_selectionRange, 1) > text.Length) break;
 
-                         CurrentText.Remove(_selectionIndex, Math.Max(_selectionRange, 1));
+                        CurrentText.Remove(_selectionIndex, Math.Max(_selectionRange, 1));
 
                         _selectionRange = 0;
                         break;
@@ -294,7 +387,7 @@ namespace Ibinimator.Service
                             CurrentText.Remove(_selectionIndex, _selectionRange);
 
                         var pasted = Clipboard.GetText();
-                        
+
                         CurrentText.Insert(_selectionIndex, pasted);
 
                         _selectionRange = 0;
@@ -310,7 +403,7 @@ namespace Ibinimator.Service
                 _selectionIndex = MathUtils.Clamp(0, CurrentText.Value.Length, _selectionIndex);
                 _selectionRange = MathUtils.Clamp(0, CurrentText.Value.Length - _selectionIndex, _selectionRange);
 
-                UpdateCaret();
+                Update();
 
                 return true;
             }
@@ -365,7 +458,7 @@ namespace Ibinimator.Service
                     _selectionRange = Math.Abs(end - _selectionIndex);
                     _selectionIndex = Math.Min(_selectionIndex, end);
 
-                    UpdateCaret();
+                    Update();
                 }
             }
 
@@ -396,13 +489,7 @@ namespace Ibinimator.Service
             }
             else if (Now - _lastClickTime <= GetDoubleClickTime())
             {
-                var selectionRect = new RectangleF(
-                    _caretPosition.X,
-                    _caretPosition.Y,
-                    _selectionSize.Width,
-                    _selectionSize.Height);
-
-                if (selectionRect.Contains(tpos) || _selectionRange == 0)
+                if (_selectionRects.Any(r => r.Contains(tpos)) || _selectionRange == 0)
                 {
                     // double click :D
                     var str = CurrentText.Value;
@@ -417,7 +504,7 @@ namespace Ibinimator.Service
 
                     _selectionIndex = start;
                     _selectionRange = end - start;
-                    UpdateCaret();
+                    Update();
                 }
             }
             else
@@ -435,7 +522,7 @@ namespace Ibinimator.Service
                 _selectionIndex = metrics1.TextPosition + (isTrailingHit ? 1 : 0);
             }
 
-            UpdateCaret();
+            Update();
 
             _lastClickTime = Now;
 
@@ -450,11 +537,11 @@ namespace Ibinimator.Service
             {
                 target.Transform = CurrentText.AbsoluteTransform * target.Transform;
 
-                if (DateTime.Now.Millisecond < 500)
-                {
-                    using(new StrokeStyle1(
-                        target.Factory.QueryInterface<Factory1>(), 
-                        new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed}))
+                if (Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
+                    using (new StrokeStyle1(
+                        target.Factory.QueryInterface<Factory1>(),
+                        new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed}))
+                    {
                         target.DrawLine(
                             _caretPosition,
                             new Vector2(
@@ -462,16 +549,13 @@ namespace Ibinimator.Service
                                 _caretPosition.Y + _caretSize.Height),
                             cacheManager.GetBrush("T2"),
                             _caretSize.Width);
-                }
+                    }
 
                 if (_selectionRange > 0)
-                    target.FillRectangle(
-                        new RectangleF(
-                            _caretPosition.X,
-                            _caretPosition.Y,
-                            _selectionSize.Width,
-                            _selectionSize.Height),
-                        cacheManager.GetBrush("A1-1/2"));
+                    foreach (var selectionRect in _selectionRects)
+                        target.FillRectangle(
+                            selectionRect,
+                            cacheManager.GetBrush("A1-1/2"));
 
                 target.Transform = Matrix3x2.Invert(CurrentText.AbsoluteTransform) * target.Transform;
 
@@ -489,7 +573,7 @@ namespace Ibinimator.Service
         {
             if (CurrentText == null) return;
 
-            if(_selectionRange > 0)
+            if (_selectionRange > 0)
                 CurrentText.Remove(_selectionIndex, _selectionRange);
 
             CurrentText.Insert(_selectionIndex, e.Text);
@@ -497,31 +581,29 @@ namespace Ibinimator.Service
             _selectionIndex += e.Text.Length;
             _selectionRange = 0;
 
-            UpdateCaret();
+            Update();
         }
 
         [DllImport("user32.dll")]
+        private static extern uint GetCaretBlinkTime();
+
+        [DllImport("user32.dll")]
         private static extern uint GetDoubleClickTime();
+
+        private string ToFontName(DW.FontWeight weight, DW.FontStyle style, DW.FontStretch stretch)
+        {
+            var str = "";
+            if (weight != DW.FontWeight.Normal) str += weight + " ";
+            if (style != DW.FontStyle.Normal) str += style + " ";
+            if (stretch != DW.FontStretch.Normal) str += stretch + " ";
+            return str == "" ? "Regular" : str.Trim();
+        }
 
         private void Update()
         {
             if (CurrentText == null) return;
 
-            _fontNameOption.Value = CurrentText.FontFamilyName;
-            _fontSizeOption.Value = CurrentText.FontSize;
-            _fontFaceOption.Value = _fontFaceDescriptions
-                .FirstOrDefault(kv =>
-                    kv.Value.style == CurrentText.FontStyle &&
-                    kv.Value.stretch == CurrentText.FontStretch &&
-                    kv.Value.weight == CurrentText.FontWeight)
-                .Key;
-
-            UpdateCaret();
-        }
-
-        private void UpdateCaret()
-        {
-            if (CurrentText == null) return;
+            _autoSet = true;
 
             var layout = ArtView.CacheManager.GetTextLayout(CurrentText);
 
@@ -535,26 +617,51 @@ namespace Ibinimator.Service
             if (_selectionRange > 0)
             {
                 var rangeMetrics = layout.HitTestTextRange(_selectionIndex, _selectionRange, 0, 0);
-                var area = rangeMetrics
-                    .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
-                    .Aggregate(RectangleF.Union);
 
-                _selectionSize = area.Size;
+                _selectionRects =
+                    rangeMetrics
+                        .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
+                        .ToArray();
             }
             else
             {
-                _selectionSize = Size2F.Empty;
+                _selectionRects = new RectangleF[0];
             }
+
+            var format = CurrentText.GetFormat(_selectionIndex);
+
+            _fontFamilyOption.Value = format?.FontFamilyName ?? CurrentText.FontFamilyName;
+            _fontSizeOption.Value = format?.FontSize ?? CurrentText.FontSize;
+            _fontNameOption.Value =
+                ToFontName(
+                    format?.FontWeight ?? CurrentText.FontWeight,
+                    format?.FontStyle ?? CurrentText.FontStyle,
+                    format?.FontStretch ?? CurrentText.FontStretch);
+
+            _autoSet = false;
 
             Manager.ArtView.InvalidateSurface();
         }
 
-        public void Dispose()
+        private void UpdateFontFaces()
         {
-            _dwFontCollection?.Dispose();
-            Cursor?.Dispose();
+            var fontFaces = new List<string>();
+            _fontFaceDescriptions.Clear();
 
-            Manager.ArtView.TextInput -= ArtViewOnTextInput;
+            if (_dwFontCollection.FindFamilyName(_fontFamilyOption.Value, out var index))
+                using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+                {
+                    for (var i = 0; i < dwFamily.FontCount; i++)
+                        using (var dwFont = dwFamily.GetFont(i))
+                        {
+                            var name = dwFont.FaceNames.ToCurrentCulture();
+                            fontFaces.Add(name);
+                            _fontFaceDescriptions[name] =
+                                (dwFont.Style, dwFont.Stretch, dwFont.Weight);
+                        }
+                }
+
+            _fontNameOption.Options = fontFaces.ToArray();
         }
     }
 }
