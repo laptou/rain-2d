@@ -17,6 +17,7 @@ namespace Ibinimator.Service
     {
         private readonly List<PathNode> _selectedNodes = new List<PathNode>();
         private bool _alt;
+        private bool _down;
         private Vector2 _lastPos;
         private bool _shift;
 
@@ -108,8 +109,11 @@ namespace Ibinimator.Service
                 {
                     FillBrush = Manager.ArtView.BrushManager.Fill,
                     StrokeBrush = Manager.ArtView.BrushManager.Stroke,
-                    StrokeWidth = Manager.ArtView.BrushManager.StrokeWidth,
-                    StrokeStyle = Manager.ArtView.BrushManager.StrokeStyle
+                    StrokeInfo = new StrokeInfo
+                    {
+                        Width = Manager.ArtView.BrushManager.StrokeWidth,
+                        Style = Manager.ArtView.BrushManager.StrokeStyle
+                    }
                 };
 
                 Manager.ArtView.Dispatcher.Invoke(() =>
@@ -193,6 +197,8 @@ namespace Ibinimator.Service
                 }
             }
 
+            _down = true;
+
             Manager.ArtView.SelectionManager.Update(true);
 
             return true;
@@ -200,6 +206,16 @@ namespace Ibinimator.Service
 
         public bool MouseMove(Vector2 pos)
         {
+            if (_selectedNodes.Count > 0 && _down)
+            {
+                foreach (var n in _selectedNodes)
+                {
+                    var nPos = Matrix3x2.TransformPoint(Matrix3x2.Invert(CurrentPath.AbsoluteTransform), n.Position); 
+                    nPos += pos - _lastPos;
+                    n.Position = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, nPos);
+                }
+            }
+
             _lastPos = pos;
 
             Manager.ArtView.InvalidateSurface();
@@ -209,6 +225,7 @@ namespace Ibinimator.Service
 
         public bool MouseUp(Vector2 pos)
         {
+            _down = false;
             return false;
         }
 

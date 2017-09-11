@@ -43,8 +43,9 @@ namespace Ibinimator.Service
         public TextTool(IToolManager manager)
         {
             Manager = manager;
+            Status = "<b>Double Click</b> on canvas to create new text object. " +
+                     "<b>Single Click</b> to select.";
             
-
             _dwFontCollection = Factory.GetSystemFontCollection(true);
 
             var fontNames = new List<string>();
@@ -116,7 +117,10 @@ namespace Ibinimator.Service
                 Update();
             };
 
-            _fontNameOption = new ToolOption<string>("Font Face", ToolOptionType.Dropdown);
+            _fontNameOption = new ToolOption<string>("Font Face", ToolOptionType.Dropdown)
+            {
+                Value = "Regular"
+            };
 
             _fontNameOption.PropertyChanged += (s, e) =>
             {
@@ -125,26 +129,8 @@ namespace Ibinimator.Service
                 if (CurrentText == null || _fontNameOption.Value == null) return;
 
                 if (_autoSet) return;
-
-                var desc = _fontNameOption.Value.Split(' ');
-                var (stretch, style, weight) =
-                    (DW.FontStretch.Normal, DW.FontStyle.Normal, DW.FontWeight.Normal);
-
-                foreach (var modifier in desc)
-                {
-                    // all enums contain "Normal", so this would cause problems
-                    if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
-                        continue;
-
-                    if (Enum.TryParse(modifier, true, out DW.FontStretch mStretch))
-                        stretch = mStretch;
-
-                    if (Enum.TryParse(modifier, true, out DW.FontStyle mStyle))
-                        style = mStyle;
-
-                    if (Enum.TryParse(modifier, true, out DW.FontWeight mWeight))
-                        weight = mWeight;
-                }
+                
+                var (stretch, style, weight) = FromFontName(_fontNameOption.Value);
 
                 if (_selectionRange == 0)
                 {
@@ -179,12 +165,36 @@ namespace Ibinimator.Service
             Update();
         }
 
+        private static (DW.FontStretch stretch, DW.FontStyle style, DW.FontWeight weight) FromFontName(string name)
+        {
+            var desc = name.Split(' ');
+            var (stretch, style, weight) =
+                                (DW.FontStretch.Normal, DW.FontStyle.Normal, DW.FontWeight.Normal);
+
+            foreach (var modifier in desc)
+            {
+                // all enums contain "Normal", so this would cause problems
+                if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+
+                if (Enum.TryParse(modifier, true, out DW.FontStretch mStretch))
+                    stretch = mStretch;
+
+                if (Enum.TryParse(modifier, true, out DW.FontStyle mStyle))
+                    style = mStyle;
+
+                if (Enum.TryParse(modifier, true, out DW.FontWeight mWeight))
+                    weight = mWeight;
+            }
+
+            return (stretch, style, weight);
+        }
+
         public Text CurrentText => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Text;
 
         private ArtView ArtView => Manager.ArtView;
-        private DW.Factory Factory => ArtView.DirectWriteFactory;
 
-        private static long Now => DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+        private DW.Factory Factory => ArtView.DirectWriteFactory;
 
         private Layer Root => ArtView.ViewManager.Root;
 
@@ -471,7 +481,34 @@ namespace Ibinimator.Service
 
             if (CurrentText == null)
             {
-                _lastClickTime = Now;
+                if (Time.Now - _lastClickTime <= GetDoubleClickTime())
+                {
+                    var (stretch, style, weight) = FromFontName(_fontNameOption.Value);
+
+                    var text = new Text
+                    {
+                        Position = pos,
+                        FontFamilyName = _fontFamilyOption.Value,
+                        FontSize = _fontSizeOption.Value,
+                        FontStyle = style,
+                        FontStretch = stretch,
+                        FontWeight = weight,
+                        FillBrush = ArtView.BrushManager.Fill,
+                        StrokeBrush = ArtView.BrushManager.Stroke,
+                        StrokeInfo = new StrokeInfo
+                        {
+                            Width = ArtView.BrushManager.StrokeWidth,
+                            Style = ArtView.BrushManager.StrokeStyle
+                        }
+                    };
+
+                    var root = ArtView.SelectionManager.Selection.OfType<Group>().LastOrDefault() ?? 
+                               ArtView.SelectionManager.Root;
+
+                    root.Add(text);
+                }
+
+                _lastClickTime = Time.Now;
                 return false;
             }
 
@@ -487,11 +524,17 @@ namespace Ibinimator.Service
                 // but in this case we don't want to go into the 
                 // else block
             }
-            else if (Now - _lastClickTime <= GetDoubleClickTime())
+            else if (Time.Now - _lastClickTime <= GetDoubleClickTime())
             {
-                if (_selectionRects.Any(r => r.Contains(tpos)) || _selectionRange == 0)
+                 // double click :D
+                var layout = ArtView.CacheManager.GetTextLayout(CurrentText);
+
+                var metrics = layout.Metrics;
+
+                var rect = new RectangleF(metrics.Top, metrics.Left, metrics.Width, metrics.Height);
+
+                if (rect.Contains(tpos))
                 {
-                    // double click :D
                     var str = CurrentText.Value;
                     var start = _selectionIndex;
                     var end = start + _selectionRange;
@@ -513,8 +556,6 @@ namespace Ibinimator.Service
 
                 var layout = ArtView.CacheManager.GetTextLayout(CurrentText);
 
-                layout.GetLineMetrics();
-
                 var metrics1 = layout.HitTestPoint(
                     tpos.X, tpos.Y,
                     out var isTrailingHit, out var _);
@@ -524,7 +565,7 @@ namespace Ibinimator.Service
 
             Update();
 
-            _lastClickTime = Now;
+            _lastClickTime = Time.Now;
 
             return true;
         }
@@ -533,37 +574,40 @@ namespace Ibinimator.Service
 
         public void Render(RenderTarget target, ICacheManager cacheManager)
         {
-            if (CurrentText != null)
-            {
-                target.Transform = CurrentText.AbsoluteTransform * target.Transform;
+            if (CurrentText == null) return;
 
-                if (Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-                    using (new StrokeStyle1(
-                        target.Factory.QueryInterface<Factory1>(),
-                        new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed}))
-                    {
-                        target.DrawLine(
-                            _caretPosition,
-                            new Vector2(
-                                _caretPosition.X,
-                                _caretPosition.Y + _caretSize.Height),
-                            cacheManager.GetBrush("T2"),
-                            _caretSize.Width);
-                    }
+            target.Transform = CurrentText.AbsoluteTransform * target.Transform;
 
-                if (_selectionRange > 0)
-                    foreach (var selectionRect in _selectionRects)
-                        target.FillRectangle(
-                            selectionRect,
-                            cacheManager.GetBrush("A1-1/2"));
+            if (_selectionRange == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
+                using (new StrokeStyle1(
+                    target.Factory.QueryInterface<Factory1>(),
+                    new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed}))
+                {
+                    target.DrawLine(
+                        _caretPosition,
+                        new Vector2(
+                            _caretPosition.X,
+                            _caretPosition.Y + _caretSize.Height),
+                        cacheManager.GetBrush("T2"),
+                        _caretSize.Width / 2);
+                }
 
-                target.Transform = Matrix3x2.Invert(CurrentText.AbsoluteTransform) * target.Transform;
+            if (_selectionRange > 0)
+                foreach (var selectionRect in _selectionRects)
+                    target.FillRectangle(
+                        selectionRect,
+                        cacheManager.GetBrush("A1-1/2"));
 
-                ArtView.InvalidateSurface();
-            }
+            target.Transform = Matrix3x2.Invert(CurrentText.AbsoluteTransform) * target.Transform;
+
+            ArtView.InvalidateSurface();
         }
 
-        public string Status { get; }
+        public string Status
+        {
+            get => Get<string>();
+            private set => Set(value);
+        }
 
         public ToolType Type => ToolType.Text;
 

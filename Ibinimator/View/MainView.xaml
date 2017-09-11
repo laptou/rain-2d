@@ -79,7 +79,7 @@
                 <Image Source="/Ibinimator;component/Resources/logo.png" Width="24" Margin="0,0,0,0"
                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="1">
-                    <Menu FontFamily="/Ibinimator;component/Resources/Fonts/#Roboto" FontSize="14"
+                    <Menu FontFamily="/Ibinimator;component/Resources/Font/#Roboto" FontSize="14"
                           VerticalAlignment="Center" Background="{x:Null}" Margin="16,0,0,0">
                         <MenuItem Header="_File">
                             <MenuItem Header="_Open"
@@ -298,12 +298,16 @@
             </Grid>
         </Border>
         <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
-            <ToolBarTray Grid.Column="0" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
+            <ToolBarTray Grid.Column="0" Grid.RowSpan="2" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
@@ -347,7 +351,7 @@
             <TabControl Grid.Column="1">
                 <TabItem>
                     <Border Background="White">
-                        <control:ArtView x:Name="ArtView" UseLayoutRounding="True">
+                        <control:ArtView x:Name="ArtView" UseLayoutRounding="True" SnapsToDevicePixels="True">
                             <control:ArtView.InputBindings>
                                 <!--<KeyBinding Key="P"
                                             Command="{Binding SelectToolCommand}"
@@ -357,7 +361,7 @@
                     </Border>
                 </TabItem>
             </TabControl>
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
@@ -1033,7 +1037,10 @@
                     </TabItem>
                 </TabControl>
             </Grid>
-            <GridSplitter Grid.Column="1" Width="5" Background="Transparent" />
+            <GridSplitter Grid.Row="0" Grid.Column="1" Width="5" Background="Transparent" />
+            <StatusBar Grid.Column="1" Grid.Row="1" Height="25">
+                <TextBlock view:TextBlockHelper.FormattedText="{Binding ToolManager.Tool.Status, Mode=OneWay}" />
+            </StatusBar>
         </Grid>
     </Grid>
 </Window>

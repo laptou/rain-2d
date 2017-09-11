@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
+using Ibinimator.Shared;
 using Ibinimator.View.Control;
+using SharpDX;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
@@ -17,7 +19,7 @@ namespace Ibinimator.Service
         public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
             ArtView = artView;
-            StrokeDashes = new ObservableCollection<float>(new float[] {0, 0, 0, 0});
+            StrokeDashes = new ObservableList<float>(new float[] {0, 0, 0, 0});
 
             selectionManager.Updated += (sender, args) =>
             {
@@ -32,13 +34,15 @@ namespace Ibinimator.Service
                 if (layer is IStrokedLayer stroked)
                 {
                     Stroke = stroked.StrokeBrush;
-                    StrokeStyle = stroked.StrokeStyle;
-                    StrokeWidth = stroked.StrokeWidth;
-                    StrokeDashes = new ObservableCollection<float>(stroked.StrokeDashes);
+                    StrokeStyle = stroked.StrokeInfo.Style;
+                    StrokeWidth = stroked.StrokeInfo.Width;
+                    StrokeDashes = new ObservableList<float>(stroked.StrokeInfo.Dashes);
                 }
 
                 selecting = false;
             };
+
+            Fill = new SolidColorBrushInfo(Color4.Black);
 
             PropertyChanged += OnPropertyChanged;
         }
@@ -59,9 +63,9 @@ namespace Ibinimator.Service
             set => Set(value);
         }
 
-        public ObservableCollection<float> StrokeDashes
+        public ObservableList<float> StrokeDashes
         {
-            get => Get<ObservableCollection<float>>();
+            get => Get<ObservableList<float>>();
             private set => Set(value);
         }
 
@@ -100,17 +104,17 @@ namespace Ibinimator.Service
                 case nameof(StrokeStyle):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is IStrokedLayer stroked)
-                            stroked.StrokeStyle = StrokeStyle;
+                            stroked.StrokeInfo.Style = StrokeStyle;
                     break;
                 case nameof(StrokeWidth):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is IStrokedLayer stroked)
-                            stroked.StrokeWidth = StrokeWidth;
+                            stroked.StrokeInfo.Width = StrokeWidth;
                     break;
                 case nameof(StrokeDashes):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
                         if (layer is IStrokedLayer stroked)
-                            stroked.StrokeDashes = new ObservableCollection<float>(StrokeDashes);
+                            stroked.StrokeInfo.Dashes = new ObservableList<float>(StrokeDashes);
                     break;
             }
         }

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
+using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
@@ -17,15 +18,83 @@ namespace Ibinimator.Model
     {
         BrushInfo StrokeBrush { get; set; }
 
-        ObservableCollection<float> StrokeDashes { get; set; }
+        StrokeInfo StrokeInfo { get; set; }
+    }
 
-        StrokeStyleProperties1 StrokeStyle { get; set; }
+    public class StrokeInfo : Model
+    {
+        public StrokeInfo()
+        {
+            Dashes = new ObservableList<float>();
+            Style = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed };
+        }
 
-        float StrokeWidth { get; set; }
+        public ObservableList<float> Dashes
+        {
+            get => Get<ObservableList<float>>();
+            set => Set(value);
+        }
+
+        public StrokeStyleProperties1 Style
+        {
+            get => Get<StrokeStyleProperties1>();
+            set => Set(value);
+        }
+
+        public float Width
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+    }
+
+    public class Stroke : IDisposable
+    {
+        public Stroke(RenderTarget target, BrushInfo stroke, StrokeInfo strokeInfo)
+        {
+            Brush = stroke.ToDirectX(target);
+            Style = new StrokeStyle1(
+                target.Factory.QueryInterface<Factory1>(), 
+                strokeInfo.Style, 
+                strokeInfo.Dashes.ToArray());
+            Width = strokeInfo.Width;
+        }
+
+        public Stroke()
+        {
+        }
+
+        public StrokeStyle1 Style { get; set; }
+
+        public Brush Brush { get; set; }
+
+        public float Width { get; set; }
+
+        public void Dispose()
+        {
+            Brush?.Dispose();
+            Style?.Dispose();
+        }
     }
 
     public interface IGeometricLayer : IFilledLayer, IStrokedLayer
     {
         Geometry GetGeometry(ICacheManager cache);
+    }
+
+    public class Figure : IDisposable
+    {
+        public Geometry Geometry { get; set; }
+
+        public BrushInfo FillBrush { get; set; }
+
+        public BrushInfo StrokeBrush { get; set; }
+
+        public StrokeInfo StrokeInfo { get; set; }
+
+        public void Dispose()
+        {
+            Geometry?.Dispose();
+        }
     }
 }

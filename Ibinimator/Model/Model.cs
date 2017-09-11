@@ -28,15 +28,23 @@ namespace Ibinimator.Model
 
         #endregion
 
-        public T Clone<T>() where T : Model, new()
+        public T Clone<T>() where T : Model
         {
-            if (typeof(T) != GetType())
-                throw new InvalidCastException();
+            return Clone(typeof(T)) as T;
+        }
 
-            return new T
-            {
-                _properties = _properties.ToDictionary(kv => kv.Key, kv => kv.Value)
-            };
+        public object Clone()
+        {
+            return Clone(GetType());
+        }
+
+        public object Clone(Type type)
+        {
+            var t = (Model)Activator.CreateInstance(type);
+            t._properties = _properties.ToDictionary(
+                kv => kv.Key,
+                kv => (kv.Value as Model)?.Clone() ?? kv.Value);
+            return t;
         }
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
@@ -112,6 +120,11 @@ namespace Ibinimator.Model
             RaisePropertyChanging(propertyName);
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
+        }
+
+        protected void SilentSet<T>(T value, [CallerMemberName] string propertyName = "")
+        {
+            _properties[propertyName] = value;
         }
 
         protected void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")

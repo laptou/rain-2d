@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
+using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -16,7 +17,7 @@ namespace Ibinimator.Model
     {
         public override string DefaultName => "Group";
 
-        public ObservableCollection<Layer> SubLayers { get; } = new ObservableCollection<Layer>();
+        public ObservableList<Layer> SubLayers { get; } = new ObservableList<Layer>();
 
         protected override string ElementName => "g";
 
@@ -295,6 +296,11 @@ namespace Ibinimator.Model
         public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
 
         public abstract void Render(RenderTarget target, ICacheManager cache);
+
+        public virtual IDisposable GetResource(ICacheManager cache, int id)
+        {
+            return null;
+        }
 
         public virtual Layer Find(Guid id)
         {

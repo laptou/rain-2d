@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -35,6 +36,7 @@ namespace Ibinimator.Service
         private static async Task SaveAsync(IViewManager vm)
         {
             var doc = vm.Document;
+
             if (doc.Path == null)
             {
                 var sfd = new SaveFileDialog
@@ -48,7 +50,8 @@ namespace Ibinimator.Service
                 doc.Path = sfd.FileName;
             }
 
-            await FileService.SaveAsync(doc);
+            using (var stream = File.Open(doc.Path, FileMode.Create))
+                SvgSerializer.SerializeDocument(doc).Save(stream);
         }
     }
 }

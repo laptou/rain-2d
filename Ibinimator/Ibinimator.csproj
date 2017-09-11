@@ -144,6 +144,7 @@
       <DependentUpon>Icon.tt</DependentUpon>
     </Compile>
     <Compile Include="Service\BrushManager.cs" />
+    <Compile Include="Service\CommandManager.cs" />
     <Compile Include="Service\FileCommands.cs" />
     <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Service\PencilTool.cs" />
     <Compile Include="Service\SelectTool.cs" />
     <Compile Include="Service\TextTool.cs" />
+    <Compile Include="Service\Time.cs" />
     <Compile Include="Service\WeakLock.cs" />
     <Compile Include="Service\SelectionCommands.cs" />
     <Compile Include="Service\FileService.cs" />
@@ -164,6 +166,7 @@
     <Compile Include="Shared\EnumerableExtensions.cs" />
     <Compile Include="Shared\MathUtils.cs" />
     <Compile Include="Shared\Mathematics\Matrix.cs" />
+    <Compile Include="Shared\ObservableList.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
     <Compile Include="Shared\SerializationExtensions.cs" />
     <Compile Include="Shared\StreamExtensions.cs" />
@@ -199,6 +202,7 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\TextBlockHelper.cs" />
     <Compile Include="View\TextBoxEnterBehavior.cs" />
     <Compile Include="View\TreeViewBehavior.cs" />
     <Compile Include="View\UnitConverter.cs" />
@@ -226,24 +230,24 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Resource Include="Resources\Fonts\ROBOTO-BLACK.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-BLACKITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-BOLD.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-BOLDITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-ITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-LIGHT.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-LIGHTITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-MEDIUM.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-MEDIUMITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-REGULAR.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-THIN.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTO-THINITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-BOLD.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-BOLDITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-ITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-LIGHT.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-LIGHTITALIC.TTF" />
-    <Resource Include="Resources\Fonts\ROBOTOCONDENSED-REGULAR.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-BLACK.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-BLACKITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-BOLD.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-BOLDITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-ITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-LIGHT.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-LIGHTITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-MEDIUM.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-MEDIUMITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-REGULAR.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-THIN.TTF" />
+    <Resource Include="Resources\Font\ROBOTO-THINITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-BOLD.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-BOLDITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-ITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-LIGHT.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-LIGHTITALIC.TTF" />
+    <Resource Include="Resources\Font\ROBOTOCONDENSED-REGULAR.TTF" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

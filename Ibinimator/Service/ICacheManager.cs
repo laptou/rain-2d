@@ -6,7 +6,6 @@ using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
-using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
@@ -17,15 +16,20 @@ namespace Ibinimator.Service
         void BindLayer(ILayer layer);
 
         RectangleF GetAbsoluteBounds(ILayer layer);
-        RectangleF GetRelativeBounds(ILayer layer);
-        RectangleF GetBounds(ILayer layer);
 
         Bitmap GetBitmap(string key);
+        RectangleF GetBounds(ILayer layer);
         Brush GetBrush(string key);
+        T GetResource<T>(ILayer layer, long id) where T : IDisposable;
+        IEnumerable<(long, T)> GetResources<T>(ILayer layer) where T : IDisposable;
+        bool ClearResource<T>(ILayer layer, long id) where T : IDisposable;
         Brush GetFill(IFilledLayer layer);
+        GeometryRealization GetFillGeometry(IGeometricLayer layer);
         Geometry GetGeometry(IGeometricLayer layer);
+        RectangleF GetRelativeBounds(ILayer layer);
+        Stroke GetStroke(IStrokedLayer layer);
+        GeometryRealization GetStrokeGeometry(IGeometricLayer layer);
         TextLayout GetTextLayout(ITextLayer text);
-        (Brush brush, float width, StrokeStyle style) GetStroke(IStrokedLayer layer);
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);
         void ResetAll();

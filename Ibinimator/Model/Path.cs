@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
+using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -17,7 +20,23 @@ namespace Ibinimator.Model
     {
         public Path()
         {
-            Nodes.CollectionChanged += (sender, args) => RaisePropertyChanged("Geometry");
+            Nodes.CollectionChanged += (sender, args) =>
+            {
+                if(args.Action == NotifyCollectionChangedAction.Add)
+                    foreach (PathNode node in args.NewItems)
+                        node.PropertyChanged += NodeOnPropertyChanged;
+
+                if (args.Action == NotifyCollectionChangedAction.Remove)
+                    foreach (PathNode node in args.OldItems)
+                        node.PropertyChanged -= NodeOnPropertyChanged;
+
+                RaisePropertyChanged("Geometry");
+            };
+        }
+
+        private void NodeOnPropertyChanged(object o, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            RaisePropertyChanged("Geometry");
         }
 
         [XmlAttribute]
@@ -42,7 +61,7 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Path";
 
-        public ObservableCollection<PathNode> Nodes { get; set; } = new ObservableCollection<PathNode>();
+        public ObservableList<PathNode> Nodes { get; } = new ObservableList<PathNode>();
 
         protected override string ElementName => "path";
 
@@ -255,7 +274,11 @@ namespace Ibinimator.Model
     [Serializable]
     public class PathNode : Model
     {
-        public Vector2 Position => new Vector2(X, Y);
+        public Vector2 Position
+        {
+            get => new Vector2(X, Y);
+            set => (X, Y) = (value.X, value.Y);
+        }
 
         [XmlAttribute]
         public float X

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SharpDX.DirectWrite;
 
 namespace Ibinimator.Model
 {
@@ -9,10 +10,13 @@ namespace Ibinimator.Model
     {
         string FontFamilyName { get; set; }
         float FontSize { get; set; }
-        SharpDX.DirectWrite.FontStretch FontStretch { get; set; }
-        SharpDX.DirectWrite.FontStyle FontStyle { get; set; }
-        SharpDX.DirectWrite.FontWeight FontWeight { get; set; }
+        FontStretch FontStretch { get; set; }
+        FontStyle FontStyle { get; set; }
+        FontWeight FontWeight { get; set; }
         string Value { get; set; }
-        SharpDX.DirectWrite.TextLayout GetLayout(SharpDX.DirectWrite.Factory dwFactory);
+        TextLayout GetLayout(Factory dwFactory);
+
+        void Insert(int index, string str);
+        void Remove(int index, int length);
     }
 }

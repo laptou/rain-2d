@@ -95,6 +95,16 @@ namespace Ibinimator.Model
     [XmlType("Color")]
     public class SolidColorBrushInfo : BrushInfo
     {
+        public SolidColorBrushInfo()
+        {
+            
+        }
+
+        public SolidColorBrushInfo(Color4 color)
+        {
+            Color = color;
+        }
+
         public Color4 Color
         {
             get => Get<Color4>();
@@ -150,7 +160,7 @@ namespace Ibinimator.Model
     {
         public GradientBrushInfo()
         {
-            Stops = new ObservableCollection<GradientStop>();
+            Stops = new ObservableList<GradientStop>();
         }
 
         public Vector2 EndPoint
@@ -183,9 +193,9 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        public ObservableCollection<GradientStop> Stops
+        public ObservableList<GradientStop> Stops
         {
-            get => Get<ObservableCollection<GradientStop>>();
+            get => Get<ObservableList<GradientStop>>();
             set => Set(value);
         }
 

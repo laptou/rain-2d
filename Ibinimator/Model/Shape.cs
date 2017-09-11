@@ -114,11 +114,7 @@ namespace Ibinimator.Model
     {
         protected Shape()
         {
-            StrokeDashes = new ObservableCollection<float>(new float[] {0, 0, 0, 0});
-            StrokeStyle = new StrokeStyleProperties1
-            {
-                TransformType = StrokeTransformType.Fixed
-            };
+            StrokeInfo = new StrokeInfo();
         }
 
         public override string DefaultName => "Shape";
@@ -145,21 +141,9 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        public ObservableCollection<float> StrokeDashes
+        public StrokeInfo StrokeInfo
         {
-            get => Get<ObservableCollection<float>>();
-            set => Set(value);
-        }
-
-        public StrokeStyleProperties1 StrokeStyle
-        {
-            get => Get<StrokeStyleProperties1>();
-            set => Set(value);
-        }
-
-        public float StrokeWidth
-        {
-            get => Get<float>();
+            get => Get<StrokeInfo>();
             set => Set(value);
         }
 
@@ -180,17 +164,17 @@ namespace Ibinimator.Model
                 element.SetAttributeValue("stroke-opacity", StrokeBrush.Opacity);
             }
 
-            element.SetAttributeValue("stroke-width", StrokeWidth);
+            element.SetAttributeValue("stroke-width", StrokeInfo.Width);
             element.SetAttributeValue("vector-effect", "non-scaling-stroke");
 
-            if (StrokeStyle.DashStyle != DashStyle.Solid)
+            if (StrokeInfo.Style.DashStyle != DashStyle.Solid)
                 element.SetAttributeValue(
                     "stroke-dasharray",
                     string.Join(
                         ", ",
-                        StrokeDashes.Select(d => d * StrokeWidth)));
+                        StrokeInfo.Dashes.Select(d => d * StrokeInfo.Width)));
 
-            switch (StrokeStyle.LineJoin)
+            switch (StrokeInfo.Style.LineJoin)
             {
                 case LineJoin.Miter:
                     element.SetAttributeValue("stroke-linejoin", "miter");
@@ -205,7 +189,7 @@ namespace Ibinimator.Model
                     throw new ArgumentOutOfRangeException();
             }
 
-            switch (StrokeStyle.StartCap)
+            switch (StrokeInfo.Style.StartCap)
             {
                 case CapStyle.Flat:
                     element.SetAttributeValue("stroke-linecap", "butt");
@@ -249,7 +233,7 @@ namespace Ibinimator.Model
             if (StrokeBrush != null &&
                 geometry.StrokeContainsPoint(
                     point,
-                    StrokeWidth,
+                    StrokeInfo.Width,
                     null,
                     Matrix3x2.Identity,
                     geometry.FlatteningTolerance))
@@ -262,20 +246,28 @@ namespace Ibinimator.Model
         {
             target.Transform = Transform * target.Transform;
 
+            var dc = target.QueryInterfaceOrNull<DeviceContext1>();
+
             if (FillBrush != null)
-                target.FillGeometry(
-                    cache.GetGeometry(this),
-                    cache.GetFill(this));
+            {
+                if (dc != null)
+                    dc.DrawGeometryRealization(cache.GetFillGeometry(this), cache.GetFill(this));
+                else
+                    target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
+            }
 
             if (StrokeBrush != null)
             {
                 var stroke = cache.GetStroke(this);
 
-                target.DrawGeometry(
-                    cache.GetGeometry(this),
-                    stroke.brush,
-                    stroke.width,
-                    stroke.style);
+                if (dc != null)
+                    dc.DrawGeometryRealization(cache.GetStrokeGeometry(this), stroke.Brush);
+                else
+                    target.DrawGeometry(
+                        cache.GetGeometry(this),
+                        stroke.Brush,
+                        stroke.Width,
+                        stroke.Style);
             }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;

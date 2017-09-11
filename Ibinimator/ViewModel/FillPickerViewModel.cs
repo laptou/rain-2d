@@ -233,7 +233,7 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public ObservableCollection<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
+            public ObservableList<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
 
             public LineJoin StrokeJoin
             {

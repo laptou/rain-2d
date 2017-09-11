@@ -139,7 +139,7 @@ namespace Ibinimator.ViewModel
                 RadiusY = 50,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 1f, 0, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 0, 1f)},
-                StrokeWidth = 5,
+                StrokeInfo = new StrokeInfo { Width = 5 },
                 Rotation = MathUtil.Pi
             };
 
@@ -151,7 +151,7 @@ namespace Ibinimator.ViewModel
                 Height = 100,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 1f, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
-                StrokeWidth = 5
+                StrokeInfo = new StrokeInfo { Width = 5 }
             };
 
             var r2 = new Rectangle
@@ -170,8 +170,11 @@ namespace Ibinimator.ViewModel
                 Y = 300,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
-                StrokeWidth = 5,
-                Nodes = new ObservableCollection<PathNode>
+                StrokeInfo = new StrokeInfo
+                {
+                    Width = 5
+                },
+                Nodes =
                 {
                     new PathNode {X = 100, Y = 100},
                     new PathNode {X = 150, Y = 100},

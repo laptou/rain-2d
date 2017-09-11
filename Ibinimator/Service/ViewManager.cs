@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
+using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 
@@ -38,17 +39,12 @@ namespace Ibinimator.Service
 
         public Vector2 FromArtSpace(Vector2 v)
         {
-            return v / Zoom - Pan;
+            return Matrix3x2.TransformPoint(Transform, v);
         }
 
         public RectangleF FromArtSpace(RectangleF v)
         {
-            v.Top /= Zoom;
-            v.Left /= Zoom;
-            v.Bottom /= Zoom;
-            v.Right /= Zoom;
-            v.Location -= Pan;
-            return v;
+            return MathUtils.Bounds(v, Transform);
         }
 
         public Vector2 Pan
@@ -69,17 +65,12 @@ namespace Ibinimator.Service
 
         public Vector2 ToArtSpace(Vector2 v)
         {
-            return (v + Pan) * Zoom;
+            return Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), v);
         }
 
         public RectangleF ToArtSpace(RectangleF v)
         {
-            v.Location += Pan;
-            v.Top *= Zoom;
-            v.Left *= Zoom;
-            v.Bottom *= Zoom;
-            v.Right *= Zoom;
-            return v;
+            return MathUtils.Bounds(v, Matrix3x2.Invert(Transform));
         }
 
         public Matrix3x2 Transform

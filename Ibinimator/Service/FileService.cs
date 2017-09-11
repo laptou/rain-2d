@@ -12,7 +12,7 @@ using StrokeStyle = SharpDX.Direct2D1.StrokeStyleProperties1;
 
 namespace Ibinimator.Service
 {
-    public class FileService
+    public static class FileService
     {
         private static readonly XmlSerializer Serializer;
 

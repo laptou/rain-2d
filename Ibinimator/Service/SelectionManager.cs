@@ -48,7 +48,7 @@ namespace Ibinimator.Service
             ArtView = artView;
             ArtView.RenderTargetBound += OnRenderTargetBound;
 
-            Selection = new ObservableCollection<Layer>();
+            Selection = new ObservableList<Layer>();
             Selection.CollectionChanged += (sender, args) =>
             {
                 Task.Run(() =>
@@ -61,14 +61,20 @@ namespace Ibinimator.Service
             viewManager.DocumentUpdated += (sender, args) =>
             {
                 var layer = (Layer) sender;
-                if (args.PropertyName == nameof(Layer.Selected))
+                switch (args.PropertyName)
                 {
-                    var contains = Selection.Contains(layer);
+                    case "Bounds":
+                        if (layer.Selected)
+                            Update(true);
+                        break;
+                    case nameof(Layer.Selected):
+                        var contains = Selection.Contains(layer);
 
-                    if (layer.Selected && !contains)
-                        Selection.Add(layer);
-                    else if (!layer.Selected && contains)
-                        Selection.Remove(layer);
+                        if (layer.Selected && !contains)
+                            Selection.Add(layer);
+                        else if (!layer.Selected && contains)
+                            Selection.Remove(layer);
+                        break;
                 }
             };
 
@@ -82,7 +88,7 @@ namespace Ibinimator.Service
             };
         }
 
-        public ObservableCollection<Layer> Selection { get; }
+        public ObservableList<Layer> Selection { get; }
 
         #region ISelectionManager Members
 

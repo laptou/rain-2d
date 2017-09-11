@@ -48,8 +48,8 @@ namespace Ibinimator.Model
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
-            
-            var path = new D2D.PathGeometry(context.Target.Factory);
+
+            var path = new D2D.PathGeometry(context.Factory);
             var sink = path.Open();
 
             glyphRun.FontFace.GetGlyphRunOutline(
@@ -63,24 +63,16 @@ namespace Ibinimator.Model
 
             sink.Close();
 
-            var geometry = new D2D.TransformedGeometry(
-                context.Target.Factory, path,
-                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
-
-            var fill = format?.Fill ?? context.BaseFill;
-
-            if (fill != null)
-                context.Target.FillGeometry(geometry, fill);
-
-            var stroke = format?.Stroke ?? context.BaseStroke;
-            var width = format?.StrokeWidth ?? context.BaseStrokeWidth;
-            var style = format?.StrokeStyle ?? context.BaseStrokeStyle;
-
-            if (stroke != null && width > 0)
-                if (style != null)
-                    context.Target.DrawGeometry(geometry, stroke, width, style);
-                else
-                    context.Target.DrawGeometry(geometry, stroke, width);
+            context.Figures.Add(new Figure
+            {
+                FillBrush = format?.Fill,
+                StrokeBrush = format?.Stroke,
+                StrokeInfo = format?.StrokeStyle,
+                Geometry = new D2D.TransformedGeometry(context.Factory, path, Matrix3x2.Translation(baselineOriginX, baselineOriginY))
+                {
+                    Tag = glyphRunDescription.TextPosition
+                }
+            });
 
             return Result.Ok;
         }
@@ -115,47 +107,25 @@ namespace Ibinimator.Model
             return Result.Ok;
         }
 
-        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
-        {
-            var context = (Context) clientDrawingContext;
-            return context.Target.Transform;
-        }
-
-        public override float GetPixelsPerDip(object clientDrawingContext)
-        {
-            var context = (Context) clientDrawingContext;
-            return context.Target.DotsPerInch.Height / 96f;
-        }
-
         private static void DrawLine(Context context, Format format, float x, float y, float width, float thickness)
         {
-            var rect = new RectangleF(x, y, width, thickness);
+            var rect = new D2D.RectangleGeometry(context.Factory, new RectangleF(x, y, width, thickness));
 
-            var fill = format.Fill ?? context.BaseFill;
-
-            if (fill != null)
-                context.Target.FillRectangle(rect, fill);
-
-            var stroke = format.Stroke ?? context.BaseStroke;
-            var sWidth = format.StrokeWidth ?? context.BaseStrokeWidth;
-            var sStyle = format.StrokeStyle ?? context.BaseStrokeStyle;
-
-            if (stroke != null && sWidth > 0)
-                if (sStyle != null)
-                    context.Target.DrawRectangle(rect, stroke, sWidth, sStyle);
-                else
-                    context.Target.DrawRectangle(rect, stroke, sWidth);
+            context.Figures.Add(new Figure
+            {
+                FillBrush = format?.Fill,
+                StrokeBrush = format?.Stroke,
+                StrokeInfo = format?.StrokeStyle,
+                Geometry = new D2D.TransformedGeometry(context.Factory, rect, Matrix3x2.Translation(x, y))
+            });
         }
 
         #region Nested type: Context
 
         public class Context
         {
-            public D2D.Brush BaseFill { get; set; }
-            public D2D.Brush BaseStroke { get; set; }
-            public D2D.StrokeStyle BaseStrokeStyle { get; set; }
-            public float BaseStrokeWidth { get; set; }
-            public D2D.RenderTarget Target { get; set; }
+            public D2D.Factory Factory { get; set; }
+            public List<Figure> Figures { get; set; } = new List<Figure>();
         }
 
         #endregion
@@ -164,21 +134,19 @@ namespace Ibinimator.Model
 
         public class Format : ComObject
         {
-            public D2D.Brush Fill { get; set; }
+            public BrushInfo Fill { get; set; }
             public int StrikethroughCount { get; set; }
-            public D2D.Brush Stroke { get; set; }
-            public D2D.StrokeStyle StrokeStyle { get; set; }
-            public float? StrokeWidth { get; set; }
+            public BrushInfo Stroke { get; set; }
+            public StrokeInfo StrokeStyle { get; set; }
             public int UnderlineCount { get; set; }
 
             public Format Clone()
             {
                 return new Format
                 {
-                    Fill = Fill,
-                    Stroke = Stroke,
-                    StrokeWidth = StrokeWidth,
-                    StrokeStyle = StrokeStyle,
+                    Fill = Fill.Clone<BrushInfo>(),
+                    Stroke = Stroke.Clone<BrushInfo>(),
+                    StrokeStyle = StrokeStyle.Clone<StrokeInfo>(),
                     UnderlineCount = UnderlineCount,
                     StrikethroughCount = StrikethroughCount
                 };
@@ -188,71 +156,7 @@ namespace Ibinimator.Model
         #endregion
     }
 
-    public class GeometryTextRenderer : DW.TextRendererBase
-    {
-        public override Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX, float baselineOriginY,
-            D2D.MeasuringMode measuringMode, DW.GlyphRun glyphRun, DW.GlyphRunDescription glyphRunDescription,
-            ComObject clientDrawingEffect)
-        {
-            var context = (Context) clientDrawingContext;
-            var path = new D2D.PathGeometry(context.Factory);
-            var sink = path.Open();
-
-            glyphRun.FontFace.GetGlyphRunOutline(
-                glyphRun.FontSize,
-                glyphRun.Indices,
-                glyphRun.Advances,
-                glyphRun.Offsets,
-                glyphRun.IsSideways,
-                glyphRun.BidiLevel % 2 != 0,
-                sink);
-
-            sink.Close();
-
-            var geometry = new D2D.TransformedGeometry(
-                context.Factory, path,
-                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
-
-            context.Geometries.Add(geometry);
-
-            return Result.Ok;
-        }
-
-        #region Nested type: Context
-
-        public class Context
-        {
-            public D2D.Factory Factory { get; set; }
-            public List<D2D.Geometry> Geometries { get; set; } = new List<D2D.Geometry>();
-            public List<BrushInfo> Fills { get; set; } = new List<BrushInfo>();
-            public List<(BrushInfo, StrokeInfo)> Strokes { get; set; } = new List<(BrushInfo, StrokeInfo)>();
-        }
-
-        #endregion 
-
-        public class Format : ComObject
-        {
-            public BrushInfo Fill { get; set; }
-            public int StrikethroughCount { get; set; }
-            public BrushInfo Stroke { get; set; }
-            public StrokeInfo StrokeInfo { get; set; }
-            public int UnderlineCount { get; set; }
-
-            public Format Clone()
-            {
-                return new Format
-                {
-                    Fill = Fill.Clone<BrushInfo>(),
-                    Stroke = Stroke.Clone<BrushInfo>(),
-                    StrokeInfo = StrokeInfo.Clone<StrokeInfo>(),
-                    UnderlineCount = UnderlineCount,
-                    StrikethroughCount = StrikethroughCount
-                };
-            }
-        }
-    }
-
-    public class Text : Layer, ITextLayer, IMultiGeometricLayer
+    public class Text : Layer, ITextLayer, IGeometricLayer
     {
         private readonly List<Format> _formats = new List<Format>();
 
@@ -263,6 +167,7 @@ namespace Ibinimator.Model
             FontStyle = DW.FontStyle.Normal;
             FontSize = 12;
             FontFamilyName = "Arial";
+            Value = "";
             StrokeInfo = new StrokeInfo();
         }
 
@@ -276,31 +181,21 @@ namespace Ibinimator.Model
 
         #region IGeometricLayer Members
 
-        public D2D.Geometry[] GetGeometry(ICacheManager cache)
+        public Figure[] GetFigures(ICacheManager cache)
         {
             var layout = cache.GetTextLayout(this);
             var factory = cache.ArtView.Direct2DFactory;
-            using (var gtr = new GeometryTextRenderer())
+            using (var render = new TextRenderer())
             {
-                var ctx = new GeometryTextRenderer.Context
+                var ctx = new TextRenderer.Context
                 {
                     Factory = factory
                 };
 
-                layout.Draw(ctx, gtr, 0, 0);
+                layout.Draw(render, render, 0, 0);
 
-                return ctx.Geometries.ToArray();
+                return ctx.Figures.ToArray();
             }
-        }
-
-        public BrushInfo[] GetFills(ICacheManager cache)
-        {
-            throw new NotImplementedException();
-        }
-
-        public (BrushInfo, StrokeInfo)[] GetStrokes(ICacheManager cache)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
@@ -350,21 +245,11 @@ namespace Ibinimator.Model
         {
             target.Transform = Transform * target.Transform;
 
-            var layout = cache.GetTextLayout(this);
-            var stroke = cache.GetStroke(this);
-            var context = new TextRenderer.Context
-            {
-                BaseFill = cache.GetFill(this),
-                BaseStroke = stroke.Brush,
-                BaseStrokeStyle = stroke.Style,
-                BaseStrokeWidth = stroke.Width,
-                Target = target
-            };
+            var geom = cache.GetGeometry(this);
 
-            using (var renderer = new TextRenderer())
-            {
-                layout.Draw(context, renderer, 0, 0);
-            }
+            var fill = cache.GetFill(this);
+            if(fill != null)
+                target.FillGeometry(geom, fill);
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
@@ -408,41 +293,119 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
+        public D2D.Geometry GetGeometry(ICacheManager cache)
+        {
+            var layout = cache.GetTextLayout(this);
+            var factory = cache.ArtView.Direct2DFactory;
+            using (var render = new TextRenderer())
+            {
+                var ctx = new TextRenderer.Context
+                {
+                    Factory = factory
+                };
+
+                layout.Draw(ctx, render, 0, 0);
+
+                if(ctx.Figures.Count == 0)
+                    return new D2D.RectangleGeometry(factory, RectangleF.Empty);
+
+                return new D2D.GeometryGroup(
+                    factory,
+                    D2D.FillMode.Winding,
+                    ctx.Figures.Select(f => f.Geometry).ToArray());
+            }
+        }
+
+        public override IDisposable GetResource(ICacheManager cache, int id)
+        {
+            var layout = cache.GetTextLayout(this);
+
+            if (layout == null) return null;
+
+            var clusters = layout.GetClusterMetrics();
+
+            var target = cache.ArtView.RenderTarget;
+
+            var index = id / 2;
+
+            if (index >= clusters.Length) return null;
+
+            var position = 0;
+
+            for (var i = 0; i < index; i++) position += clusters[i].Length;
+
+            var format = GetFormat(position);
+
+            if (format == null) return null;
+
+            switch (id % 2)
+            {
+                case 0: return format.Fill.ToDirectX(target);
+                case 1: return new Stroke(target, format.Stroke, format.StrokeInfo);
+                default: return null;
+            }
+        }
+
         public string FontFamilyName
         {
             get => Get<string>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         public float FontSize
         {
             get => Get<float>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         public DW.FontStretch FontStretch
         {
             get => Get<DW.FontStretch>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         public DW.FontStyle FontStyle
         {
             get => Get<DW.FontStyle>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         public DW.FontWeight FontWeight
         {
             get => Get<DW.FontWeight>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         public DW.TextLayout GetLayout(DW.Factory dwFactory)
         {
             var layout = new DW.TextLayout(
                 dwFactory,
-                Value,
+                Value ?? "",
                 new DW.TextFormat(
                     dwFactory,
                     FontFamilyName,
@@ -455,7 +418,7 @@ namespace Ibinimator.Model
 
             foreach (var format in _formats)
             {
-                //var typography = new DW.Typography(dwFactory);
+                //var typography = layout.GetTypography(format.Range.StartPosition);
 
                 //if (format.Superscript)
                 //    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
@@ -559,7 +522,13 @@ namespace Ibinimator.Model
         public string Value
         {
             get => Get<string>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(DefaultName));
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
         }
 
         #endregion
@@ -653,14 +622,6 @@ namespace Ibinimator.Model
 
             _formats.Sort((f1, f2) => f1.Range.StartPosition.CompareTo(f2.Range.StartPosition));
 
-            Trace.WriteLine(
-                "processing complete:\n" +
-                string.Join("\n",
-                    _formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> " +
-                                         $"{f.Range.StartPosition + f.Range.Length}: " +
-                                         $"{f.FontWeight.GetValueOrDefault(DW.FontWeight.Normal)} " +
-                                         $"{f.FontStyle.GetValueOrDefault()}")));
-
             RaisePropertyChanged("TextLayout");
         }
 
@@ -695,6 +656,12 @@ namespace Ibinimator.Model
 
             public DW.FontWeight? FontWeight { get; set; }
 
+            public BrushInfo Fill { get; set; }
+
+            public BrushInfo Stroke { get; set; }
+
+            public StrokeInfo StrokeInfo { get; set; }
+
             public DW.TextRange Range { get; set; }
 
             public bool Subscript
@@ -727,7 +694,10 @@ namespace Ibinimator.Model
                     FontFamilyName = FontFamilyName,
                     FontStyle = FontStyle,
                     FontStretch = FontStretch,
-                    FontWeight = FontWeight
+                    FontWeight = FontWeight,
+                    Fill = (BrushInfo) Fill?.Clone(),
+                    Stroke = (BrushInfo) Stroke?.Clone(),
+                    StrokeInfo = (StrokeInfo) StrokeInfo?.Clone()
                 };
             }
         }

@@ -70,7 +70,9 @@ namespace Ibinimator.Service
         {
             lock (this)
             {
-                Tool?.Dispose();
+                var tool = Tool;
+                Tool = null;
+                tool?.Dispose();
 
                 switch (type)
                 {
@@ -164,6 +166,11 @@ namespace Ibinimator.Service
             get => Get<object>();
             set => Set(value);
         }
+
+        public void SetValue(object value)
+        {
+            SilentSet(value, nameof(Value));
+        }
     }
 
     public class ToolOption<T> : ToolOption
@@ -202,6 +209,11 @@ namespace Ibinimator.Service
         {
             get => Get<T>();
             set => Set(Validate(value));
+        }
+
+        public void SetValue(T value)
+        {
+            SilentSet(value, nameof(Value));
         }
 
         private T Validate(T value)

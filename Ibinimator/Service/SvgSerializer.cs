@@ -229,7 +229,7 @@ namespace Ibinimator.Service
                 if (defElement != null)
                 {
                     var defs = Parse<object[]>(defElement, document, root, attrs);
-                    document.Swatches = new ObservableCollection<BrushInfo>(defs.OfType<BrushInfo>());
+                    document.Swatches = new ObservableList<BrushInfo>(defs.OfType<BrushInfo>());
                 }
 
                 document.Root = new Group();
@@ -347,7 +347,11 @@ namespace Ibinimator.Service
                 {
                     var path = new Path();
                     var command = element.Attribute("d")?.Value;
-                    path.Nodes = new ObservableCollection<PathNode>(PathDataSerializer.Parse(command));
+                    var nodes = PathDataSerializer.Parse(command);
+
+                    foreach (var node in nodes)
+                        path.Nodes.Add(node);
+
                     layer = path;
                 }
                 else if (element.Name == SvgNames.Polygon || element.Name == SvgNames.Polyline)
@@ -415,17 +419,18 @@ namespace Ibinimator.Service
                             };
                         }
 
-                    stroked.StrokeWidth = ReadFloat(attrs, "stroke-width", 1);
+                    stroked.StrokeInfo = new StrokeInfo();
+                    stroked.StrokeInfo.Width = ReadFloat(attrs, "stroke-width", 1);
 
                     var strokeStyle = new StrokeStyleProperties1();
 
                     if (attrs.ContainsKey("stroke-dasharray"))
                     {
                         strokeStyle.DashStyle = DashStyle.Custom;
-                        stroked.StrokeDashes =
-                            new ObservableCollection<float>(
+                        stroked.StrokeInfo.Dashes =
+                            new ObservableList<float>(
                                 ReadFloats(attrs, "stroke-dasharray")
-                                    .Select(f => f / Math.Max(stroked.StrokeWidth, 1e-10f)));
+                                    .Select(f => f / Math.Max(stroked.StrokeInfo.Width, 1e-10f)));
                     }
 
                     attrs.TryGetValue("stroke-linejoin", out var lineJoin);
@@ -463,7 +468,7 @@ namespace Ibinimator.Service
                             break;
                     }
 
-                    stroked.StrokeStyle = strokeStyle;
+                    stroked.StrokeInfo.Style = strokeStyle;
                 }
 
                 layer.Name = element.Attribute("id")?.Value;

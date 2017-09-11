@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Ibinimator.Shared;
 
 namespace Ibinimator.Model
 {
@@ -72,8 +73,8 @@ namespace Ibinimator.Model
 
         public long Size => new FileInfo(Path).Length;
 
-        public ObservableCollection<BrushInfo> Swatches { get; set; }
-            = new ObservableCollection<BrushInfo>();
+        public ObservableList<BrushInfo> Swatches { get; set; }
+            = new ObservableList<BrushInfo>();
 
         [XmlAttribute]
         public Unit TimeUnit

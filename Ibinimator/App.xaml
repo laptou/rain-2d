@@ -99,6 +99,7 @@
 
         <Style TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="{StaticResource T1Brush}" />
+            <Setter Property="FontFamily" Value="/Ibinimator;component/Resources/Font/#Roboto" />
         </Style>
 
         <Style TargetType="{x:Type TextBox}">

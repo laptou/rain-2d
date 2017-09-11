@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
+using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
@@ -12,7 +13,7 @@ namespace Ibinimator.Service
     {
         BrushInfo Fill { get; set; }
         BrushInfo Stroke { get; set; }
-        ObservableCollection<float> StrokeDashes { get; }
+        ObservableList<float> StrokeDashes { get; }
         StrokeStyleProperties1 StrokeStyle { get; set; }
         float StrokeWidth { get; set; }
     }

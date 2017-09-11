@@ -34,7 +34,7 @@ namespace Ibinimator
         private void SetDefaultFont()
         {
             var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute),
-                "./Resources/Fonts/#Roboto");
+                "./Resources/Font/#Roboto");
 
             TextElement.FontFamilyProperty.OverrideMetadata(
                 typeof(TextElement),
