@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Ibinimator.ViewModel;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Commands
 {
     public static class FileCommands
     {

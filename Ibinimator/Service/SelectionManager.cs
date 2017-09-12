@@ -197,15 +197,25 @@ namespace Ibinimator.Service
 
                 if (!_moved)
                 {
-                    var hit =
-                        Selection
-                            .OfType<Group>()
-                            .Select(g => g.Hit(ArtView.CacheManager, pos, false))
-                            .FirstOrDefault(l => l != null) ??
-                        Root.SubLayers.Select(
-                                l => l.Hit(ArtView.CacheManager,
-                                           pos, !modifiers.HasFlag(ModifierKeys.Alt)))
-                            .FirstOrDefault(l => l!= null);
+                    ILayer hit = null;
+                    var cache = ArtView.CacheManager;
+                    var shift = modifiers.HasFlag(ModifierKeys.Shift);
+                    var alt = modifiers.HasFlag(ModifierKeys.Alt);
+
+
+                    if (shift)
+                        hit = Selection.Select(l => l.Parent)
+                                       .Select(g => g.Hit(cache, pos, false))
+                                       .FirstOrDefault(l => l != null);
+
+                    if (hit == null)
+                        hit = Selection.OfType<Group>()
+                                       .Select(g => g.Hit(cache, pos, false))
+                                       .FirstOrDefault(l => l != null);
+
+                    if(hit == null)
+                        hit = Root.SubLayers.Select(l => l.Hit(cache, pos, !alt))
+                                            .FirstOrDefault(l => l!= null);
 
                     if (!modifiers.HasFlag(ModifierKeys.Shift))
                         ClearSelection();

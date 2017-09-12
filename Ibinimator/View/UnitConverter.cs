@@ -51,6 +51,8 @@ namespace Ibinimator.View
             {
                 var input = System.Convert.ToSingle(value);
 
+                input *= ConversionFactor(BaseUnit, unit);
+
                 if (Type.GetTypeCode(targetType) == TypeCode.String)
                     return Format(input, unit);
 
@@ -66,11 +68,11 @@ namespace Ibinimator.View
 
             if (value is string input)
             {
-                var num = Unformat(input, unit) * ConversionFactor(BaseUnit, unit);
+                var num = Unformat(input, unit) * ConversionFactor(unit, BaseUnit);
                 if (!float.IsNaN(num)) return num;
             }
             else
-                return System.Convert.ToSingle(value) * ConversionFactor(BaseUnit, unit);
+                return System.Convert.ToSingle(value) * ConversionFactor(unit, BaseUnit);
 
             return Binding.DoNothing;
         }

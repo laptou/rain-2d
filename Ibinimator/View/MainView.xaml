@@ -7,11 +7,11 @@
     xmlns:view="clr-namespace:Ibinimator.View"
     xmlns:model="clr-namespace:Ibinimator.Model"
     xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
+    xmlns:service="clr-namespace:Ibinimator.Service"
+    xmlns:commands="clr-namespace:Ibinimator.Service.Commands"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-    xmlns:service="clr-namespace:Ibinimator.Service"
     xmlns:d2d="clr-namespace:SharpDX.Direct2D1;assembly=SharpDX.Direct2D1"
-    xmlns:ibinimator="clr-namespace:Ibinimator"
     x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
     mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized"
     Icon="/Ibinimator;component/Resources/logo.png">
@@ -27,28 +27,28 @@
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
         <KeyBinding Gesture="CTRL+SHIFT+OemOpenBrackets"
-                    Command="{x:Static service:SelectionCommands.MoveToBottomCommand}"
+                    Command="{x:Static commands:SelectionCommands.MoveToBottomCommand}"
                     CommandParameter="{Binding SelectionManager}" />
         <KeyBinding Gesture="CTRL+OemOpenBrackets"
-                    Command="{x:Static service:SelectionCommands.MoveDownCommand}"
+                    Command="{x:Static commands:SelectionCommands.MoveDownCommand}"
                     CommandParameter="{Binding SelectionManager}" />
         <KeyBinding Gesture="CTRL+OemCloseBrackets"
-                    Command="{x:Static service:SelectionCommands.MoveUpCommand}"
+                    Command="{x:Static commands:SelectionCommands.MoveUpCommand}"
                     CommandParameter="{Binding SelectionManager}" />
         <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets"
-                    Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
+                    Command="{x:Static commands:SelectionCommands.MoveToTopCommand}"
                     CommandParameter="{Binding SelectionManager}" />
         <KeyBinding Gesture="CTRL+Z"
-                    Command="{x:Static service:HistoryCommands.UndoCommand}"
+                    Command="{x:Static commands:HistoryCommands.UndoCommand}"
                     CommandParameter="{Binding HistoryManager}" />
         <KeyBinding Gesture="CTRL+SHIFT+Z"
-                    Command="{x:Static service:HistoryCommands.RedoCommand}"
+                    Command="{x:Static commands:HistoryCommands.RedoCommand}"
                     CommandParameter="{Binding HistoryManager}" />
         <KeyBinding Gesture="CTRL+S"
-                    Command="{x:Static service:FileCommands.SaveCommand}"
+                    Command="{x:Static commands:FileCommands.SaveCommand}"
                     CommandParameter="{Binding ViewManager}" />
         <KeyBinding Gesture="CTRL+O"
-                    Command="{x:Static service:FileCommands.OpenCommand}"
+                    Command="{x:Static commands:FileCommands.OpenCommand}"
                     CommandParameter="{Binding ViewManager}" />
     </Window.InputBindings>
     <Window.Style>
@@ -83,17 +83,17 @@
                           VerticalAlignment="Center" Background="{x:Null}" Margin="16,0,0,0">
                         <MenuItem Header="_File">
                             <MenuItem Header="_Open"
-                                      Command="{x:Static service:FileCommands.OpenCommand}"
+                                      Command="{x:Static commands:FileCommands.OpenCommand}"
                                       CommandParameter="{Binding ViewManager}" />
                             <MenuItem Header="_Save"
-                                      Command="{x:Static service:FileCommands.SaveCommand}"
+                                      Command="{x:Static commands:FileCommands.SaveCommand}"
                                       CommandParameter="{Binding ViewManager}" />
                         </MenuItem>
                         <MenuItem Header="_Edit" />
                         <MenuItem Header="_Time" />
                         <MenuItem Header="Te_xt" />
                         <MenuItem Header="_Help">
-                            <MenuItem Header="_License" Command="{x:Static ibinimator:ViewCommands.LicenseCommand}"/>
+                            <MenuItem Header="_License" Command="{x:Static commands:ViewCommands.LicenseCommand}"/>
                         </MenuItem>
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
@@ -125,26 +125,26 @@
                      UseLayoutRounding="True">
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.MoveToBottomCommand}"
+                            Command="{x:Static commands:SelectionCommands.MoveToBottomCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/to back.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.MoveDownCommand}"
+                            Command="{x:Static commands:SelectionCommands.MoveDownCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/backward.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.MoveUpCommand}"
+                            Command="{x:Static commands:SelectionCommands.MoveUpCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/forward.png" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.MoveToTopCommand}"
+                            Command="{x:Static commands:SelectionCommands.MoveToTopCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/to front.png"
@@ -154,28 +154,28 @@
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.FlipHorizontalCommand}"
+                            Command="{x:Static commands:SelectionCommands.FlipHorizontalCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/flip horizontally.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.FlipVerticalCommand}"
+                            Command="{x:Static commands:SelectionCommands.FlipVerticalCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/flip vertically.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.RotateClockwiseCommand}"
+                            Command="{x:Static commands:SelectionCommands.RotateClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
-                            Command="{x:Static service:SelectionCommands.RotateCounterClockwiseCommand}"
+                            Command="{x:Static commands:SelectionCommands.RotateCounterClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}">
                         <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png"
@@ -224,20 +224,25 @@
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}" 
+                            Command="{x:Static commands:ObjectCommands.UnionCommand}"
+                            CommandParameter="{Binding SelectionManager}">
                         <Image Source="/Ibinimator;component/Resources/Icon/union.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}" 
+                            Command="{x:Static commands:ObjectCommands.DifferenceCommand}"
+                            CommandParameter="{Binding SelectionManager}">
                         <Image Source="/Ibinimator;component/Resources/Icon/difference.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
+                    <Button Style="{StaticResource ToolbarButton}" 
+                            Command="{x:Static commands:ObjectCommands.IntersectionCommand}"
+                            CommandParameter="{Binding SelectionManager}">
                         <Image Source="/Ibinimator;component/Resources/Icon/intersection.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/divide.png" Style="{DynamicResource Icon}" />
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/combine.png" Style="{DynamicResource Icon}" />
+                    <Button Style="{StaticResource ToolbarButton}"
+                            Command="{x:Static commands:ObjectCommands.XorCommand}"
+                            CommandParameter="{Binding SelectionManager}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/xor.png" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
             </ToolBar>
@@ -352,11 +357,6 @@
                 <TabItem>
                     <Border Background="White">
                         <control:ArtView x:Name="ArtView" UseLayoutRounding="True" SnapsToDevicePixels="True">
-                            <control:ArtView.InputBindings>
-                                <!--<KeyBinding Key="P"
-                                            Command="{Binding SelectToolCommand}"
-                                            CommandParameter="{x:Static service:ToolType.Pencil}" />-->
-                            </control:ArtView.InputBindings>
                         </control:ArtView>
                     </Border>
                 </TabItem>

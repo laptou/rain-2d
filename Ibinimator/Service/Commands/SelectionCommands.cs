@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Ibinimator.ViewModel;
 using SharpDX;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Commands
 {
     public static class SelectionCommands
     {

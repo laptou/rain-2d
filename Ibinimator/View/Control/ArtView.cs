@@ -90,7 +90,7 @@ namespace Ibinimator.View.Control
                 ViewManager = (IViewManager) manager;
                 ViewManager.DocumentUpdated += (s, e) => CacheManager?.Bind(ViewManager.Document);
 
-                CacheManager?.ResetLayerCache();
+                CacheManager?.ResetDeviceResources();
                 if (ViewManager?.Root != null)
                     CacheManager?.Bind(ViewManager.Document);
             }

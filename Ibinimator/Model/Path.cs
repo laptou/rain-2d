@@ -11,6 +11,7 @@ using Ibinimator.Service;
 using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.Model
 {
@@ -200,6 +201,107 @@ namespace Ibinimator.Model
             gs.Dispose();
 
             return pg;
+        }
+
+        public GeometrySink Open()
+        {
+            return new MyGeometrySink(this);
+        }
+
+        private class MyGeometrySink : GeometrySink
+        {
+            private readonly Path _path;
+
+            public MyGeometrySink(Path path)
+            {
+                _path = path;
+            }
+
+            public void SetFillMode(FillMode fillMode)
+            {
+                _path.FillMode = fillMode;
+            }
+
+            public void SetSegmentFlags(PathSegment vertexFlags)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void BeginFigure(RawVector2 startPoint, FigureBegin figureBegin)
+            {
+                _path.Nodes.Add(new PathNode { Position = startPoint });
+            }
+
+            public void AddLines(RawVector2[] points)
+            {
+                foreach (var point in points)
+                    AddLine(point);
+            }
+
+            public void AddBeziers(BezierSegment[] beziers)
+            {
+                foreach (var bezier in beziers)
+                    AddBezier(bezier);
+            }
+
+            public void EndFigure(FigureEnd figureEnd)
+            {
+                _path.Nodes.Add(new CloseNode { Open = figureEnd == FigureEnd.Open });
+            }
+
+            public void Close()
+            {
+            }
+
+            public void AddLine(RawVector2 point)
+            {
+                _path.Nodes.Add(new PathNode { Position = point });
+            }
+
+            public void AddBezier(BezierSegment bezier)
+            {
+                _path.Nodes.Add(new CubicPathNode
+                {
+                    Control1 = bezier.Point1,
+                    Control2 = bezier.Point2,
+                    Position = bezier.Point3
+                });
+            }
+
+            public void AddQuadraticBezier(QuadraticBezierSegment bezier)
+            {
+                _path.Nodes.Add(new QuadraticPathNode
+                {
+                    Control = bezier.Point1,
+                    Position = bezier.Point2
+                });
+            }
+
+            public void AddQuadraticBeziers(QuadraticBezierSegment[] beziers)
+            {
+                foreach (var bezier in beziers)
+                    AddQuadraticBezier(bezier);
+            }
+
+            public void AddArc(ArcSegment arc)
+            {
+                _path.Nodes.Add(new ArcPathNode
+                {
+                    Clockwise = arc.SweepDirection == SweepDirection.Clockwise,
+                    LargeArc = arc.ArcSize == ArcSize.Large,
+                    RadiusX = arc.Size.Width,
+                    RadiusY = arc.Size.Height,
+                    Rotation = arc.RotationAngle,
+                    Position = arc.Point
+                });
+            }
+
+            public void Dispose()
+            {
+                // nothing to do here, no unmanaged resources
+            }
+
+            public IDisposable Shadow { get; set; }
         }
     }
 

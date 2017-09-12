@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
@@ -28,12 +29,19 @@ namespace Ibinimator.Model
 
                 callback(specifier);
 
+                if (currentRange.Length < 0)
+                {
+                    layout.SetDrawingEffect(specifier, new DW.TextRange(current, 1));
+                    current++;
+                    continue;
+                }
+
                 var currentEnd = currentRange.StartPosition + currentRange.Length;
                 var currentLength = Math.Min(currentEnd, end) - current;
 
                 layout.SetDrawingEffect(specifier, new DW.TextRange(current, currentLength));
 
-                current++;
+                current += currentLength;
             }
         }
     }
@@ -68,31 +76,16 @@ namespace Ibinimator.Model
 
             sink.Close();
 
-            var geometry = new D2D.TransformedGeometry(context.Factory, path,
-                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
+            var geometry = new D2D.TransformedGeometry(
+                context.Factory, path,
+                Matrix3x2.Translation(baselineOriginX, baselineOriginY))
+            {
+                Tag = (FillBrush: format?.Fill,
+                    StrokeBrush: format?.Stroke,
+                    StrokeInfo: format?.StrokeInfo)
+            };
 
             context.Figures.Add(geometry);
-
-            if (context.Target == null) return Result.Ok;
-
-            using (var fill = (format?.Fill ?? context.Text.FillBrush).ToDirectX(context.Target))
-            {
-                if (fill != null)
-                    context.Target.FillGeometry(geometry, fill);
-            }
-
-            using (var stroke = new Stroke(
-                context.Target,
-                format?.Stroke ?? context.Text.StrokeBrush,
-                format?.StrokeInfo ?? context.Text.StrokeInfo))
-            {
-                if (stroke.Brush != null && stroke.Style != null)
-                    context.Target.DrawGeometry(
-                        geometry,
-                        stroke.Brush,
-                        stroke.Width,
-                        stroke.Style);
-            }
 
             return Result.Ok;
         }
@@ -137,27 +130,6 @@ namespace Ibinimator.Model
             };
 
             context.Figures.Add(rect);
-
-            if (context.Target == null) return;
-
-            using (var fill = (format?.Fill ?? context.Text.FillBrush).ToDirectX(context.Target))
-            {
-                if (fill != null)
-                    context.Target.FillRectangle(new RectangleF(x, y, width, thickness), fill);
-            }
-
-            using (var stroke = new Stroke(
-                context.Target,
-                format?.Stroke ?? context.Text.StrokeBrush,
-                format?.StrokeInfo ?? context.Text.StrokeInfo))
-            {
-                if (stroke.Brush != null && stroke.Style != null)
-                    context.Target.DrawRectangle(
-                        new RectangleF(x, y, width, thickness),
-                        stroke.Brush,
-                        stroke.Width,
-                        stroke.Style);
-            }
         }
 
         #region Nested type: Context
@@ -166,7 +138,6 @@ namespace Ibinimator.Model
         {
             public D2D.Factory Factory { get; set; }
             public List<D2D.Geometry> Figures { get; set; } = new List<D2D.Geometry>();
-            public D2D.RenderTarget Target { get; set; }
             public ITextLayer Text { get; set; }
         }
 
@@ -248,7 +219,9 @@ namespace Ibinimator.Model
         public D2D.Geometry GetGeometry(ICacheManager cache)
         {
             var layout = cache.GetTextLayout(this);
+
             var factory = cache.ArtView.Direct2DFactory;
+
             using (var render = new TextRenderer())
             {
                 var ctx = new TextRenderer.Context
@@ -261,6 +234,18 @@ namespace Ibinimator.Model
 
                 if (ctx.Figures.Count == 0)
                     return null;
+
+                var target = cache.ArtView.RenderTarget;
+
+                for (var i = 0; i < ctx.Figures.Count; i++)
+                {
+                    var figure = ctx.Figures[i];
+
+                    var info = (ValueTuple<BrushInfo, BrushInfo, StrokeInfo>) figure.Tag;
+
+                    cache.SetResource(this, i * 2 + 0, info.Item1?.ToDirectX(target));
+                    cache.SetResource(this, i * 2 + 1, new Stroke(target, info.Item2, info.Item3));
+                }
 
                 return new D2D.GeometryGroup(
                     factory,
@@ -316,21 +301,28 @@ namespace Ibinimator.Model
         {
             target.Transform = Transform * target.Transform;
 
-            var layout = cache.GetTextLayout(this);
+            var geometry = cache.GetGeometry(this);
 
-            using (var render = new TextRenderer())
+            if (geometry is D2D.GeometryGroup geometryGroup)
             {
-                var ctx = new TextRenderer.Context
+                var geometries = geometryGroup.GetSourceGeometry();
+
+                for (var i = 0; i < geometries.Length; i++)
                 {
-                    Factory = target.Factory,
-                    Target = target,
-                    Text = this
-                };
+                    var geom = geometries[i];
+                    var fill = cache.GetResource<D2D.Brush>(this, i * 2) ?? cache.GetFill(this);
+                    var stroke = cache.GetResource<Stroke>(this, i * 2 + 1) ?? cache.GetStroke(this);
 
-                layout.Draw(ctx, render, 0, 0);
+                    if(fill != null)
+                        target.FillGeometry(geom, fill);
 
-                ctx.Figures.ForEach(g => g.Dispose()); 
-                // so wasteful!! but there's no better way right now...
+                    if (stroke?.Brush != null)
+                        target.DrawGeometry(
+                            geom, 
+                            stroke.Brush,
+                            stroke.Width,
+                            stroke.Style);
+                }
             }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
@@ -450,124 +442,133 @@ namespace Ibinimator.Model
             };
 
 
-            foreach (var format in _formats)
+            lock (_formats)
             {
-                var typography = layout.GetTypography(format.Range.StartPosition);
+                foreach (var format in _formats)
+                {
+                    var typography = layout.GetTypography(format.Range.StartPosition);
 
-                if (format.Superscript)
-                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
+                    if (format.Superscript)
+                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
 
-                if (format.Subscript)
-                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
+                    if (format.Subscript)
+                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
 
-                layout.SetTypography(typography, format.Range);
+                    layout.SetTypography(typography, format.Range);
 
-                if (format.FontFamilyName != null)
-                    layout.SetFontFamilyName(format.FontFamilyName, format.Range);
+                    if (format.FontFamilyName != null)
+                        layout.SetFontFamilyName(format.FontFamilyName, format.Range);
 
-                if (format.FontSize != null)
-                    layout.SetFontSize(format.FontSize.Value, format.Range);
+                    if (format.FontSize != null)
+                        layout.SetFontSize(format.FontSize.Value, format.Range);
 
-                if (format.FontStretch != null)
-                    layout.SetFontStretch(format.FontStretch.Value, format.Range);
+                    if (format.FontStretch != null)
+                        layout.SetFontStretch(format.FontStretch.Value, format.Range);
 
-                if (format.FontStyle != null)
-                    layout.SetFontStyle(format.FontStyle.Value, format.Range);
+                    if (format.FontStyle != null)
+                        layout.SetFontStyle(format.FontStyle.Value, format.Range);
 
-                if (format.FontWeight != null)
-                    layout.SetFontWeight(format.FontWeight.Value, format.Range);
+                    if (format.FontWeight != null)
+                        layout.SetFontWeight(format.FontWeight.Value, format.Range);
 
-                if (format.FontWeight != null)
-                    layout.SetFontWeight(format.FontWeight.Value, format.Range);
+                    if (format.FontWeight != null)
+                        layout.SetFontWeight(format.FontWeight.Value, format.Range);
 
-                if (format.CharacterSpacing != null)
-                    layout.SetCharacterSpacing(
-                        format.CharacterSpacing.Value,
-                        format.CharacterSpacing.Value,
-                        0,
-                        format.Range);
+                    if (format.CharacterSpacing != null)
+                        layout.SetCharacterSpacing(
+                            format.CharacterSpacing.Value,
+                            format.CharacterSpacing.Value,
+                            0,
+                            format.Range);
 
-                if (format.Fill != null)
-                    layout.SetFormat(format.Range, f => f.Fill = format.Fill);
+                    if (format.Fill != null)
+                        layout.SetFormat(format.Range, f => f.Fill = format.Fill);
 
-                if (format.Stroke != null)
-                    layout.SetFormat(format.Range, f => f.Stroke = format.Stroke);
+                    if (format.Stroke != null)
+                        layout.SetFormat(format.Range, f => f.Stroke = format.Stroke);
 
-                if (format.StrokeInfo != null)
-                    layout.SetFormat(format.Range, f => f.StrokeInfo = format.StrokeInfo);
+                    if (format.StrokeInfo != null)
+                        layout.SetFormat(format.Range, f => f.StrokeInfo = format.StrokeInfo);
+                }
             }
-
+            
             return layout;
         }
 
         public void Insert(int position, string str)
         {
-            // expand the length of the format
-            var format = GetFormat(position, out var index);
-
-            if (format != null)
-                format.Range = new DW.TextRange(
-                    format.Range.StartPosition,
-                    format.Range.Length + str.Length);
-
-            index++;
-
-            // offset all of the formats that come after this
-            while (index < _formats.Count)
+            lock (_formats)
             {
-                format = _formats[index];
-                format.Range = new DW.TextRange(
-                    format.Range.StartPosition + str.Length,
-                    format.Range.Length);
-                index++;
-            }
+                // expand the length of the format
+                var format = GetFormat(position, out var index);
 
-            Value = Value.Insert(position, str);
+                if (format != null)
+                    format.Range = new DW.TextRange(
+                        format.Range.StartPosition,
+                        format.Range.Length + str.Length);
+
+                index++;
+
+                // offset all of the formats that come after this
+                while (index < _formats.Count)
+                {
+                    format = _formats[index];
+                    format.Range = new DW.TextRange(
+                        format.Range.StartPosition + str.Length,
+                        format.Range.Length);
+                    index++;
+                }
+
+                Value = Value.Insert(position, str);
+            }
         }
 
         public void Remove(int position, int length)
         {
-            var current = position;
-            var end = position + length;
-            var index = 0;
-
-            while (current < end)
+            lock (_formats)
             {
-                // expand the length of the format
-                var format = GetFormat(current, out var idx);
+                var current = position;
+                var end = position + length;
+                var index = 0;
 
-                if (format == null)
+                while (current < end)
                 {
+                    // expand the length of the format
+                    var format = GetFormat(current, out var idx);
+
+                    if (format == null)
+                    {
+                        current++;
+                        continue;
+                    }
+
+                    index = idx;
+
+                    var fstart = format.Range.StartPosition;
+                    var len = fstart - position;
+                    var fend = fstart + format.Range.Length;
+
+                    if (len <= 0 && fend <= end) _formats.Remove(format);
+                    else if (len <= 0 && fend > end) format.Range = new DW.TextRange(fstart, fend - fstart - length);
+                    else format.Range = new DW.TextRange(fstart, len);
+
                     current++;
-                    continue;
                 }
 
-                index = idx;
-
-                var fstart = format.Range.StartPosition;
-                var len = fstart - position;
-                var fend = fstart + format.Range.Length;
-
-                if (len <= 0 && fend <= end) _formats.Remove(format);
-                else if (len <= 0 && fend > end) format.Range = new DW.TextRange(fstart, fend - fstart - length);
-                else format.Range = new DW.TextRange(fstart, len);
-
-                current++;
-            }
-
-            index++;
-
-            // offset all of the formats that come after this
-            while (index < _formats.Count)
-            {
-                var format = _formats[index];
-                format.Range = new DW.TextRange(
-                    format.Range.StartPosition - length,
-                    format.Range.Length);
                 index++;
-            }
 
-            Value = Value.Remove(position, length);
+                // offset all of the formats that come after this
+                while (index < _formats.Count)
+                {
+                    var format = _formats[index];
+                    format.Range = new DW.TextRange(
+                        format.Range.StartPosition - length,
+                        format.Range.Length);
+                    index++;
+                }
+
+                Value = Value.Remove(position, length);
+            }
         }
 
         public string Value
@@ -593,10 +594,7 @@ namespace Ibinimator.Model
         {
             i = 0;
 
-            do
-            {
-                i++;
-            } while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
+            do i++; while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
 
             var format = _formats.ElementAtOrDefault(--i);
             if (format == null) return null;
@@ -616,70 +614,76 @@ namespace Ibinimator.Model
 
             if (start == end) return;
 
-            while (current < end)
+            lock (_formats)
             {
-                var oldFormat = GetFormat(current);
 
-                if (oldFormat != null)
+                while (current < end)
                 {
-                    var oldRange = oldFormat.Range;
-                    var oStart = oldRange.StartPosition;
-                    var oLen = oldRange.Length;
-                    var oEnd = oStart + oLen;
+                    var oldFormat = GetFormat(current);
 
-                    int nStart;
-                    int nLen;
-
-                    var newFormat = oldFormat.Union(format);
-
-                    if (oStart < start) nStart = start;
-                    else nStart = oStart;
-
-                    if (oEnd > end) nLen = end - nStart;
-                    else nLen = oEnd - nStart;
-
-                    newFormat.Range = new DW.TextRange(nStart, nLen);
-
-                    var nEnd = nStart + nLen;
-
-                    _formats.Remove(oldFormat);
-                    _formats.Add(newFormat);
-
-                    if (nStart > oStart)
+                    if (oldFormat != null)
                     {
-                        var iFormat = oldFormat.Clone();
-                        iFormat.Range = new DW.TextRange(oStart, nStart - oStart);
-                        _formats.Add(iFormat);
-                    }
+                        var oldRange = oldFormat.Range;
+                        var oStart = oldRange.StartPosition;
+                        var oLen = oldRange.Length;
+                        var oEnd = oStart + oLen;
 
-                    if (nEnd < oEnd)
+                        int nStart;
+                        int nLen;
+
+                        var newFormat = oldFormat.Union(format);
+
+                        if (oStart < start) nStart = start;
+                        else nStart = oStart;
+
+                        if (oEnd > end) nLen = end - nStart;
+                        else nLen = oEnd - nStart;
+
+                        newFormat.Range = new DW.TextRange(nStart, nLen);
+
+                        var nEnd = nStart + nLen;
+
+                        _formats.Remove(oldFormat);
+                        _formats.Add(newFormat);
+
+                        if (nStart > oStart)
+                        {
+                            var iFormat = oldFormat.Clone();
+                            iFormat.Range = new DW.TextRange(oStart, nStart - oStart);
+                            _formats.Add(iFormat);
+                        }
+
+                        if (nEnd < oEnd)
+                        {
+                            var iFormat = oldFormat.Clone();
+                            iFormat.Range = new DW.TextRange(nEnd, oEnd - nEnd);
+                            _formats.Add(iFormat);
+                        }
+
+                        if (start < Math.Min(nStart, oStart))
+                        {
+                            var iFormat = format.Clone();
+                            iFormat.Range = new DW.TextRange(start, Math.Min(nStart, oStart) - start);
+                            _formats.Add(iFormat);
+                        }
+
+                        start = Math.Max(nEnd, oEnd);
+
+                        current += oLen;
+                    }
+                    else
                     {
-                        var iFormat = oldFormat.Clone();
-                        iFormat.Range = new DW.TextRange(nEnd, oEnd - nEnd);
-                        _formats.Add(iFormat);
+                        current++;
                     }
-
-                    if (start < Math.Min(nStart, oStart))
-                    {
-                        var iFormat = format.Clone();
-                        iFormat.Range = new DW.TextRange(start, Math.Min(nStart, oStart) - start);
-                        _formats.Add(iFormat);
-                    }
-
-                    start = Math.Max(nEnd, oEnd);
-
-                    current += oLen;
                 }
-                else
-                {
-                    current++;
-                }
+
+                if (start < end)
+                    _formats.Add(format);
+
+                _formats.Sort((f1, f2) => f1.Range.StartPosition.CompareTo(f2.Range.StartPosition));
+
+                Trace.WriteLine(string.Join("\n", _formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
             }
-
-            if (start < end)
-                _formats.Add(format);
-
-            _formats.Sort((f1, f2) => f1.Range.StartPosition.CompareTo(f2.Range.StartPosition));
 
             RaisePropertyChanged("TextLayout");
         }

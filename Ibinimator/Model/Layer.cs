@@ -108,6 +108,7 @@ namespace Ibinimator.Model
             if (child.Parent != this)
                 throw new InvalidOperationException();
 
+            child.Selected = false;
             child.Parent = null;
             SubLayers.Remove(child);
             child.PropertyChanged -= OnSubLayerChanged;

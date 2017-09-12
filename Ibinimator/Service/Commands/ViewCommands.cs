@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.View;
 using Ibinimator.ViewModel;
 
-namespace Ibinimator
+namespace Ibinimator.Service.Commands
 {
     public static class ViewCommands
     {

@@ -90,7 +90,7 @@ namespace Ibinimator.Model
 
         protected void RaisePropertyChanging(string propertyName)
         {
-            RaisePropertyChanging(this, new PropertyChangingEventArgs(propertyName));
+            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
         }
 
         protected void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)

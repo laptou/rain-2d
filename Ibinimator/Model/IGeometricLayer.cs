@@ -52,12 +52,12 @@ namespace Ibinimator.Model
     {
         public Stroke(RenderTarget target, BrushInfo stroke, StrokeInfo strokeInfo)
         {
-            Brush = stroke.ToDirectX(target);
+            Brush = stroke?.ToDirectX(target);
             Style = new StrokeStyle1(
-                target.Factory.QueryInterface<Factory1>(), 
-                strokeInfo.Style, 
-                strokeInfo.Dashes.ToArray());
-            Width = strokeInfo.Width;
+                target.Factory.QueryInterface<Factory1>(),
+                strokeInfo?.Style ?? default(StrokeStyleProperties1),
+                strokeInfo?.Dashes.ToArray() ?? new float[0]);
+            Width = strokeInfo?.Width ?? 0;
         }
 
         public Stroke()

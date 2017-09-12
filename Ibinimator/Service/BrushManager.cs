@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,9 +26,7 @@ namespace Ibinimator.Service
                 var layer = ArtView.SelectionManager.Selection.LastOrDefault();
 
                 if (layer is IFilledLayer filled)
-                {
                     Fill = filled.FillBrush;
-                }
 
                 if (layer is IStrokedLayer stroked)
                 {
@@ -83,38 +80,45 @@ namespace Ibinimator.Service
 
         #endregion
 
-        private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
+        private async void OnPropertyChanged(object o, PropertyChangedEventArgs args)
         {
             // otherwise, selecting new shapes applies their properties to all
             // of the other selected shapes
             if (_selecting) return;
 
-            switch (args.PropertyName)
+            await Task.Run(() =>
             {
-                case nameof(Fill):
-                    ArtView.ToolManager.Tool?.ApplyFill(Fill);
-                    break;
-                case nameof(Stroke):
-                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is IStrokedLayer stroked)
-                            stroked.StrokeBrush = Stroke;
-                    break;
-                case nameof(StrokeStyle):
-                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is IStrokedLayer stroked)
-                            stroked.StrokeInfo.Style = StrokeStyle;
-                    break;
-                case nameof(StrokeWidth):
-                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is IStrokedLayer stroked)
-                            stroked.StrokeInfo.Width = StrokeWidth;
-                    break;
-                case nameof(StrokeDashes):
-                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is IStrokedLayer stroked)
-                            stroked.StrokeInfo.Dashes = new ObservableList<float>(StrokeDashes);
-                    break;
-            }
+                // lock b/c we can't be applying multiple changes at the same time
+                lock (this)
+                {
+                    switch (args.PropertyName)
+                    {
+                        case nameof(Fill):
+                            ArtView.ToolManager.Tool?.ApplyFill(Fill);
+                            break;
+                        case nameof(Stroke):
+                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                                if (layer is IStrokedLayer stroked)
+                                    stroked.StrokeBrush = Stroke;
+                            break;
+                        case nameof(StrokeStyle):
+                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                                if (layer is IStrokedLayer stroked)
+                                    stroked.StrokeInfo.Style = StrokeStyle;
+                            break;
+                        case nameof(StrokeWidth):
+                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                                if (layer is IStrokedLayer stroked)
+                                    stroked.StrokeInfo.Width = StrokeWidth;
+                            break;
+                        case nameof(StrokeDashes):
+                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                                if (layer is IStrokedLayer stroked)
+                                    stroked.StrokeInfo.Dashes = new ObservableList<float>(StrokeDashes);
+                            break;
+                    }
+                }
+            });
         }
     }
 }

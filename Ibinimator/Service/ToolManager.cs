@@ -60,7 +60,7 @@ namespace Ibinimator.Service
 
         public ToolType Type
         {
-            get => Tool.Type;
+            get => Tool?.Type ?? ToolType.Select;
             set => SetTool(value);
         }
 

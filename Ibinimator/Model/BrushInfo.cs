@@ -153,6 +153,11 @@ namespace Ibinimator.Model
         {
             return new WPF.SolidColorBrush(Color.ToWpf());
         }
+
+        public override string ToString()
+        {
+            return $"Color: {Color}, Opacity: {Opacity}";
+        }
     }
 
     [XmlType("Gradient")]
