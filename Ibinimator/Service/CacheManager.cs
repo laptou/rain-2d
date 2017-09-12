@@ -42,7 +42,7 @@ namespace Ibinimator.Service
         private readonly Dictionary<IStrokedLayer, Stroke> _strokes = new Dictionary<IStrokedLayer, Stroke>();
 
         private readonly Dictionary<IGeometricLayer, Geometry> _geometries = new Dictionary<IGeometricLayer, Geometry>();
-        private readonly Dictionary<(ILayer layer, long id), IDisposable> _resources = new Dictionary<(ILayer, long), IDisposable>();
+        private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources = new Dictionary<(ILayer layer, int id), IDisposable>();
         private readonly Dictionary<IGeometricLayer, GeometryRealization> _fillGeometries = new Dictionary<IGeometricLayer, GeometryRealization>();
         private readonly Dictionary<IGeometricLayer, GeometryRealization> _strokeGeometries = new Dictionary<IGeometricLayer, GeometryRealization>();
         private readonly Dictionary<ITextLayer, TextLayout> _texts = new Dictionary<ITextLayer, TextLayout>();
@@ -204,10 +204,22 @@ namespace Ibinimator.Service
             return _brushes[key];
         }
 
-        public bool ClearResource<T>(ILayer layer, long id) where T : IDisposable
+        public bool ClearResource(ILayer layer, int id)
         {
-            GetResource<T>(layer, id)?.Dispose();
-            lock (_resources) return _resources.Remove((layer, id));
+            lock (_resources)
+            {
+                _resources.TryGet((layer, id))?.Dispose();
+                return _resources.Remove((layer, id));
+            }
+        }
+
+        public void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable
+        {
+            lock (_resources)
+            {
+                _resources.TryGet((layer, id))?.Dispose();
+                _resources[(layer, id)] = resource;
+            }
         }
 
         public Brush GetFill(IFilledLayer layer)
@@ -220,12 +232,12 @@ namespace Ibinimator.Service
             return Get(_geometries, layer, l => l.GetGeometry(this));
         }
 
-        public T GetResource<T>(ILayer layer, long id) where T : IDisposable
+        public T GetResource<T>(ILayer layer, int id) where T : IDisposable
         {
             return (T) Get(_resources, (layer, id), l => l.Item1.GetResource(this, id));
         }
 
-        public IEnumerable<(long, T)> GetResources<T>(ILayer layer) where T : IDisposable
+        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer) where T : IDisposable
         {
             lock (_resources)
                 return _resources.Where(kv => kv.Key.layer == layer)
@@ -294,8 +306,33 @@ namespace Ibinimator.Service
 
         public void ResetAll()
         {
-            ResetLayerCache();
+            ResetDeviceResources();
 
+            lock (_geometries)
+            {
+                foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
+                _geometries.Clear();
+            }
+
+            lock (_texts)
+            {
+                foreach (var (_, layout) in _texts.AsTuples())
+                {
+                    layout.Dispose();
+                }
+
+                _texts.Clear();
+            }
+
+            lock (_resources)
+            {
+                foreach (var (_, resource) in _resources.AsTuples()) resource?.Dispose();
+                _resources.Clear();
+            }
+        }
+
+        public void ResetDeviceResources()
+        {
             lock (_brushes)
             {
                 foreach (var (_, brush) in _brushes.AsTuples())
@@ -307,19 +344,6 @@ namespace Ibinimator.Service
             {
                 foreach (var (_, bitmap) in _bitmaps.AsTuples()) bitmap?.Dispose();
                 _bitmaps.Clear();
-            }
-        }
-
-        public void ResetLayerCache()
-        {
-            lock (_texts)
-            {
-                foreach (var (_, layout) in _texts.AsTuples())
-                {
-                    layout.Dispose();
-                }
-
-                _texts.Clear();
             }
 
             lock (_brushBindings)
@@ -343,12 +367,6 @@ namespace Ibinimator.Service
                     stroke.Dispose();
                 }
                 _strokeBindings.Clear();
-            }
-
-            lock (_geometries)
-            {
-                foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
-                _geometries.Clear();
             }
 
             lock (_fillGeometries)
@@ -375,11 +393,7 @@ namespace Ibinimator.Service
                 _strokes.Clear();
             }
 
-            lock (_resources)
-            {
-                foreach (var (_, resource) in _resources.AsTuples()) resource.Dispose();
-                _resources.Clear();
-            }
+            
         }
 
         #endregion
@@ -526,11 +540,16 @@ namespace Ibinimator.Service
                             var ctx = ArtView.RenderTarget.QueryInterface<DeviceContext1>();
                             var stroke = GetStroke(geom);
 
-                            _fillGeometries.TryGet(geom)?.Dispose();
-                            _fillGeometries[geom] = new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance);
+                            if (geometry != null)
+                            {
+                                _fillGeometries.TryGet(geom)?.Dispose();
+                                _fillGeometries[geom] =
+                                    new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance);
 
-                            _strokeGeometries.TryGet(geom)?.Dispose();
-                            _strokeGeometries[geom] = new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance, stroke.Width, stroke.Style);
+                                _strokeGeometries.TryGet(geom)?.Dispose();
+                                _strokeGeometries[geom] = new GeometryRealization(ctx, geometry,
+                                    geometry.FlatteningTolerance, stroke.Width, stroke.Style);
+                            }
                         }
                     }
                     goto case "Bounds";
@@ -569,13 +588,7 @@ namespace Ibinimator.Service
                         }
                     }
                     break;
-
-                case nameof(ITextLayer.Value):
-                case nameof(ITextLayer.FontSize):
-                case nameof(ITextLayer.FontWeight):
-                case nameof(ITextLayer.FontStyle):
-                case nameof(ITextLayer.FontStretch):
-                case nameof(ITextLayer.FontFamilyName):
+                    
                 case "TextLayout":
                     lock (_texts)
                     {

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
@@ -42,6 +40,13 @@ namespace Ibinimator.Model
 
     public class TextRenderer : DW.TextRendererBase
     {
+        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
+        {
+            var context = (Context)clientDrawingContext;
+
+            return context.Text.AbsoluteTransform;
+        }
+
         public override Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX, float baselineOriginY,
             D2D.MeasuringMode measuringMode, DW.GlyphRun glyphRun, DW.GlyphRunDescription glyphRunDescription,
             ComObject clientDrawingEffect)
@@ -63,16 +68,31 @@ namespace Ibinimator.Model
 
             sink.Close();
 
-            context.Figures.Add(new Figure
+            var geometry = new D2D.TransformedGeometry(context.Factory, path,
+                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
+
+            context.Figures.Add(geometry);
+
+            if (context.Target == null) return Result.Ok;
+
+            using (var fill = (format?.Fill ?? context.Text.FillBrush).ToDirectX(context.Target))
             {
-                FillBrush = format?.Fill,
-                StrokeBrush = format?.Stroke,
-                StrokeInfo = format?.StrokeStyle,
-                Geometry = new D2D.TransformedGeometry(context.Factory, path, Matrix3x2.Translation(baselineOriginX, baselineOriginY))
-                {
-                    Tag = glyphRunDescription.TextPosition
-                }
-            });
+                if (fill != null)
+                    context.Target.FillGeometry(geometry, fill);
+            }
+
+            using (var stroke = new Stroke(
+                context.Target,
+                format?.Stroke ?? context.Text.StrokeBrush,
+                format?.StrokeInfo ?? context.Text.StrokeInfo))
+            {
+                if (stroke.Brush != null && stroke.Style != null)
+                    context.Target.DrawGeometry(
+                        geometry,
+                        stroke.Brush,
+                        stroke.Width,
+                        stroke.Style);
+            }
 
             return Result.Ok;
         }
@@ -109,15 +129,35 @@ namespace Ibinimator.Model
 
         private static void DrawLine(Context context, Format format, float x, float y, float width, float thickness)
         {
-            var rect = new D2D.RectangleGeometry(context.Factory, new RectangleF(x, y, width, thickness));
-
-            context.Figures.Add(new Figure
+            var rect = new D2D.RectangleGeometry(context.Factory, new RectangleF(x, y, width, thickness))
             {
-                FillBrush = format?.Fill,
-                StrokeBrush = format?.Stroke,
-                StrokeInfo = format?.StrokeStyle,
-                Geometry = new D2D.TransformedGeometry(context.Factory, rect, Matrix3x2.Translation(x, y))
-            });
+                Tag = (FillBrush: format?.Fill,
+                    StrokeBrush: format?.Stroke,
+                    StrokeInfo: format?.StrokeInfo)
+            };
+
+            context.Figures.Add(rect);
+
+            if (context.Target == null) return;
+
+            using (var fill = (format?.Fill ?? context.Text.FillBrush).ToDirectX(context.Target))
+            {
+                if (fill != null)
+                    context.Target.FillRectangle(new RectangleF(x, y, width, thickness), fill);
+            }
+
+            using (var stroke = new Stroke(
+                context.Target,
+                format?.Stroke ?? context.Text.StrokeBrush,
+                format?.StrokeInfo ?? context.Text.StrokeInfo))
+            {
+                if (stroke.Brush != null && stroke.Style != null)
+                    context.Target.DrawRectangle(
+                        new RectangleF(x, y, width, thickness),
+                        stroke.Brush,
+                        stroke.Width,
+                        stroke.Style);
+            }
         }
 
         #region Nested type: Context
@@ -125,7 +165,9 @@ namespace Ibinimator.Model
         public class Context
         {
             public D2D.Factory Factory { get; set; }
-            public List<Figure> Figures { get; set; } = new List<Figure>();
+            public List<D2D.Geometry> Figures { get; set; } = new List<D2D.Geometry>();
+            public D2D.RenderTarget Target { get; set; }
+            public ITextLayer Text { get; set; }
         }
 
         #endregion
@@ -137,16 +179,16 @@ namespace Ibinimator.Model
             public BrushInfo Fill { get; set; }
             public int StrikethroughCount { get; set; }
             public BrushInfo Stroke { get; set; }
-            public StrokeInfo StrokeStyle { get; set; }
+            public StrokeInfo StrokeInfo { get; set; }
             public int UnderlineCount { get; set; }
 
             public Format Clone()
             {
                 return new Format
                 {
-                    Fill = Fill.Clone<BrushInfo>(),
-                    Stroke = Stroke.Clone<BrushInfo>(),
-                    StrokeStyle = StrokeStyle.Clone<StrokeInfo>(),
+                    Fill = (BrushInfo) Fill?.Clone(),
+                    Stroke = (BrushInfo) Stroke?.Clone(),
+                    StrokeInfo = (StrokeInfo) StrokeInfo?.Clone(),
                     UnderlineCount = UnderlineCount,
                     StrikethroughCount = StrikethroughCount
                 };
@@ -177,11 +219,33 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
+        public DW.ParagraphAlignment ParagraphAlignment
+        {
+            get => Get<DW.ParagraphAlignment>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public DW.TextAlignment TextAlignment
+        {
+            get => Get<DW.TextAlignment>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
         protected override string ElementName => "text";
 
         #region IGeometricLayer Members
 
-        public Figure[] GetFigures(ICacheManager cache)
+        public D2D.Geometry GetGeometry(ICacheManager cache)
         {
             var layout = cache.GetTextLayout(this);
             var factory = cache.ArtView.Direct2DFactory;
@@ -189,12 +253,19 @@ namespace Ibinimator.Model
             {
                 var ctx = new TextRenderer.Context
                 {
-                    Factory = factory
+                    Factory = factory,
+                    Text = this
                 };
 
-                layout.Draw(render, render, 0, 0);
+                layout.Draw(ctx, render, 0, 0);
 
-                return ctx.Figures.ToArray();
+                if (ctx.Figures.Count == 0)
+                    return null;
+
+                return new D2D.GeometryGroup(
+                    factory,
+                    D2D.FillMode.Winding,
+                    ctx.Figures.ToArray());
             }
         }
 
@@ -245,11 +316,22 @@ namespace Ibinimator.Model
         {
             target.Transform = Transform * target.Transform;
 
-            var geom = cache.GetGeometry(this);
+            var layout = cache.GetTextLayout(this);
 
-            var fill = cache.GetFill(this);
-            if(fill != null)
-                target.FillGeometry(geom, fill);
+            using (var render = new TextRenderer())
+            {
+                var ctx = new TextRenderer.Context
+                {
+                    Factory = target.Factory,
+                    Target = target,
+                    Text = this
+                };
+
+                layout.Draw(ctx, render, 0, 0);
+
+                ctx.Figures.ForEach(g => g.Dispose()); 
+                // so wasteful!! but there's no better way right now...
+            }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
@@ -291,59 +373,6 @@ namespace Ibinimator.Model
         {
             get => Get<StrokeInfo>();
             set => Set(value);
-        }
-
-        public D2D.Geometry GetGeometry(ICacheManager cache)
-        {
-            var layout = cache.GetTextLayout(this);
-            var factory = cache.ArtView.Direct2DFactory;
-            using (var render = new TextRenderer())
-            {
-                var ctx = new TextRenderer.Context
-                {
-                    Factory = factory
-                };
-
-                layout.Draw(ctx, render, 0, 0);
-
-                if(ctx.Figures.Count == 0)
-                    return new D2D.RectangleGeometry(factory, RectangleF.Empty);
-
-                return new D2D.GeometryGroup(
-                    factory,
-                    D2D.FillMode.Winding,
-                    ctx.Figures.Select(f => f.Geometry).ToArray());
-            }
-        }
-
-        public override IDisposable GetResource(ICacheManager cache, int id)
-        {
-            var layout = cache.GetTextLayout(this);
-
-            if (layout == null) return null;
-
-            var clusters = layout.GetClusterMetrics();
-
-            var target = cache.ArtView.RenderTarget;
-
-            var index = id / 2;
-
-            if (index >= clusters.Length) return null;
-
-            var position = 0;
-
-            for (var i = 0; i < index; i++) position += clusters[i].Length;
-
-            var format = GetFormat(position);
-
-            if (format == null) return null;
-
-            switch (id % 2)
-            {
-                case 0: return format.Fill.ToDirectX(target);
-                case 1: return new Stroke(target, format.Stroke, format.StrokeInfo);
-                default: return null;
-            }
         }
 
         public string FontFamilyName
@@ -403,7 +432,7 @@ namespace Ibinimator.Model
 
         public DW.TextLayout GetLayout(DW.Factory dwFactory)
         {
-            var layout = new DW.TextLayout(
+            var layout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
                 dwFactory,
                 Value ?? "",
                 new DW.TextFormat(
@@ -414,19 +443,24 @@ namespace Ibinimator.Model
                     FontStretch,
                     FontSize * 96 / 72),
                 IsBlock ? Width : float.PositiveInfinity,
-                IsBlock ? Height : float.PositiveInfinity);
+                IsBlock ? Height : float.PositiveInfinity))
+            {
+                TextAlignment = TextAlignment,
+                ParagraphAlignment = ParagraphAlignment
+            };
+
 
             foreach (var format in _formats)
             {
-                //var typography = layout.GetTypography(format.Range.StartPosition);
+                var typography = layout.GetTypography(format.Range.StartPosition);
 
-                //if (format.Superscript)
-                //    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
+                if (format.Superscript)
+                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
 
-                //if (format.Subscript)
-                //    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
+                if (format.Subscript)
+                    typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
 
-                //layout.SetTypography(typography, format.Range);
+                layout.SetTypography(typography, format.Range);
 
                 if (format.FontFamilyName != null)
                     layout.SetFontFamilyName(format.FontFamilyName, format.Range);
@@ -442,6 +476,25 @@ namespace Ibinimator.Model
 
                 if (format.FontWeight != null)
                     layout.SetFontWeight(format.FontWeight.Value, format.Range);
+
+                if (format.FontWeight != null)
+                    layout.SetFontWeight(format.FontWeight.Value, format.Range);
+
+                if (format.CharacterSpacing != null)
+                    layout.SetCharacterSpacing(
+                        format.CharacterSpacing.Value,
+                        format.CharacterSpacing.Value,
+                        0,
+                        format.Range);
+
+                if (format.Fill != null)
+                    layout.SetFormat(format.Range, f => f.Fill = format.Fill);
+
+                if (format.Stroke != null)
+                    layout.SetFormat(format.Range, f => f.Stroke = format.Stroke);
+
+                if (format.StrokeInfo != null)
+                    layout.SetFormat(format.Range, f => f.StrokeInfo = format.StrokeInfo);
             }
 
             return layout;
@@ -453,11 +506,9 @@ namespace Ibinimator.Model
             var format = GetFormat(position, out var index);
 
             if (format != null)
-            {
                 format.Range = new DW.TextRange(
                     format.Range.StartPosition,
                     format.Range.Length + str.Length);
-            }
 
             index++;
 
@@ -498,12 +549,12 @@ namespace Ibinimator.Model
                 var fend = fstart + format.Range.Length;
 
                 if (len <= 0 && fend <= end) _formats.Remove(format);
-                else if (len <= 0 && fend > end) format.Range = new DW.TextRange(fstart, fend - fstart- length);
+                else if (len <= 0 && fend > end) format.Range = new DW.TextRange(fstart, fend - fstart - length);
                 else format.Range = new DW.TextRange(fstart, len);
 
                 current++;
             }
-            
+
             index++;
 
             // offset all of the formats that come after this
@@ -542,13 +593,18 @@ namespace Ibinimator.Model
         {
             i = 0;
 
-            do i++; while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
+            do
+            {
+                i++;
+            } while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
 
             var format = _formats.ElementAtOrDefault(--i);
             if (format == null) return null;
 
             return format.Range.StartPosition + format.Range.Length > position
-                && position >= format.Range.StartPosition ? format : null;
+                   && position >= format.Range.StartPosition
+                ? format
+                : null;
         }
 
         public void SetFormat(Format format)
@@ -614,7 +670,10 @@ namespace Ibinimator.Model
 
                     current += oLen;
                 }
-                else current++;
+                else
+                {
+                    current++;
+                }
             }
 
             if (start < end)
@@ -629,22 +688,12 @@ namespace Ibinimator.Model
 
         public sealed class Format
         {
-            public Format Union(Format f)
-            {
-                return new Format
-                {
-                    FontFamilyName = f.FontFamilyName ?? FontFamilyName,
-                    FontStyle = f.FontStyle ?? FontStyle,
-                    FontSize = f.FontSize ?? FontSize,
-                    FontStretch = f.FontStretch ?? FontStretch,
-                    FontWeight = f.FontWeight ?? FontWeight,
-                    Subscript = f.Subscript || Subscript,
-                    Superscript = f.Superscript || Superscript
-                };
-            }
-
             private bool _subscript;
             private bool _superscript;
+
+            public float? CharacterSpacing { get; set; }
+
+            public BrushInfo Fill { get; set; }
 
             public string FontFamilyName { get; set; }
 
@@ -656,13 +705,13 @@ namespace Ibinimator.Model
 
             public DW.FontWeight? FontWeight { get; set; }
 
-            public BrushInfo Fill { get; set; }
+            public float? Kerning { get; set; }
+
+            public DW.TextRange Range { get; set; }
 
             public BrushInfo Stroke { get; set; }
 
             public StrokeInfo StrokeInfo { get; set; }
-
-            public DW.TextRange Range { get; set; }
 
             public bool Subscript
             {
@@ -695,9 +744,26 @@ namespace Ibinimator.Model
                     FontStyle = FontStyle,
                     FontStretch = FontStretch,
                     FontWeight = FontWeight,
-                    Fill = (BrushInfo) Fill?.Clone(),
-                    Stroke = (BrushInfo) Stroke?.Clone(),
-                    StrokeInfo = (StrokeInfo) StrokeInfo?.Clone()
+                    Fill = Fill,
+                    Stroke = Stroke,
+                    StrokeInfo = StrokeInfo
+                };
+            }
+
+            public Format Union(Format f)
+            {
+                return new Format
+                {
+                    FontFamilyName = f.FontFamilyName ?? FontFamilyName,
+                    FontStyle = f.FontStyle ?? FontStyle,
+                    FontSize = f.FontSize ?? FontSize,
+                    FontStretch = f.FontStretch ?? FontStretch,
+                    FontWeight = f.FontWeight ?? FontWeight,
+                    Subscript = f.Subscript || Subscript,
+                    Superscript = f.Superscript || Superscript,
+                    Fill = f.Fill ?? Fill,
+                    Stroke = f.Stroke ?? Stroke,
+                    StrokeInfo = f.StrokeInfo ?? StrokeInfo
                 };
             }
         }

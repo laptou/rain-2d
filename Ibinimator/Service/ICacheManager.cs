@@ -20,9 +20,10 @@ namespace Ibinimator.Service
         Bitmap GetBitmap(string key);
         RectangleF GetBounds(ILayer layer);
         Brush GetBrush(string key);
-        T GetResource<T>(ILayer layer, long id) where T : IDisposable;
-        IEnumerable<(long, T)> GetResources<T>(ILayer layer) where T : IDisposable;
-        bool ClearResource<T>(ILayer layer, long id) where T : IDisposable;
+        T GetResource<T>(ILayer layer, int id) where T : IDisposable;
+        IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer) where T : IDisposable;
+        bool ClearResource(ILayer layer, int id);
+        void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable;
         Brush GetFill(IFilledLayer layer);
         GeometryRealization GetFillGeometry(IGeometricLayer layer);
         Geometry GetGeometry(IGeometricLayer layer);
@@ -33,6 +34,6 @@ namespace Ibinimator.Service
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);
         void ResetAll();
-        void ResetLayerCache();
+        void ResetDeviceResources();
     }
 }

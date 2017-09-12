@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -29,12 +30,17 @@ namespace Ibinimator.Service
         string Status { get; }
         ToolType Type { get; }
         ToolOption[] Options { get; }
+
         bool KeyDown(Key key);
         bool KeyUp(Key key);
 
         bool MouseDown(Vector2 pos);
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
+
+        void ApplyFill(BrushInfo brush);
+        void ApplyStroke(BrushInfo brush, StrokeInfo stroke);
+
         void Render(RenderTarget target, ICacheManager cacheManager);
     }
 

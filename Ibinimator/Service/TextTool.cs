@@ -570,6 +570,29 @@ namespace Ibinimator.Service
             return true;
         }
 
+        public void ApplyFill(BrushInfo brush)
+        {
+            if (CurrentText == null || brush == null) return;
+            
+            CurrentText.SetFormat(new Text.Format
+            {
+                Fill = brush,
+                Range = new DW.TextRange(_selectionIndex, _selectionRange)
+            });
+        }
+
+        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        {
+            if (CurrentText == null || brush == null && stroke == null) return;
+
+            CurrentText.SetFormat(new Text.Format
+            {
+                Stroke = brush,
+                StrokeInfo = stroke,
+                Range = new DW.TextRange(_selectionIndex, _selectionRange)
+            });
+        }
+
         public ToolOption[] Options { get; }
 
         public void Render(RenderTarget target, ICacheManager cacheManager)

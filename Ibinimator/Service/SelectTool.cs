@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Model;
 using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
+using Ellipse = SharpDX.Direct2D1.Ellipse;
 using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
@@ -65,6 +67,25 @@ namespace Ibinimator.Service
         public bool MouseUp(Vector2 pos)
         {
             return false;
+        }
+
+        public void ApplyFill(BrushInfo brush)
+        {
+            foreach (var layer in Selection.SelectMany(l => l.Flatten()))
+                if (layer is IFilledLayer filled)
+                    filled.FillBrush = brush;
+        }
+
+        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        {
+            foreach (var layer in Selection.SelectMany(l => l.Flatten()))
+            {
+                if (layer is IStrokedLayer stroked)
+                {
+                    stroked.StrokeBrush = brush;
+                    stroked.StrokeInfo = stroke;
+                }
+            }
         }
 
         public ToolOption[] Options => new ToolOption[0];

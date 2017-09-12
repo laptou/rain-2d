@@ -229,6 +229,16 @@ namespace Ibinimator.Service
             return false;
         }
 
+        public void ApplyFill(BrushInfo brush)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        {
+            throw new NotImplementedException();
+        }
+
         public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         public void Render(RenderTarget target, ICacheManager cacheManager)

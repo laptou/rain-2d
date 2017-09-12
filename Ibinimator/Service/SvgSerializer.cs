@@ -347,7 +347,7 @@ namespace Ibinimator.Service
                 {
                     var path = new Path();
                     var command = element.Attribute("d")?.Value;
-                    var nodes = PathDataSerializer.Parse(command);
+                    var nodes = PathDataParser.Parse(command);
 
                     foreach (var node in nodes)
                         path.Nodes.Add(node);
@@ -662,7 +662,7 @@ namespace Ibinimator.Service
         }
     }
 
-    internal static class PathDataSerializer
+    internal static class PathDataParser
     {
         public static IEnumerable<PathNode> Parse(string data)
         {

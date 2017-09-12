@@ -14,7 +14,7 @@ namespace Ibinimator.Service
 {
     public class BrushManager : Model.Model, IBrushManager
     {
-        private bool selecting;
+        private bool _selecting;
 
         public BrushManager(ArtView artView, ISelectionManager selectionManager)
         {
@@ -23,7 +23,7 @@ namespace Ibinimator.Service
 
             selectionManager.Updated += (sender, args) =>
             {
-                selecting = true;
+                _selecting = true;
                 var layer = ArtView.SelectionManager.Selection.LastOrDefault();
 
                 if (layer is IFilledLayer filled)
@@ -39,7 +39,7 @@ namespace Ibinimator.Service
                     StrokeDashes = new ObservableList<float>(stroked.StrokeInfo.Dashes);
                 }
 
-                selecting = false;
+                _selecting = false;
             };
 
             Fill = new SolidColorBrushInfo(Color4.Black);
@@ -87,14 +87,12 @@ namespace Ibinimator.Service
         {
             // otherwise, selecting new shapes applies their properties to all
             // of the other selected shapes
-            if (selecting) return;
+            if (_selecting) return;
 
             switch (args.PropertyName)
             {
                 case nameof(Fill):
-                    foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                        if (layer is IFilledLayer filled)
-                            filled.FillBrush = Fill;
+                    ArtView.ToolManager.Tool?.ApplyFill(Fill);
                     break;
                 case nameof(Stroke):
                     foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
