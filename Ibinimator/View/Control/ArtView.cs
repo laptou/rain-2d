@@ -15,8 +15,8 @@ namespace Ibinimator.View.Control
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
 
-        private readonly Stack<(long time, MouseEventType type, Vector2 position)> _events
-            = new Stack<(long, MouseEventType, Vector2)>();
+        private readonly Queue<(long time, MouseEventType type, Vector2 position)> _events
+            = new Queue<(long, MouseEventType, Vector2)>();
 
         private bool _eventLoop;
         private Factory _factory;
@@ -112,6 +112,15 @@ namespace Ibinimator.View.Control
             Keyboard.ClearFocus();
         }
 
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+
+            if(e.LeftButton == MouseButtonState.Pressed)
+                lock (_events)
+                    _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, Vector2.Zero));
+        }
+
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
@@ -135,7 +144,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Down, vec));
+            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Down, vec));
 
             _eventFlag.Set();
         }
@@ -147,7 +156,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Move, vec));
+            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Move, vec));
 
             _eventFlag.Set();
 
@@ -163,7 +172,7 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Push((DateTime.Now.Ticks, MouseEventType.Up, vec));
+            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, vec));
 
             _eventFlag.Set();
         }
@@ -239,7 +248,7 @@ namespace Ibinimator.View.Control
                     lock (_events)
                     {
                         if (_events.Count == 0) break;
-                        evt = _events.Pop();
+                        evt = _events.Dequeue();
                     }
 
                     var pos = ViewManager.ToArtSpace(evt.position);

@@ -17,20 +17,17 @@ namespace Ibinimator.View.Control
 {
     public partial class HslWheel : INotifyPropertyChanged
     {
-        public static readonly DependencyProperty ColorProperty =
-            DependencyProperty.Register("Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color()));
-
         public static readonly DependencyProperty HueProperty =
             DependencyProperty.Register("Hue", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnColorChanged));
+                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
 
         public static readonly DependencyProperty LightnessProperty =
             DependencyProperty.Register("Lightness", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnColorChanged));
+                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
 
         public static readonly DependencyProperty SaturationProperty =
             DependencyProperty.Register("Saturation", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnColorChanged));
+                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
 
         private bool _draggingRing;
 
@@ -65,7 +62,7 @@ namespace Ibinimator.View.Control
                 Hue = x.h;
                 Saturation = x.s;
                 Lightness = x.l;
-                SetValue(ColorProperty, value);
+                RaisePropertyChanged(nameof(Color));
             }
         }
 
@@ -74,11 +71,8 @@ namespace Ibinimator.View.Control
             get => (double) GetValue(HueProperty);
             set
             {
-                SetValue(HueProperty, (value + 360) % 360);
-                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
-                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
-                SetValue(SaturationProperty, hsl.s);
-                SetValue(LightnessProperty, hsl.l);
+                SetValue(HueProperty, (double)MathUtils.Wrap((float)value, 360));
+                RaisePropertyChanged(nameof(Color));
             }
         }
 
@@ -87,11 +81,8 @@ namespace Ibinimator.View.Control
             get => (double) GetValue(LightnessProperty);
             set
             {
-                SetValue(LightnessProperty, value);
-                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
-                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
-                SetValue(HueProperty, hsl.l);
-                SetValue(SaturationProperty, hsl.s);
+                SetValue(LightnessProperty, MathUtils.Clamp(0, 1, value));
+                RaisePropertyChanged(nameof(Color));
             }
         }
 
@@ -100,11 +91,8 @@ namespace Ibinimator.View.Control
             get => (double) GetValue(SaturationProperty);
             set
             {
-                SetValue(SaturationProperty, value);
-                var rgb = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
-                var hsl = ColorUtils.RgbToHsl(rgb.r, rgb.g, rgb.b);
-                SetValue(HueProperty, hsl.l);
-                SetValue(LightnessProperty, hsl.s);
+                SetValue(SaturationProperty, MathUtils.Clamp(0, 1, value));
+                RaisePropertyChanged(nameof(Color));
             }
         }
 
@@ -144,7 +132,7 @@ namespace Ibinimator.View.Control
         {
             base.OnMouseMove(e);
 
-            if (!_draggingRing && !_draggingTriangle)
+            if (!_draggingRing && !_draggingTriangle || !IsMouseCaptured)
                 return;
 
             var pi2 = Math.PI * 2;
@@ -164,7 +152,7 @@ namespace Ibinimator.View.Control
                 var height = Triangle.ActualWidth / Math.Sqrt(3) * 1.5;
 
                 var tpos = e.GetPosition(Triangle);
-
+                
                 Saturation = Math.Max(0, Math.Min(1, 1 - tpos.Y / height));
                 Lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
 
@@ -192,7 +180,7 @@ namespace Ibinimator.View.Control
             UpdateHandles();
         }
 
-        private static void OnColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnDependencyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is HslWheel hslWheel)
             {
@@ -238,6 +226,8 @@ namespace Ibinimator.View.Control
         private void RaisePropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            
+            UpdateHandles();
         }
 
         private void UpdateHandles()

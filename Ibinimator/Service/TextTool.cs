@@ -39,6 +39,7 @@ namespace Ibinimator.Service
         private int _selectionIndex;
         private int _selectionRange;
         private RectangleF[] _selectionRects = new RectangleF[0];
+        private long _inputTime;
 
         public TextTool(IToolManager manager)
         {
@@ -75,7 +76,7 @@ namespace Ibinimator.Service
                 if (_selectionRange == 0)
                     CurrentText.FontFamilyName = _fontFamilyOption.Value;
                 else
-                    CurrentText.SetFormat(new Text.Format
+                    CurrentText.SetFormat(new Format
                     {
                         FontFamilyName = _fontFamilyOption.Value,
                         Range = new DW.TextRange(_selectionIndex, _selectionRange)
@@ -108,7 +109,7 @@ namespace Ibinimator.Service
                 if (_selectionRange == 0)
                     CurrentText.FontSize = _fontSizeOption.Value;
                 else
-                    CurrentText.SetFormat(new Text.Format
+                    CurrentText.SetFormat(new Format
                     {
                         FontSize = _fontSizeOption.Value,
                         Range = new DW.TextRange(_selectionIndex, _selectionRange)
@@ -140,7 +141,7 @@ namespace Ibinimator.Service
                 }
                 else
                 {
-                    CurrentText.SetFormat(new Text.Format
+                    CurrentText.SetFormat(new Format
                     {
                         FontStretch = stretch,
                         FontStyle = style,
@@ -219,7 +220,8 @@ namespace Ibinimator.Service
                 var mods = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
                 var text = CurrentText.Value;
 
-                Text.Format format;
+
+                Format format;
                 switch (key)
                 {
                     #region Navigation
@@ -340,19 +342,37 @@ namespace Ibinimator.Service
                     case Key.Back:
                         if (_selectionIndex == 0 && _selectionRange == 0) break;
 
+                        ArtView.HistoryManager.BeginRecord();
+
                         if (_selectionRange == 0)
                             CurrentText.Remove(--_selectionIndex, 1);
                         else
                             CurrentText.Remove(_selectionIndex, _selectionRange);
 
                         _selectionRange = 0;
+
+                        ArtView.HistoryManager.EndRecord("Changed text");
+
+                        if (Time.Now - _inputTime < 500)
+                            ArtView.HistoryManager.Merge();
+
+                        _inputTime = Time.Now;
                         break;
                     case Key.Delete:
                         if (_selectionIndex + Math.Max(_selectionRange, 1) > text.Length) break;
 
+                        ArtView.HistoryManager.BeginRecord();
+
                         CurrentText.Remove(_selectionIndex, Math.Max(_selectionRange, 1));
 
                         _selectionRange = 0;
+
+                        ArtView.HistoryManager.EndRecord("Changed text");
+
+                        if (Time.Now - _inputTime < 500)
+                            ArtView.HistoryManager.Merge();
+
+                        _inputTime = Time.Now;
                         break;
 
                     #endregion
@@ -367,21 +387,27 @@ namespace Ibinimator.Service
                     case Key.B when mods.HasFlag(ModifierKeys.Control):
                         format = CurrentText.GetFormat(_selectionIndex);
                         var weight = format?.FontWeight ?? CurrentText.FontWeight;
-                        CurrentText.SetFormat(new Text.Format
+
+                        ArtView.HistoryManager.BeginRecord();
+                        CurrentText.SetFormat(new Format
                         {
                             FontWeight = weight == DW.FontWeight.Normal ? DW.FontWeight.Bold : DW.FontWeight.Normal,
                             Range = new DW.TextRange(_selectionIndex, _selectionRange)
                         });
+                        ArtView.HistoryManager.EndRecord("Changed format");
                         break;
 
                     case Key.I when mods.HasFlag(ModifierKeys.Control):
                         format = CurrentText.GetFormat(_selectionIndex);
                         var style = format?.FontStyle ?? CurrentText.FontStyle;
-                        CurrentText.SetFormat(new Text.Format
+
+                        ArtView.HistoryManager.BeginRecord();
+                        CurrentText.SetFormat(new Format
                         {
                             FontStyle = style == DW.FontStyle.Normal ? DW.FontStyle.Italic : DW.FontStyle.Normal,
                             Range = new DW.TextRange(_selectionIndex, _selectionRange)
                         });
+                        ArtView.HistoryManager.EndRecord("Changed format");
                         break;
 
                     case Key.C when mods.HasFlag(ModifierKeys.Control):
@@ -393,6 +419,8 @@ namespace Ibinimator.Service
                         goto case Key.Back;
 
                     case Key.V when mods.HasFlag(ModifierKeys.Control):
+                        ArtView.HistoryManager.BeginRecord();
+
                         if (_selectionRange > 0)
                             CurrentText.Remove(_selectionIndex, _selectionRange);
 
@@ -402,6 +430,8 @@ namespace Ibinimator.Service
 
                         _selectionRange = 0;
                         _selectionIndex += pasted.Length;
+
+                        ArtView.HistoryManager.EndRecord("Pasted text");
                         break;
 
                     #endregion
@@ -509,6 +539,7 @@ namespace Ibinimator.Service
                 }
 
                 _lastClickTime = Time.Now;
+
                 return false;
             }
 
@@ -574,7 +605,7 @@ namespace Ibinimator.Service
         {
             if (CurrentText == null || brush == null) return;
             
-            CurrentText.SetFormat(new Text.Format
+            CurrentText.SetFormat(new Format
             {
                 Fill = brush,
                 Range = new DW.TextRange(_selectionIndex, _selectionRange)
@@ -585,7 +616,7 @@ namespace Ibinimator.Service
         {
             if (CurrentText == null || brush == null && stroke == null) return;
 
-            CurrentText.SetFormat(new Text.Format
+            CurrentText.SetFormat(new Format
             {
                 Stroke = brush,
                 StrokeInfo = stroke,
@@ -640,6 +671,8 @@ namespace Ibinimator.Service
         {
             if (CurrentText == null) return;
 
+            ArtView.HistoryManager.BeginRecord();
+
             if (_selectionRange > 0)
                 CurrentText.Remove(_selectionIndex, _selectionRange);
 
@@ -649,6 +682,13 @@ namespace Ibinimator.Service
             _selectionRange = 0;
 
             Update();
+
+            ArtView.HistoryManager.EndRecord("Changed text");
+
+            if (Time.Now - _inputTime < 500)
+                ArtView.HistoryManager.Merge();
+
+            _inputTime = Time.Now;
         }
 
         [DllImport("user32.dll")]

@@ -60,7 +60,6 @@ namespace Ibinimator.View.Control
 
             if (App.IsDesigner) return;
 
-            StartD3D();
 
             Stretch = Stretch.Fill;
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
@@ -219,7 +218,9 @@ namespace Ibinimator.View.Control
         {
             if (App.IsDesigner) return;
 
-            OnRendering(this, null);
+            _invalidated = true;
+
+            StartD3D();
         }
 
         private void OnRendering(object sender, EventArgs e)

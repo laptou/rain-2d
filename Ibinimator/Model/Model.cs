@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Ibinimator.Model
 {
     public abstract class Model : INotifyPropertyChanged,
-        INotifyPropertyChanging
+        INotifyPropertyChanging, ICloneable
     {
         private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
@@ -112,7 +112,10 @@ namespace Ibinimator.Model
                     old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
                 _handlers[propertyName] =
-                    new NotifyCollectionChangedEventHandler((s, e) => { RaisePropertyChanged(propertyName); });
+                    new NotifyCollectionChangedEventHandler((s, e) =>
+                    {
+                        RaisePropertyChanged(propertyName);
+                    });
 
                 collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }

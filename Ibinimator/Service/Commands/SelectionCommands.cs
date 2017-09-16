@@ -4,40 +4,41 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.ViewModel;
 using SharpDX;
+using static Ibinimator.Service.CommandManager;
 
 namespace Ibinimator.Service.Commands
 {
     public static class SelectionCommands
     {
         public static readonly DelegateCommand<ISelectionManager> SelectAllCommand =
-            new DelegateCommand<ISelectionManager>(SelectAll, null);
+            Instance.Register<ISelectionManager>(SelectAll);
 
         public static readonly DelegateCommand<ISelectionManager> DeselectAllCommand =
-            new DelegateCommand<ISelectionManager>(DeselectAll, null);
+            Instance.Register<ISelectionManager>(DeselectAll);
 
         public static readonly DelegateCommand<ISelectionManager> MoveToBottomCommand =
-            new DelegateCommand<ISelectionManager>(MoveToBottom, null);
+            Instance.Register<ISelectionManager>(MoveToBottom);
 
         public static readonly DelegateCommand<ISelectionManager> MoveToTopCommand =
-            new DelegateCommand<ISelectionManager>(MoveToTop, null);
+            Instance.Register<ISelectionManager>(MoveToTop);
 
         public static readonly DelegateCommand<ISelectionManager> MoveUpCommand =
-            new DelegateCommand<ISelectionManager>(MoveUp, null);
+            Instance.Register<ISelectionManager>(MoveUp);
 
         public static readonly DelegateCommand<ISelectionManager> MoveDownCommand =
-            new DelegateCommand<ISelectionManager>(MoveDown, null);
+            Instance.Register<ISelectionManager>(MoveDown);
 
         public static readonly DelegateCommand<ISelectionManager> FlipVerticalCommand =
-            new DelegateCommand<ISelectionManager>(FlipVertical, null);
+            Instance.Register<ISelectionManager>(FlipVertical);
 
         public static readonly DelegateCommand<ISelectionManager> FlipHorizontalCommand =
-            new DelegateCommand<ISelectionManager>(FlipHorizontal, null);
+            Instance.Register<ISelectionManager>(FlipHorizontal);
 
         public static readonly DelegateCommand<ISelectionManager> RotateCounterClockwiseCommand =
-            new DelegateCommand<ISelectionManager>(RotateCounterClockwise, null);
+            Instance.Register<ISelectionManager>(RotateCounterClockwise);
 
         public static readonly DelegateCommand<ISelectionManager> RotateClockwiseCommand =
-            new DelegateCommand<ISelectionManager>(RotateClockwise, null);
+            Instance.Register<ISelectionManager>(RotateClockwise);
 
         private static void DeselectAll(ISelectionManager selectionManager)
         {
@@ -64,9 +65,7 @@ namespace Ibinimator.Service.Commands
             foreach (var layer in selectionManager.Selection)
             {
                 var index = layer.Parent.SubLayers.IndexOf(layer);
-                var parent = layer.Parent;
-                parent.Remove(layer);
-                parent.Add(layer, Math.Min(parent.SubLayers.Count, index + 1));
+                layer.Parent.SubLayers.Move(index, Math.Min(layer.Parent.SubLayers.Count, index + 1));
             }
         }
 
@@ -74,9 +73,8 @@ namespace Ibinimator.Service.Commands
         {
             foreach (var layer in selectionManager.Selection)
             {
-                var parent = layer.Parent;
-                parent.Remove(layer);
-                parent.Add(layer);
+                var index = layer.Parent.SubLayers.IndexOf(layer);
+                layer.Parent.SubLayers.Move(index, layer.Parent.SubLayers.Count - 1);
             }
         }
 
@@ -84,9 +82,8 @@ namespace Ibinimator.Service.Commands
         {
             foreach (var layer in selectionManager.Selection)
             {
-                var parent = layer.Parent;
-                parent.Remove(layer);
-                parent.Add(layer, 0);
+                var index = layer.Parent.SubLayers.IndexOf(layer);
+                layer.Parent.SubLayers.Move(index, 0);
             }
         }
 
@@ -95,9 +92,7 @@ namespace Ibinimator.Service.Commands
             foreach (var layer in selectionManager.Selection)
             {
                 var index = layer.Parent.SubLayers.IndexOf(layer);
-                var parent = layer.Parent;
-                parent.Remove(layer);
-                parent.Add(layer, Math.Max(0, index - 1));
+                layer.Parent.SubLayers.Move(index, Math.Max(0, index - 1));
             }
         }
 

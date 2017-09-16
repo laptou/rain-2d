@@ -127,6 +127,7 @@
     <Compile Include="Model\Attributes.cs" />
     <Compile Include="Model\BrushInfo.cs" />
     <Compile Include="Model\Document.cs" />
+    <Compile Include="Model\Format.cs" />
     <Compile Include="Model\IContainerLayer.cs" />
     <Compile Include="Model\IGeometricLayer.cs" />
     <Compile Include="Model\ILayer.cs" />

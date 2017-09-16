@@ -80,45 +80,54 @@ namespace Ibinimator.Service
 
         #endregion
 
-        private async void OnPropertyChanged(object o, PropertyChangedEventArgs args)
+        private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
         {
             // otherwise, selecting new shapes applies their properties to all
             // of the other selected shapes
             if (_selecting) return;
 
-            await Task.Run(() =>
+            //await Task.Run(() =>
+            //{
+            // lock b/c we can't be applying multiple changes at the same time
+            lock (this)
             {
-                // lock b/c we can't be applying multiple changes at the same time
-                lock (this)
+                ArtView.HistoryManager.BeginRecord();
+                switch (args.PropertyName)
                 {
-                    switch (args.PropertyName)
-                    {
-                        case nameof(Fill):
-                            ArtView.ToolManager.Tool?.ApplyFill(Fill);
-                            break;
-                        case nameof(Stroke):
-                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                                if (layer is IStrokedLayer stroked)
-                                    stroked.StrokeBrush = Stroke;
-                            break;
-                        case nameof(StrokeStyle):
-                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                                if (layer is IStrokedLayer stroked)
-                                    stroked.StrokeInfo.Style = StrokeStyle;
-                            break;
-                        case nameof(StrokeWidth):
-                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                                if (layer is IStrokedLayer stroked)
-                                    stroked.StrokeInfo.Width = StrokeWidth;
-                            break;
-                        case nameof(StrokeDashes):
-                            foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
-                                if (layer is IStrokedLayer stroked)
-                                    stroked.StrokeInfo.Dashes = new ObservableList<float>(StrokeDashes);
-                            break;
-                    }
+                    case nameof(Fill):
+                        ArtView.ToolManager.Tool?.ApplyFill(Fill);
+                        ArtView.HistoryManager.EndRecord("Changed fill");
+                        break;
+                    case nameof(Stroke):
+                        foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                            if (layer is IStrokedLayer stroked)
+                                stroked.StrokeBrush = Stroke;
+                        ArtView.HistoryManager.EndRecord("Changed stroke");
+                        break;
+                    case nameof(StrokeStyle):
+                        foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                            if (layer is IStrokedLayer stroked)
+                                stroked.StrokeInfo.Style = StrokeStyle;
+                        ArtView.HistoryManager.EndRecord("Changed stroke style");
+                        break;
+                    case nameof(StrokeWidth):
+                        foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                            if (layer is IStrokedLayer stroked)
+                                stroked.StrokeInfo.Width = StrokeWidth;
+                        ArtView.HistoryManager.EndRecord("Changed stroke width");
+                        break;
+                    case nameof(StrokeDashes):
+                        foreach (var layer in ArtView.SelectionManager.Selection.SelectMany(l => l.Flatten()))
+                            if (layer is IStrokedLayer stroked)
+                                stroked.StrokeInfo.Dashes = new ObservableList<float>(StrokeDashes);
+                        ArtView.HistoryManager.EndRecord("Changed stroke dashes");
+                        break;
+                    default:
+                        ArtView.HistoryManager.EndRecord();
+                        break;
                 }
-            });
+            }
+            //});
         }
     }
 }

@@ -18,6 +18,7 @@ using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using BitmapRenderTarget = SharpDX.Direct2D1.BitmapRenderTarget;
 using Color = System.Windows.Media.Color;
 using Factory1 = SharpDX.Direct2D1.Factory1;
+using Format = SharpDX.DXGI.Format;
 using Image = System.Drawing.Image;
 using Layer = Ibinimator.Model.Layer;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
@@ -133,11 +134,29 @@ namespace Ibinimator.Service
                 case nameof(StrokeInfo.Style):
                 case nameof(StrokeInfo.Dashes):
                     stroke.Style.Dispose();
-                    stroke.Style = new StrokeStyle1(
-                        ArtView.Direct2DFactory.QueryInterface<Factory1>(),
-                        info.Style,
-                        info.Dashes.ToArray());
+
+                    if(info.Style.DashStyle == DashStyle.Solid)
+                        stroke.Style = new StrokeStyle1(
+                            ArtView.Direct2DFactory.QueryInterface<Factory1>(),
+                            info.Style);
+                    else
+                        stroke.Style = new StrokeStyle1(
+                            ArtView.Direct2DFactory.QueryInterface<Factory1>(),
+                            info.Style,
+                            info.Dashes.ToArray());
                     break;
+            }
+
+            if (layer is IGeometricLayer geometric)
+            {
+                lock (_strokeGeometries)
+                {
+                    _strokeGeometries.TryGet(geometric)?.Dispose();
+                    _strokeGeometries.Remove(geometric);
+
+                    // it will regenerate later if necessary, but for now must be thrown
+                    // out
+                }
             }
 
             ArtView.InvalidateSurface();

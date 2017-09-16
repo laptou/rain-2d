@@ -48,12 +48,10 @@ namespace Ibinimator.Shared
         {
             lock (_locker)
             {
-                this.SuspendCollectionChangeNotification();
+                SuspendCollectionChangeNotification();
                 foreach (var i in items)
-                {
                     InsertItem(Count, i);
-                }
-                this.NotifyChanges();
+                NotifyChanges();
             }
         }
 
@@ -62,11 +60,11 @@ namespace Ibinimator.Shared
         /// </summary>
         public void NotifyChanges()
         {
-            this.ResumeCollectionChangeNotification();
+            ResumeCollectionChangeNotification();
             var arg
                  = new NotifyCollectionChangedEventArgs
                       (NotifyCollectionChangedAction.Reset);
-            this.OnCollectionChanged(arg);
+            OnCollectionChanged(arg);
         }
 
         /// <summary>
@@ -79,12 +77,10 @@ namespace Ibinimator.Shared
         {
             lock (_locker)
             {
-                this.SuspendCollectionChangeNotification();
+                SuspendCollectionChangeNotification();
                 foreach (var i in items)
-                {
                     Remove(i);
-                }
-                this.NotifyChanges();
+                NotifyChanges();
             }
         }
 
@@ -93,7 +89,7 @@ namespace Ibinimator.Shared
         /// </summary>
         public void ResumeCollectionChangeNotification()
         {
-            this._suspendCollectionChangeNotification = false;
+            _suspendCollectionChangeNotification = false;
         }
 
         /// <summary>
@@ -101,7 +97,7 @@ namespace Ibinimator.Shared
         /// </summary>
         public void SuspendCollectionChangeNotification()
         {
-            this._suspendCollectionChangeNotification = true;
+            _suspendCollectionChangeNotification = true;
         }
 
         /// <inheritdoc />
@@ -126,8 +122,9 @@ namespace Ibinimator.Shared
                 // Walk thru invocation list.
                 var delegates = eventHandler.GetInvocationList();
 
-                foreach (NotifyCollectionChangedEventHandler handler in delegates)
+                foreach (var @delegate in delegates)
                 {
+                    var handler = (NotifyCollectionChangedEventHandler) @delegate;
                     // If the subscriber is a DispatcherObject and different thread.
 
                     if (handler.Target is DispatcherObject dispatcherObject

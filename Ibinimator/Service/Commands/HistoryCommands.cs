@@ -1,14 +1,15 @@
 ﻿using Ibinimator.ViewModel;
+using static Ibinimator.Service.CommandManager;
 
 namespace Ibinimator.Service.Commands
 {
     public static class HistoryCommands
     {
         public static readonly DelegateCommand<IHistoryManager> UndoCommand =
-            new DelegateCommand<IHistoryManager>(Undo, null);
+            Instance.Register<IHistoryManager>(Undo);
 
         public static readonly DelegateCommand<IHistoryManager> RedoCommand =
-            new DelegateCommand<IHistoryManager>(Redo, null);
+            Instance.Register<IHistoryManager>(Redo);
 
         private static void Redo(IHistoryManager historyManager)
         {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
+using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
@@ -169,9 +170,8 @@ namespace Ibinimator.Model
         #endregion
     }
 
-    public class Text : Layer, ITextLayer, IGeometricLayer
+    public partial class Text : Layer, ITextLayer, IGeometricLayer
     {
-        private readonly List<Format> _formats = new List<Format>();
 
         public Text()
         {
@@ -181,6 +181,7 @@ namespace Ibinimator.Model
             FontSize = 12;
             FontFamilyName = "Arial";
             Value = "";
+            Formats = new ObservableList<Format>();
             StrokeInfo = new StrokeInfo();
         }
 
@@ -258,6 +259,7 @@ namespace Ibinimator.Model
 
         #region ITextLayer Members
 
+        [Undoable]
         public BrushInfo FillBrush
         {
             get => Get<BrushInfo>();
@@ -355,18 +357,21 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public BrushInfo StrokeBrush
         {
             get => Get<BrushInfo>();
             set => Set(value);
         }
 
+        [Undoable]
         public StrokeInfo StrokeInfo
         {
             get => Get<StrokeInfo>();
             set => Set(value);
         }
 
+        [Undoable]
         public string FontFamilyName
         {
             get => Get<string>();
@@ -378,6 +383,7 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public float FontSize
         {
             get => Get<float>();
@@ -389,6 +395,7 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public DW.FontStretch FontStretch
         {
             get => Get<DW.FontStretch>();
@@ -400,6 +407,7 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public DW.FontStyle FontStyle
         {
             get => Get<DW.FontStyle>();
@@ -411,6 +419,7 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public DW.FontWeight FontWeight
         {
             get => Get<DW.FontWeight>();
@@ -442,9 +451,9 @@ namespace Ibinimator.Model
             };
 
 
-            lock (_formats)
+            lock (Formats)
             {
-                foreach (var format in _formats)
+                foreach (var format in Formats)
                 {
                     var typography = layout.GetTypography(format.Range.StartPosition);
 
@@ -497,7 +506,7 @@ namespace Ibinimator.Model
 
         public void Insert(int position, string str)
         {
-            lock (_formats)
+            lock (Formats)
             {
                 // expand the length of the format
                 var format = GetFormat(position, out var index);
@@ -510,9 +519,9 @@ namespace Ibinimator.Model
                 index++;
 
                 // offset all of the formats that come after this
-                while (index < _formats.Count)
+                while (index < Formats.Count)
                 {
-                    format = _formats[index];
+                    format = Formats[index];
                     format.Range = new DW.TextRange(
                         format.Range.StartPosition + str.Length,
                         format.Range.Length);
@@ -525,7 +534,7 @@ namespace Ibinimator.Model
 
         public void Remove(int position, int length)
         {
-            lock (_formats)
+            lock (Formats)
             {
                 var current = position;
                 var end = position + length;
@@ -548,7 +557,7 @@ namespace Ibinimator.Model
                     var len = fstart - position;
                     var fend = fstart + format.Range.Length;
 
-                    if (len <= 0 && fend <= end) _formats.Remove(format);
+                    if (len <= 0 && fend <= end) Formats.Remove(format);
                     else if (len <= 0 && fend > end) format.Range = new DW.TextRange(fstart, fend - fstart - length);
                     else format.Range = new DW.TextRange(fstart, len);
 
@@ -558,9 +567,9 @@ namespace Ibinimator.Model
                 index++;
 
                 // offset all of the formats that come after this
-                while (index < _formats.Count)
+                while (index < Formats.Count)
                 {
-                    var format = _formats[index];
+                    var format = Formats[index];
                     format.Range = new DW.TextRange(
                         format.Range.StartPosition - length,
                         format.Range.Length);
@@ -571,6 +580,7 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public string Value
         {
             get => Get<string>();
@@ -581,6 +591,13 @@ namespace Ibinimator.Model
                 RaisePropertyChanged("TextLayout");
                 RaisePropertyChanged("Bounds");
             }
+        }
+
+        [Undoable]
+        public ObservableList<Format> Formats
+        {
+            get => Get<ObservableList<Format>>();
+            set => Set(value);
         }
 
         #endregion
@@ -594,9 +611,9 @@ namespace Ibinimator.Model
         {
             i = 0;
 
-            do i++; while (i < _formats.Count && _formats[i].Range.StartPosition <= position);
+            do i++; while (i < Formats.Count && Formats[i].Range.StartPosition <= position);
 
-            var format = _formats.ElementAtOrDefault(--i);
+            var format = Formats.ElementAtOrDefault(--i);
             if (format == null) return null;
 
             return format.Range.StartPosition + format.Range.Length > position
@@ -614,7 +631,7 @@ namespace Ibinimator.Model
 
             if (start == end) return;
 
-            lock (_formats)
+            lock (Formats)
             {
 
                 while (current < end)
@@ -643,28 +660,28 @@ namespace Ibinimator.Model
 
                         var nEnd = nStart + nLen;
 
-                        _formats.Remove(oldFormat);
-                        _formats.Add(newFormat);
+                        Formats.Remove(oldFormat);
+                        Formats.Add(newFormat);
 
                         if (nStart > oStart)
                         {
                             var iFormat = oldFormat.Clone();
                             iFormat.Range = new DW.TextRange(oStart, nStart - oStart);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         if (nEnd < oEnd)
                         {
                             var iFormat = oldFormat.Clone();
                             iFormat.Range = new DW.TextRange(nEnd, oEnd - nEnd);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         if (start < Math.Min(nStart, oStart))
                         {
                             var iFormat = format.Clone();
                             iFormat.Range = new DW.TextRange(start, Math.Min(nStart, oStart) - start);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         start = Math.Max(nEnd, oEnd);
@@ -678,100 +695,12 @@ namespace Ibinimator.Model
                 }
 
                 if (start < end)
-                    _formats.Add(format);
+                    Formats.Add(format);
 
-                _formats.Sort((f1, f2) => f1.Range.StartPosition.CompareTo(f2.Range.StartPosition));
-
-                Trace.WriteLine(string.Join("\n", _formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
+                Trace.WriteLine(string.Join("\n", Formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
             }
 
             RaisePropertyChanged("TextLayout");
         }
-
-        #region Nested type: Format
-
-        public sealed class Format
-        {
-            private bool _subscript;
-            private bool _superscript;
-
-            public float? CharacterSpacing { get; set; }
-
-            public BrushInfo Fill { get; set; }
-
-            public string FontFamilyName { get; set; }
-
-            public float? FontSize { get; set; }
-
-            public DW.FontStretch? FontStretch { get; set; }
-
-            public DW.FontStyle? FontStyle { get; set; }
-
-            public DW.FontWeight? FontWeight { get; set; }
-
-            public float? Kerning { get; set; }
-
-            public DW.TextRange Range { get; set; }
-
-            public BrushInfo Stroke { get; set; }
-
-            public StrokeInfo StrokeInfo { get; set; }
-
-            public bool Subscript
-            {
-                get => _subscript;
-                set
-                {
-                    _subscript = value;
-                    if (value) Superscript = false;
-                }
-            }
-
-            public bool Superscript
-            {
-                get => _superscript;
-                set
-                {
-                    _superscript = value;
-                    if (value) Subscript = false;
-                }
-            }
-
-            public Format Clone()
-            {
-                return new Format
-                {
-                    Superscript = Superscript,
-                    Subscript = Subscript,
-                    FontSize = FontSize,
-                    FontFamilyName = FontFamilyName,
-                    FontStyle = FontStyle,
-                    FontStretch = FontStretch,
-                    FontWeight = FontWeight,
-                    Fill = Fill,
-                    Stroke = Stroke,
-                    StrokeInfo = StrokeInfo
-                };
-            }
-
-            public Format Union(Format f)
-            {
-                return new Format
-                {
-                    FontFamilyName = f.FontFamilyName ?? FontFamilyName,
-                    FontStyle = f.FontStyle ?? FontStyle,
-                    FontSize = f.FontSize ?? FontSize,
-                    FontStretch = f.FontStretch ?? FontStretch,
-                    FontWeight = f.FontWeight ?? FontWeight,
-                    Subscript = f.Subscript || Subscript,
-                    Superscript = f.Superscript || Superscript,
-                    Fill = f.Fill ?? Fill,
-                    Stroke = f.Stroke ?? Stroke,
-                    StrokeInfo = f.StrokeInfo ?? StrokeInfo
-                };
-            }
-        }
-
-        #endregion
     }
 }

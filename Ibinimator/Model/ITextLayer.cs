@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Shared;
 using SharpDX.DirectWrite;
 
 namespace Ibinimator.Model
@@ -14,6 +15,7 @@ namespace Ibinimator.Model
         FontStyle FontStyle { get; set; }
         FontWeight FontWeight { get; set; }
         string Value { get; set; }
+        ObservableList<Format> Formats { get; }
         TextLayout GetLayout(Factory dwFactory);
 
         void Insert(int index, string str);

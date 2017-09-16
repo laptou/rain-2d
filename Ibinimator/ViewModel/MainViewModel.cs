@@ -11,6 +11,7 @@ using Ibinimator.Service;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
+using CommandManager = Ibinimator.Service.CommandManager;
 using Rectangle = Ibinimator.Model.Rectangle;
 
 namespace Ibinimator.ViewModel
@@ -27,15 +28,17 @@ namespace Ibinimator.ViewModel
             SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager);
             BrushManager = new BrushManager(artView, SelectionManager);
             ToolManager = new ToolManager(artView);
+            var cache = new CacheManager(artView);
+
             Load();
 
             artView.SetManager(ViewManager);
             artView.SetManager(BrushManager);
             artView.SetManager(SelectionManager);
             artView.SetManager(ToolManager);
-            artView.SetManager(new CacheManager(artView));
+            artView.SetManager(cache);
             artView.SetManager(HistoryManager);
-
+            
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
             SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
             JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
@@ -73,6 +76,12 @@ namespace Ibinimator.ViewModel
                 Set(value);
                 BindingOperations.EnableCollectionSynchronization(value, value);
             }
+        }
+
+        public string Status
+        {
+            get => Get<string>();
+            set => Set(value);
         }
 
         public DelegateCommand<long> JumpHistoryCommand { get; }
@@ -120,6 +129,7 @@ namespace Ibinimator.ViewModel
         }
 
         public event PropertyChangedEventHandler BrushUpdated;
+
         public event PropertyChangedEventHandler LayerUpdated;
 
         public event EventHandler SelectionUpdated;

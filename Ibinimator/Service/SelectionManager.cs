@@ -78,13 +78,9 @@ namespace Ibinimator.Service
                 }
             };
 
-            historyManager.TimeChanged += (sender, args) =>
+            historyManager.PropertyChanged += (sender, args) =>
             {
-                Task.Run(() =>
-                {
-                    Update(true);
-                    Updated?.Invoke(this, null);
-                });
+                Update(true);
             };
         }
 
@@ -116,26 +112,24 @@ namespace Ibinimator.Service
             {
                 _moved = false;
 
-                if (Selection.Count > 0)
+                if (Selection.Count > 0 && ArtView.ToolManager.Type == ToolType.Select)
                 {
-                    var test = HandleTest(pos);
-                    _transformHandle = test.handle;
-                    var hit = test.handle != null;
-
-                    if (!hit)
-                    {
-                        if (Selection.Any(l => l.Hit(
-                            ArtView.CacheManager, 
-                            Matrix3x2.TransformPoint(Matrix3x2.Invert(l.WorldTransform), pos), 
-                            true) != null))
+                    _transformHandle = HandleTest(pos).handle;
+                    
+                    if (_transformHandle == null && Selection.Any(
+                        l =>
                         {
-                            _transformHandle = SelectionResizeHandle.Translation;
-                            hit = true;
-                        }
-                    }
+                            var pt =
+                                Matrix3x2.TransformPoint(
+                                    Matrix3x2.Invert(
+                                        l.WorldTransform),
+                                    pos);
 
-                    if (!hit && !ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers).HasFlag(ModifierKeys.Shift))
-                        ClearSelection();
+                            return l.Hit(ArtView.CacheManager, pt, true) != null;
+                        }))
+                        _transformHandle = SelectionResizeHandle.Translation;
+
+                    ArtView.HistoryManager.BeginRecord();
                 }
 
                 if (Selection.Count == 0 && !_selecting)
@@ -147,9 +141,6 @@ namespace Ibinimator.Service
                 _lastPosition = pos;
                 _beginPosition = pos;
                 _accumulatedTransform = Matrix.Identity;
-
-                var history = ArtView.HistoryManager;
-                _watcher = history.BeginRecord(Root);
             }
         }
 
@@ -187,13 +178,10 @@ namespace Ibinimator.Service
 
             using (new WeakLock(this))
             {
-                if (_accumulatedTransform != Matrix3x2.Identity && _watcher != null)
-                {
-                    _transformHandle = null;
+                if (Selection.Count > 0)
+                    ArtView.HistoryManager.EndRecord($"Transformed {Selection.Count} layers");
 
-                    var history = ArtView.HistoryManager;
-                    history.Key(history.EndRecord(_watcher, history.NextId));
-                }
+                _transformHandle = null;
 
                 if (!_moved)
                 {
@@ -598,10 +586,7 @@ namespace Ibinimator.Service
                 Matrix3x2.Translation(translate);
 
             if (makeRecord)
-            {
-                var history = ArtView.HistoryManager;
-                _watcher = history.BeginRecord(Root);
-            }
+                ArtView.HistoryManager.BeginRecord();
 
             foreach (var layer in Selection)
                 lock (layer)
@@ -633,10 +618,7 @@ namespace Ibinimator.Service
             SelectionShear += shear;
 
             if (makeRecord)
-            {
-                var history = ArtView.HistoryManager;
-                history.Key(history.EndRecord(_watcher, history.NextId));
-            }
+                ArtView.HistoryManager.EndRecord($"Transformed {Selection.Count} layers");
 
             Updated?.Invoke(this, null);
             InvalidateSurface();
@@ -649,17 +631,7 @@ namespace Ibinimator.Service
         private void UpdateCursor(Vector2 pos)
         {
             if (_transformHandle == null)
-                if (Selection.Count > 0)
-                    Cursor = HandleTest(pos).cursor;
-                else Cursor = null;
-
-            ArtView.InvalidateSurface();
-
-            if (Cursor == null) return;
-
-            var vpos = new Vector2(
-                pos.X,
-                pos.Y);
+                Cursor = Selection.Count > 0 ? HandleTest(pos).cursor : null;
 
             ArtView.InvalidateSurface();
         }

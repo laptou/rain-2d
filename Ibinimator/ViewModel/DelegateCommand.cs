@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Ibinimator.ViewModel
 {
-    public class DelegateCommand<T> : ICommand
+    public class DelegateCommand<T> : Model.Model, ICommand
     {
         private Action<T> _action;
         private Predicate<T> _predicate;
@@ -15,12 +15,6 @@ namespace Ibinimator.ViewModel
         public DelegateCommand(Action<T> action, Predicate<T> predicate)
         {
             _action = action;
-            _predicate = predicate;
-        }
-
-        public DelegateCommand(Task action, Predicate<T> predicate)
-        {
-            _action = o => action.Start();
             _predicate = predicate;
         }
 
@@ -48,6 +42,12 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        public Exception Exception
+        {
+            get => Get<Exception>();
+            private set => Set(value);
+        }
+
         #region ICommand Members
 
         public bool CanExecute(object parameter)
@@ -60,8 +60,15 @@ namespace Ibinimator.ViewModel
 
         public void Execute(object parameter)
         {
-            // casting null to a value type causes problems
-            _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter);
+            try
+            {
+                // casting null to a value type causes problems
+                _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter);
+            }
+            catch (Exception e)
+            {
+                Exception = e;
+            }
         }
 
         #endregion
@@ -104,10 +111,13 @@ namespace Ibinimator.ViewModel
 
         public event EventHandler CanExecuteChanged;
 
+        public event EventHandler Executed;
+
         public void Execute(object parameter)
         {
             var castedParameter = default(T) != null && parameter == null ? default(T) : (T) parameter;
             Execution = new NotifyTaskCompletion(_task?.Invoke(castedParameter));
+            Executed?.Invoke(this, null);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Execution"));
         }
 

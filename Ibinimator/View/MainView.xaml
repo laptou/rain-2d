@@ -1011,15 +1011,21 @@
                         <Grid MinHeight="128" MaxHeight="256">
                             <ListBox ItemsSource="{Binding HistoryManager}" x:Name="HistoryList"
                                      Background="{DynamicResource L1Brush}" SelectionMode="Single"
-                                     SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time}"
+                                     SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time, Mode=TwoWay}"
                                      BorderBrush="{x:Null}">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="BorderThickness" Value="0" />
                                         <Style.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground"
-                                                        Value="{Binding Path=(view:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
+                                                <Setter Property="Foreground">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush 
+                                                            Color="{Binding 
+                                                                Path=(view:Helper.Accent), 
+                                                                RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
+                                                    </Setter.Value>
+                                                </Setter>
                                                 <Setter Property="FontWeight" Value="Bold" />
                                             </Trigger>
                                         </Style.Triggers>
@@ -1027,12 +1033,16 @@
                                 </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock x:Name="HistoryRecordDescription" Text="{Binding Description}"
-                                                   Margin="8,4"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}" />
+                                        <TextBlock x:Name="HistoryRecordDescription"
+                                                   Margin="8,4" Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}">
+                                            <Run Text="{Binding Description, Mode=OneWay}"/>
+                                            <Run Text="{Binding Id, Mode=OneWay}"/>
+                                        </TextBlock>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
+                            <TextBlock Text="{Binding HistoryManager.Time, Mode=OneWay}"></TextBlock>
+
                         </Grid>
                     </TabItem>
                 </TabControl>

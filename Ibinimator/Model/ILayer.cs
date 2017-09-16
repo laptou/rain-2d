@@ -32,5 +32,6 @@ namespace Ibinimator.Model
         T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
         void Render(RenderTarget target, ICacheManager cache);
         IDisposable GetResource(ICacheManager cache, int id);
+        Layer Find(Guid id);
     }
 }

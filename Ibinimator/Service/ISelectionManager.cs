@@ -10,7 +10,7 @@ using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
-    public interface ISelectionManager : IArtViewManager, INotifyPropertyChanged
+    public interface ISelectionManager : IArtViewManager
     {
         Bitmap Cursor { get; set; }
         Group Root { get; }

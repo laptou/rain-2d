@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ibinimator.ViewModel;
+using static Ibinimator.Service.CommandManager;
 
 namespace Ibinimator.Service.Commands
 {
     public static class FileCommands
     {
         public static readonly AsyncDelegateCommand<IViewManager> SaveCommand =
-            new AsyncDelegateCommand<IViewManager>(SaveAsync);
+            Instance.RegisterAsync<IViewManager>(SaveAsync);
 
         public static readonly AsyncDelegateCommand<IViewManager> OpenCommand =
-            new AsyncDelegateCommand<IViewManager>(OpenAsync);
+            Instance.RegisterAsync<IViewManager>(OpenAsync);
 
         private static async Task OpenAsync(IViewManager vm)
         {

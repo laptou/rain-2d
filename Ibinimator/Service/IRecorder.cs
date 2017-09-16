@@ -1,38 +1,51 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Ibinimator.Model;
 
 namespace Ibinimator.Service
 {
-    public interface IRecorder<T> : IEnumerable<IRecord<T>> where T : IComparable
+    public interface IRecorder<TK> : IEnumerable<IRecord<TK>> where TK : IComparable
     {
-        IRecord<T> CurrentRecord { get; }
+        IRecord<TK> CurrentRecord { get; }
 
-        T Time { get; set; }
+        TK Time { get; set; }
 
-        event EventHandler<T> TimeChanged;
-        void Base(Layer root);
+        void Clear();
 
-        Watcher<Guid, Layer> BeginRecord(Layer root);
+        void BeginRecord();
 
-        IRecord<long> EndRecord(Watcher<Guid, Layer> watcher, T time);
-
-        void Key<TV>(Layer layer, T time, string property, TV value);
-
-        void Key<TV>(Guid id, T time, string property, TV value);
-
-        void Key(IRecord<T> record);
+        void EndRecord(string desc = null);
     }
 
-    public interface IRecord<out T> : ISerializable
+    public interface IHistoryRecord<out TK, in TV> : IRecord<TK, TV> where TK : IComparable
     {
-        T Id { get; }
-        Guid LayerId { get; }
+        string Description { get; }
 
-        void Apply(Layer layer);
-        void Revert(Layer layer);
+        long Time { get; }
+    }
+
+    public interface IRecord<out TK, in TV> : IRecord<TK> where TK : IComparable
+    {
+        void Apply(TV target);
+
+        void Revert(TV target);
+    }
+
+    public interface IRecord<out TK> where TK : IComparable
+    {
+        TK Id { get; }
+
+        IDictionary OldProperties { get; }
+
+        IDictionary NewProperties { get; }
+
+        void Apply(object target);
+
+        void Revert(object target);
     }
 }

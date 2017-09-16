@@ -61,6 +61,7 @@
     <Compile Include="MathTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EnumerableTests.cs" />
+    <Compile Include="WatcherTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ibinimator\Ibinimator.csproj">

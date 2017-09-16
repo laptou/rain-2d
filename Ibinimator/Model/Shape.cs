@@ -63,7 +63,6 @@ namespace Ibinimator.Model
     {
         public override string DefaultName => "Rectangle";
 
-        [XmlAttribute]
         public override float Height
         {
             get => base.Height;
@@ -74,7 +73,6 @@ namespace Ibinimator.Model
             }
         }
 
-        [XmlAttribute]
         public override float Width
         {
             get => base.Width;
@@ -107,9 +105,6 @@ namespace Ibinimator.Model
         }
     }
 
-    [XmlInclude(typeof(Rectangle))]
-    [XmlInclude(typeof(Ellipse))]
-    [XmlInclude(typeof(Path))]
     public abstract class Shape : Layer, IGeometricLayer
     {
         protected Shape()
@@ -119,12 +114,14 @@ namespace Ibinimator.Model
 
         public override string DefaultName => "Shape";
 
+        [Undoable]
         public BrushInfo FillBrush
         {
             get => Get<BrushInfo>();
             set => Set(value);
         }
 
+        [Undoable]
         public FillMode FillMode
         {
             get => Get<FillMode>();
@@ -135,12 +132,14 @@ namespace Ibinimator.Model
             }
         }
 
+        [Undoable]
         public BrushInfo StrokeBrush
         {
             get => Get<BrushInfo>();
             set => Set(value);
         }
 
+        [Undoable]
         public StrokeInfo StrokeInfo
         {
             get => Get<StrokeInfo>();
