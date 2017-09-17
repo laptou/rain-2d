@@ -25,11 +25,10 @@ namespace Ibinimator.Service
         bool ClearResource(ILayer layer, int id);
         void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable;
         Brush GetFill(IFilledLayer layer);
-        GeometryRealization GetFillGeometry(IGeometricLayer layer);
+        GeometryRealization GetGeometryRealizaion(IGeometricLayer layer);
         Geometry GetGeometry(IGeometricLayer layer);
         RectangleF GetRelativeBounds(ILayer layer);
         Stroke GetStroke(IStrokedLayer layer);
-        GeometryRealization GetStrokeGeometry(IGeometricLayer layer);
         TextLayout GetTextLayout(ITextLayer text);
         void LoadBitmaps(RenderTarget target);
         void LoadBrushes(RenderTarget target);

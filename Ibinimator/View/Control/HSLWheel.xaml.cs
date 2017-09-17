@@ -17,17 +17,6 @@ namespace Ibinimator.View.Control
 {
     public partial class HslWheel : INotifyPropertyChanged
     {
-        public static readonly DependencyProperty HueProperty =
-            DependencyProperty.Register("Hue", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
-
-        public static readonly DependencyProperty LightnessProperty =
-            DependencyProperty.Register("Lightness", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
-
-        public static readonly DependencyProperty SaturationProperty =
-            DependencyProperty.Register("Saturation", typeof(double), typeof(HslWheel),
-                new PropertyMetadata(0.0, OnDependencyPropertyChanged));
 
         private bool _draggingRing;
 
@@ -48,52 +37,13 @@ namespace Ibinimator.View.Control
             UpdateHandles();
         }
 
+        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register(
+            "Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color(), OnDependencyPropertyChanged));
+
         public Color Color
         {
-            get
-            {
-                var x = ColorUtils.HslToRgb(Hue, Saturation, Lightness);
-                return Color.FromRgb((byte) (x.r * 255), (byte) (x.g * 255), (byte) (x.b * 255));
-            }
-
-            set
-            {
-                var x = ColorUtils.RgbToHsl(value.R / 255.0, value.G / 255.0, value.B / 255.0);
-                Hue = x.h;
-                Saturation = x.s;
-                Lightness = x.l;
-                RaisePropertyChanged(nameof(Color));
-            }
-        }
-
-        public double Hue
-        {
-            get => (double) GetValue(HueProperty);
-            set
-            {
-                SetValue(HueProperty, (double)MathUtils.Wrap((float)value, 360));
-                RaisePropertyChanged(nameof(Color));
-            }
-        }
-
-        public double Lightness
-        {
-            get => (double) GetValue(LightnessProperty);
-            set
-            {
-                SetValue(LightnessProperty, MathUtils.Clamp(0, 1, value));
-                RaisePropertyChanged(nameof(Color));
-            }
-        }
-
-        public double Saturation
-        {
-            get => (double) GetValue(SaturationProperty);
-            set
-            {
-                SetValue(SaturationProperty, MathUtils.Clamp(0, 1, value));
-                RaisePropertyChanged(nameof(Color));
-            }
+            get => (Color) GetValue(ColorProperty);
+            set => SetValue(ColorProperty, value);
         }
 
         #region INotifyPropertyChanged Members
@@ -139,10 +89,13 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             pos.Offset(-ActualWidth / 2, -ActualHeight / 2);
 
+            var (hue, saturation, lightness) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
+
             if (_draggingRing)
             {
                 var rotation = Math.Atan2(pos.Y, pos.X);
-                Hue = rotation / pi2 * 360;
+
+                Color = ColorUtils.HslToColor(rotation / pi2 * 360, saturation, lightness);
 
                 Dispatcher.BeginInvoke((Action) UpdateTriangle, DispatcherPriority.Render, null);
             }
@@ -152,9 +105,10 @@ namespace Ibinimator.View.Control
                 var height = Triangle.ActualWidth / Math.Sqrt(3) * 1.5;
 
                 var tpos = e.GetPosition(Triangle);
-                
-                Saturation = Math.Max(0, Math.Min(1, 1 - tpos.Y / height));
-                Lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
+
+                Color = ColorUtils.HslToColor(hue,
+                    Math.Max(0, Math.Min(1, 1 - tpos.Y / height)),
+                    Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth)));
 
                 UpdateHandles();
             }
@@ -186,9 +140,7 @@ namespace Ibinimator.View.Control
             {
                 hslWheel.RaisePropertyChanged(nameof(Color));
                 hslWheel.UpdateHandles();
-
-                if (e.Property == HueProperty)
-                    hslWheel.UpdateTriangle();
+                hslWheel.UpdateTriangle();
             }
         }
 
@@ -226,19 +178,20 @@ namespace Ibinimator.View.Control
         private void RaisePropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            
-            UpdateHandles();
         }
 
         private void UpdateHandles()
         {
-            var transform = Triangle.RenderTransform as RotateTransform;
-            transform.Angle = 90 + Hue;
+            var (hue, saturation, lightness) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
+
+            var transform = (RotateTransform)Triangle.RenderTransform;
+            transform.Angle = hue + 90;
+            ringRotate.Angle = hue;
 
             var height = (int) (Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
             var slope = 1.0 / Math.Sqrt(3);
 
-            var hpos = new Point((Lightness - 0.5) * Triangle.ActualWidth, (1 - Saturation) * height);
+            var hpos = new Point((lightness - 0.5) * Triangle.ActualWidth, (1 - saturation) * height);
 
             hpos.Y = Math.Max(0, Math.Min(height, hpos.Y));
             hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) + Triangle.ActualWidth / 2;
@@ -281,6 +234,7 @@ namespace Ibinimator.View.Control
             {
                 var height = (int) (_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
                 var slope = 1.0 / Math.Sqrt(3);
+                var (hue, _, _) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
 
                 _triangle.Lock();
                 var pStart = (byte*) (void*) _triangle.BackBuffer;
@@ -296,7 +250,7 @@ namespace Ibinimator.View.Control
                         var s = 1f - (double) iRow / height;
                         var l = (double) iCol / _triangle.PixelWidth;
 
-                        (double r, double g, double b) = ColorUtils.HslToRgb(Hue, s, l);
+                        (double r, double g, double b) = ColorUtils.HslToRgb(hue, s, l);
 
                         *(pStart + currentPixel * 4 + 3) = 255; //alpha
                         *(pStart + currentPixel * 4 + 2) = (byte) (r * 255.0); //red

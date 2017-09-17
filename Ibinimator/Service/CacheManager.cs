@@ -44,8 +44,7 @@ namespace Ibinimator.Service
 
         private readonly Dictionary<IGeometricLayer, Geometry> _geometries = new Dictionary<IGeometricLayer, Geometry>();
         private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources = new Dictionary<(ILayer layer, int id), IDisposable>();
-        private readonly Dictionary<IGeometricLayer, GeometryRealization> _fillGeometries = new Dictionary<IGeometricLayer, GeometryRealization>();
-        private readonly Dictionary<IGeometricLayer, GeometryRealization> _strokeGeometries = new Dictionary<IGeometricLayer, GeometryRealization>();
+        private readonly Dictionary<IGeometricLayer, GeometryRealization> _geometryRealizations = new Dictionary<IGeometricLayer, GeometryRealization>();
         private readonly Dictionary<ITextLayer, TextLayout> _texts = new Dictionary<ITextLayer, TextLayout>();
 
         public CacheManager(ArtView artView)
@@ -145,18 +144,6 @@ namespace Ibinimator.Service
                             info.Style,
                             info.Dashes.ToArray());
                     break;
-            }
-
-            if (layer is IGeometricLayer geometric)
-            {
-                lock (_strokeGeometries)
-                {
-                    _strokeGeometries.TryGet(geometric)?.Dispose();
-                    _strokeGeometries.Remove(geometric);
-
-                    // it will regenerate later if necessary, but for now must be thrown
-                    // out
-                }
             }
 
             ArtView.InvalidateSurface();
@@ -264,24 +251,13 @@ namespace Ibinimator.Service
                                  .ToArray();
         }
 
-        public GeometryRealization GetFillGeometry(IGeometricLayer layer)
+        public GeometryRealization GetGeometryRealizaion(IGeometricLayer layer)
         {
-            return Get(_fillGeometries, layer, l =>
+            return Get(_geometryRealizations, layer, l =>
             {
                 var ctx = ArtView.RenderTarget.QueryInterface<DeviceContext1>();
                 var geom = GetGeometry(l);
                 return new GeometryRealization(ctx, geom, geom.FlatteningTolerance);
-            });
-        }
-
-        public GeometryRealization GetStrokeGeometry(IGeometricLayer layer)
-        {
-            return Get(_strokeGeometries, layer, l =>
-            {
-                var ctx = ArtView.RenderTarget.QueryInterface<DeviceContext1>();
-                var geom = GetGeometry(l);
-                var stroke = GetStroke(l);
-                return new GeometryRealization(ctx, geom, geom.FlatteningTolerance, stroke.Width, stroke.Style);
             });
         }
 
@@ -388,16 +364,10 @@ namespace Ibinimator.Service
                 _strokeBindings.Clear();
             }
 
-            lock (_fillGeometries)
+            lock (_geometryRealizations)
             {
-                foreach (var geometry in _fillGeometries.Values) geometry?.Dispose();
-                _fillGeometries.Clear();
-            }
-
-            lock (_strokeGeometries)
-            {
-                foreach (var geometry in _strokeGeometries.Values) geometry?.Dispose();
-                _strokeGeometries.Clear();
+                foreach (var geometry in _geometryRealizations.Values) geometry?.Dispose();
+                _geometryRealizations.Clear();
             }
 
             lock (_fills)
@@ -561,13 +531,9 @@ namespace Ibinimator.Service
 
                             if (geometry != null)
                             {
-                                _fillGeometries.TryGet(geom)?.Dispose();
-                                _fillGeometries[geom] =
+                                _geometryRealizations.TryGet(geom)?.Dispose();
+                                _geometryRealizations[geom] =
                                     new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance);
-
-                                _strokeGeometries.TryGet(geom)?.Dispose();
-                                _strokeGeometries[geom] = new GeometryRealization(ctx, geometry,
-                                    geometry.FlatteningTolerance, stroke.Width, stroke.Style);
                             }
                         }
                     }
@@ -602,7 +568,8 @@ namespace Ibinimator.Service
                     {
                         if (layer is IStrokedLayer shape)
                         {
-                            _strokes.TryGet(shape).Dispose();
+                            _strokes.TryGet(shape)?.Dispose();
+
                             GetStroke(shape); // GetStroke repopulates it
                         }
                     }

@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Model;
 using Ibinimator.Shared;
+using Ibinimator.View.Control;
 using SharpDX;
+using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
+using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service.Commands
 {
@@ -26,9 +29,9 @@ namespace Ibinimator.Service.Commands
 
         long Time { get; }
 
-        void Undo();
+        void Undo(ArtView artView);
 
-        void Do();
+        void Do(ArtView artView);
     }
 
     public interface IOperationCommand<out T> : IOperationCommand
@@ -54,9 +57,9 @@ namespace Ibinimator.Service.Commands
 
         public long Time { get; } = Service.Time.Now;
 
-        public abstract void Undo();
+        public abstract void Undo(ArtView artView);
 
-        public abstract void Do();
+        public abstract void Do(ArtView artView);
     }
 
     public sealed class TransformCommand : LayerCommandBase<ILayer>
@@ -65,7 +68,7 @@ namespace Ibinimator.Service.Commands
 
         public Matrix3x2 Transform { get; }
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             foreach (var layer in Targets)
             {
@@ -86,7 +89,7 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var layer in Targets)
             {
@@ -120,14 +123,14 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Filled {Targets.Length} layer(s)";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             for (var i = 0; i < Targets.Length; i++)
                 lock(Targets[i])
                     Targets[i].FillBrush = OldFills[i];
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 lock (target)
@@ -150,14 +153,14 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Stroked {Targets.Length} layer(s)";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             for (var i = 0; i < Targets.Length; i++)
                 lock(Targets[i])
                     (Targets[i].StrokeBrush, Targets[i].StrokeInfo) = OldStrokes[i];
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 lock(target)
@@ -194,7 +197,7 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Formatted {Targets.Length} layer(s)";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             for (var i = 0; i < Targets.Length; i++)
             {
@@ -210,7 +213,7 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
             {
@@ -253,7 +256,7 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Changed format of range";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             foreach (var target in Targets)
             {
@@ -264,7 +267,7 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
             {
@@ -300,13 +303,13 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $@"Inserted text ""{Text}""";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Remove(Index, Text.Length);
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Insert(Index, Text);
@@ -328,16 +331,77 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $@"Removed text ""{Text}""";
 
-        public override void Undo()
+        public override void Undo(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Insert(Index, Text);
         }
 
-        public override void Do()
+        public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Remove(Index, Text.Length);
         }
     }
+
+    public sealed class BinaryOperationCommand : LayerCommandBase<IGeometricLayer>
+    {
+        private Path _generatedPath;
+        private IContainerLayer _parent1;
+        private IContainerLayer _parent2;
+
+        public CombineMode Operation { get; }
+
+        public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(id, targets)
+        {
+            if(targets.Length != 2)
+                throw new ArgumentException("Binary operations can only have 2 operands.");
+            Operation = operation;
+        }
+
+        public override string Description => Operation.ToString();
+
+        public override void Undo(ArtView artView)
+        {
+            _generatedPath.Parent.Remove(_generatedPath);
+            _generatedPath = null;
+            _parent1.Add(Targets[0] as Layer);
+            _parent2.Add(Targets[1] as Layer);
+        }
+
+        public override void Do(ArtView artView)
+        {
+            var x = Targets[0];
+            var y = Targets[1];
+            var factory = artView.Direct2DFactory;
+            
+            var xg = artView.CacheManager.GetGeometry(x);
+            var yg = artView.CacheManager.GetGeometry(y);
+
+            var z = new Path
+            {
+                FillBrush = x.FillBrush,
+                StrokeBrush = x.StrokeBrush,
+                StrokeInfo = x.StrokeInfo
+            };
+
+            var zSink = z.Open();
+
+            using (var xtg = new TransformedGeometry(factory, xg, x.AbsoluteTransform))
+                xtg.Combine(yg, Operation, y.AbsoluteTransform, 0.25f, zSink);
+
+            zSink.Close();
+
+            (z.Scale, z.Rotation, z.Position, z.Shear) =
+                Matrix3x2.Invert(x.WorldTransform).Decompose();
+
+            x.Parent.Add(z);
+            x.Parent.Remove(x as Layer);
+            y.Parent.Remove(y as Layer);
+
+            _generatedPath = z;
+            _parent1 = x.Parent;
+            _parent2 = y.Parent;
+        }
+    } 
 }

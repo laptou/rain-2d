@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -250,7 +251,7 @@ namespace Ibinimator.Model
             if (FillBrush != null)
             {
                 if (dc != null)
-                    dc.DrawGeometryRealization(cache.GetFillGeometry(this), cache.GetFill(this));
+                    dc.DrawGeometryRealization(cache.GetGeometryRealizaion(this), cache.GetFill(this));
                 else
                     target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
             }
@@ -258,15 +259,12 @@ namespace Ibinimator.Model
             if (StrokeBrush != null)
             {
                 var stroke = cache.GetStroke(this);
-
-                if (dc != null)
-                    dc.DrawGeometryRealization(cache.GetStrokeGeometry(this), stroke.Brush);
-                else
-                    target.DrawGeometry(
-                        cache.GetGeometry(this),
-                        stroke.Brush,
-                        stroke.Width,
-                        stroke.Style);
+                
+                target.DrawGeometry(
+                    cache.GetGeometry(this),
+                    stroke.Brush,
+                    stroke.Width,
+                    stroke.Style);
             }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;

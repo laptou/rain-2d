@@ -116,7 +116,7 @@ namespace Ibinimator.ViewModel
             {
                 _parent = parent;
 
-                _parent.SelectionUpdated += (sender, args) =>
+                _parent.BrushUpdated += (sender, args) =>
                 {
                     _updating = true;
 

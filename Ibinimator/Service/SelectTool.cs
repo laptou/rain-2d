@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
+using Ibinimator.Service.Commands;
 using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -71,21 +72,33 @@ namespace Ibinimator.Service
 
         public void ApplyFill(BrushInfo brush)
         {
-            foreach (var layer in Selection.SelectMany(l => l.Flatten()))
-                if (layer is IFilledLayer filled)
-                    filled.FillBrush = brush;
+            var targets = 
+                Selection.SelectMany(l => l.Flatten())
+                         .OfType<IFilledLayer>()
+                         .ToArray();
+
+            var command = new ApplyFillCommand(
+                Manager.ArtView.HistoryManager.Time + 1,
+                targets, brush,
+                targets.Select(t => t.FillBrush).ToArray());
+
+            Manager.ArtView.HistoryManager.Do(command);
         }
 
         public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
         {
-            foreach (var layer in Selection.SelectMany(l => l.Flatten()))
-            {
-                if (layer is IStrokedLayer stroked)
-                {
-                    stroked.StrokeBrush = brush;
-                    stroked.StrokeInfo = stroke;
-                }
-            }
+            var targets =
+                Selection.SelectMany(l => l.Flatten())
+                    .OfType<IStrokedLayer>()
+                    .ToArray();
+
+            var command = new ApplyStrokeCommand(
+                Manager.ArtView.HistoryManager.Time + 1,
+                targets,
+                brush, targets.Select(t => t.StrokeBrush).ToArray(),
+                stroke, targets.Select(t => t.StrokeInfo).ToArray());
+
+            Manager.ArtView.HistoryManager.Do(command);
         }
 
         public ToolOption[] Options => new ToolOption[0];

@@ -26,7 +26,7 @@ namespace Ibinimator.ViewModel
             ViewManager = new ViewManager(artView);
             HistoryManager = new HistoryManager(artView);
             SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager);
-            BrushManager = new BrushManager(artView, SelectionManager);
+            BrushManager = new BrushManager(artView, SelectionManager, HistoryManager);
             ToolManager = new ToolManager(artView);
             var cache = new CacheManager(artView);
 

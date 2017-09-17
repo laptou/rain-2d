@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
 using Ibinimator.Shared;
+using SharpDX;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Model
@@ -48,7 +49,7 @@ namespace Ibinimator.Model
         }
     }
 
-    public class Stroke : IDisposable
+    public class Stroke : DisposeBase
     {
         public Stroke(RenderTarget target, BrushInfo stroke, StrokeInfo strokeInfo)
         {
@@ -70,7 +71,7 @@ namespace Ibinimator.Model
 
         public float Width { get; set; }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             Brush?.Dispose();
             Style?.Dispose();
