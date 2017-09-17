@@ -74,7 +74,7 @@ namespace Ibinimator.Service
                 }
             };
 
-            historyManager.PropertyChanged += (sender, args) =>
+            historyManager.Traversed += (sender, args) =>
             {
                 Update(true);
             };
@@ -315,7 +315,9 @@ namespace Ibinimator.Service
                                 Matrix3x2.Scaling(transform.scale) *
                                 Matrix3x2.Translation(transform.translation));
 
-                        var center = Matrix3x2.TransformPoint(Selection[0].AbsoluteTransform, local.Center);
+                        var center = Matrix3x2.TransformPoint(
+                            Selection[0].AbsoluteTransform, 
+                            local.Center);
 
                         bounds.Offset(center - bounds.Center);
 
@@ -324,9 +326,6 @@ namespace Ibinimator.Service
                             SelectionRotation = transform.rotation;
                             SelectionShear = transform.skew;
                         }
-
-
-                        //bounds.Offset(delta);
                         break;
 
                     default:
@@ -563,13 +562,9 @@ namespace Ibinimator.Service
             ArtView.InvalidateSurface();
         }
 
-        private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate,
-            float shear, Vector2 origin, bool continuous)
+        private void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin, bool continuous)
         {
             var wlock = new WeakLock(_render);
-
-            if(scale.Y == 0)
-                Debugger.Break();
 
             var size = new Vector2(
                 Math.Abs(SelectionBounds.Width),
@@ -642,7 +637,7 @@ namespace Ibinimator.Service
 
             wlock.Dispose();
 
-            return transform;
+            return;
         }
 
         private void UpdateCursor(Vector2 pos)

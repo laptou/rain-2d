@@ -17,6 +17,8 @@ namespace Ibinimator.Service
 
         long Time { get; set; }
 
+        event EventHandler<long> Traversed;
+
         void Clear();
 
         void Do(IOperationCommand<ILayer> command);

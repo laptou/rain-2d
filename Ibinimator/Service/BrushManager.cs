@@ -15,12 +15,31 @@ namespace Ibinimator.Service
     {
         private bool _selecting;
 
-        public BrushManager(ArtView artView, ISelectionManager selectionManager)
+        public BrushManager(ArtView artView, ISelectionManager selectionManager, IHistoryManager historyManager)
         {
             ArtView = artView;
             StrokeDashes = new ObservableList<float>(new float[] {0, 0, 0, 0});
 
             selectionManager.Updated += (sender, args) =>
+            {
+                _selecting = true;
+                var layer = ArtView.SelectionManager.Selection.LastOrDefault();
+
+                if (layer is IFilledLayer filled)
+                    Fill = filled.FillBrush;
+
+                if (layer is IStrokedLayer stroked)
+                {
+                    Stroke = stroked.StrokeBrush;
+                    StrokeStyle = stroked.StrokeInfo.Style;
+                    StrokeWidth = stroked.StrokeInfo.Width;
+                    StrokeDashes = new ObservableList<float>(stroked.StrokeInfo.Dashes);
+                }
+
+                _selecting = false;
+            };
+
+            historyManager.Traversed += (sender, args) =>
             {
                 _selecting = true;
                 var layer = ArtView.SelectionManager.Selection.LastOrDefault();

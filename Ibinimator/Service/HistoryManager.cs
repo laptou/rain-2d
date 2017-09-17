@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
-using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using FastMember;
@@ -25,6 +23,9 @@ namespace Ibinimator.Service
         // ReSharper disable once StaticMemberInGenericType
         private static readonly List<string> Observable;
 
+        private readonly Dictionary<Type, TypeAccessor> _accessors =
+            new Dictionary<Type, TypeAccessor>();
+
         private readonly Func<T, TK> _keySelector;
 
         private readonly Dictionary<(TK id, string property), object> _newProperties =
@@ -33,12 +34,9 @@ namespace Ibinimator.Service
         private readonly Dictionary<(TK id, string property), object> _oldProperties =
             new Dictionary<(TK, string), object>();
 
-        private readonly Dictionary<Type, TypeAccessor> _accessors =
-            new Dictionary<Type, TypeAccessor> ();
-
         private List<string> _animatable;
-        private List<string> _undoable;
         private List<string> _observable;
+        private List<string> _undoable;
 
         static Watcher()
         {
@@ -71,9 +69,9 @@ namespace Ibinimator.Service
             Check(type);
 
             var collections =
-                Enumerable.Union(
-                    RecordAnimatable ? _animatable.AsEnumerable() : new string[0],
-                    RecordUndoable ? _undoable.AsEnumerable() : new string[0]);
+                (RecordAnimatable ? _animatable.AsEnumerable() : new string[0]).Union(RecordUndoable
+                    ? _undoable.AsEnumerable()
+                    : new string[0]);
 
             collections = collections.Intersect(_observable);
 
@@ -192,24 +190,37 @@ namespace Ibinimator.Service
             ArtView = artView;
         }
 
+        public long NextId => Time + 1;
+
         #region IHistoryManager Members
 
         public ArtView ArtView { get; }
 
-        public long NextId => Time + 1;
-
-        public void Push(IOperationCommand<ILayer> command)
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            _redo.Clear();
-            _undo.Push(command);
+            return GetEnumerator();
+        }
 
-            RaisePropertyChanged(nameof(Current));
-            RaisePropertyChanged(nameof(NextId));
-            RaisePropertyChanged(nameof(Time));
+        public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
+        {
+            lock (this) return _redo.Reverse().Concat(_undo).GetEnumerator();
+        }
 
-            TimeChanged?.Invoke(this, Time);
-            CollectionChanged?.Invoke(this, 
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        public void Clear()
+        {
+            lock (this)
+            {
+                _undo.Clear();
+                _redo.Clear();
+                Time = 0;
+            }
+
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        public IOperationCommand<ILayer> Current
+        {
+            get { lock (this) return _undo.Count > 0 ? _undo.Peek() : null; }
         }
 
         public void Do(IOperationCommand<ILayer> command)
@@ -220,24 +231,75 @@ namespace Ibinimator.Service
 
         public IOperationCommand<ILayer> Pop()
         {
-            _redo.Clear();
-            var result = _undo.Pop();
+            IOperationCommand<ILayer> result;
+
+            lock (this)
+            {
+                _redo.Clear();
+                result = _undo.Pop();
+            }
 
             RaisePropertyChanged(nameof(Current));
             RaisePropertyChanged(nameof(NextId));
             RaisePropertyChanged(nameof(Time));
 
-            TimeChanged?.Invoke(this, Time);
             CollectionChanged?.Invoke(this,
                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
             return result;
         }
 
+        public void Push(IOperationCommand<ILayer> command)
+        {
+            lock (this)
+            {
+                _redo.Clear();
+                _undo.Push(command);
+            }
+
+            RaisePropertyChanged(nameof(Current));
+            RaisePropertyChanged(nameof(NextId));
+            RaisePropertyChanged(nameof(Time));
+
+            CollectionChanged?.Invoke(this,
+                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
         public void Redo()
         {
             Time++;
         }
+
+        public long Time
+        {
+            get => Current?.Id ?? 0;
+            set
+            {
+                lock (this)
+                {
+                    while (value > Time && _redo.Count > 0)
+                    {
+                        var record = _redo.Pop();
+                        record.Do();
+                        _undo.Push(record);
+                    }
+
+                    while (value < Time && _undo.Count > 0)
+                    {
+                        var record = _undo.Pop();
+                        record.Undo();
+                        _redo.Push(record);
+                    }
+                }
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Time));
+                Traversed?.Invoke(this, value);
+            }
+        }
+
+        public event EventHandler<long> Traversed;
 
         public void Undo()
         {
@@ -246,56 +308,7 @@ namespace Ibinimator.Service
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        public void Clear()
-        {
-            _undo.Clear();
-            _redo.Clear();
-            Time = 0;
-
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
-        public IOperationCommand<ILayer> Current => _undo.Count > 0 ? _undo.Peek() : null;
-
-        public long Time
-        {
-            get => Current?.Id ?? 0;
-            set
-            {
-                while (value > Time && _redo.Count > 0)
-                {
-                    var record = _redo.Pop();
-                    record.Do();
-                    _undo.Push(record);
-                }
-
-                while (value < Time && _undo.Count > 0)
-                {
-                    var record = _undo.Pop();
-                    record.Undo();
-                    _redo.Push(record);
-                }
-
-                RaisePropertyChanged(nameof(Current));
-                RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Time));
-                TimeChanged?.BeginInvoke(this, value, null, null);
-            }
-        }
-
         #endregion
-
-        public event EventHandler<long> TimeChanged;
-
-        public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
-        {
-            return _redo.Reverse().Concat(_undo).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
     }
 
     public class KeyComparer<K, V> : IEqualityComparer<KeyValuePair<K, V>>
