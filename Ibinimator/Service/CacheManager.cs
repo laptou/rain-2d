@@ -251,7 +251,7 @@ namespace Ibinimator.Service
                                  .ToArray();
         }
 
-        public GeometryRealization GetGeometryRealizaion(IGeometricLayer layer)
+        public GeometryRealization GetGeometryRealization(IGeometricLayer layer)
         {
             return Get(_geometryRealizations, layer, l =>
             {
@@ -551,24 +551,16 @@ namespace Ibinimator.Service
                     break;
 
                 case nameof(IStrokedLayer.StrokeBrush):
-                    lock (_strokes)
-                    {
-                        if (layer is IStrokedLayer shape)
-                        {
-                            var stroke = _strokes.TryGet(shape);
-                            stroke.Brush?.Dispose();
-                            stroke.Brush = BindBrush(shape, shape.StrokeBrush);
-                            _strokes[shape] = stroke;
-                        }
-                    }
-                    break;
-
                 case nameof(IStrokedLayer.StrokeInfo):
                     lock (_strokes)
                     {
                         if (layer is IStrokedLayer shape)
                         {
-                            _strokes.TryGet(shape)?.Dispose();
+                            var stroke = _strokes.TryGet(shape);
+
+                            if(stroke != null)
+                                lock(stroke)
+                                    stroke.Dispose();
 
                             GetStroke(shape); // GetStroke repopulates it
                         }

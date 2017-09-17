@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Ibinimator.Shared;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Model;
-using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -15,23 +13,22 @@ using Layer = Ibinimator.Model.Layer;
 namespace Ibinimator.Service.Commands
 {
     /// <summary>
-    /// This is an interface for "operation commands", which are different 
-    /// from WPF's UI commands. Operation commands are use to store undo
-    /// state information.
+    ///     This is an interface for "operation commands", which are different
+    ///     from WPF's UI commands. Operation commands are use to store undo
+    ///     state information.
     /// </summary>
     public interface IOperationCommand
     {
-        object[] Targets { get; }
-
         string Description { get; }
 
         long Id { get; }
+        object[] Targets { get; }
 
         long Time { get; }
 
-        void Undo(ArtView artView);
-
         void Do(ArtView artView);
+
+        void Undo(ArtView artView);
     }
 
     public interface IOperationCommand<out T> : IOperationCommand
@@ -47,31 +44,57 @@ namespace Ibinimator.Service.Commands
             Targets = targets;
         }
 
-        object[] IOperationCommand.Targets => Targets;
-
-        public T[] Targets { get; }
+        #region IOperationCommand<T> Members
 
         public abstract string Description { get; }
 
+        public abstract void Do(ArtView artView);
+
         public long Id { get; }
+
+        object[] IOperationCommand.Targets => Targets;
 
         public long Time { get; } = Service.Time.Now;
 
         public abstract void Undo(ArtView artView);
 
-        public abstract void Do(ArtView artView);
+        public T[] Targets { get; }
+
+        #endregion
     }
 
     public sealed class TransformCommand : LayerCommandBase<ILayer>
     {
+        public TransformCommand(long id, ILayer[] targets, Matrix3x2 matrix) : base(id, targets)
+        {
+            Transform = matrix;
+        }
+
         public override string Description => $"Transformed {Targets.Length} layer(s)";
 
         public Matrix3x2 Transform { get; }
 
+        public override void Do(ArtView artView)
+        {
+            foreach (var layer in Targets)
+                lock (layer)
+                {
+                    var layerTransform =
+                        layer.AbsoluteTransform
+                        * Transform
+                        * Matrix3x2.Invert(layer.WorldTransform);
+                    var delta = layerTransform.Decompose();
+
+                    layer.Scale = delta.scale;
+                    layer.Rotation = delta.rotation;
+                    layer.Position = delta.translation;
+                    layer.Shear = delta.skew;
+                }
+        }
+
         public override void Undo(ArtView artView)
         {
             foreach (var layer in Targets)
-            {
                 lock (layer)
                 {
                     var layerTransform =
@@ -86,103 +109,101 @@ namespace Ibinimator.Service.Commands
                     layer.Position = delta.translation;
                     layer.Shear = delta.skew;
                 }
-            }
-        }
-
-        public override void Do(ArtView artView)
-        {
-            foreach (var layer in Targets)
-            {
-                lock (layer)
-                {
-                    var layerTransform =
-                        layer.AbsoluteTransform
-                        * Transform
-                        * Matrix3x2.Invert(layer.WorldTransform);
-                    var delta = layerTransform.Decompose();
-
-                    layer.Scale = delta.scale;
-                    layer.Rotation = delta.rotation;
-                    layer.Position = delta.translation;
-                    layer.Shear = delta.skew;
-                }
-            }
-        }
-
-        public TransformCommand(long id, ILayer[] targets, Matrix3x2 matrix) : base(id, targets)
-        {
-            Transform = matrix;
         }
     }
 
     public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
     {
-        public BrushInfo[] OldFills { get; }
-
-        public BrushInfo NewFill { get; }
+        public ApplyFillCommand(long id, IFilledLayer[] targets,
+            BrushInfo @new, BrushInfo[] old) : base(id, targets)
+        {
+            OldFills = old.Select(o => (BrushInfo) o?.Clone()).ToArray();
+            NewFill = (BrushInfo) @new?.Clone();
+        }
 
         public override string Description => $"Filled {Targets.Length} layer(s)";
 
-        public override void Undo(ArtView artView)
-        {
-            for (var i = 0; i < Targets.Length; i++)
-                lock(Targets[i])
-                    Targets[i].FillBrush = OldFills[i];
-        }
+        public BrushInfo NewFill { get; }
+        public BrushInfo[] OldFills { get; }
 
         public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 lock (target)
+                {
                     target.FillBrush = NewFill;
+                }
         }
 
-        public ApplyFillCommand(long id, IFilledLayer[] targets, 
-            BrushInfo @new, BrushInfo[] old) : base(id, targets)
+        public override void Undo(ArtView artView)
         {
-            OldFills = old.Select(o => (BrushInfo)o?.Clone()).ToArray();
-            NewFill = (BrushInfo)@new?.Clone();
+            for (var i = 0; i < Targets.Length; i++)
+                lock (Targets[i])
+                {
+                    Targets[i].FillBrush = OldFills[i];
+                }
         }
     }
 
     public sealed class ApplyStrokeCommand : LayerCommandBase<IStrokedLayer>
     {
-        public (BrushInfo, StrokeInfo)[] OldStrokes { get; }
-
-        public (BrushInfo, StrokeInfo) NewStroke { get; }
-
-        public override string Description => $"Stroked {Targets.Length} layer(s)";
-
-        public override void Undo(ArtView artView)
-        {
-            for (var i = 0; i < Targets.Length; i++)
-                lock(Targets[i])
-                    (Targets[i].StrokeBrush, Targets[i].StrokeInfo) = OldStrokes[i];
-        }
-
-        public override void Do(ArtView artView)
-        {
-            foreach (var target in Targets)
-                lock(target)
-                    (target.StrokeBrush, target.StrokeInfo) = NewStroke;
-        }
-        
         public ApplyStrokeCommand(long id, IStrokedLayer[] targets,
             BrushInfo newStrokeBrush, BrushInfo[] oldStrokeBrushes,
             StrokeInfo newStrokeInfo, StrokeInfo[] oldStrokeInfos) : base(id, targets)
         {
-            OldStrokes = 
-                Enumerable.Zip(
-                    oldStrokeBrushes, 
-                    oldStrokeInfos, 
+            OldStrokes =
+                oldStrokeBrushes.Zip(oldStrokeInfos,
                     (b, i) => (b?.Clone<BrushInfo>(), i?.Clone<StrokeInfo>())).ToArray();
 
             NewStroke = (newStrokeBrush?.Clone<BrushInfo>(), newStrokeInfo?.Clone<StrokeInfo>());
+        }
+
+        public override string Description => $"Stroked {Targets.Length} layer(s)";
+
+        public (BrushInfo, StrokeInfo) NewStroke { get; }
+        public (BrushInfo, StrokeInfo)[] OldStrokes { get; }
+
+        public override void Do(ArtView artView)
+        {
+            foreach (var target in Targets)
+                lock (target)
+                {
+                    (target.StrokeBrush, target.StrokeInfo) = NewStroke;
+                }
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            for (var i = 0; i < Targets.Length; i++)
+                lock (Targets[i])
+                {
+                    (Targets[i].StrokeBrush, Targets[i].StrokeInfo) = OldStrokes[i];
+                }
         }
     }
 
     public sealed class ApplyFormatCommand : LayerCommandBase<ITextLayer>
     {
+        public ApplyFormatCommand(long id, ITextLayer[] targets,
+            string newFontFamilyName, float newFontSize, FontStretch newFontStretch,
+            FontStyle newFontStyle, FontWeight newFontWeight,
+            string[] oldFontFamilyNames, float[] oldFontSizes, FontStretch[] oldFontStretches,
+            FontStyle[] oldFontStyles, FontWeight[] oldFontWeights) : base(id, targets)
+        {
+            NewFontFamilyName = newFontFamilyName;
+            NewFontSize = newFontSize;
+            NewFontStretch = newFontStretch;
+            NewFontStyle = newFontStyle;
+            NewFontWeight = newFontWeight;
+
+            OldFontFamilyNames = oldFontFamilyNames;
+            OldFontSizes = oldFontSizes;
+            OldFontStretches = oldFontStretches;
+            OldFontStyles = oldFontStyles;
+            OldFontWeights = oldFontWeights;
+        }
+
+        public override string Description => $"Formatted {Targets.Length} layer(s)";
         public string NewFontFamilyName { get; set; }
         public float NewFontSize { get; set; }
         public FontStretch NewFontStretch { get; set; }
@@ -195,7 +216,18 @@ namespace Ibinimator.Service.Commands
         public FontStyle[] OldFontStyles { get; set; }
         public FontWeight[] OldFontWeights { get; set; }
 
-        public override string Description => $"Formatted {Targets.Length} layer(s)";
+        public override void Do(ArtView artView)
+        {
+            foreach (var target in Targets)
+                lock (target)
+                {
+                    target.FontFamilyName = NewFontFamilyName;
+                    target.FontSize = NewFontSize;
+                    target.FontStretch = NewFontStretch;
+                    target.FontStyle = NewFontStyle;
+                    target.FontWeight = NewFontWeight;
+                }
+        }
 
         public override void Undo(ArtView artView)
         {
@@ -212,60 +244,23 @@ namespace Ibinimator.Service.Commands
                 }
             }
         }
-
-        public override void Do(ArtView artView)
-        {
-            foreach (var target in Targets)
-            {
-                lock (target)
-                {
-                    target.FontFamilyName = NewFontFamilyName;
-                    target.FontSize = NewFontSize;
-                    target.FontStretch = NewFontStretch;
-                    target.FontStyle = NewFontStyle;
-                    target.FontWeight = NewFontWeight;
-                }
-            }
-        }
-        
-        public ApplyFormatCommand(long id, ITextLayer[] targets, 
-            string newFontFamilyName, float newFontSize, FontStretch newFontStretch, 
-            FontStyle newFontStyle, FontWeight newFontWeight, 
-            string[] oldFontFamilyNames, float[] oldFontSizes, FontStretch[] oldFontStretches, 
-            FontStyle[] oldFontStyles, FontWeight[] oldFontWeights) : base(id, targets)
-        {
-            NewFontFamilyName = newFontFamilyName;
-            NewFontSize = newFontSize;
-            NewFontStretch = newFontStretch;
-            NewFontStyle = newFontStyle;
-            NewFontWeight = newFontWeight;
-
-            OldFontFamilyNames = oldFontFamilyNames;
-            OldFontSizes = oldFontSizes;
-            OldFontStretches = oldFontStretches;
-            OldFontStyles = oldFontStyles;
-            OldFontWeights = oldFontWeights;
-        }
     }
 
     public sealed class ApplyFormatRangeCommand : LayerCommandBase<ITextLayer>
     {
+        public ApplyFormatRangeCommand(long id,
+            ITextLayer target,
+            Format[] oldFormat,
+            Format[] newFormat) : base(id, new[] {target})
+        {
+            OldFormats = oldFormat;
+            NewFormats = newFormat;
+        }
+
+        public override string Description => $"Changed format of range";
         public Format[] NewFormats { get; }
 
         public Format[] OldFormats { get; }
-
-        public override string Description => $"Changed format of range";
-
-        public override void Undo(ArtView artView)
-        {
-            foreach (var target in Targets)
-            {
-                target.ClearFormat();
-
-                foreach (var format in OldFormats)
-                    target.SetFormat(format);
-            }
-        }
 
         public override void Do(ArtView artView)
         {
@@ -278,130 +273,214 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public ApplyFormatRangeCommand(long id,
-            ITextLayer target,
-            Format[] oldFormat,
-            Format[] newFormat) : base(id, new[] {target})
+        public override void Undo(ArtView artView)
         {
-            OldFormats = oldFormat;
-            NewFormats = newFormat;
+            foreach (var target in Targets)
+            {
+                target.ClearFormat();
+
+                foreach (var format in OldFormats)
+                    target.SetFormat(format);
+            }
         }
     }
 
     public sealed class InsertTextCommand : LayerCommandBase<ITextLayer>
     {
-        public InsertTextCommand(long id, ITextLayer target, string text, int index) 
-            : base(id, new[] { target })
+        public InsertTextCommand(long id, ITextLayer target, string text, int index)
+            : base(id, new[] {target})
         {
             Text = text;
             Index = index;
         }
 
-        public string Text { get; }
+        public override string Description => $@"Inserted text ""{Text}""";
 
         public int Index { get; }
 
-        public override string Description => $@"Inserted text ""{Text}""";
-
-        public override void Undo(ArtView artView)
-        {
-            foreach (var target in Targets)
-                target.Remove(Index, Text.Length);
-        }
+        public string Text { get; }
 
         public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Insert(Index, Text);
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            foreach (var target in Targets)
+                target.Remove(Index, Text.Length);
         }
     }
 
     public sealed class RemoveTextCommand : LayerCommandBase<ITextLayer>
     {
         public RemoveTextCommand(long id, ITextLayer target, string text, int index)
-            : base(id, new[] { target })
+            : base(id, new[] {target})
         {
             Text = text;
             Index = index;
         }
 
-        public string Text { get; }
+        public override string Description => $@"Removed text ""{Text}""";
 
         public int Index { get; }
 
-        public override string Description => $@"Removed text ""{Text}""";
-
-        public override void Undo(ArtView artView)
-        {
-            foreach (var target in Targets)
-                target.Insert(Index, Text);
-        }
+        public string Text { get; }
 
         public override void Do(ArtView artView)
         {
             foreach (var target in Targets)
                 target.Remove(Index, Text.Length);
         }
+
+        public override void Undo(ArtView artView)
+        {
+            foreach (var target in Targets)
+                target.Insert(Index, Text);
+        }
+    }
+
+    public sealed class AddLayerCommand : LayerCommandBase<IContainerLayer>
+    {
+        public AddLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
+        {
+            Layer = layer;
+        }
+
+        public override string Description => $"Added {Layer.DefaultName}";
+
+        public ILayer Layer { get; }
+
+        public override void Do(ArtView artView)
+        {
+            Targets[0].Add(Layer as Layer);
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            Targets[0].Remove(Layer as Layer);
+        }
+    }
+
+    public sealed class RemoveLayerCommand : LayerCommandBase<IContainerLayer>
+    {
+        public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
+        {
+            Layer = layer;
+        }
+
+        public override string Description => $"Removed {Layer.DefaultName}";
+
+        public ILayer Layer { get; }
+
+        public override void Do(ArtView artView)
+        {
+            Targets[0].Remove(Layer as Layer);
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            Targets[0].Add(Layer as Layer);
+        }
+    }
+
+    public sealed class ChangeZIndexCommand : LayerCommandBase<ILayer>
+    {
+        public ChangeZIndexCommand(long id, ILayer[] targets, int delta) : base(id, targets)
+        {
+            Delta = delta;
+        }
+
+        public int Delta { get; }
+
+        public override string Description => $"Changed z-index of {Targets.Length} layer(s)";
+
+        public override void Do(ArtView artView)
+        {
+            foreach (var target in Targets)
+            {
+                var siblings = target.Parent.SubLayers;
+                var index = siblings.IndexOf(target as Layer);
+                siblings.Move(index, Math.Min(siblings.Count - 1, index + Delta));
+            }
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            foreach (var target in Targets)
+            {
+                var siblings = target.Parent.SubLayers;
+                var index = siblings.IndexOf(target as Layer);
+                siblings.Move(index, Math.Max(0, index - Delta));
+            }
+        }
     }
 
     public sealed class BinaryOperationCommand : LayerCommandBase<IGeometricLayer>
     {
-        private Path _generatedPath;
+        private IGeometricLayer _operand1;
+        private IGeometricLayer _operand2;
         private IContainerLayer _parent1;
         private IContainerLayer _parent2;
-
-        public CombineMode Operation { get; }
+        private Path _product;
 
         public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(id, targets)
         {
-            if(targets.Length != 2)
+            if (targets.Length != 2)
                 throw new ArgumentException("Binary operations can only have 2 operands.");
             Operation = operation;
         }
 
         public override string Description => Operation.ToString();
 
-        public override void Undo(ArtView artView)
-        {
-            _generatedPath.Parent.Remove(_generatedPath);
-            _generatedPath = null;
-            _parent1.Add(Targets[0] as Layer);
-            _parent2.Add(Targets[1] as Layer);
-        }
+        public CombineMode Operation { get; }
 
         public override void Do(ArtView artView)
         {
-            var x = Targets[0];
-            var y = Targets[1];
-            var factory = artView.Direct2DFactory;
-            
-            var xg = artView.CacheManager.GetGeometry(x);
-            var yg = artView.CacheManager.GetGeometry(y);
-
-            var z = new Path
+            if (_product == null)
             {
-                FillBrush = x.FillBrush,
-                StrokeBrush = x.StrokeBrush,
-                StrokeInfo = x.StrokeInfo
-            };
+                _operand1 = Targets[0];
+                _operand2 = Targets[1];
+                var factory = artView.Direct2DFactory;
 
-            var zSink = z.Open();
+                var xg = artView.CacheManager.GetGeometry(_operand1);
+                var yg = artView.CacheManager.GetGeometry(_operand2);
 
-            using (var xtg = new TransformedGeometry(factory, xg, x.AbsoluteTransform))
-                xtg.Combine(yg, Operation, y.AbsoluteTransform, 0.25f, zSink);
+                var z = new Path
+                {
+                    FillBrush = _operand1.FillBrush,
+                    StrokeBrush = _operand1.StrokeBrush,
+                    StrokeInfo = _operand1.StrokeInfo
+                };
 
-            zSink.Close();
+                var zSink = z.Open();
 
-            (z.Scale, z.Rotation, z.Position, z.Shear) =
-                Matrix3x2.Invert(x.WorldTransform).Decompose();
+                using (var xtg = new TransformedGeometry(factory, xg, _operand1.AbsoluteTransform))
+                {
+                    xtg.Combine(yg, Operation, _operand2.AbsoluteTransform, 0.25f, zSink);
+                }
 
-            x.Parent.Add(z);
-            x.Parent.Remove(x as Layer);
-            y.Parent.Remove(y as Layer);
+                zSink.Close();
 
-            _generatedPath = z;
-            _parent1 = x.Parent;
-            _parent2 = y.Parent;
+                (z.Scale, z.Rotation, z.Position, z.Shear) =
+                    Matrix3x2.Invert(_operand1.WorldTransform).Decompose();
+
+                _product = z;
+                _parent1 = _operand1.Parent;
+                _parent2 = _operand2.Parent;
+            }
+
+            _parent1.Add(_product);
+            _parent1.Remove(_operand1 as Layer);
+            _parent2.Remove(_operand2 as Layer);
         }
-    } 
+
+        public override void Undo(ArtView artView)
+        {
+            _product.Parent.Remove(_product);
+            _parent1.Add(_operand1 as Layer);
+            _parent2.Add(_operand2 as Layer);
+        }
+    }
 }

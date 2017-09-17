@@ -25,7 +25,7 @@ namespace Ibinimator.Service
         bool ClearResource(ILayer layer, int id);
         void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable;
         Brush GetFill(IFilledLayer layer);
-        GeometryRealization GetGeometryRealizaion(IGeometricLayer layer);
+        GeometryRealization GetGeometryRealization(IGeometricLayer layer);
         Geometry GetGeometry(IGeometricLayer layer);
         RectangleF GetRelativeBounds(ILayer layer);
         Stroke GetStroke(IStrokedLayer layer);

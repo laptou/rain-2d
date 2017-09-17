@@ -251,7 +251,7 @@ namespace Ibinimator.Model
             if (FillBrush != null)
             {
                 if (dc != null)
-                    dc.DrawGeometryRealization(cache.GetGeometryRealizaion(this), cache.GetFill(this));
+                    dc.DrawGeometryRealization(cache.GetGeometryRealization(this), cache.GetFill(this));
                 else
                     target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
             }
@@ -260,11 +260,12 @@ namespace Ibinimator.Model
             {
                 var stroke = cache.GetStroke(this);
                 
-                target.DrawGeometry(
-                    cache.GetGeometry(this),
-                    stroke.Brush,
-                    stroke.Width,
-                    stroke.Style);
+                lock(stroke)
+                    target.DrawGeometry(
+                        cache.GetGeometry(this),
+                        stroke.Brush,
+                        stroke.Width,
+                        stroke.Style);
             }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
