@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Model;
 using Ibinimator.ViewModel;
 using SharpDX;
 using static Ibinimator.Service.CommandManager;
@@ -62,38 +63,46 @@ namespace Ibinimator.Service.Commands
 
         private static void MoveDown(ISelectionManager selectionManager)
         {
-            foreach (var layer in selectionManager.Selection)
-            {
-                var index = layer.Parent.SubLayers.IndexOf(layer);
-                layer.Parent.SubLayers.Move(index, Math.Min(layer.Parent.SubLayers.Count, index + 1));
-            }
+            var history = selectionManager.ArtView.HistoryManager;
+
+            history.Do(
+                new ChangeZIndexCommand(
+                    history.Time + 1,
+                    selectionManager.Selection.ToArray<ILayer>(),
+                    1));
         }
 
         private static void MoveToBottom(ISelectionManager selectionManager)
         {
-            foreach (var layer in selectionManager.Selection)
-            {
-                var index = layer.Parent.SubLayers.IndexOf(layer);
-                layer.Parent.SubLayers.Move(index, layer.Parent.SubLayers.Count - 1);
-            }
+            var history = selectionManager.ArtView.HistoryManager;
+
+            history.Do(
+                new ChangeZIndexCommand(
+                    history.Time + 1,
+                    selectionManager.Selection.ToArray<ILayer>(),
+                    100000000));
         }
 
         private static void MoveToTop(ISelectionManager selectionManager)
         {
-            foreach (var layer in selectionManager.Selection)
-            {
-                var index = layer.Parent.SubLayers.IndexOf(layer);
-                layer.Parent.SubLayers.Move(index, 0);
-            }
+            var history = selectionManager.ArtView.HistoryManager;
+
+            history.Do(
+                new ChangeZIndexCommand(
+                    history.Time + 1,
+                    selectionManager.Selection.ToArray<ILayer>(),
+                    -100000000));
         }
 
         private static void MoveUp(ISelectionManager selectionManager)
         {
-            foreach (var layer in selectionManager.Selection)
-            {
-                var index = layer.Parent.SubLayers.IndexOf(layer);
-                layer.Parent.SubLayers.Move(index, Math.Max(0, index - 1));
-            }
+            var history = selectionManager.ArtView.HistoryManager;
+
+            history.Do(
+                new ChangeZIndexCommand(
+                    history.Time + 1,
+                    selectionManager.Selection.ToArray<ILayer>(),
+                    -1));
         }
 
         private static void RotateClockwise(ISelectionManager selectionManager)

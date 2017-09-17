@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.Service
@@ -11,6 +9,12 @@ namespace Ibinimator.Service
     public class CommandManager : Model.Model
     {
         public static CommandManager Instance = new CommandManager();
+
+        public Exception LastError
+        {
+            get => Get<Exception>();
+            set => Set(value);
+        }
 
         public DelegateCommand<T> Register<T>(Action<T> action)
         {
@@ -38,12 +42,6 @@ namespace Ibinimator.Service
                     LastError = command.Execution.Exception;
             };
             return command;
-        }
-
-        public Exception LastError
-        {
-            get => Get<Exception>();
-            set => Set(value);
         }
     }
 }

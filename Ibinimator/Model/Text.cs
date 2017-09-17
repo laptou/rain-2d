@@ -49,13 +49,6 @@ namespace Ibinimator.Model
 
     public class TextRenderer : DW.TextRendererBase
     {
-        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
-        {
-            var context = (Context)clientDrawingContext;
-
-            return context.Text.AbsoluteTransform;
-        }
-
         public override Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX, float baselineOriginY,
             D2D.MeasuringMode measuringMode, DW.GlyphRun glyphRun, DW.GlyphRunDescription glyphRunDescription,
             ComObject clientDrawingEffect)
@@ -121,6 +114,13 @@ namespace Ibinimator.Model
             return Result.Ok;
         }
 
+        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
+        {
+            var context = (Context) clientDrawingContext;
+
+            return context.Text.AbsoluteTransform;
+        }
+
         private static void DrawLine(Context context, Format format, float x, float y, float width, float thickness)
         {
             var rect = new D2D.RectangleGeometry(context.Factory, new RectangleF(x, y, width, thickness))
@@ -170,9 +170,8 @@ namespace Ibinimator.Model
         #endregion
     }
 
-    public partial class Text : Layer, ITextLayer, IGeometricLayer
+    public class Text : Layer, ITextLayer, IGeometricLayer
     {
-
         public Text()
         {
             FontWeight = DW.FontWeight.Normal;
@@ -191,29 +190,25 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        public DW.ParagraphAlignment ParagraphAlignment
-        {
-            get => Get<DW.ParagraphAlignment>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
-        public DW.TextAlignment TextAlignment
-        {
-            get => Get<DW.TextAlignment>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
         protected override string ElementName => "text";
+
+        public Format GetFormat(int position, out int i)
+        {
+            i = 0;
+
+            do
+            {
+                i++;
+            } while (i < Formats.Count && Formats[i].Range.StartPosition <= position);
+
+            var format = Formats.ElementAtOrDefault(--i);
+            if (format == null) return null;
+
+            return format.Range.StartPosition + format.Range.Length > position
+                   && position >= format.Range.StartPosition
+                ? format
+                : null;
+        }
 
         #region IGeometricLayer Members
 
@@ -259,14 +254,15 @@ namespace Ibinimator.Model
 
         #region ITextLayer Members
 
-        [Undoable]
-        public BrushInfo FillBrush
+        public void ClearFormat()
         {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
+            lock (Formats)
+            {
+                Formats.Clear();
+            }
 
-        public override string DefaultName => $@"Text ""{Value}""";
+            RaisePropertyChanged("TextLayout");
+        }
 
         public override RectangleF GetBounds(ICacheManager cache)
         {
@@ -277,158 +273,9 @@ namespace Ibinimator.Model
             return new RectangleF(metrics.Left, metrics.Top, metrics.Width, metrics.Height);
         }
 
-        public override float Height
+        public Format GetFormat(int position)
         {
-            get => base.Height;
-            set
-            {
-                base.Height = value;
-                RaisePropertyChanged("TextLayout");
-            }
-        }
-
-        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
-        {
-            if (!(this is T)) return null;
-
-            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
-
-            cache.GetTextLayout(this)
-                .HitTestPoint(point.X, point.Y, out var _, out var isInside);
-
-            return isInside ? this as T : null;
-        }
-
-        public override void Render(D2D.RenderTarget target, ICacheManager cache)
-        {
-            target.Transform = Transform * target.Transform;
-
-            var geometry = cache.GetGeometry(this);
-
-            if (geometry is D2D.GeometryGroup geometryGroup)
-            {
-                var geometries = geometryGroup.GetSourceGeometry();
-
-                for (var i = 0; i < geometries.Length; i++)
-                {
-                    var geom = geometries[i];
-                    var fill = cache.GetResource<D2D.Brush>(this, i * 2) ?? cache.GetFill(this);
-                    var stroke = cache.GetResource<Stroke>(this, i * 2 + 1) ?? cache.GetStroke(this);
-
-                    if(fill != null)
-                        target.FillGeometry(geom, fill);
-
-                    if (stroke?.Brush != null)
-                        target.DrawGeometry(
-                            geom, 
-                            stroke.Brush,
-                            stroke.Width,
-                            stroke.Style);
-                }
-            }
-
-            target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
-        }
-
-        public override Vector2 Scale
-        {
-            get => IsBlock ? Vector2.One : base.Scale;
-            set
-            {
-                if (!IsBlock)
-                {
-                    base.Scale = value;
-                }
-                else
-                {
-                    Width *= value.X;
-                    Height *= value.Y;
-                }
-            }
-        }
-
-        public override float Width
-        {
-            get => base.Width;
-            set
-            {
-                base.Width = value;
-                RaisePropertyChanged("TextLayout");
-            }
-        }
-
-        [Undoable]
-        public BrushInfo StrokeBrush
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
-
-        [Undoable]
-        public StrokeInfo StrokeInfo
-        {
-            get => Get<StrokeInfo>();
-            set => Set(value);
-        }
-
-        [Undoable]
-        public string FontFamilyName
-        {
-            get => Get<string>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
-        [Undoable]
-        public float FontSize
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
-        [Undoable]
-        public DW.FontStretch FontStretch
-        {
-            get => Get<DW.FontStretch>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
-        [Undoable]
-        public DW.FontStyle FontStyle
-        {
-            get => Get<DW.FontStyle>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
-        }
-
-        [Undoable]
-        public DW.FontWeight FontWeight
-        {
-            get => Get<DW.FontWeight>();
-            set
-            {
-                Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
-            }
+            return GetFormat(position, out var _);
         }
 
         public DW.TextLayout GetLayout(DW.Factory dwFactory)
@@ -500,8 +347,20 @@ namespace Ibinimator.Model
                         layout.SetFormat(format.Range, f => f.StrokeInfo = format.StrokeInfo);
                 }
             }
-            
+
             return layout;
+        }
+
+        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+        {
+            if (!(this is T)) return null;
+
+            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
+
+            cache.GetTextLayout(this)
+                .HitTestPoint(point.X, point.Y, out var _, out var isInside);
+
+            return isInside ? this as T : null;
         }
 
         public void Insert(int position, string str)
@@ -580,46 +439,35 @@ namespace Ibinimator.Model
             }
         }
 
-        [Undoable]
-        public string Value
+        public override void Render(D2D.RenderTarget target, ICacheManager cache)
         {
-            get => Get<string>();
-            set
+            target.Transform = Transform * target.Transform;
+
+            var geometry = cache.GetGeometry(this);
+
+            if (geometry is D2D.GeometryGroup geometryGroup)
             {
-                Set(value);
-                RaisePropertyChanged(nameof(DefaultName));
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                var geometries = geometryGroup.GetSourceGeometry();
+
+                for (var i = 0; i < geometries.Length; i++)
+                {
+                    var geom = geometries[i];
+                    var fill = cache.GetResource<D2D.Brush>(this, i * 2) ?? cache.GetFill(this);
+                    var stroke = cache.GetResource<Stroke>(this, i * 2 + 1) ?? cache.GetStroke(this);
+
+                    if (fill != null)
+                        target.FillGeometry(geom, fill);
+
+                    if (stroke?.Brush != null)
+                        target.DrawGeometry(
+                            geom,
+                            stroke.Brush,
+                            stroke.Width,
+                            stroke.Style);
+                }
             }
-        }
 
-        [Undoable]
-        public ObservableList<Format> Formats
-        {
-            get => Get<ObservableList<Format>>();
-            set => Set(value);
-        }
-
-        #endregion
-
-        public Format GetFormat(int position)
-        {
-            return GetFormat(position, out var _);
-        }
-
-        public Format GetFormat(int position, out int i)
-        {
-            i = 0;
-
-            do i++; while (i < Formats.Count && Formats[i].Range.StartPosition <= position);
-
-            var format = Formats.ElementAtOrDefault(--i);
-            if (format == null) return null;
-
-            return format.Range.StartPosition + format.Range.Length > position
-                   && position >= format.Range.StartPosition
-                ? format
-                : null;
+            target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
 
         public void SetFormat(Format format)
@@ -696,18 +544,172 @@ namespace Ibinimator.Model
                 if (start < end)
                     Formats.Add(format);
 
-                Trace.WriteLine(string.Join("\n", Formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
+                Trace.WriteLine(string.Join("\n",
+                    Formats.Select(f =>
+                        $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
             }
 
             RaisePropertyChanged("TextLayout");
         }
 
-        public void ClearFormat()
-        {
-            lock (Formats)
-                Formats.Clear();
+        public override string DefaultName => $@"Text ""{Value}""";
 
-            RaisePropertyChanged("TextLayout");
+        public BrushInfo FillBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
         }
+
+        public string FontFamilyName
+        {
+            get => Get<string>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public float FontSize
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public DW.FontStretch FontStretch
+        {
+            get => Get<DW.FontStretch>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public DW.FontStyle FontStyle
+        {
+            get => Get<DW.FontStyle>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public DW.FontWeight FontWeight
+        {
+            get => Get<DW.FontWeight>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public ObservableList<Format> Formats
+        {
+            get => Get<ObservableList<Format>>();
+            set => Set(value);
+        }
+
+        public override float Height
+        {
+            get => base.Height;
+            set
+            {
+                base.Height = value;
+                RaisePropertyChanged("TextLayout");
+            }
+        }
+
+        public ObservableList<float> Offsets
+        {
+            get => Get<ObservableList<float>>();
+            set => Set(value);
+        }
+
+        public DW.ParagraphAlignment ParagraphAlignment
+        {
+            get => Get<DW.ParagraphAlignment>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public override Vector2 Scale
+        {
+            get => IsBlock ? Vector2.One : base.Scale;
+            set
+            {
+                if (!IsBlock)
+                {
+                    base.Scale = value;
+                }
+                else
+                {
+                    Width *= value.X;
+                    Height *= value.Y;
+                }
+            }
+        }
+
+        public BrushInfo StrokeBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public StrokeInfo StrokeInfo
+        {
+            get => Get<StrokeInfo>();
+            set => Set(value);
+        }
+
+        public DW.TextAlignment TextAlignment
+        {
+            get => Get<DW.TextAlignment>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public string Value
+        {
+            get => Get<string>();
+            set
+            {
+                Set(value);
+                RaisePropertyChanged(nameof(DefaultName));
+                RaisePropertyChanged("TextLayout");
+                RaisePropertyChanged("Bounds");
+            }
+        }
+
+        public override float Width
+        {
+            get => base.Width;
+            set
+            {
+                base.Width = value;
+                RaisePropertyChanged("TextLayout");
+            }
+        }
+
+        #endregion
     }
 }

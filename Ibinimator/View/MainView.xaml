@@ -17,8 +17,8 @@
     Icon="/Ibinimator;component/Resources/logo.png">
     <Window.Resources>
         <view:UnitConverter x:Key="AngleConverter" BaseUnit="Radians" />
-        <view:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels"  />
-        <view:UnitConverter x:Key="PointConverter" BaseUnit="Points"  />
+        <view:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
+        <view:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
         <view:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <view:PercentageConverter x:Key="PercentageConverter" />
     </Window.Resources>
@@ -67,7 +67,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition Height="50" />
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="40" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <Border Background="{StaticResource L1Brush}">
@@ -93,11 +93,11 @@
                         <MenuItem Header="_Time" />
                         <MenuItem Header="Te_xt" />
                         <MenuItem Header="_Help">
-                            <MenuItem Header="_License" Command="{x:Static commands:ViewCommands.LicenseCommand}"/>
+                            <MenuItem Header="_License" Command="{x:Static commands:ViewCommands.LicenseCommand}" />
                         </MenuItem>
                         <Menu.Resources>
                             <Style TargetType="MenuItem">
-                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="FontSize" Value="12" />
                             </Style>
                         </Menu.Resources>
                     </Menu>
@@ -224,49 +224,54 @@
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarButton}" 
+                    <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.UnionCommand}"
-                            CommandParameter="{Binding SelectionManager}">
+                            CommandParameter="{Binding HistoryManager}">
                         <Image Source="/Ibinimator;component/Resources/Icon/union.png" Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}" 
+                    <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.DifferenceCommand}"
-                            CommandParameter="{Binding SelectionManager}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/difference.png" Style="{DynamicResource Icon}" />
+                            CommandParameter="{Binding HistoryManager}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/difference.png"
+                               Style="{DynamicResource Icon}" />
                     </Button>
-                    <Button Style="{StaticResource ToolbarButton}" 
+                    <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.IntersectionCommand}"
-                            CommandParameter="{Binding SelectionManager}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/intersection.png" Style="{DynamicResource Icon}" />
+                            CommandParameter="{Binding HistoryManager}">
+                        <Image Source="/Ibinimator;component/Resources/Icon/intersection.png"
+                               Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.XorCommand}"
-                            CommandParameter="{Binding SelectionManager}">
+                            CommandParameter="{Binding HistoryManager}">
                         <Image Source="/Ibinimator;component/Resources/Icon/xor.png" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
             </ToolBar>
         </Border>
-        <Separator Grid.ColumnSpan="3" Grid.Row="2" VerticalAlignment="Top" Margin="0" Height="1" Panel.ZIndex="2" Background="{DynamicResource T2Brush}" Opacity="0.25"/>
+        <Separator Grid.ColumnSpan="3" Grid.Row="2" VerticalAlignment="Top" Margin="0" Height="1" Panel.ZIndex="2"
+                   Background="{DynamicResource T2Brush}" Opacity="0.25" />
         <Border Background="{StaticResource L2Brush}" Grid.Row="2">
             <Grid>
-                <ItemsControl ItemsSource="{Binding ToolManager.Tool.Options}" view:Helper.Accent="{DynamicResource A4}">
+                <ItemsControl ItemsSource="{Binding ToolManager.Tool.Options}"
+                              view:Helper.Accent="{DynamicResource A4}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
+                            <StackPanel Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplateSelector>
-                        <view:EnumTemplateSelector PropertyName="Type"/>
+                        <view:EnumTemplateSelector PropertyName="Type" />
                     </ItemsControl.ItemTemplateSelector>
                     <ItemsControl.Resources>
                         <DataTemplate x:Key="{x:Static service:ToolOptionType.Dropdown}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
-                                <Run Text="{Binding Name}"></Run>:
+                                    <Run Text="{Binding Name}" />
+                                    :
                                 </TextBlock>
-                                <ComboBox x:Name="Dropdown" ItemsSource="{Binding Options}" 
-                                          Margin="8,0" SelectedValue="{Binding Value}" 
+                                <ComboBox x:Name="Dropdown" ItemsSource="{Binding Options}"
+                                          Margin="8,0" SelectedValue="{Binding Value}"
                                           view:Helper.Accent="{DynamicResource A4}" />
                             </StackPanel>
                             <DataTemplate.Triggers>
@@ -274,7 +279,7 @@
                                     <Setter TargetName="Dropdown" Property="ItemTemplate">
                                         <Setter.Value>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" FontFamily="{Binding}"/>
+                                                <TextBlock Text="{Binding}" FontFamily="{Binding}" />
                                             </DataTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -284,15 +289,16 @@
                         <DataTemplate x:Key="{x:Static service:ToolOptionType.Number}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
-                                <Run Text="{Binding Name}"></Run>:
+                                    <Run Text="{Binding Name}" />
+                                    :
                                 </TextBlock>
-                                <ComboBox x:Name="Dropdown" ItemsSource="{Binding Options}" 
+                                <ComboBox x:Name="Dropdown" ItemsSource="{Binding Options}"
                                           Margin="8,0" IsEditable="True">
                                     <ComboBox.Text>
                                         <MultiBinding Converter="{StaticResource PointConverter}"
                                                       UpdateSourceTrigger="LostFocus">
-                                            <Binding Path="Value"/>
-                                            <Binding Path="Unit" Mode="OneWay"/>
+                                            <Binding Path="Value" />
+                                            <Binding Path="Unit" Mode="OneWay" />
                                         </MultiBinding>
                                     </ComboBox.Text>
                                 </ComboBox>
@@ -304,15 +310,16 @@
         </Border>
         <Grid Grid.Row="3">
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
-            <ToolBarTray Grid.Column="0" Grid.RowSpan="2" Width="50" Orientation="Vertical" Background="{StaticResource L2Brush}">
+            <ToolBarTray Grid.Column="0" Grid.RowSpan="2" Width="50" Orientation="Vertical"
+                         Background="{StaticResource L2Brush}">
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
@@ -356,8 +363,7 @@
             <TabControl Grid.Column="1">
                 <TabItem>
                     <Border Background="White">
-                        <control:ArtView x:Name="ArtView" UseLayoutRounding="True" SnapsToDevicePixels="True">
-                        </control:ArtView>
+                        <control:ArtView x:Name="ArtView" UseLayoutRounding="True" SnapsToDevicePixels="True" />
                     </Border>
                 </TabItem>
             </TabControl>
@@ -481,7 +487,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <control:HslWheel x:Name="HslWheel" Height="144" Width="144"
-                                                  Color="{Binding Color, Mode=TwoWay}" 
+                                                  Color="{Binding Color, Mode=TwoWay}"
                                                   Grid.RowSpan="2" VerticalAlignment="Top" Margin="0,8" />
 
                                 <Grid Grid.Row="0" Grid.Column="1" Height="160" Margin="0,0,10,0">
@@ -1018,10 +1024,10 @@
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter Property="Foreground">
                                                     <Setter.Value>
-                                                        <SolidColorBrush 
+                                                        <SolidColorBrush
                                                             Color="{Binding 
                                                                 Path=(view:Helper.Accent), 
-                                                                RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"/>
+                                                                RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
                                                     </Setter.Value>
                                                 </Setter>
                                                 <Setter Property="FontWeight" Value="Bold" />
@@ -1032,13 +1038,14 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type commands:IOperationCommand}">
                                         <TextBlock x:Name="HistoryRecordDescription"
-                                                   Margin="8,4" Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}">
-                                            <Run Text="{Binding Description, Mode=OneWay}"/>
+                                                   Margin="8,4"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}">
+                                            <Run Text="{Binding Description, Mode=OneWay}" />
                                         </TextBlock>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="{Binding HistoryManager.Time, Mode=OneWay}"></TextBlock>
+                            <TextBlock Text="{Binding HistoryManager.Time, Mode=OneWay}" />
 
                         </Grid>
                     </TabItem>

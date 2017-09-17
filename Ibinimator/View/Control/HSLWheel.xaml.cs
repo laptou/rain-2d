@@ -17,6 +17,8 @@ namespace Ibinimator.View.Control
 {
     public partial class HslWheel : INotifyPropertyChanged
     {
+        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register(
+            "Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color(), OnDependencyPropertyChanged));
 
         private bool _draggingRing;
 
@@ -37,20 +39,11 @@ namespace Ibinimator.View.Control
             UpdateHandles();
         }
 
-        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register(
-            "Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color(), OnDependencyPropertyChanged));
-
         public Color Color
         {
             get => (Color) GetValue(ColorProperty);
             set => SetValue(ColorProperty, value);
         }
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
@@ -184,7 +177,7 @@ namespace Ibinimator.View.Control
         {
             var (hue, saturation, lightness) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
 
-            var transform = (RotateTransform)Triangle.RenderTransform;
+            var transform = (RotateTransform) Triangle.RenderTransform;
             transform.Angle = hue + 90;
             ringRotate.Angle = hue;
 
@@ -264,5 +257,11 @@ namespace Ibinimator.View.Control
                 _triangle.Unlock();
             }));
         }
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
     }
 }

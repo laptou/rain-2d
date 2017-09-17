@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
-using Ibinimator.Shared;
+using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
-using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service
 {
@@ -30,13 +30,41 @@ namespace Ibinimator.Service
 
         private ArtView ArtView => Manager.ArtView;
 
-        private Layer Root => ArtView.ViewManager.Root;
+        private IContainerLayer Root => ArtView.ViewManager.Root;
+
+        private Vector2 Constrain(Vector2 pos)
+        {
+            var lastNode = CurrentPath.Nodes.Last();
+            var lpos = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, lastNode.Position);
+
+            var delta = pos - lpos;
+
+            if (Math.Abs(delta.Y / delta.X) > MathUtils.Sqrt3)
+                delta = new Vector2(0, delta.Y);
+            else if (Math.Abs(delta.Y / delta.X) > MathUtils.InverseSqrt3)
+                delta = MathUtils.Project(delta, new Vector2(1, Math.Sign(delta.Y / delta.X)));
+            else
+                delta = new Vector2(delta.X, 0);
+
+            return lpos + delta;
+        }
 
         #region ITool Members
 
-        public Bitmap Cursor => null;
+        public void ApplyFill(BrushInfo brush)
+        {
+            throw new NotImplementedException();
+        }
 
-        public float CursorRotate => 0;
+        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            _selectedNodes.Clear();
+        }
 
         public bool KeyDown(Key key)
         {
@@ -89,8 +117,6 @@ namespace Ibinimator.Service
             return true;
         }
 
-        public IToolManager Manager { get; }
-
         public bool MouseDown(Vector2 pos)
         {
             if (CurrentPath == null)
@@ -116,8 +142,10 @@ namespace Ibinimator.Service
                     }
                 };
 
-                Manager.ArtView.Dispatcher.Invoke(() =>
-                    Manager.ArtView.ViewManager.Root.Add(path));
+                Manager.ArtView.HistoryManager.Do(
+                    new AddLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                        Root,
+                        path));
 
                 path.Selected = true;
             }
@@ -207,14 +235,12 @@ namespace Ibinimator.Service
         public bool MouseMove(Vector2 pos)
         {
             if (_selectedNodes.Count > 0 && _down)
-            {
                 foreach (var n in _selectedNodes)
                 {
-                    var nPos = Matrix3x2.TransformPoint(Matrix3x2.Invert(CurrentPath.AbsoluteTransform), n.Position); 
+                    var nPos = Matrix3x2.TransformPoint(Matrix3x2.Invert(CurrentPath.AbsoluteTransform), n.Position);
                     nPos += pos - _lastPos;
                     n.Position = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, nPos);
                 }
-            }
 
             _lastPos = pos;
 
@@ -228,18 +254,6 @@ namespace Ibinimator.Service
             _down = false;
             return false;
         }
-
-        public void ApplyFill(BrushInfo brush)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         public void Render(RenderTarget target, ICacheManager cacheManager)
         {
@@ -315,32 +329,18 @@ namespace Ibinimator.Service
             }
         }
 
+        public Bitmap Cursor => null;
+
+        public float CursorRotate => 0;
+
+        public IToolManager Manager { get; }
+
+        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
+
         public string Status => "";
 
         public ToolType Type => ToolType.Pencil;
 
         #endregion
-
-        private Vector2 Constrain(Vector2 pos)
-        {
-            var lastNode = CurrentPath.Nodes.Last();
-            var lpos = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, lastNode.Position);
-
-            var delta = pos - lpos;
-
-            if (Math.Abs(delta.Y / delta.X) > MathUtils.Sqrt3)
-                delta = new Vector2(0, delta.Y);
-            else if (Math.Abs(delta.Y / delta.X) > MathUtils.InverseSqrt3)
-                delta = MathUtils.Project(delta, new Vector2(1, Math.Sign(delta.Y / delta.X)));
-            else
-                delta = new Vector2(delta.X, 0);
-
-            return lpos + delta;
-        }
-
-        public void Dispose()
-        {
-            _selectedNodes.Clear();
-        }
     }
 }

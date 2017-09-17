@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Shared
 {
-
-
     // Adds strong typing to WeakReference.Target using generics. Also,
     // the Create factory method is used in place of a constructor
     // to handle the case where target is null, but we want the 
@@ -85,6 +83,23 @@ namespace Ibinimator.Shared
             _comparer = comparer;
         }
 
+        private static T GetTarget(object obj, out bool isDead)
+        {
+            var wref = obj as WeakKeyReference<T>;
+            T target;
+            if (wref != null)
+            {
+                target = wref.Target;
+                isDead = !wref.IsAlive;
+            }
+            else
+            {
+                target = (T) obj;
+                isDead = false;
+            }
+            return target;
+        }
+
         #region IEqualityComparer<object> Members
 
         // Note: There are actually 9 cases to handle here.
@@ -127,23 +142,6 @@ namespace Ibinimator.Shared
         }
 
         #endregion
-
-        private static T GetTarget(object obj, out bool isDead)
-        {
-            var wref = obj as WeakKeyReference<T>;
-            T target;
-            if (wref != null)
-            {
-                target = wref.Target;
-                isDead = !wref.IsAlive;
-            }
-            else
-            {
-                target = (T) obj;
-                isDead = false;
-            }
-            return target;
-        }
     }
 
     /// <inheritdoc />
@@ -293,71 +291,6 @@ namespace Ibinimator.Shared
         private KeyCollection _keys;
         private ValueCollection _values;
 
-        #region IDictionary<TKey,TValue> Members
-
-        public void Add(KeyValuePair<TKey, TValue> item)
-        {
-            Add(item.Key, item.Value);
-        }
-
-        public abstract void Clear();
-
-        public bool Contains(KeyValuePair<TKey, TValue> item)
-        {
-            if (!TryGetValue(item.Key, out var value))
-                return false;
-
-            return EqualityComparer<TValue>.Default.Equals(value, item.Value);
-        }
-
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            Copy(this, array, arrayIndex);
-        }
-
-        public abstract int Count { get; }
-
-        public bool IsReadOnly => false;
-
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            if (!Contains(item))
-                return false;
-
-
-            return Remove(item.Key);
-        }
-
-        public abstract void Add(TKey key, TValue value);
-        public abstract bool ContainsKey(TKey key);
-
-        public TValue this[TKey key]
-        {
-            get
-            {
-                if (!TryGetValue(key, out var value))
-                    throw new KeyNotFoundException();
-
-                return value;
-            }
-            set => SetValue(key, value);
-        }
-
-        public ICollection<TKey> Keys => _keys ?? (_keys = new KeyCollection(this));
-        public abstract bool Remove(TKey key);
-        public abstract bool TryGetValue(TKey key, out TValue value);
-
-        public ICollection<TValue> Values => _values ?? (_values = new ValueCollection(this));
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
-
-        #endregion
-
         protected abstract void SetValue(TKey key, TValue value);
 
         private static void Copy<T>(ICollection<T> source, T[] array, int arrayIndex)
@@ -376,6 +309,73 @@ namespace Ibinimator.Shared
                 array[arrayIndex++] = item;
         }
 
+        #region IDictionary<TKey,TValue> Members
+
+        public TValue this[TKey key]
+        {
+            get
+            {
+                if (!TryGetValue(key, out var value))
+                    throw new KeyNotFoundException();
+
+                return value;
+            }
+            set => SetValue(key, value);
+        }
+
+        public void Add(KeyValuePair<TKey, TValue> item)
+        {
+            Add(item.Key, item.Value);
+        }
+
+        public abstract void Add(TKey key, TValue value);
+
+        public abstract void Clear();
+
+        public bool Contains(KeyValuePair<TKey, TValue> item)
+        {
+            if (!TryGetValue(item.Key, out var value))
+                return false;
+
+            return EqualityComparer<TValue>.Default.Equals(value, item.Value);
+        }
+
+        public abstract bool ContainsKey(TKey key);
+
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        {
+            Copy(this, array, arrayIndex);
+        }
+
+        public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
+
+        public bool Remove(KeyValuePair<TKey, TValue> item)
+        {
+            if (!Contains(item))
+                return false;
+
+
+            return Remove(item.Key);
+        }
+
+        public abstract bool Remove(TKey key);
+        public abstract bool TryGetValue(TKey key, out TValue value);
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public abstract int Count { get; }
+
+        public bool IsReadOnly => false;
+
+        public ICollection<TKey> Keys => _keys ?? (_keys = new KeyCollection(this));
+
+        public ICollection<TValue> Values => _values ?? (_values = new ValueCollection(this));
+
+        #endregion
+
         #region Nested type: Collection
 
         private abstract class Collection<T> : ICollection<T>
@@ -387,7 +387,14 @@ namespace Ibinimator.Shared
                 Dictionary = dictionary;
             }
 
+            protected abstract T GetItem(KeyValuePair<TKey, TValue> pair);
+
             #region ICollection<T> Members
+
+            public virtual bool Contains(T item)
+            {
+                return this.Any(element => EqualityComparer<T>.Default.Equals(element, item));
+            }
 
             public void Add(T item)
             {
@@ -399,19 +406,15 @@ namespace Ibinimator.Shared
                 throw new NotSupportedException("Collection is read-only.");
             }
 
-            public virtual bool Contains(T item)
-            {
-                return this.Any(element => EqualityComparer<T>.Default.Equals(element, item));
-            }
-
             public void CopyTo(T[] array, int arrayIndex)
             {
                 Copy(this, array, arrayIndex);
             }
 
-            public int Count => Dictionary.Count;
-
-            public bool IsReadOnly => true;
+            public IEnumerator<T> GetEnumerator()
+            {
+                return Dictionary.Select(GetItem).GetEnumerator();
+            }
 
             public bool Remove(T item)
             {
@@ -423,14 +426,11 @@ namespace Ibinimator.Shared
                 return GetEnumerator();
             }
 
-            public IEnumerator<T> GetEnumerator()
-            {
-                return Dictionary.Select(GetItem).GetEnumerator();
-            }
+            public int Count => Dictionary.Count;
+
+            public bool IsReadOnly => true;
 
             #endregion
-
-            protected abstract T GetItem(KeyValuePair<TKey, TValue> pair);
         }
 
         #endregion

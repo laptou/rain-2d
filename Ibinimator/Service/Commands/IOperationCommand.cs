@@ -46,19 +46,19 @@ namespace Ibinimator.Service.Commands
 
         #region IOperationCommand<T> Members
 
-        public abstract string Description { get; }
-
         public abstract void Do(ArtView artView);
-
-        public long Id { get; }
-
-        object[] IOperationCommand.Targets => Targets;
-
-        public long Time { get; } = Service.Time.Now;
 
         public abstract void Undo(ArtView artView);
 
+        public abstract string Description { get; }
+
+        public long Id { get; }
+
         public T[] Targets { get; }
+
+        public long Time { get; } = Service.Time.Now;
+
+        object[] IOperationCommand.Targets => Targets;
 
         #endregion
     }

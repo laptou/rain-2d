@@ -27,9 +27,12 @@ namespace Ibinimator.Service
         Bitmap Cursor { get; }
         float CursorRotate { get; }
         IToolManager Manager { get; }
+        ToolOption[] Options { get; }
         string Status { get; }
         ToolType Type { get; }
-        ToolOption[] Options { get; }
+
+        void ApplyFill(BrushInfo brush);
+        void ApplyStroke(BrushInfo brush, StrokeInfo stroke);
 
         bool KeyDown(Key key);
         bool KeyUp(Key key);
@@ -37,9 +40,6 @@ namespace Ibinimator.Service
         bool MouseDown(Vector2 pos);
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
-
-        void ApplyFill(BrushInfo brush);
-        void ApplyStroke(BrushInfo brush, StrokeInfo stroke);
 
         void Render(RenderTarget target, ICacheManager cacheManager);
     }

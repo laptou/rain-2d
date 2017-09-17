@@ -2,184 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using FastMember;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class Watcher<TK, T> : IDisposable where T : INotifyPropertyChanging, INotifyPropertyChanged
-    {
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly List<string> Animatable;
-
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly List<string> Undoable;
-
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly List<string> Observable;
-
-        private readonly Dictionary<Type, TypeAccessor> _accessors =
-            new Dictionary<Type, TypeAccessor>();
-
-        private readonly Func<T, TK> _keySelector;
-
-        private readonly Dictionary<(TK id, string property), object> _newProperties =
-            new Dictionary<(TK, string), object>();
-
-        private readonly Dictionary<(TK id, string property), object> _oldProperties =
-            new Dictionary<(TK, string), object>();
-
-        private List<string> _animatable;
-        private List<string> _observable;
-        private List<string> _undoable;
-
-        static Watcher()
-        {
-            var props = typeof(T).GetProperties();
-
-            Animatable =
-            (from p in props
-                where p.GetCustomAttributes(typeof(AnimatableAttribute), false).Any()
-                select p.Name).ToList();
-
-            Undoable =
-            (from p in props
-                where p.GetCustomAttributes(typeof(UndoableAttribute), false).Any()
-                select p.Name).ToList();
-
-            Observable =
-            (from p in props
-                where typeof(INotifyCollectionChanged).IsAssignableFrom(p.PropertyType)
-                select p.Name).ToList();
-        }
-
-        public Watcher(T target, Func<T, TK> keySelector)
-        {
-            _keySelector = keySelector;
-
-            Target = target;
-
-            var type = target.GetType();
-
-            Check(type);
-
-            var collections =
-                (RecordAnimatable ? _animatable.AsEnumerable() : new string[0]).Union(RecordUndoable
-                    ? _undoable.AsEnumerable()
-                    : new string[0]);
-
-            collections = collections.Intersect(_observable);
-
-            foreach (var collection in collections)
-                _oldProperties[(_keySelector(target), collection)] =
-                    Duplicate(_accessors[type][target, collection]);
-
-            Target.PropertyChanging += TargetOnPropertyChanging;
-            Target.PropertyChanged += TargetOnPropertyChanged;
-        }
-
-        public IDictionary<(TK id, string property), object> NewProperties => _newProperties;
-        public IDictionary<(TK id, string property), object> OldProperties => _oldProperties;
-        public bool RecordAnimatable { get; set; } = false;
-        public bool RecordUndoable { get; set; } = true;
-
-        public T Target { get; }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            _newProperties.Clear();
-            _oldProperties.Clear();
-            Target.PropertyChanging -= TargetOnPropertyChanging;
-            Target.PropertyChanged -= TargetOnPropertyChanged;
-        }
-
-        #endregion
-
-        private void Check(Type type)
-        {
-            if (_accessors.ContainsKey(type)) return;
-
-            // must be a subclass of T, get additional properties
-
-            _accessors.Add(type, TypeAccessor.Create(type));
-
-            var props = type.GetProperties();
-
-            _animatable =
-                Animatable.Union(
-                    from p in props
-                    where p.GetCustomAttributes(typeof(AnimatableAttribute), false).Any()
-                    select p.Name).ToList();
-
-            _undoable =
-                Undoable.Union(
-                    from p in props
-                    where p.GetCustomAttributes(typeof(UndoableAttribute), false).Any()
-                    select p.Name).ToList();
-
-            _observable =
-                Observable.Union(
-                    from p in props
-                    where typeof(INotifyCollectionChanged).IsAssignableFrom(p.PropertyType)
-                    select p.Name).ToList();
-        }
-
-        private static object Duplicate(object obj)
-        {
-            switch (obj)
-            {
-                case IDisposable _:
-                    throw new InvalidOperationException("Disposable objects should not be cloned.");
-                case ValueType _:
-                    return obj;
-                case ICloneable cloneable:
-                    return cloneable.Clone();
-                case IList list:
-                    var newList = (IList) Activator.CreateInstance(obj.GetType());
-
-                    foreach (var o in list)
-                        newList.Add(Duplicate(o));
-
-                    return newList;
-            }
-
-            return obj;
-        }
-
-        private void TargetOnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var type = sender.GetType();
-            Check(type);
-
-            if (RecordAnimatable && _animatable.Contains(e.PropertyName) ||
-                RecordUndoable && _undoable.Contains(e.PropertyName))
-                _newProperties[(_keySelector((T) sender), e.PropertyName)] =
-                    Duplicate(_accessors[type][sender, e.PropertyName]);
-        }
-
-        private void TargetOnPropertyChanging(object sender, PropertyChangingEventArgs e)
-        {
-            var type = sender.GetType();
-            Check(type);
-
-            if (RecordAnimatable && _animatable.Contains(e.PropertyName) ||
-                RecordUndoable && _undoable.Contains(e.PropertyName))
-            {
-                var key = (_keySelector((T) sender), e.PropertyName);
-                if (!_oldProperties.ContainsKey(key))
-                    _oldProperties[key] =
-                        Duplicate(_accessors[type][sender, e.PropertyName]);
-            }
-        }
-    }
-
     public class HistoryManager : Model.Model, IHistoryManager
     {
         private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
@@ -194,17 +24,9 @@ namespace Ibinimator.Service
 
         #region IHistoryManager Members
 
-        public ArtView ArtView { get; }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
-        {
-            lock (this) return _redo.Reverse().Concat(_undo).GetEnumerator();
-        }
+        public event EventHandler<long> Traversed;
 
         public void Clear()
         {
@@ -218,15 +40,18 @@ namespace Ibinimator.Service
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        public IOperationCommand<ILayer> Current
-        {
-            get { lock (this) return _undo.Count > 0 ? _undo.Peek() : null; }
-        }
-
         public void Do(IOperationCommand<ILayer> command)
         {
-            command.Do();
+            command.Do(ArtView);
             Push(command);
+        }
+
+        public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
+        {
+            lock (this)
+            {
+                return _redo.Reverse().Concat(_undo).GetEnumerator();
+            }
         }
 
         public IOperationCommand<ILayer> Pop()
@@ -270,6 +95,46 @@ namespace Ibinimator.Service
             Time++;
         }
 
+        public void Replace(IOperationCommand<ILayer> command)
+        {
+            lock (this)
+            {
+                _redo.Clear();
+                _undo.Pop();
+                _undo.Push(command);
+            }
+
+            RaisePropertyChanged(nameof(Current));
+            RaisePropertyChanged(nameof(NextId));
+            RaisePropertyChanged(nameof(Time));
+
+            CollectionChanged?.Invoke(this,
+                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        public void Undo()
+        {
+            Time--;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public ArtView ArtView { get; }
+
+        public IOperationCommand<ILayer> Current
+        {
+            get
+            {
+                lock (this)
+                {
+                    return _undo.Count > 0 ? _undo.Peek() : null;
+                }
+            }
+        }
+
         public long Time
         {
             get => Current?.Id ?? 0;
@@ -280,14 +145,14 @@ namespace Ibinimator.Service
                     while (value > Time && _redo.Count > 0)
                     {
                         var record = _redo.Pop();
-                        record.Do();
+                        record.Do(ArtView);
                         _undo.Push(record);
                     }
 
                     while (value < Time && _undo.Count > 0)
                     {
                         var record = _undo.Pop();
-                        record.Undo();
+                        record.Undo(ArtView);
                         _redo.Push(record);
                     }
                 }
@@ -298,15 +163,6 @@ namespace Ibinimator.Service
                 Traversed?.Invoke(this, value);
             }
         }
-
-        public event EventHandler<long> Traversed;
-
-        public void Undo()
-        {
-            Time--;
-        }
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         #endregion
     }

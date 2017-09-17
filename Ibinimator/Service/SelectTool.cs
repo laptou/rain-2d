@@ -24,58 +24,12 @@ namespace Ibinimator.Service
 
         #region ITool Members
 
-        public Bitmap Cursor => Manager.ArtView.SelectionManager.Cursor;
-
-        public float CursorRotate => Manager.ArtView.SelectionManager.SelectionRotation -
-                                     Manager.ArtView.SelectionManager.SelectionShear;
-
-        public bool KeyDown(Key key)
-        {
-            if (key == Key.Delete)
-            {
-                var delete = Selection.ToArray();
-                Manager.ArtView.SelectionManager.ClearSelection();
-
-                Manager.ArtView.Dispatcher.Invoke(() =>
-                {
-                    foreach (var layer in delete)
-                        layer.Parent.Remove(layer);
-                });
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool KeyUp(Key key)
-        {
-            return false;
-        }
-
-        public IToolManager Manager { get; }
-
-        public bool MouseDown(Vector2 pos)
-        {
-            return false;
-        }
-
-        public bool MouseMove(Vector2 pos)
-        {
-            return false;
-        }
-
-        public bool MouseUp(Vector2 pos)
-        {
-            return false;
-        }
-
         public void ApplyFill(BrushInfo brush)
         {
-            var targets = 
+            var targets =
                 Selection.SelectMany(l => l.Flatten())
-                         .OfType<IFilledLayer>()
-                         .ToArray();
+                    .OfType<IFilledLayer>()
+                    .ToArray();
 
             var command = new ApplyFillCommand(
                 Manager.ArtView.HistoryManager.Time + 1,
@@ -101,7 +55,48 @@ namespace Ibinimator.Service
             Manager.ArtView.HistoryManager.Do(command);
         }
 
-        public ToolOption[] Options => new ToolOption[0];
+        public void Dispose()
+        {
+        }
+
+        public bool KeyDown(Key key)
+        {
+            if (key == Key.Delete)
+            {
+                var delete = Selection.ToArray();
+                Manager.ArtView.SelectionManager.ClearSelection();
+
+                foreach (var layer in delete)
+                    Manager.ArtView.HistoryManager.Do(
+                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                            layer.Parent,
+                            layer));
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool KeyUp(Key key)
+        {
+            return false;
+        }
+
+        public bool MouseDown(Vector2 pos)
+        {
+            return false;
+        }
+
+        public bool MouseMove(Vector2 pos)
+        {
+            return false;
+        }
+
+        public bool MouseUp(Vector2 pos)
+        {
+            return false;
+        }
 
         public void Render(RenderTarget target, ICacheManager cache)
         {
@@ -146,14 +141,19 @@ namespace Ibinimator.Service
             }
         }
 
+        public Bitmap Cursor => Manager.ArtView.SelectionManager.Cursor;
+
+        public float CursorRotate => Manager.ArtView.SelectionManager.SelectionRotation -
+                                     Manager.ArtView.SelectionManager.SelectionShear;
+
+        public IToolManager Manager { get; }
+
+        public ToolOption[] Options => new ToolOption[0];
+
         public string Status => "";
 
         public ToolType Type => ToolType.Select;
 
         #endregion
-
-        public void Dispose()
-        {
-        }
     }
 }

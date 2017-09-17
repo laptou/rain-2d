@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -23,7 +22,7 @@ namespace Ibinimator.Model
         {
             Nodes.CollectionChanged += (sender, args) =>
             {
-                if(args.Action == NotifyCollectionChangedAction.Add)
+                if (args.Action == NotifyCollectionChangedAction.Add)
                     foreach (PathNode node in args.NewItems)
                         node.PropertyChanged += NodeOnPropertyChanged;
 
@@ -33,11 +32,6 @@ namespace Ibinimator.Model
 
                 RaisePropertyChanged("Geometry");
             };
-        }
-
-        private void NodeOnPropertyChanged(object o, PropertyChangedEventArgs propertyChangedEventArgs)
-        {
-            RaisePropertyChanged("Geometry");
         }
 
         [XmlAttribute]
@@ -208,6 +202,13 @@ namespace Ibinimator.Model
             return new MyGeometrySink(this);
         }
 
+        private void NodeOnPropertyChanged(object o, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            RaisePropertyChanged("Geometry");
+        }
+
+        #region Nested type: MyGeometrySink
+
         private class MyGeometrySink : GeometrySink
         {
             private readonly Path _path;
@@ -217,45 +218,19 @@ namespace Ibinimator.Model
                 _path = path;
             }
 
-            public void SetFillMode(FillMode fillMode)
-            {
-                _path.FillMode = fillMode;
-            }
+            #region GeometrySink Members
 
-            public void SetSegmentFlags(PathSegment vertexFlags)
+            public void AddArc(ArcSegment arc)
             {
-                throw new NotImplementedException();
-            }
-
-            public void BeginFigure(RawVector2 startPoint, FigureBegin figureBegin)
-            {
-                _path.Nodes.Add(new PathNode { Position = startPoint });
-            }
-
-            public void AddLines(RawVector2[] points)
-            {
-                foreach (var point in points)
-                    AddLine(point);
-            }
-
-            public void AddBeziers(BezierSegment[] beziers)
-            {
-                foreach (var bezier in beziers)
-                    AddBezier(bezier);
-            }
-
-            public void EndFigure(FigureEnd figureEnd)
-            {
-                _path.Nodes.Add(new CloseNode { Open = figureEnd == FigureEnd.Open });
-            }
-
-            public void Close()
-            {
-            }
-
-            public void AddLine(RawVector2 point)
-            {
-                _path.Nodes.Add(new PathNode { Position = point });
+                _path.Nodes.Add(new ArcPathNode
+                {
+                    Clockwise = arc.SweepDirection == SweepDirection.Clockwise,
+                    LargeArc = arc.ArcSize == ArcSize.Large,
+                    RadiusX = arc.Size.Width,
+                    RadiusY = arc.Size.Height,
+                    Rotation = arc.RotationAngle,
+                    Position = arc.Point
+                });
             }
 
             public void AddBezier(BezierSegment bezier)
@@ -266,6 +241,23 @@ namespace Ibinimator.Model
                     Control2 = bezier.Point2,
                     Position = bezier.Point3
                 });
+            }
+
+            public void AddBeziers(BezierSegment[] beziers)
+            {
+                foreach (var bezier in beziers)
+                    AddBezier(bezier);
+            }
+
+            public void AddLine(RawVector2 point)
+            {
+                _path.Nodes.Add(new PathNode {Position = point});
+            }
+
+            public void AddLines(RawVector2[] points)
+            {
+                foreach (var point in points)
+                    AddLine(point);
             }
 
             public void AddQuadraticBezier(QuadraticBezierSegment bezier)
@@ -283,17 +275,13 @@ namespace Ibinimator.Model
                     AddQuadraticBezier(bezier);
             }
 
-            public void AddArc(ArcSegment arc)
+            public void BeginFigure(RawVector2 startPoint, FigureBegin figureBegin)
             {
-                _path.Nodes.Add(new ArcPathNode
-                {
-                    Clockwise = arc.SweepDirection == SweepDirection.Clockwise,
-                    LargeArc = arc.ArcSize == ArcSize.Large,
-                    RadiusX = arc.Size.Width,
-                    RadiusY = arc.Size.Height,
-                    Rotation = arc.RotationAngle,
-                    Position = arc.Point
-                });
+                _path.Nodes.Add(new PathNode {Position = startPoint});
+            }
+
+            public void Close()
+            {
             }
 
             public void Dispose()
@@ -301,8 +289,27 @@ namespace Ibinimator.Model
                 // nothing to do here, no unmanaged resources
             }
 
+            public void EndFigure(FigureEnd figureEnd)
+            {
+                _path.Nodes.Add(new CloseNode {Open = figureEnd == FigureEnd.Open});
+            }
+
+            public void SetFillMode(FillMode fillMode)
+            {
+                _path.FillMode = fillMode;
+            }
+
+            public void SetSegmentFlags(PathSegment vertexFlags)
+            {
+                throw new NotImplementedException();
+            }
+
             public IDisposable Shadow { get; set; }
+
+            #endregion
         }
+
+        #endregion
     }
 
     [Serializable]

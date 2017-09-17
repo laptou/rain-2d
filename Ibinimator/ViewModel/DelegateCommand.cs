@@ -30,6 +30,12 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        public Exception Exception
+        {
+            get => Get<Exception>();
+            private set => Set(value);
+        }
+
         public Predicate<T> Predicate
         {
             get => _predicate;
@@ -42,21 +48,15 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        public Exception Exception
-        {
-            get => Get<Exception>();
-            private set => Set(value);
-        }
-
         #region ICommand Members
+
+        public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
             return _action != null &&
                    _predicate?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter) != false;
         }
-
-        public event EventHandler CanExecuteChanged;
 
         public void Execute(object parameter)
         {
@@ -102,16 +102,16 @@ namespace Ibinimator.ViewModel
             }
         }
 
+        public event EventHandler Executed;
+
         #region ICommand Members
+
+        public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
             return _task != null;
         }
-
-        public event EventHandler CanExecuteChanged;
-
-        public event EventHandler Executed;
 
         public void Execute(object parameter)
         {

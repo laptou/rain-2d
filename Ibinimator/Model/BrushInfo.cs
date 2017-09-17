@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Ibinimator.Service;
 using Ibinimator.Shared;
 using System.Linq;
@@ -97,7 +96,6 @@ namespace Ibinimator.Model
     {
         public SolidColorBrushInfo()
         {
-            
         }
 
         public SolidColorBrushInfo(Color4 color)
@@ -149,14 +147,14 @@ namespace Ibinimator.Model
                 new BrushProperties {Opacity = Opacity, Transform = Transform});
         }
 
-        public override WPF.Brush ToWpf()
-        {
-            return new WPF.SolidColorBrush(Color.ToWpf());
-        }
-
         public override string ToString()
         {
             return $"Color: {Color}, Opacity: {Opacity}";
+        }
+
+        public override WPF.Brush ToWpf()
+        {
+            return new WPF.SolidColorBrush(Color.ToWpf());
         }
     }
 

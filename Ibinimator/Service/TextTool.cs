@@ -205,15 +205,167 @@ namespace Ibinimator.Service
 
         private Layer Root => ArtView.ViewManager.Root;
 
-        #region ITool Members
-
-        public void Dispose()
+        private void ArtViewOnTextInput(object sender, TextCompositionEventArgs e)
         {
-            _dwFontCollection?.Dispose();
-            Cursor?.Dispose();
+            if (CurrentText == null) return;
 
-            Manager.ArtView.TextInput -= ArtViewOnTextInput;
+            if (_selectionRange > 0)
+                Remove(_selectionIndex, _selectionRange);
+
+            Insert(_selectionIndex, e.Text);
+
+            _selectionIndex += e.Text.Length;
+            _selectionRange = 0;
+
+            Update();
+
+            _inputTime = Time.Now;
         }
+
+        private void Format(Format format)
+        {
+            var history = ArtView.HistoryManager;
+
+            var old = CurrentText.Formats.Select(f => f.Clone()).ToArray();
+            CurrentText.SetFormat(format);
+            var @new = CurrentText.Formats.Select(f => f.Clone()).ToArray();
+
+            var current = new ApplyFormatRangeCommand(
+                ArtView.HistoryManager.Time + 1,
+                CurrentText, old, @new);
+
+            // no Do() b/c it's already done
+            history.Push(current);
+        }
+
+        private static (DW.FontStretch stretch, DW.FontStyle style, DW.FontWeight weight) FromFontName(string name)
+        {
+            var desc = name.Split(' ');
+            var (stretch, style, weight) =
+                (DW.FontStretch.Normal, DW.FontStyle.Normal, DW.FontWeight.Normal);
+
+            foreach (var modifier in desc)
+            {
+                // all enums contain "Normal", so this would cause problems
+                if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+
+                if (Enum.TryParse(modifier, true, out DW.FontStretch mStretch))
+                    stretch = mStretch;
+
+                if (Enum.TryParse(modifier, true, out DW.FontStyle mStyle))
+                    style = mStyle;
+
+                if (Enum.TryParse(modifier, true, out DW.FontWeight mWeight))
+                    weight = mWeight;
+            }
+
+            return (stretch, style, weight);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern uint GetCaretBlinkTime();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDoubleClickTime();
+
+        private void Insert(int index, string text)
+        {
+            var history = ArtView.HistoryManager;
+            var current = new InsertTextCommand(
+                ArtView.HistoryManager.Time + 1,
+                CurrentText, text, index);
+
+            history.Do(current);
+        }
+
+        private void Remove(int index, int length)
+        {
+            var history = ArtView.HistoryManager;
+            var current = new RemoveTextCommand(
+                ArtView.HistoryManager.Time + 1,
+                CurrentText,
+                CurrentText.Value.Substring(index, length),
+                index);
+
+            history.Do(current);
+        }
+
+        private string ToFontName(DW.FontWeight weight, DW.FontStyle style, DW.FontStretch stretch)
+        {
+            var str = "";
+            if (weight != DW.FontWeight.Normal) str += weight + " ";
+            if (style != DW.FontStyle.Normal) str += style + " ";
+            if (stretch != DW.FontStretch.Normal) str += stretch + " ";
+            return str == "" ? "Regular" : str.Trim();
+        }
+
+        private void Update()
+        {
+            if (CurrentText == null) return;
+
+            _autoSet = true;
+
+            var layout = ArtView.CacheManager.GetTextLayout(CurrentText);
+
+            var metrics = layout.HitTestTextPosition(
+                _selectionIndex, false,
+                out var _, out var _);
+
+            _caretPosition = new Vector2(metrics.Left, metrics.Top);
+            _caretSize = new Size2F((float) SystemParameters.CaretWidth, metrics.Height);
+
+            if (_selectionRange > 0)
+            {
+                var rangeMetrics = layout.HitTestTextRange(_selectionIndex, _selectionRange, 0, 0);
+
+                _selectionRects =
+                    rangeMetrics
+                        .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
+                        .ToArray();
+            }
+            else
+            {
+                _selectionRects = new RectangleF[0];
+            }
+
+            var format = CurrentText.GetFormat(_selectionIndex);
+
+            _fontFamilyOption.Value = format?.FontFamilyName ?? CurrentText.FontFamilyName;
+            _fontSizeOption.Value = format?.FontSize ?? CurrentText.FontSize;
+            _fontNameOption.Value =
+                ToFontName(
+                    format?.FontWeight ?? CurrentText.FontWeight,
+                    format?.FontStyle ?? CurrentText.FontStyle,
+                    format?.FontStretch ?? CurrentText.FontStretch);
+
+            _autoSet = false;
+
+            Manager.ArtView.InvalidateSurface();
+        }
+
+        private void UpdateFontFaces()
+        {
+            var fontFaces = new List<string>();
+            _fontFaceDescriptions.Clear();
+
+            if (_dwFontCollection.FindFamilyName(_fontFamilyOption.Value, out var index))
+                using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+                {
+                    for (var i = 0; i < dwFamily.FontCount; i++)
+                        using (var dwFont = dwFamily.GetFont(i))
+                        {
+                            var name = dwFont.FaceNames.ToCurrentCulture();
+                            fontFaces.Add(name);
+                            _fontFaceDescriptions[name] =
+                                (dwFont.Style, dwFont.Stretch, dwFont.Weight);
+                        }
+                }
+
+            _fontNameOption.Options = fontFaces.ToArray();
+        }
+
+        #region ITool Members
 
         public void ApplyFill(BrushInfo brush)
         {
@@ -238,9 +390,13 @@ namespace Ibinimator.Service
             });
         }
 
-        public Bitmap Cursor { get; private set; }
+        public void Dispose()
+        {
+            _dwFontCollection?.Dispose();
+            Cursor?.Dispose();
 
-        public float CursorRotate { get; private set; }
+            Manager.ArtView.TextInput -= ArtViewOnTextInput;
+        }
 
         public bool KeyDown(Key key)
         {
@@ -462,8 +618,6 @@ namespace Ibinimator.Service
             return false;
         }
 
-        public IToolManager Manager { get; }
-
         public bool MouseDown(Vector2 pos)
         {
             _lastClickPos = pos;
@@ -541,7 +695,10 @@ namespace Ibinimator.Service
                     var root = ArtView.SelectionManager.Selection.OfType<Group>().LastOrDefault() ??
                                ArtView.SelectionManager.Root;
 
-                    root.Add(text);
+                    Manager.ArtView.HistoryManager.Do(
+                        new AddLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                            root,
+                            text));
                 }
 
                 _lastClickTime = Time.Now;
@@ -607,8 +764,6 @@ namespace Ibinimator.Service
             return true;
         }
 
-        public ToolOption[] Options { get; }
-
         public void Render(RenderTarget target, ICacheManager cacheManager)
         {
             if (CurrentText == null) return;
@@ -640,6 +795,14 @@ namespace Ibinimator.Service
             ArtView.InvalidateSurface();
         }
 
+        public Bitmap Cursor { get; private set; }
+
+        public float CursorRotate { get; private set; }
+
+        public IToolManager Manager { get; }
+
+        public ToolOption[] Options { get; }
+
         public string Status
         {
             get => Get<string>();
@@ -649,165 +812,5 @@ namespace Ibinimator.Service
         public ToolType Type => ToolType.Text;
 
         #endregion
-
-        private void ArtViewOnTextInput(object sender, TextCompositionEventArgs e)
-        {
-            if (CurrentText == null) return;
-
-            if (_selectionRange > 0)
-                Remove(_selectionIndex, _selectionRange);
-
-            Insert(_selectionIndex, e.Text);
-
-            _selectionIndex += e.Text.Length;
-            _selectionRange = 0;
-
-            Update();
-
-            _inputTime = Time.Now;
-        }
-
-        private void Format(Format format)
-        {
-            var history = ArtView.HistoryManager;
-
-            var old = CurrentText.Formats.Select(f => f.Clone()).ToArray();
-            CurrentText.SetFormat(format);
-            var @new = CurrentText.Formats.Select(f => f.Clone()).ToArray();
-
-            var current = new ApplyFormatRangeCommand(
-                ArtView.HistoryManager.Time + 1, 
-                CurrentText, old, @new);
-
-            // no Do() b/c it's already done
-            history.Push(current);
-        }
-
-        private static (DW.FontStretch stretch, DW.FontStyle style, DW.FontWeight weight) FromFontName(string name)
-        {
-            var desc = name.Split(' ');
-            var (stretch, style, weight) =
-                (DW.FontStretch.Normal, DW.FontStyle.Normal, DW.FontWeight.Normal);
-
-            foreach (var modifier in desc)
-            {
-                // all enums contain "Normal", so this would cause problems
-                if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
-                    continue;
-
-                if (Enum.TryParse(modifier, true, out DW.FontStretch mStretch))
-                    stretch = mStretch;
-
-                if (Enum.TryParse(modifier, true, out DW.FontStyle mStyle))
-                    style = mStyle;
-
-                if (Enum.TryParse(modifier, true, out DW.FontWeight mWeight))
-                    weight = mWeight;
-            }
-
-            return (stretch, style, weight);
-        }
-
-        [DllImport("user32.dll")]
-        private static extern uint GetCaretBlinkTime();
-
-        [DllImport("user32.dll")]
-        private static extern uint GetDoubleClickTime();
-
-        private void Insert(int index, string text)
-        {
-            var history = ArtView.HistoryManager;
-            var current = new InsertTextCommand(
-                ArtView.HistoryManager.Time + 1,
-                CurrentText, text, index);
-
-            history.Do(current);
-        }
-
-        private void Remove(int index, int length)
-        {
-            var history = ArtView.HistoryManager;
-            var current = new RemoveTextCommand(
-                ArtView.HistoryManager.Time + 1,
-                CurrentText,
-                CurrentText.Value.Substring(index, length),
-                index);
-
-            history.Do(current);
-        }
-
-        private string ToFontName(DW.FontWeight weight, DW.FontStyle style, DW.FontStretch stretch)
-        {
-            var str = "";
-            if (weight != DW.FontWeight.Normal) str += weight + " ";
-            if (style != DW.FontStyle.Normal) str += style + " ";
-            if (stretch != DW.FontStretch.Normal) str += stretch + " ";
-            return str == "" ? "Regular" : str.Trim();
-        }
-
-        private void Update()
-        {
-            if (CurrentText == null) return;
-
-            _autoSet = true;
-
-            var layout = ArtView.CacheManager.GetTextLayout(CurrentText);
-
-            var metrics = layout.HitTestTextPosition(
-                _selectionIndex, false,
-                out var _, out var _);
-
-            _caretPosition = new Vector2(metrics.Left, metrics.Top);
-            _caretSize = new Size2F((float) SystemParameters.CaretWidth, metrics.Height);
-
-            if (_selectionRange > 0)
-            {
-                var rangeMetrics = layout.HitTestTextRange(_selectionIndex, _selectionRange, 0, 0);
-
-                _selectionRects =
-                    rangeMetrics
-                        .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
-                        .ToArray();
-            }
-            else
-            {
-                _selectionRects = new RectangleF[0];
-            }
-
-            var format = CurrentText.GetFormat(_selectionIndex);
-
-            _fontFamilyOption.Value = format?.FontFamilyName ?? CurrentText.FontFamilyName;
-            _fontSizeOption.Value = format?.FontSize ?? CurrentText.FontSize;
-            _fontNameOption.Value =
-                ToFontName(
-                    format?.FontWeight ?? CurrentText.FontWeight,
-                    format?.FontStyle ?? CurrentText.FontStyle,
-                    format?.FontStretch ?? CurrentText.FontStretch);
-
-            _autoSet = false;
-
-            Manager.ArtView.InvalidateSurface();
-        }
-
-        private void UpdateFontFaces()
-        {
-            var fontFaces = new List<string>();
-            _fontFaceDescriptions.Clear();
-
-            if (_dwFontCollection.FindFamilyName(_fontFamilyOption.Value, out var index))
-                using (var dwFamily = _dwFontCollection.GetFontFamily(index))
-                {
-                    for (var i = 0; i < dwFamily.FontCount; i++)
-                        using (var dwFont = dwFamily.GetFont(i))
-                        {
-                            var name = dwFont.FaceNames.ToCurrentCulture();
-                            fontFaces.Add(name);
-                            _fontFaceDescriptions[name] =
-                                (dwFont.Style, dwFont.Stretch, dwFont.Weight);
-                        }
-                }
-
-            _fontNameOption.Options = fontFaces.ToArray();
-        }
     }
 }

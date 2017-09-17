@@ -71,6 +71,35 @@ namespace Ibinimator.View
             _styleBinding = styleBinding;
         }
 
+        // Check for equality of two values
+        private bool CheckEquals(Type type, object value1, object value2)
+        {
+            if (type.IsValueType || type == typeof(string))
+                return Equals(value1, value2);
+            return ReferenceEquals(value1, value2);
+        }
+
+        // This helper produces the return value; null if the values
+        // match, non-null otherwise.
+        private object ReturnHelper(bool result)
+        {
+            return result; //? null : _notNull;
+        }
+
+        // Trace output to the debugger
+        private void Trace(object value, string message)
+        {
+            if (Debugger.IsAttached)
+            {
+                Debug.WriteLine("StyleBinding couldn’t convert '"
+                                + value.GetType()
+                                + "' to '"
+                                + _styleBinding.Comparand.GetType()
+                                + "'");
+                Debug.WriteLine("(" + message + ")");
+            }
+        }
+
         #region IValueConverter Members
 
         // IValueConverter.Convert
@@ -147,34 +176,5 @@ namespace Ibinimator.View
         }
 
         #endregion
-
-        // Check for equality of two values
-        private bool CheckEquals(Type type, object value1, object value2)
-        {
-            if (type.IsValueType || type == typeof(string))
-                return Equals(value1, value2);
-            return ReferenceEquals(value1, value2);
-        }
-
-        // This helper produces the return value; null if the values
-        // match, non-null otherwise.
-        private object ReturnHelper(bool result)
-        {
-            return result; //? null : _notNull;
-        }
-
-        // Trace output to the debugger
-        private void Trace(object value, string message)
-        {
-            if (Debugger.IsAttached)
-            {
-                Debug.WriteLine("StyleBinding couldn’t convert '"
-                                + value.GetType()
-                                + "' to '"
-                                + _styleBinding.Comparand.GetType()
-                                + "'");
-                Debug.WriteLine("(" + message + ")");
-            }
-        }
     }
 }

@@ -45,7 +45,8 @@ namespace Ibinimator.Shared
             return enumerable.Split((t, i) => t.Equals(element));
         }
 
-        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<KeyValuePair<TKey, TElement>> source)
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
+            this IEnumerable<KeyValuePair<TKey, TElement>> source)
         {
             return source.ToDictionary(kv => kv.Key, kv => kv.Value);
         }

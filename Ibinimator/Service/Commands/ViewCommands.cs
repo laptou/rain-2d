@@ -13,10 +13,7 @@ namespace Ibinimator.Service.Commands
 
         private static void License(object obj)
         {
-            App.Dispatcher.Invoke(() =>
-            {
-                new LicenseView().ShowDialog();
-            });
+            App.Dispatcher.Invoke(() => { new LicenseView().ShowDialog(); });
         }
     }
 }

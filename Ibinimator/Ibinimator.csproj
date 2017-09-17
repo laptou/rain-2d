@@ -124,7 +124,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Attributes.cs" />
     <Compile Include="Model\BrushInfo.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\Format.cs" />
@@ -177,6 +176,7 @@
     <Compile Include="Shared\TupleUtils.cs" />
     <Compile Include="Shared\TypeExtensions.cs" />
     <Compile Include="Service\Commands\ViewCommands.cs" />
+    <Compile Include="Shared\WeakDictionary.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

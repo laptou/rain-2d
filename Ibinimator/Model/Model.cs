@@ -16,31 +16,14 @@ namespace Ibinimator.Model
         private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
 
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region INotifyPropertyChanging Members
-
-        public event PropertyChangingEventHandler PropertyChanging;
-
-        #endregion
-
         public T Clone<T>() where T : Model
         {
             return Clone(GetType()) as T;
         }
 
-        public object Clone()
-        {
-            return Clone(GetType());
-        }
-
         public object Clone(Type type)
         {
-            var t = (Model)Activator.CreateInstance(type);
+            var t = (Model) Activator.CreateInstance(type);
             t._properties = _properties.ToDictionary(
                 kv => kv.Key,
                 kv => (kv.Value as Model)?.Clone() ?? kv.Value);
@@ -49,7 +32,7 @@ namespace Ibinimator.Model
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
-            return _properties.TryGetValue(propertyName, out object o) && o is T ? (T) o : default(T);
+            return _properties.TryGetValue(propertyName, out var o) && o is T ? (T) o : default(T);
         }
 
         protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
@@ -112,10 +95,7 @@ namespace Ibinimator.Model
                     old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
                 _handlers[propertyName] =
-                    new NotifyCollectionChangedEventHandler((s, e) =>
-                    {
-                        RaisePropertyChanged(propertyName);
-                    });
+                    new NotifyCollectionChangedEventHandler((s, e) => { RaisePropertyChanged(propertyName); });
 
                 collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }
@@ -123,11 +103,6 @@ namespace Ibinimator.Model
             RaisePropertyChanging(propertyName);
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
-        }
-
-        protected void SilentSet<T>(T value, [CallerMemberName] string propertyName = "")
-        {
-            _properties[propertyName] = value;
         }
 
         protected void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")
@@ -151,5 +126,31 @@ namespace Ibinimator.Model
 
             RaisePropertyChanged(propertyName);
         }
+
+        protected void SilentSet<T>(T value, [CallerMemberName] string propertyName = "")
+        {
+            _properties[propertyName] = value;
+        }
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            return Clone(GetType());
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region INotifyPropertyChanging Members
+
+        public event PropertyChangingEventHandler PropertyChanging;
+
+        #endregion
     }
 }

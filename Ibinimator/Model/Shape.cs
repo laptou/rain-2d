@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -113,16 +110,6 @@ namespace Ibinimator.Model
             StrokeInfo = new StrokeInfo();
         }
 
-        public override string DefaultName => "Shape";
-
-        [Undoable]
-        public BrushInfo FillBrush
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
-
-        [Undoable]
         public FillMode FillMode
         {
             get => Get<FillMode>();
@@ -133,21 +120,7 @@ namespace Ibinimator.Model
             }
         }
 
-        [Undoable]
-        public BrushInfo StrokeBrush
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
-        }
-
-        [Undoable]
-        public StrokeInfo StrokeInfo
-        {
-            get => Get<StrokeInfo>();
-            set => Set(value);
-        }
-
-        public abstract Geometry GetGeometry(ICacheManager factory);
+        #region IGeometricLayer Members
 
         public override XElement GetElement()
         {
@@ -211,6 +184,8 @@ namespace Ibinimator.Model
             return element;
         }
 
+        public abstract Geometry GetGeometry(ICacheManager factory);
+
         public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
             if (!(this is T)) return null;
@@ -249,26 +224,48 @@ namespace Ibinimator.Model
             var dc = target.QueryInterfaceOrNull<DeviceContext1>();
 
             if (FillBrush != null)
-            {
                 if (dc != null)
                     dc.DrawGeometryRealization(cache.GetGeometryRealization(this), cache.GetFill(this));
                 else
                     target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
-            }
 
             if (StrokeBrush != null)
             {
                 var stroke = cache.GetStroke(this);
-                
-                lock(stroke)
+
+                lock (stroke)
+                {
                     target.DrawGeometry(
                         cache.GetGeometry(this),
                         stroke.Brush,
                         stroke.Width,
                         stroke.Style);
+                }
             }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
+
+        public override string DefaultName => "Shape";
+
+        public BrushInfo FillBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public BrushInfo StrokeBrush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
+        }
+
+        public StrokeInfo StrokeInfo
+        {
+            get => Get<StrokeInfo>();
+            set => Set(value);
+        }
+
+        #endregion
     }
 }

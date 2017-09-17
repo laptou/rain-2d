@@ -63,6 +63,38 @@ namespace Ibinimator.Service
             PropertyChanged += OnPropertyChanged;
         }
 
+        private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
+        {
+            // otherwise, selecting new shapes applies their properties to all
+            // of the other selected shapes
+            if (_selecting) return;
+
+            // lock b/c we can't be applying multiple changes at the same time
+            lock (this)
+            {
+                switch (args.PropertyName)
+                {
+                    case nameof(Fill):
+                        ArtView.ToolManager.Tool?.ApplyFill(Fill);
+                        break;
+                    case nameof(Stroke):
+                    case nameof(StrokeStyle):
+                    case nameof(StrokeWidth):
+                    case nameof(StrokeDashes):
+                        ArtView.ToolManager.Tool?.ApplyStroke(
+                            Stroke,
+                            new StrokeInfo
+                            {
+                                Dashes = StrokeDashes,
+                                Style = StrokeStyle,
+                                Width = StrokeWidth
+                            });
+                        break;
+                }
+            }
+            //});
+        }
+
         #region IBrushManager Members
 
         public ArtView ArtView { get; }
@@ -98,37 +130,5 @@ namespace Ibinimator.Service
         }
 
         #endregion
-
-        private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
-        {
-            // otherwise, selecting new shapes applies their properties to all
-            // of the other selected shapes
-            if (_selecting) return;
-            
-            // lock b/c we can't be applying multiple changes at the same time
-            lock (this)
-            {
-                switch (args.PropertyName)
-                {
-                    case nameof(Fill):
-                        ArtView.ToolManager.Tool?.ApplyFill(Fill);
-                        break;
-                    case nameof(Stroke):
-                    case nameof(StrokeStyle):
-                    case nameof(StrokeWidth):
-                    case nameof(StrokeDashes):
-                        ArtView.ToolManager.Tool?.ApplyStroke(
-                            Stroke,
-                            new StrokeInfo
-                            {
-                                Dashes = StrokeDashes,
-                                Style = StrokeStyle,
-                                Width = StrokeWidth
-                            });
-                        break;
-                }
-            }
-            //});
-        }
     }
 }

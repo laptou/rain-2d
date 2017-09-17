@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
@@ -27,7 +26,7 @@ namespace Ibinimator.Model
         public StrokeInfo()
         {
             Dashes = new ObservableList<float>(new float[4]);
-            Style = new StrokeStyleProperties1 { TransformType = StrokeTransformType.Fixed };
+            Style = new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed};
         }
 
         public ObservableList<float> Dashes
@@ -65,9 +64,9 @@ namespace Ibinimator.Model
         {
         }
 
-        public StrokeStyle1 Style { get; set; }
-
         public Brush Brush { get; set; }
+
+        public StrokeStyle1 Style { get; set; }
 
         public float Width { get; set; }
 
@@ -85,17 +84,20 @@ namespace Ibinimator.Model
 
     public class Figure : IDisposable
     {
-        public Geometry Geometry { get; set; }
-
         public BrushInfo FillBrush { get; set; }
+        public Geometry Geometry { get; set; }
 
         public BrushInfo StrokeBrush { get; set; }
 
         public StrokeInfo StrokeInfo { get; set; }
 
+        #region IDisposable Members
+
         public void Dispose()
         {
             Geometry?.Dispose();
         }
+
+        #endregion
     }
 }

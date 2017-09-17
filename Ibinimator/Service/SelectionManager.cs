@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Ibinimator.Shared;
 using System.Linq;
@@ -74,287 +73,10 @@ namespace Ibinimator.Service
                 }
             };
 
-            historyManager.Traversed += (sender, args) =>
-            {
-                Update(true);
-            };
+            historyManager.Traversed += (sender, args) => { Update(true); };
         }
 
         public ObservableList<Layer> Selection { get; }
-
-        #region ISelectionManager Members
-
-        public ArtView ArtView { get; }
-
-        public void ClearSelection()
-        {
-            while (Selection.Count > 0)
-                Selection[0].Selected = false;
-        }
-
-        public Bitmap Cursor { get; set; }
-
-        public Vector2 FromSelectionSpace(Vector2 v)
-        {
-            return MathUtils.ShearX(
-                MathUtils.Rotate(v, SelectionBounds.Center, -SelectionRotation),
-                SelectionBounds.Center,
-                -SelectionShear);
-        }
-
-        public void MouseDown(Vector2 pos)
-        {
-            using (new WeakLock(this))
-            {
-                _moved = false;
-
-                if (Selection.Count > 0 && ArtView.ToolManager.Type == ToolType.Select)
-                {
-                    _transformHandle = HandleTest(pos).handle;
-                    
-                    if (_transformHandle == null && Selection.Any(
-                        l =>
-                        {
-                            var pt =
-                                Matrix3x2.TransformPoint(
-                                    Matrix3x2.Invert(
-                                        l.WorldTransform),
-                                    pos);
-
-                            return l.Hit(ArtView.CacheManager, pt, true) != null;
-                        }))
-                        _transformHandle = SelectionResizeHandle.Translation;
-
-                    var current =
-                        new TransformCommand(
-                            ArtView.HistoryManager.Time + 1,
-                            Selection.ToArray<ILayer>(),
-                            Matrix3x2.Identity);
-
-                    ArtView.HistoryManager.Do(current);
-                }
-
-                if (Selection.Count == 0 && !_selecting)
-                {
-                    _selectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
-                    _selecting = true;
-                }
-
-                _lastPosition = pos;
-                _beginPosition = pos;
-            }
-        }
-
-        public void MouseMove(Vector2 pos)
-        {
-            var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
-
-            using (new WeakLock(this))
-            {
-                _moved = true;
-
-                _lastPosition = _lastPosition ?? pos;
-
-                float width = Math.Max(1f, SelectionBounds.Width),
-                    height = Math.Max(1f, SelectionBounds.Height);
-
-                if (_transformHandle != null)
-                    Resize(pos, modifiers.HasFlag(ModifierKeys.Shift));
-
-                if (_selecting && Selection.Count == 0)
-                    Select(pos);
-
-                UpdateCursor(pos);
-
-                _lastPosition = pos;
-            }
-        }
-
-        public void MouseUp(Vector2 pos)
-        {
-            // do all UI operations out here to avoid deadlock
-            // otherwise, we might block on UI operation while
-            // UI thread is blocking on us
-            var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
-
-            using (new WeakLock(this))
-            {
-                _transformHandle = null;
-
-                if (!_moved)
-                {
-                    ILayer hit = null;
-                    var cache = ArtView.CacheManager;
-                    var shift = modifiers.HasFlag(ModifierKeys.Shift);
-                    var alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-
-                    if (shift)
-                        hit = Selection.Select(l => l.Parent)
-                                       .Select(g => g.Hit(cache, pos, false))
-                                       .FirstOrDefault(l => l != null);
-
-                    if (hit == null)
-                        hit = Selection.OfType<Group>()
-                                       .Select(g => g.Hit(cache, pos, false))
-                                       .FirstOrDefault(l => l != null);
-
-                    if(hit == null)
-                        hit = Root.SubLayers.Select(l => l.Hit(cache, pos, !alt))
-                                            .FirstOrDefault(l => l!= null);
-
-                    if (!modifiers.HasFlag(ModifierKeys.Shift))
-                        ClearSelection();
-
-                    if (hit != null)
-                    {
-                        hit.Selected = true;
-                        _transformHandle = null;
-                    }
-                }
-
-                if (_selecting)
-                {
-                    Parallel.ForEach(Root.Flatten(), layer =>
-                    {
-                        var bounds = ArtView.CacheManager.GetAbsoluteBounds(layer);
-                        _selectionBox.Contains(ref bounds, out var contains);
-                        layer.Selected = layer.Selected || contains;
-                    });
-
-                    ArtView.InvalidateSurface();
-                    _selectionBox = RectangleF.Empty;
-
-                    _selecting = false;
-                }
-            }
-        }
-
-        public void Render(RenderTarget target, ICacheManager cache)
-        {
-            void DrawBounds(RectangleF rect, Matrix3x2 transform, Brush brush)
-            {
-                target.Transform *= transform;
-
-                target.DrawRectangle(SelectionBounds, brush, 1, _selectionStroke);
-
-                target.Transform *= Matrix3x2.Invert(transform);
-            }
-
-            using (new WeakLock(_render))
-            {
-                if (Selection.Count > 0)
-                {
-                    var distort =
-                        Matrix3x2.Translation(-SelectionBounds.Center) *
-                        Matrix3x2.Skew(0, SelectionShear) *
-                        Matrix3x2.Translation(SelectionBounds.Center) *
-                        Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center);
-
-                    foreach (var layer in Selection)
-                        if (layer is IGeometricLayer shape)
-                        {
-                            target.Transform = shape.AbsoluteTransform * target.Transform;
-                            target.DrawGeometry(ArtView.CacheManager.GetGeometry(shape), cache.GetBrush("A1"), 1f,
-                                _selectionStroke);
-                            target.Transform = Matrix3x2.Invert(shape.AbsoluteTransform) * target.Transform;
-                        }
-
-                    DrawBounds(SelectionBounds, distort, cache.GetBrush("A1"));
-                }
-
-                if (!_selectionBox.IsEmpty)
-                {
-                    target.DrawRectangle(_selectionBox, cache.GetBrush("A1"), 1f / target.Transform.M11);
-                    target.FillRectangle(_selectionBox, cache.GetBrush("A1-1/2"));
-                }
-            }
-        }
-
-        public Group Root => ArtView.ViewManager.Root;
-        IList<Layer> ISelectionManager.Selection => Selection;
-        public RectangleF SelectionBounds { get; set; }
-        public float SelectionRotation { get; set; }
-        public float SelectionShear { get; set; }
-
-        public Vector2 ToSelectionSpace(Vector2 v)
-        {
-            return MathUtils.Rotate(
-                MathUtils.ShearX(v, SelectionBounds.Center, SelectionShear),
-                SelectionBounds.Center,
-                SelectionRotation);
-        }
-
-        public void Transform(Vector2 scale, Vector2 translate,
-            float rotate, float shear, Vector2 origin)
-        {
-            Transform(scale, translate, rotate, shear, origin, false);
-        }
-
-        public void Update(bool reset)
-        {
-            using (new WeakLock(_render))
-            {
-                InvalidateSurface();
-
-                RectangleF bounds;
-
-                switch (Selection.Count)
-                {
-                    case 0:
-                        bounds = RectangleF.Empty;
-                        break;
-
-                    case 1:
-                        var transform = Selection[0].AbsoluteTransform.Decompose();
-                        var local = ArtView.CacheManager.GetBounds(Selection[0]);
-
-                        bounds =
-                            MathUtils.Bounds(
-                                local,
-                                Matrix3x2.Scaling(transform.scale) *
-                                Matrix3x2.Translation(transform.translation));
-
-                        var center = Matrix3x2.TransformPoint(
-                            Selection[0].AbsoluteTransform, 
-                            local.Center);
-
-                        bounds.Offset(center - bounds.Center);
-
-                        if (reset)
-                        {
-                            SelectionRotation = transform.rotation;
-                            SelectionShear = transform.skew;
-                        }
-                        break;
-
-                    default:
-                        bounds =
-                            Selection
-                                .AsParallel()
-                                .Select(l => ArtView.CacheManager.GetAbsoluteBounds(l))
-                                .Aggregate(RectangleF.Union);
-
-                        if (reset)
-                        {
-                            SelectionRotation = 0;
-                            SelectionShear = 0;
-                        }
-                        break;
-                }
-
-                SelectionBounds = bounds;
-            }
-
-            if(SelectionBounds.Height < 50 && Selection.Count > 0)
-                Debugger.Break();
-
-            InvalidateSurface();
-        }
-
-        public event EventHandler Updated;
-
-        #endregion
 
         private (Bitmap cursor, SelectionResizeHandle? handle) HandleTest(Vector2 pos)
         {
@@ -535,14 +257,14 @@ namespace Ibinimator.Service
 
             _accumulatedTranslation += translate;
 
-            
-                Transform(
-                    scale,
-                    translate,
-                    rotate,
-                    0,
-                    relativeOrigin,
-                    true);
+
+            Transform(
+                scale,
+                translate,
+                rotate,
+                0,
+                relativeOrigin,
+                true);
         }
 
         private void Select(Vector2 pos)
@@ -562,7 +284,8 @@ namespace Ibinimator.Service
             ArtView.InvalidateSurface();
         }
 
-        private void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin, bool continuous)
+        private void Transform(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin,
+            bool continuous)
         {
             var wlock = new WeakLock(_render);
 
@@ -588,28 +311,24 @@ namespace Ibinimator.Service
 
             if (continuous && history.Current is TransformCommand lastTransformCommand)
             {
-                history.Pop();
-
-                var current = 
+                var current =
                     new TransformCommand(
                         0,
-                        Selection.ToArray<ILayer>(), 
+                        Selection.ToArray<ILayer>(),
                         transform);
 
-                current.Do();
+                current.Do(ArtView);
 
-                var store =
+                history.Replace(
                     new TransformCommand(
-                        ArtView.HistoryManager.Time + 1,
+                        ArtView.HistoryManager.Time,
                         Selection.ToArray<ILayer>(),
-                        lastTransformCommand.Transform * transform);
-
-                history.Push(store);
+                        lastTransformCommand.Transform * transform));
             }
             else
             {
                 var current = new TransformCommand(
-                    ArtView.HistoryManager.Time + 1, 
+                    ArtView.HistoryManager.Time + 1,
                     Selection.ToArray<ILayer>(), transform);
 
                 history.Do(current);
@@ -636,8 +355,6 @@ namespace Ibinimator.Service
             InvalidateSurface();
 
             wlock.Dispose();
-
-            return;
         }
 
         private void UpdateCursor(Vector2 pos)
@@ -647,5 +364,280 @@ namespace Ibinimator.Service
 
             ArtView.InvalidateSurface();
         }
+
+        #region ISelectionManager Members
+
+        public event EventHandler Updated;
+
+        public void ClearSelection()
+        {
+            while (Selection.Count > 0)
+                Selection[0].Selected = false;
+        }
+
+        public Vector2 FromSelectionSpace(Vector2 v)
+        {
+            return MathUtils.ShearX(
+                MathUtils.Rotate(v, SelectionBounds.Center, -SelectionRotation),
+                SelectionBounds.Center,
+                -SelectionShear);
+        }
+
+        public void MouseDown(Vector2 pos)
+        {
+            using (new WeakLock(this))
+            {
+                _moved = false;
+
+                if (Selection.Count > 0 && ArtView.ToolManager.Type == ToolType.Select)
+                {
+                    _transformHandle = HandleTest(pos).handle;
+
+                    if (_transformHandle == null && Selection.Any(
+                            l =>
+                            {
+                                var pt =
+                                    Matrix3x2.TransformPoint(
+                                        Matrix3x2.Invert(
+                                            l.WorldTransform),
+                                        pos);
+
+                                return l.Hit(ArtView.CacheManager, pt, true) != null;
+                            }))
+                        _transformHandle = SelectionResizeHandle.Translation;
+                }
+
+                if (Selection.Count == 0 && !_selecting)
+                {
+                    _selectionBox = new RectangleF(pos.X, pos.Y, 0, 0);
+                    _selecting = true;
+                }
+
+                _lastPosition = pos;
+                _beginPosition = pos;
+            }
+        }
+
+        public void MouseMove(Vector2 pos)
+        {
+            var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
+
+            using (new WeakLock(this))
+            {
+                if (!_moved && _transformHandle != null)
+                    ArtView.HistoryManager.Do(
+                        new TransformCommand(
+                            ArtView.HistoryManager.Time + 1,
+                            Selection.ToArray<ILayer>(),
+                            Matrix3x2.Identity));
+
+                _moved = true;
+
+                _lastPosition = _lastPosition ?? pos;
+
+                float width = Math.Max(1f, SelectionBounds.Width),
+                    height = Math.Max(1f, SelectionBounds.Height);
+
+                if (_transformHandle != null)
+                    Resize(pos, modifiers.HasFlag(ModifierKeys.Shift));
+
+                if (_selecting && Selection.Count == 0)
+                    Select(pos);
+
+                UpdateCursor(pos);
+
+                _lastPosition = pos;
+            }
+        }
+
+        public void MouseUp(Vector2 pos)
+        {
+            // do all UI operations out here to avoid deadlock
+            // otherwise, we might block on UI operation while
+            // UI thread is blocking on us
+            var modifiers = ArtView.Dispatcher.Invoke(() => Keyboard.Modifiers);
+
+            using (new WeakLock(this))
+            {
+                _transformHandle = null;
+
+                if (!_moved)
+                {
+                    ILayer hit = null;
+                    var cache = ArtView.CacheManager;
+                    var shift = modifiers.HasFlag(ModifierKeys.Shift);
+                    var alt = modifiers.HasFlag(ModifierKeys.Alt);
+
+
+                    if (shift)
+                        hit = Selection.Select(l => l.Parent)
+                            .Select(g => g.Hit(cache, pos, false))
+                            .FirstOrDefault(l => l != null);
+
+                    if (hit == null)
+                        hit = Selection.OfType<Group>()
+                            .Select(g => g.Hit(cache, pos, false))
+                            .FirstOrDefault(l => l != null);
+
+                    if (hit == null)
+                        hit = Root.SubLayers.Select(l => l.Hit(cache, pos, !alt))
+                            .FirstOrDefault(l => l != null);
+
+                    if (!modifiers.HasFlag(ModifierKeys.Shift))
+                        ClearSelection();
+
+                    if (hit != null)
+                    {
+                        hit.Selected = true;
+                        _transformHandle = null;
+                    }
+                }
+
+                if (_selecting)
+                {
+                    Parallel.ForEach(Root.Flatten(), layer =>
+                    {
+                        var bounds = ArtView.CacheManager.GetAbsoluteBounds(layer);
+                        _selectionBox.Contains(ref bounds, out var contains);
+                        layer.Selected = layer.Selected || contains;
+                    });
+
+                    ArtView.InvalidateSurface();
+                    _selectionBox = RectangleF.Empty;
+
+                    _selecting = false;
+                }
+            }
+        }
+
+        public void Render(RenderTarget target, ICacheManager cache)
+        {
+            void DrawBounds(RectangleF rect, Matrix3x2 transform, Brush brush)
+            {
+                target.Transform *= transform;
+
+                target.DrawRectangle(SelectionBounds, brush, 1, _selectionStroke);
+
+                target.Transform *= Matrix3x2.Invert(transform);
+            }
+
+            using (new WeakLock(_render))
+            {
+                if (Selection.Count > 0)
+                {
+                    var distort =
+                        Matrix3x2.Translation(-SelectionBounds.Center) *
+                        Matrix3x2.Skew(0, SelectionShear) *
+                        Matrix3x2.Translation(SelectionBounds.Center) *
+                        Matrix3x2.Rotation(SelectionRotation, SelectionBounds.Center);
+
+                    foreach (var layer in Selection)
+                        if (layer is IGeometricLayer shape)
+                        {
+                            var geom = ArtView.CacheManager.GetGeometry(shape);
+
+                            if (geom != null)
+                            {
+                                target.Transform = shape.AbsoluteTransform * target.Transform;
+                                target.DrawGeometry(geom, cache.GetBrush("A1"), 1f,
+                                    _selectionStroke);
+                                target.Transform = Matrix3x2.Invert(shape.AbsoluteTransform) * target.Transform;
+                            }
+                        }
+
+                    DrawBounds(SelectionBounds, distort, cache.GetBrush("A1"));
+                }
+
+                if (!_selectionBox.IsEmpty)
+                {
+                    target.DrawRectangle(_selectionBox, cache.GetBrush("A1"), 1f / target.Transform.M11);
+                    target.FillRectangle(_selectionBox, cache.GetBrush("A1-1/2"));
+                }
+            }
+        }
+
+        public Vector2 ToSelectionSpace(Vector2 v)
+        {
+            return MathUtils.Rotate(
+                MathUtils.ShearX(v, SelectionBounds.Center, SelectionShear),
+                SelectionBounds.Center,
+                SelectionRotation);
+        }
+
+        public void Transform(Vector2 scale, Vector2 translate,
+            float rotate, float shear, Vector2 origin)
+        {
+            Transform(scale, translate, rotate, shear, origin, false);
+        }
+
+        public void Update(bool reset)
+        {
+            using (new WeakLock(_render))
+            {
+                InvalidateSurface();
+
+                RectangleF bounds;
+
+                switch (Selection.Count)
+                {
+                    case 0:
+                        bounds = RectangleF.Empty;
+                        break;
+
+                    case 1:
+                        var transform = Selection[0].AbsoluteTransform.Decompose();
+                        var local = ArtView.CacheManager.GetBounds(Selection[0]);
+
+                        bounds =
+                            MathUtils.Bounds(
+                                local,
+                                Matrix3x2.Scaling(transform.scale) *
+                                Matrix3x2.Translation(transform.translation));
+
+                        var center = Matrix3x2.TransformPoint(
+                            Selection[0].AbsoluteTransform,
+                            local.Center);
+
+                        bounds.Offset(center - bounds.Center);
+
+                        if (reset)
+                        {
+                            SelectionRotation = transform.rotation;
+                            SelectionShear = transform.skew;
+                        }
+                        break;
+
+                    default:
+                        bounds =
+                            Selection
+                                .AsParallel()
+                                .Select(l => ArtView.CacheManager.GetAbsoluteBounds(l))
+                                .Aggregate(RectangleF.Union);
+
+                        if (reset)
+                        {
+                            SelectionRotation = 0;
+                            SelectionShear = 0;
+                        }
+                        break;
+                }
+
+                SelectionBounds = bounds;
+            }
+
+            InvalidateSurface();
+        }
+
+        public ArtView ArtView { get; }
+
+        public Bitmap Cursor { get; set; }
+
+        public Group Root => ArtView.ViewManager.Root;
+        public RectangleF SelectionBounds { get; set; }
+        public float SelectionRotation { get; set; }
+        public float SelectionShear { get; set; }
+        IList<Layer> ISelectionManager.Selection => Selection;
+
+        #endregion
     }
 }

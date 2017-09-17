@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using Ibinimator.Service;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
-using CommandManager = Ibinimator.Service.CommandManager;
 using Rectangle = Ibinimator.Model.Rectangle;
 
 namespace Ibinimator.ViewModel
@@ -38,7 +36,7 @@ namespace Ibinimator.ViewModel
             artView.SetManager(ToolManager);
             artView.SetManager(cache);
             artView.SetManager(HistoryManager);
-            
+
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
             SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
             JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
@@ -78,12 +76,6 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        public string Status
-        {
-            get => Get<string>();
-            set => Set(value);
-        }
-
         public DelegateCommand<long> JumpHistoryCommand { get; }
 
         public ISelectionManager SelectionManager
@@ -104,6 +96,12 @@ namespace Ibinimator.ViewModel
         public DelegateCommand<Layer> SelectLayerCommand { get; }
 
         public DelegateCommand<ToolType> SelectToolCommand { get; }
+
+        public string Status
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
 
         public IToolManager ToolManager
         {
@@ -149,7 +147,7 @@ namespace Ibinimator.ViewModel
                 RadiusY = 50,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 1f, 0, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 0, 1f)},
-                StrokeInfo = new StrokeInfo { Width = 5 },
+                StrokeInfo = new StrokeInfo {Width = 5},
                 Rotation = MathUtil.Pi
             };
 
@@ -161,7 +159,7 @@ namespace Ibinimator.ViewModel
                 Height = 100,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 1f, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
-                StrokeInfo = new StrokeInfo { Width = 5 }
+                StrokeInfo = new StrokeInfo {Width = 5}
             };
 
             var r2 = new Rectangle

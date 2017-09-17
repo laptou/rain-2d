@@ -19,7 +19,39 @@ namespace Ibinimator.Service
             Zoom = 1;
         }
 
+        private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
+        {
+            DocumentUpdated?.Invoke(sender, e);
+        }
+
+        private void Update()
+        {
+            Transform = Matrix3x2.Translation(Pan) * Matrix3x2.Scaling(Zoom);
+        }
+
         #region IViewManager Members
+
+        public event PropertyChangedEventHandler DocumentUpdated;
+
+        public Vector2 FromArtSpace(Vector2 v)
+        {
+            return Matrix3x2.TransformPoint(Transform, v);
+        }
+
+        public RectangleF FromArtSpace(RectangleF v)
+        {
+            return MathUtils.Bounds(v, Transform);
+        }
+
+        public Vector2 ToArtSpace(Vector2 v)
+        {
+            return Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), v);
+        }
+
+        public RectangleF ToArtSpace(RectangleF v)
+        {
+            return MathUtils.Bounds(v, Matrix3x2.Invert(Transform));
+        }
 
         public ArtView ArtView { get; }
 
@@ -33,18 +65,6 @@ namespace Ibinimator.Service
                 value.Updated -= OnDocumentUpdated;
                 value.Updated += OnDocumentUpdated;
             }
-        }
-
-        public event PropertyChangedEventHandler DocumentUpdated;
-
-        public Vector2 FromArtSpace(Vector2 v)
-        {
-            return Matrix3x2.TransformPoint(Transform, v);
-        }
-
-        public RectangleF FromArtSpace(RectangleF v)
-        {
-            return MathUtils.Bounds(v, Transform);
         }
 
         public Vector2 Pan
@@ -61,16 +81,6 @@ namespace Ibinimator.Service
         {
             get => Document.Root;
             set => Document.Root = value;
-        }
-
-        public Vector2 ToArtSpace(Vector2 v)
-        {
-            return Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), v);
-        }
-
-        public RectangleF ToArtSpace(RectangleF v)
-        {
-            return MathUtils.Bounds(v, Matrix3x2.Invert(Transform));
         }
 
         public Matrix3x2 Transform
@@ -90,15 +100,5 @@ namespace Ibinimator.Service
         }
 
         #endregion
-
-        private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
-        {
-            DocumentUpdated?.Invoke(sender, e);
-        }
-
-        private void Update()
-        {
-            Transform = Matrix3x2.Translation(Pan) * Matrix3x2.Scaling(Zoom);
-        }
     }
 }

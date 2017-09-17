@@ -39,12 +39,6 @@ namespace Ibinimator.ViewModel
 
         public Task<TResult> Task { get; }
 
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
         private async Task WatchTaskAsync(Task task)
         {
             try
@@ -79,6 +73,12 @@ namespace Ibinimator.ViewModel
                 propertyChanged(this, new PropertyChangedEventArgs("Result"));
             }
         }
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
     }
 
     public sealed class NotifyTaskCompletion : Model.Model, IProgress<double>
@@ -134,16 +134,6 @@ namespace Ibinimator.ViewModel
 
         public Task Task { get; }
 
-        #region IProgress<double> Members
-
-        public void Report(double value)
-        {
-            Progress = value;
-            RaisePropertyChanged("Progress");
-        }
-
-        #endregion
-
         private async Task WatchTaskAsync(Task task)
         {
             try
@@ -174,5 +164,15 @@ namespace Ibinimator.ViewModel
                 RaisePropertyChanged("Result");
             }
         }
+
+        #region IProgress<double> Members
+
+        public void Report(double value)
+        {
+            Progress = value;
+            RaisePropertyChanged("Progress");
+        }
+
+        #endregion
     }
 }

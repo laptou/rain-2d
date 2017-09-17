@@ -16,7 +16,7 @@ namespace Ibinimator.Shared
         {
             var pnt = new Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
             var mon = MonitorFromPoint(pnt, 2 /*MONITOR_DEFAULTTONEAREST*/);
-            GetDpiForMonitor(mon, type, out uint x, out uint y);
+            GetDpiForMonitor(mon, type, out var x, out var y);
 
             return (x, y);
         }
@@ -26,7 +26,7 @@ namespace Ibinimator.Shared
             var wih = new WindowInteropHelper(window);
 
             var mon = MonitorFromWindow(wih.Handle, 2 /*MONITOR_DEFAULTTONEAREST*/);
-            GetDpiForMonitor(mon, type, out uint x, out uint y);
+            GetDpiForMonitor(mon, type, out var x, out var y);
 
             return (x, y);
         }

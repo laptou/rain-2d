@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Model;
-using Ibinimator.Service;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
 using DashStyle = SharpDX.Direct2D1.DashStyle;
@@ -107,10 +105,10 @@ namespace Ibinimator.ViewModel
         public class FillPickerViewModel : ViewModel
         {
             private readonly ColorPickerViewModel _fillPicker = new ColorPickerViewModel(ColorPickerTarget.Fill);
-            private readonly ColorPickerViewModel _strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
             private readonly MainViewModel _parent;
+            private readonly ColorPickerViewModel _strokePicker = new ColorPickerViewModel(ColorPickerTarget.Stroke);
 
-            private bool _updating = false;
+            private bool _updating;
 
             public FillPickerViewModel(MainViewModel parent)
             {
@@ -221,8 +219,10 @@ namespace Ibinimator.ViewModel
                 var picker = (ColorPickerViewModel) sender;
 
                 lock (picker)
+                {
                     if (picker.Flag)
                         return;
+                }
 
                 if (picker.Target == ColorPickerTarget.Fill)
                     _parent.BrushManager.Fill =

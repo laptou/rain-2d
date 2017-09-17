@@ -15,9 +15,9 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
-using DW = SharpDX.DirectWrite;
 using Device = SharpDX.Direct3D11.Device;
 using Device1 = SharpDX.DXGI.Device1;
+using DW = SharpDX.DirectWrite;
 using Resource = SharpDX.DXGI.Resource;
 
 namespace Ibinimator.View.Control
@@ -42,9 +42,9 @@ namespace Ibinimator.View.Control
 
         private readonly Stopwatch _renderTimer = new Stopwatch();
         private D2D.Factory _d2DFactory;
-        private DW.Factory _dwFactory;
         private D2D.RenderTarget _d2DRenderTarget;
         private Device _device;
+        private DW.Factory _dwFactory;
         private int _frameCount;
         private int _frameCountHistTotal;
         private bool _invalidated;
@@ -331,20 +331,6 @@ namespace Ibinimator.View.Control
             _activeClients++;
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            SetRenderTarget(null);
-
-            Disposer.SafeDispose(ref _renderTarget);
-
-            _activeClients--;
-            EndD3D();
-        }
-
-        #endregion
-
         public void InvalidateD3DImage(Int32Rect? rect = null)
         {
             if (_renderTarget == null) return;
@@ -463,6 +449,20 @@ namespace Ibinimator.View.Control
                 default: return D3D9.Format.Unknown;
             }
         }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            SetRenderTarget(null);
+
+            Disposer.SafeDispose(ref _renderTarget);
+
+            _activeClients--;
+            EndD3D();
+        }
+
+        #endregion
 
         #region Nested type: NativeMethods
 

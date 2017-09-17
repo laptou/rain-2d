@@ -31,7 +31,9 @@ namespace Ibinimator.Service.Commands
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
                 using (var stream = ofd.OpenFile())
+                {
                     vm.Document = SvgSerializer.DeserializeDocument(XDocument.Load(stream));
+                }
         }
 
         private static async Task SaveAsync(IViewManager vm)
@@ -52,7 +54,9 @@ namespace Ibinimator.Service.Commands
             }
 
             using (var stream = File.Open(doc.Path, FileMode.Create))
+            {
                 SvgSerializer.SerializeDocument(doc).Save(stream);
+            }
         }
     }
 }

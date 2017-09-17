@@ -18,54 +18,6 @@ namespace Ibinimator.Service
             SetTool(ToolType.Select);
         }
 
-        #region IToolManager Members
-
-        public ArtView ArtView { get; }
-
-        public bool KeyDown(KeyEventArgs keyEventArgs)
-        {
-            lock (this)
-                return Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) == true;
-        }
-
-        public bool KeyUp(KeyEventArgs keyEventArgs)
-        {
-            lock (this)
-                return Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) == true;
-        }
-
-        public bool MouseDown(Vector2 pos)
-        {
-            lock (this)
-                return Tool?.MouseDown(pos) == true;
-        }
-
-        public bool MouseMove(Vector2 pos)
-        {
-            lock (this)
-                return Tool?.MouseMove(pos) == true;
-        }
-
-        public bool MouseUp(Vector2 pos)
-        {
-            lock (this)
-                return Tool?.MouseUp(pos) == true;
-        }
-
-        public ITool Tool
-        {
-            get => Get<ITool>();
-            private set => Set(value);
-        }
-
-        public ToolType Type
-        {
-            get => Tool?.Type ?? ToolType.Select;
-            set => SetTool(value);
-        }
-
-        #endregion
-
         public void SetTool(ToolType type)
         {
             lock (this)
@@ -107,6 +59,65 @@ namespace Ibinimator.Service
             RaisePropertyChanged(nameof(Type));
             ArtView.InvalidateSurface();
         }
+
+        #region IToolManager Members
+
+        public bool KeyDown(KeyEventArgs keyEventArgs)
+        {
+            lock (this)
+            {
+                return Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) ==
+                       true;
+            }
+        }
+
+        public bool KeyUp(KeyEventArgs keyEventArgs)
+        {
+            lock (this)
+            {
+                return Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) == true;
+            }
+        }
+
+        public bool MouseDown(Vector2 pos)
+        {
+            lock (this)
+            {
+                return Tool?.MouseDown(pos) == true;
+            }
+        }
+
+        public bool MouseMove(Vector2 pos)
+        {
+            lock (this)
+            {
+                return Tool?.MouseMove(pos) == true;
+            }
+        }
+
+        public bool MouseUp(Vector2 pos)
+        {
+            lock (this)
+            {
+                return Tool?.MouseUp(pos) == true;
+            }
+        }
+
+        public ArtView ArtView { get; }
+
+        public ITool Tool
+        {
+            get => Get<ITool>();
+            private set => Set(value);
+        }
+
+        public ToolType Type
+        {
+            get => Tool?.Type ?? ToolType.Select;
+            set => SetTool(value);
+        }
+
+        #endregion
     }
 
     public enum ToolOptionType

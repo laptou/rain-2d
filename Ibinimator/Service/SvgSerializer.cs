@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using Ibinimator.Model;
 using Ibinimator.Shared;
@@ -168,10 +167,10 @@ namespace Ibinimator.Service
             var inputs =
                 from Match match in matches
                 select (index: counter++,
-                value: float.Parse(match.Groups[1].Value),
-                unit: match.Groups[2].Value);
+                    value: float.Parse(match.Groups[1].Value),
+                    unit: match.Groups[2].Value);
             var values = new float[matches.Count];
-            
+
             foreach (var input in inputs)
             {
                 var value = input.value;
@@ -383,7 +382,6 @@ namespace Ibinimator.Service
                 }
 
                 if (layer is IFilledLayer filled)
-                {
                     if (attrs.TryGetValue("fill", out var fillValue) &&
                         !string.IsNullOrWhiteSpace(fillValue))
                         if (fillValue.StartsWith("url"))
@@ -399,7 +397,6 @@ namespace Ibinimator.Service
                                 Opacity = ReadFloat(attrs, "fill-opacity", 1)
                             };
                         }
-                }
 
                 if (layer is IStrokedLayer stroked)
                 {

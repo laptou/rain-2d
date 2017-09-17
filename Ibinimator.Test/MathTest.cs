@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Ibinimator.Shared;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using SharpDX;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Matrix = Ibinimator.Shared.Mathematics.Matrix;
 
 namespace Ibinimator.Test
@@ -12,22 +12,6 @@ namespace Ibinimator.Test
     [TestClass]
     public class MathTest
     {
-        [TestMethod]
-        public void Projection()
-        {
-            var vec = new Vector2(10, 10);
-            var axis = new Vector2(1, 1);
-            var expected = new Vector2(10, 10);
-            var actual = MathUtils.Project(vec, axis);
-            Assert.AreEqual(expected, actual);
-
-            vec = new Vector2(10, 0);
-            axis = new Vector2(1, 1);
-            expected = new Vector2(5, 5);
-            actual = MathUtils.Project(vec, axis);
-            Assert.AreEqual(expected, actual);
-        }
-
         [TestMethod]
         public void CrossSection()
         {
@@ -46,25 +30,6 @@ namespace Ibinimator.Test
             Assert.AreEqual(
                 (new Vector2(200, -50), Vector2.Zero),
                 MathUtils.CrossSection(new Vector2(1, 0.25f), Vector2.Zero, rect));
-        }
-
-        [TestMethod]
-        public void Rotation()
-        {
-            var v1 = new Vector2(1, 0);
-            var v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-            var v3 = new Vector2(0, 1);
-            var v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-            var v5 = new Vector2(-1, 0);
-            var v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
-            var v7 = new Vector2(0, -1);
-            var v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
-
-            Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
-            Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));
-            Assert.AreEqual(v5, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 2));
-            Assert.AreEqual(v7, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 3));
-            Assert.AreEqual(new Vector2(3, 0), MathUtils.Rotate(v5, v1, MathUtils.PiOverTwo * 2));
         }
 
         [TestMethod]
@@ -201,17 +166,52 @@ namespace Ibinimator.Test
                 }
 
                 var d = m.Decompose();
-                var v2 = 
+                var v2 =
                     MathUtils.Rotate(
                         MathUtils.ShearX(
-                            v0 * d.scale, 
-                            d.shear), 
-                        d.rotation) 
-                        + d.translation;
+                            v0 * d.scale,
+                            d.shear),
+                        d.rotation)
+                    + d.translation;
 
                 AreEqual(v1, m * v0, 1e-4f);
                 AreEqual(v2, m * v0, 1e-4f);
             }
+        }
+
+        [TestMethod]
+        public void Projection()
+        {
+            var vec = new Vector2(10, 10);
+            var axis = new Vector2(1, 1);
+            var expected = new Vector2(10, 10);
+            var actual = MathUtils.Project(vec, axis);
+            Assert.AreEqual(expected, actual);
+
+            vec = new Vector2(10, 0);
+            axis = new Vector2(1, 1);
+            expected = new Vector2(5, 5);
+            actual = MathUtils.Project(vec, axis);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Rotation()
+        {
+            var v1 = new Vector2(1, 0);
+            var v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
+            var v3 = new Vector2(0, 1);
+            var v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
+            var v5 = new Vector2(-1, 0);
+            var v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
+            var v7 = new Vector2(0, -1);
+            var v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
+
+            Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
+            Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));
+            Assert.AreEqual(v5, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 2));
+            Assert.AreEqual(v7, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 3));
+            Assert.AreEqual(new Vector2(3, 0), MathUtils.Rotate(v5, v1, MathUtils.PiOverTwo * 2));
         }
 
         private void AreEqual(Vector2 expected, Vector2 actual, float delta)

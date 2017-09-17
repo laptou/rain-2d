@@ -98,6 +98,17 @@ namespace Ibinimator.View.Control
             InvalidateSurface();
         }
 
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+
+            if (e.LeftButton == MouseButtonState.Pressed)
+                lock (_events)
+                {
+                    _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, Vector2.Zero));
+                }
+        }
+
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -110,15 +121,6 @@ namespace Ibinimator.View.Control
             base.OnMouseLeave(e);
 
             Keyboard.ClearFocus();
-        }
-
-        protected override void OnLostMouseCapture(MouseEventArgs e)
-        {
-            base.OnLostMouseCapture(e);
-
-            if(e.LeftButton == MouseButtonState.Pressed)
-                lock (_events)
-                    _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, Vector2.Zero));
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -144,7 +146,10 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Down, vec));
+            lock (_events)
+            {
+                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Down, vec));
+            }
 
             _eventFlag.Set();
         }
@@ -156,7 +161,10 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Move, vec));
+            lock (_events)
+            {
+                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Move, vec));
+            }
 
             _eventFlag.Set();
 
@@ -172,7 +180,10 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
-            lock (_events) _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, vec));
+            lock (_events)
+            {
+                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, vec));
+            }
 
             _eventFlag.Set();
         }
@@ -256,15 +267,15 @@ namespace Ibinimator.View.Control
                     switch (evt.type)
                     {
                         case MouseEventType.Down:
-                            if(!ToolManager.MouseDown(pos))
+                            if (!ToolManager.MouseDown(pos))
                                 SelectionManager.MouseDown(pos);
                             break;
                         case MouseEventType.Up:
-                            if(!ToolManager.MouseUp(pos))
+                            if (!ToolManager.MouseUp(pos))
                                 SelectionManager.MouseUp(pos);
                             break;
                         case MouseEventType.Move:
-                            if(!ToolManager.MouseMove(pos))
+                            if (!ToolManager.MouseMove(pos))
                                 SelectionManager.MouseMove(pos);
                             break;
                         default:

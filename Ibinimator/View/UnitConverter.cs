@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Ibinimator.Shared;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Ibinimator.Model;
-using Ibinimator.Shared;
 
 namespace Ibinimator.View
 {
@@ -38,46 +38,6 @@ namespace Ibinimator.View
             get => (Unit) GetValue(BaseUnitProperty);
             set => SetValue(BaseUnitProperty, value);
         }
-
-        #region IValueConverter Members
-
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var unit = parameter as Unit? ?? BaseUnit;
-
-            if (value == null) return 0;
-
-            if (value.GetType().IsNumeric() || value is string)
-            {
-                var input = System.Convert.ToSingle(value);
-
-                input *= ConversionFactor(BaseUnit, unit);
-
-                if (Type.GetTypeCode(targetType) == TypeCode.String)
-                    return Format(input, unit);
-
-                return input;
-            }
-
-            throw new ArgumentException();
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var unit = parameter as Unit? ?? BaseUnit;
-
-            if (value is string input)
-            {
-                var num = Unformat(input, unit) * ConversionFactor(unit, BaseUnit);
-                if (!float.IsNaN(num)) return num;
-            }
-            else
-                return System.Convert.ToSingle(value) * ConversionFactor(unit, BaseUnit);
-
-            return Binding.DoNothing;
-        }
-
-        #endregion
 
         public static float ConversionFactor(Unit source, Unit target)
         {
@@ -136,7 +96,8 @@ namespace Ibinimator.View
 
         public float Unformat(string value, Unit target)
         {
-            var parts = Regex.Match(value, @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*([a-zA-Z%\u00B0]*)");
+            var parts = Regex.Match(value,
+                @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*([a-zA-Z%\u00B0]*)");
 
             if (!float.TryParse(parts.Groups[1].Value, out var num)) return float.NaN;
 
@@ -172,6 +133,8 @@ namespace Ibinimator.View
             return num / ConversionFactor(source, target);
         }
 
+        #region IMultiValueConverter Members
+
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             return Convert(values[0], targetType, values.ElementAtOrDefault(1) ?? parameter, culture);
@@ -185,5 +148,49 @@ namespace Ibinimator.View
                 BaseUnit
             };
         }
+
+        #endregion
+
+        #region IValueConverter Members
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var unit = parameter as Unit? ?? BaseUnit;
+
+            if (value == null) return 0;
+
+            if (value.GetType().IsNumeric() || value is string)
+            {
+                var input = System.Convert.ToSingle(value);
+
+                input *= ConversionFactor(BaseUnit, unit);
+
+                if (Type.GetTypeCode(targetType) == TypeCode.String)
+                    return Format(input, unit);
+
+                return input;
+            }
+
+            throw new ArgumentException();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var unit = parameter as Unit? ?? BaseUnit;
+
+            if (value is string input)
+            {
+                var num = Unformat(input, unit) * ConversionFactor(unit, BaseUnit);
+                if (!float.IsNaN(num)) return num;
+            }
+            else
+            {
+                return System.Convert.ToSingle(value) * ConversionFactor(unit, BaseUnit);
+            }
+
+            return Binding.DoNothing;
+        }
+
+        #endregion
     }
 }
