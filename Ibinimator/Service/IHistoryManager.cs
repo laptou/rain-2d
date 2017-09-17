@@ -3,17 +3,30 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Model;
+using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service
 {
-    public interface IHistoryManager : 
-        IArtViewManager, 
-        IRecorder<long>, 
-        INotifyCollectionChanged
+    public interface IHistoryManager :
+        IArtViewManager,
+        INotifyCollectionChanged,
+        IEnumerable<IOperationCommand<ILayer>>
     {
-        long NextId { get; }
+        IOperationCommand<ILayer> Current { get; }
+
+        long Time { get; set; }
+
+        void Clear();
+
+        void Do(IOperationCommand<ILayer> command);
+
+        IOperationCommand<ILayer> Pop();
+
+        void Push(IOperationCommand<ILayer> command);
+
         void Redo();
+
         void Undo();
-        void Merge();
     }
 }

@@ -30,7 +30,7 @@ namespace Ibinimator.Model
 
         public T Clone<T>() where T : Model
         {
-            return Clone(typeof(T)) as T;
+            return Clone(GetType()) as T;
         }
 
         public object Clone()

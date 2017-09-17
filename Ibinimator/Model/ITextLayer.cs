@@ -20,5 +20,9 @@ namespace Ibinimator.Model
 
         void Insert(int index, string str);
         void Remove(int index, int length);
+
+        Format GetFormat(int position);
+        void SetFormat(Format format);
+        void ClearFormat();
     }
 }

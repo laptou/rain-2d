@@ -7,6 +7,7 @@ using Ibinimator.Shared;
 using System.Linq;
 using System.Windows.Input;
 using Ibinimator.Model;
+using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -32,7 +33,6 @@ namespace Ibinimator.Service
     public class SelectionManager : Model.Model, ISelectionManager
     {
         private readonly object _render = new object();
-        private Matrix3x2 _accumulatedTransform;
         private Vector2 _accumulatedTranslation;
         private Vector2? _beginPosition;
         private Vector2? _lastPosition;
@@ -41,7 +41,6 @@ namespace Ibinimator.Service
         private RectangleF _selectionBox;
         private StrokeStyle1 _selectionStroke;
         private SelectionResizeHandle? _transformHandle;
-        private Watcher<Guid, Layer> _watcher;
 
         public SelectionManager(ArtView artView, IViewManager viewManager, IHistoryManager historyManager)
         {
@@ -51,11 +50,8 @@ namespace Ibinimator.Service
             Selection = new ObservableList<Layer>();
             Selection.CollectionChanged += (sender, args) =>
             {
-                Task.Run(() =>
-                {
-                    Update(true);
-                    Updated?.Invoke(this, null);
-                });
+                Update(true);
+                Updated?.Invoke(this, null);
             };
 
             viewManager.DocumentUpdated += (sender, args) =>
@@ -129,7 +125,13 @@ namespace Ibinimator.Service
                         }))
                         _transformHandle = SelectionResizeHandle.Translation;
 
-                    ArtView.HistoryManager.BeginRecord();
+                    var current =
+                        new TransformCommand(
+                            ArtView.HistoryManager.Time + 1,
+                            Selection.ToArray<ILayer>(),
+                            Matrix3x2.Identity);
+
+                    ArtView.HistoryManager.Do(current);
                 }
 
                 if (Selection.Count == 0 && !_selecting)
@@ -140,7 +142,6 @@ namespace Ibinimator.Service
 
                 _lastPosition = pos;
                 _beginPosition = pos;
-                _accumulatedTransform = Matrix.Identity;
             }
         }
 
@@ -178,9 +179,6 @@ namespace Ibinimator.Service
 
             using (new WeakLock(this))
             {
-                if (Selection.Count > 0)
-                    ArtView.HistoryManager.EndRecord($"Transformed {Selection.Count} layers");
-
                 _transformHandle = null;
 
                 if (!_moved)
@@ -290,7 +288,7 @@ namespace Ibinimator.Service
         public void Transform(Vector2 scale, Vector2 translate,
             float rotate, float shear, Vector2 origin)
         {
-            Transform(scale, translate, rotate, shear, origin, true);
+            Transform(scale, translate, rotate, shear, origin, false);
         }
 
         public void Update(bool reset)
@@ -348,6 +346,9 @@ namespace Ibinimator.Service
 
                 SelectionBounds = bounds;
             }
+
+            if(SelectionBounds.Height < 50 && Selection.Count > 0)
+                Debugger.Break();
 
             InvalidateSurface();
         }
@@ -535,14 +536,14 @@ namespace Ibinimator.Service
 
             _accumulatedTranslation += translate;
 
-            _accumulatedTransform *=
+            
                 Transform(
                     scale,
                     translate,
                     rotate,
                     0,
                     relativeOrigin,
-                    false);
+                    true);
         }
 
         private void Select(Vector2 pos)
@@ -563,9 +564,12 @@ namespace Ibinimator.Service
         }
 
         private Matrix3x2 Transform(Vector2 scale, Vector2 translate, float rotate,
-            float shear, Vector2 origin, bool makeRecord)
+            float shear, Vector2 origin, bool continuous)
         {
             var wlock = new WeakLock(_render);
+
+            if(scale.Y == 0)
+                Debugger.Break();
 
             var size = new Vector2(
                 Math.Abs(SelectionBounds.Width),
@@ -585,20 +589,36 @@ namespace Ibinimator.Service
                 Matrix3x2.Rotation(rotate, so) *
                 Matrix3x2.Translation(translate);
 
-            if (makeRecord)
-                ArtView.HistoryManager.BeginRecord();
+            var history = ArtView.HistoryManager;
 
-            foreach (var layer in Selection)
-                lock (layer)
-                {
-                    var layerTransform = layer.AbsoluteTransform * transform * Matrix3x2.Invert(layer.WorldTransform);
-                    var delta = layerTransform.Decompose();
+            if (continuous && history.Current is TransformCommand lastTransformCommand)
+            {
+                history.Pop();
 
-                    layer.Scale = delta.scale;
-                    layer.Rotation = delta.rotation;
-                    layer.Position = delta.translation;
-                    layer.Shear = delta.skew;
-                }
+                var current = 
+                    new TransformCommand(
+                        0,
+                        Selection.ToArray<ILayer>(), 
+                        transform);
+
+                current.Do();
+
+                var store =
+                    new TransformCommand(
+                        ArtView.HistoryManager.Time + 1,
+                        Selection.ToArray<ILayer>(),
+                        lastTransformCommand.Transform * transform);
+
+                history.Push(store);
+            }
+            else
+            {
+                var current = new TransformCommand(
+                    ArtView.HistoryManager.Time + 1, 
+                    Selection.ToArray<ILayer>(), transform);
+
+                history.Do(current);
+            }
 
             var sb = SelectionBounds;
             var tl = MathUtils.Scale(sb.TopLeft, origin, scale);
@@ -616,9 +636,6 @@ namespace Ibinimator.Service
             SelectionBounds = sb;
             SelectionRotation += rotate;
             SelectionShear += shear;
-
-            if (makeRecord)
-                ArtView.HistoryManager.EndRecord($"Transformed {Selection.Count} layers");
 
             Updated?.Invoke(this, null);
             InvalidateSurface();

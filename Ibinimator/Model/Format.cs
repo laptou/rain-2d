@@ -62,7 +62,10 @@ namespace Ibinimator.Model
                     FontWeight = FontWeight,
                     Fill = Fill,
                     Stroke = Stroke,
-                    StrokeInfo = StrokeInfo
+                    StrokeInfo = StrokeInfo,
+                    CharacterSpacing = CharacterSpacing,
+                    Kerning = Kerning,
+                    Range = Range,
                 };
             }
 

@@ -633,7 +633,6 @@ namespace Ibinimator.Model
 
             lock (Formats)
             {
-
                 while (current < end)
                 {
                     var oldFormat = GetFormat(current);
@@ -699,6 +698,14 @@ namespace Ibinimator.Model
 
                 Trace.WriteLine(string.Join("\n", Formats.Select(f => $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
             }
+
+            RaisePropertyChanged("TextLayout");
+        }
+
+        public void ClearFormat()
+        {
+            lock (Formats)
+                Formats.Clear();
 
             RaisePropertyChanged("TextLayout");
         }

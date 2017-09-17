@@ -148,6 +148,7 @@
     <Compile Include="Service\CommandManager.cs" />
     <Compile Include="Service\Commands\FileCommands.cs" />
     <Compile Include="Service\Commands\HistoryCommands.cs" />
+    <Compile Include="Service\Commands\IOperationCommand.cs" />
     <Compile Include="Service\Commands\ObjectCommands.cs" />
     <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
