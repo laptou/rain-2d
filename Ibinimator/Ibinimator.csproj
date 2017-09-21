@@ -349,5 +349,11 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ibinimator.Svg\Ibinimator.Svg.csproj">
+      <Project>{86f9ccb8-de12-45b8-ba94-3024c9f36040}</Project>
+      <Name>Ibinimator.Svg</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -54,6 +54,17 @@ namespace Ibinimator.Shared
             }
         }
 
+        public void InsertItems(IList<T> items, int index)
+        {
+            lock (_locker)
+            {
+                SuspendCollectionChangeNotification();
+                foreach (var i in items.Reverse())
+                    InsertItem(index, i);
+                NotifyChanges();
+            }
+        }
+
         /// <summary>
         ///     Raises collection change event.
         /// </summary>
@@ -79,6 +90,17 @@ namespace Ibinimator.Shared
                 SuspendCollectionChangeNotification();
                 foreach (var i in items)
                     Remove(i);
+                NotifyChanges();
+            }
+        }
+
+        public void RemoveItems(int start, int length)
+        {
+            lock (_locker)
+            {
+                SuspendCollectionChangeNotification();
+                for (var i = 0; i < length; i++)
+                    RemoveItem(start);
                 NotifyChanges();
             }
         }

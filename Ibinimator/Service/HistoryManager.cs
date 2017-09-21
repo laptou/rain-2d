@@ -50,7 +50,7 @@ namespace Ibinimator.Service
         {
             lock (this)
             {
-                return _redo.Reverse().Concat(_undo).GetEnumerator();
+                return _redo.Reverse().Concat(_undo).ToList().GetEnumerator();
             }
         }
 
@@ -62,14 +62,14 @@ namespace Ibinimator.Service
             {
                 _redo.Clear();
                 result = _undo.Pop();
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Time));
+
+                CollectionChanged?.Invoke(this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
-
-            RaisePropertyChanged(nameof(Current));
-            RaisePropertyChanged(nameof(NextId));
-            RaisePropertyChanged(nameof(Time));
-
-            CollectionChanged?.Invoke(this,
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
             return result;
         }
@@ -80,14 +80,14 @@ namespace Ibinimator.Service
             {
                 _redo.Clear();
                 _undo.Push(command);
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Time));
+
+                CollectionChanged?.Invoke(this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
-
-            RaisePropertyChanged(nameof(Current));
-            RaisePropertyChanged(nameof(NextId));
-            RaisePropertyChanged(nameof(Time));
-
-            CollectionChanged?.Invoke(this,
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public void Redo()
@@ -102,14 +102,14 @@ namespace Ibinimator.Service
                 _redo.Clear();
                 _undo.Pop();
                 _undo.Push(command);
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Time));
+
+                CollectionChanged?.Invoke(this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
-
-            RaisePropertyChanged(nameof(Current));
-            RaisePropertyChanged(nameof(NextId));
-            RaisePropertyChanged(nameof(Time));
-
-            CollectionChanged?.Invoke(this,
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public void Undo()
@@ -129,9 +129,7 @@ namespace Ibinimator.Service
             get
             {
                 lock (this)
-                {
                     return _undo.Count > 0 ? _undo.Peek() : null;
-                }
             }
         }
 
@@ -155,12 +153,12 @@ namespace Ibinimator.Service
                         record.Undo(ArtView);
                         _redo.Push(record);
                     }
-                }
 
-                RaisePropertyChanged(nameof(Current));
-                RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Time));
-                Traversed?.Invoke(this, value);
+                    RaisePropertyChanged(nameof(Current));
+                    RaisePropertyChanged(nameof(NextId));
+                    RaisePropertyChanged(nameof(Time));
+                    Traversed?.Invoke(this, value);
+                }
             }
         }
 

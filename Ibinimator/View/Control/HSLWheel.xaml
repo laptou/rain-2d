@@ -28,7 +28,7 @@
             <Ellipse Stroke="Black" Grid.Column="1" VerticalAlignment="Center"
                      Height="10" Width="10" HorizontalAlignment="Center" />
             <Grid.RenderTransform>
-                <RotateTransform x:Name="ringRotate"/>
+                <RotateTransform x:Name="ringRotate" />
             </Grid.RenderTransform>
         </Grid>
 

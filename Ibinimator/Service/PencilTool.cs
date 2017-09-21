@@ -214,13 +214,27 @@ namespace Ibinimator.Service
 
                     if (Math.Abs(lastIndex - secondIndex) == 1)
                     {
-                        CurrentPath.Nodes.Insert(lastIndex - (lastIndex - secondIndex) + 1, newNode);
+                        Manager.ArtView.HistoryManager.Do(
+                            new ModifyPathCommand(
+                                Manager.ArtView.HistoryManager.Time + 1,
+                                CurrentPath,
+                                new [] { newNode },
+                                lastIndex - (lastIndex - secondIndex) + 1,
+                                ModifyPathCommand.NodeOperation.Add));
+
                         _selectedNodes.Insert(_selectedNodes.Count - 1, newNode);
                     }
                 }
                 else
                 {
-                    CurrentPath.Nodes.Add(newNode);
+                    Manager.ArtView.HistoryManager.Do(
+                        new ModifyPathCommand(
+                            Manager.ArtView.HistoryManager.Time + 1,
+                            CurrentPath,
+                            new[] { newNode },
+                            CurrentPath.Nodes.Count,
+                            ModifyPathCommand.NodeOperation.Add));
+
                     _selectedNodes.Clear();
                 }
             }
@@ -235,12 +249,33 @@ namespace Ibinimator.Service
         public bool MouseMove(Vector2 pos)
         {
             if (_selectedNodes.Count > 0 && _down)
-                foreach (var n in _selectedNodes)
-                {
-                    var nPos = Matrix3x2.TransformPoint(Matrix3x2.Invert(CurrentPath.AbsoluteTransform), n.Position);
-                    nPos += pos - _lastPos;
-                    n.Position = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, nPos);
-                }
+            {
+                var history = Manager.ArtView.HistoryManager;
+
+                var newCmd = 
+                    new ModifyPathCommand(
+                        history.Time + 1,
+                        CurrentPath,
+                        _selectedNodes.ToArray(),
+                        Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, pos - _lastPos),
+                        ModifyPathCommand.NodeOperation.Move);
+
+                newCmd.Do(Manager.ArtView);
+
+                if (history.Current is ModifyPathCommand cmd &&
+                    cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
+                    newCmd.Time - cmd.Time < 500 &&
+                    cmd.Nodes.SequenceEqual(newCmd.Nodes))
+                    history.Replace(
+                        new ModifyPathCommand(
+                            history.Time + 1,
+                            CurrentPath,
+                            newCmd.Nodes,
+                            cmd.Delta + newCmd.Delta,
+                            ModifyPathCommand.NodeOperation.Move));
+                else
+                    history.Push(newCmd);
+            }
 
             _lastPos = pos;
 

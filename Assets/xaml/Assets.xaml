@@ -1,0 +1,838 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Ibinimator.Icon="clr-namespace:Ibinimator.Icon">
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_to_frontGeometryKey}">F0 M22,21z M0,0z M18.7,13.079C19.287,13.07 19.874,13.068 20.46,13.104 20.513,13.113 20.527,13.113 20.577,13.132 20.71,13.183 20.817,13.29 20.868,13.423 20.89,13.481 20.896,13.538 20.9,13.6L20.9,20C20.896,20.062 20.89,20.119 20.868,20.177 20.817,20.31 20.71,20.417 20.577,20.468 20.519,20.49 20.462,20.496 20.4,20.5L14,20.5C13.938,20.496 13.881,20.49 13.823,20.468 13.69,20.417 13.583,20.31 13.532,20.177 13.51,20.119 13.504,20.062 13.5,20L13.5,18.3 14.5,18.3 14.5,19.5 19.9,19.5 19.9,14.1 18.7,14.1 18.7,13.079z M2.9,7.7L1.2,7.7C1.138,7.696 1.081,7.69 1.023,7.668 0.889999999999999,7.617 0.782999999999999,7.51 0.732999999999999,7.377 0.709999999999999,7.319 0.703999999999999,7.262 0.699999999999999,7.2L0.699999999999999,0.800000000000001C0.703999999999999,0.738000000000001 0.709999999999999,0.681000000000001 0.732999999999999,0.623000000000001 0.782999999999999,0.490000000000001 0.889999999999999,0.383000000000001 1.023,0.332000000000001 1.081,0.310000000000001 1.138,0.304000000000001 1.2,0.300000000000001 3.353,0.300000000000001 5.511,0.174000000000001 7.66,0.304000000000001 7.713,0.313000000000001 7.727,0.313000000000001 7.777,0.332000000000001 7.91,0.383000000000001 8.017,0.490000000000001 8.068,0.623000000000001 8.09,0.681000000000001 8.096,0.738000000000001 8.1,0.800000000000001L8.1,2.478C7.767,2.482,7.433,2.485,7.1,2.487L7.1,1.3 1.7,1.3 1.7,6.7 2.9,6.7 2.9,7.7z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.to_frontDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_to_frontGeometryKey}}" />
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="4.4,4,12.8,12.8" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.to_frontDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.to_frontDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_differenceGeometry1Key}">F0 M21,21z M0,0z M14.684,6.687C16.339,6.664 17.996,6.621 19.649,6.702 19.698,6.71 19.745,6.719 19.791,6.738 19.929,6.795 20.035,6.913 20.078,7.055 20.093,7.103 20.098,7.15 20.1,7.2L20.1,20C20.098,20.05 20.093,20.097 20.078,20.145 20.035,20.287 19.929,20.405 19.791,20.462 19.729,20.488 19.667,20.497 19.6,20.5L6.8,20.5C6.75,20.498 6.703,20.493 6.655,20.478 6.513,20.435 6.395,20.329 6.338,20.191 6.312,20.129 6.303,20.067 6.3,20L6.3,15.084C6.466,15.095 6.633,15.1 6.8,15.1 6.967,15.1 7.134,15.095 7.3,15.084L7.3,19.5 19.1,19.5 19.1,7.7 14.684,7.7C14.706,7.363,14.705,7.024,14.684,6.687z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_differenceGeometry2Key}">F1 M21,21z M0,0z M8.899,12.758C8.982,12.767 9.059,12.787 9.131,12.831 9.332,12.955 9.42,13.21 9.338,13.431 9.321,13.477 9.297,13.521 9.267,13.56 9.202,13.646 9.113,13.702 9.012,13.737 8.932,13.764 8.851,13.789 8.77,13.814 8.467,13.902 8.161,13.973 7.85,14.02 7.561,14.065 7.27,14.088 6.978,14.098L6.916,14.099C6.833,14.096 6.755,14.083 6.68,14.044 6.501,13.953 6.393,13.759 6.408,13.559 6.412,13.511 6.423,13.462 6.441,13.416 6.459,13.371 6.484,13.328 6.514,13.289 6.575,13.212 6.659,13.154 6.753,13.123 6.794,13.11 6.805,13.11 6.848,13.102 6.958,13.095 7.069,13.094 7.179,13.088 7.699,13.052 8.213,12.955 8.706,12.785L8.753,12.771 8.801,12.762C8.85,12.758,8.85,12.758,8.899,12.758z M2.792,11.652C2.842,11.659 2.888,11.668 2.935,11.687 2.975,11.704 2.984,11.711 3.021,11.733 3.106,11.796 3.187,11.864 3.271,11.927 3.693,12.239 4.153,12.503 4.643,12.693L4.688,12.713C4.76,12.754 4.823,12.802 4.871,12.872 4.909,12.925 4.936,12.986 4.95,13.05 4.964,13.114 4.966,13.181 4.955,13.245 4.917,13.46 4.739,13.629 4.523,13.655 4.436,13.666 4.351,13.652 4.271,13.621 4.193,13.589 4.115,13.557 4.038,13.524 3.758,13.399 3.485,13.26 3.223,13.1 2.962,12.942 2.714,12.765 2.476,12.576L2.429,12.537C2.367,12.481 2.316,12.42 2.283,12.343 2.193,12.125 2.27,11.866 2.466,11.735 2.536,11.688 2.612,11.665 2.694,11.652 2.743,11.65 2.743,11.65 2.792,11.652z M12.367,9.987C12.433,10 12.494,10.019 12.551,10.053 12.723,10.156 12.818,10.357 12.789,10.555 12.777,10.637 12.743,10.708 12.7,10.777 12.47,11.155 12.204,11.511 11.907,11.839 11.739,12.023 11.562,12.196 11.377,12.362L11.348,12.387C11.314,12.415 11.306,12.423 11.268,12.445 11.183,12.494 11.084,12.517 10.985,12.51 10.936,12.507 10.888,12.497 10.842,12.479 10.655,12.409 10.525,12.228 10.518,12.028 10.517,11.979 10.522,11.93 10.535,11.882 10.557,11.801 10.599,11.733 10.653,11.67 10.741,11.585 10.833,11.505 10.921,11.421 11.284,11.062 11.603,10.663 11.865,10.225L11.893,10.184C11.92,10.151 11.926,10.141 11.958,10.112 12.019,10.057 12.093,10.017 12.173,9.997 12.215,9.986 12.226,9.987 12.27,9.983 12.319,9.983 12.318,9.983 12.367,9.987z M0.559999999999997,7.857C0.602999999999997,7.864 0.613999999999997,7.864 0.654999999999997,7.877 0.764999999999997,7.912 0.860999999999997,7.985 0.922999999999997,8.082 0.950999999999997,8.124 0.967999999999997,8.168 0.983999999999997,8.215 1.009,8.32 1.028,8.427 1.051,8.532 1.173,9.043 1.357,9.534 1.605,9.997L1.626,10.041C1.641,10.082 1.646,10.092 1.654,10.135 1.677,10.248 1.659,10.367 1.605,10.468 1.582,10.512 1.553,10.552 1.518,10.586 1.377,10.728 1.158,10.772 0.972999999999997,10.695 0.912999999999997,10.67 0.856999999999997,10.633 0.810999999999997,10.587 0.740999999999997,10.517 0.699999999999997,10.427 0.655999999999997,10.341 0.604999999999997,10.241 0.555999999999997,10.141 0.509999999999997,10.039 0.287999999999997,9.548 0.127999999999997,9.033 0.0239999999999968,8.505L0.0119999999999968,8.445C0.0039999999999968,8.37899999999999 0.000999999999996802,8.316 0.0149999999999968,8.24999999999999 0.0489999999999968,8.08799999999999 0.164999999999997,7.95099999999999 0.318999999999997,7.88999999999999 0.365999999999997,7.87099999999999 0.411999999999997,7.86199999999999 0.461999999999997,7.85599999999999 0.510999999999997,7.85399999999999 0.510999999999997,7.85399999999999 0.559999999999997,7.85699999999999z M13.182,5.656C13.231,5.665 13.277,5.676 13.323,5.697 13.368,5.717 13.409,5.745 13.446,5.777 13.52,5.842 13.573,5.929 13.598,6.024 13.607,6.06 13.616,6.118 13.62,6.15 13.634,6.236 13.645,6.322 13.655,6.409 13.724,7.009 13.713,7.618 13.625,8.216L13.616,8.264C13.592,8.344 13.558,8.416 13.502,8.478 13.368,8.627 13.152,8.681 12.963,8.614 12.917,8.598 12.873,8.574 12.833,8.545 12.794,8.516 12.759,8.481 12.73,8.442 12.681,8.376 12.648,8.298 12.636,8.217 12.63,8.174 12.631,8.163 12.631,8.119 12.642,8.014 12.658,7.909 12.669,7.803 12.696,7.527 12.706,7.25 12.696,6.972 12.686,6.723 12.66,6.476 12.621,6.23L12.615,6.181C12.614,6.115 12.62,6.051 12.642,5.988 12.69,5.848 12.801,5.734 12.941,5.682 12.988,5.665 13.035,5.658 13.084,5.652 13.133,5.652 13.133,5.652 13.182,5.656z M1.319,3.515C1.401,3.53 1.476,3.556 1.545,3.605 1.707,3.722 1.784,3.931 1.738,4.126 1.72,4.2 1.683,4.262 1.647,4.327 1.612,4.389 1.579,4.452 1.546,4.516 1.503,4.601 1.461,4.687 1.421,4.773 1.25,5.159 1.115,5.56 1.028,5.973L1.015,6.021C0.999999999999997,6.062 0.997999999999997,6.073 0.976999999999997,6.111 0.920999999999997,6.212 0.830999999999997,6.291 0.724999999999997,6.334 0.663999999999997,6.358 0.597999999999997,6.371 0.532999999999997,6.37 0.483999999999997,6.369 0.434999999999998,6.361 0.387999999999997,6.347 0.196999999999997,6.286 0.0579999999999974,6.112 0.0409999999999975,5.913 0.0329999999999975,5.821 0.0559999999999975,5.732 0.0769999999999975,5.643 0.108999999999997,5.504 0.144999999999997,5.367 0.185999999999998,5.23 0.337999999999998,4.719 0.551999999999997,4.23 0.814999999999998,3.766 0.827999999999998,3.744 0.827999999999998,3.745 0.846999999999998,3.717 0.873999999999998,3.683 0.878999999999998,3.673 0.910999999999998,3.644 0.971999999999998,3.588 1.045,3.547 1.124,3.526 1.167,3.515 1.178,3.516 1.221,3.511 1.27,3.51 1.27,3.51 1.319,3.515z M10.997,1.822C11.046,1.831 11.092,1.841 11.138,1.861 11.206,1.89 11.26,1.936 11.315,1.984 11.398,2.056 11.48,2.13 11.56,2.206 11.981,2.608 12.346,3.061 12.656,3.552 12.673,3.578 12.672,3.578 12.688,3.607 12.705,3.647 12.711,3.657 12.722,3.699 12.743,3.778 12.744,3.862 12.725,3.942 12.675,4.154 12.487,4.312 12.269,4.326 12.22,4.329 12.171,4.325 12.123,4.313 12.027,4.291 11.939,4.239 11.872,4.167 11.832,4.123 11.802,4.072 11.77,4.021 11.732,3.962 11.692,3.903 11.652,3.844 11.598,3.767 11.542,3.69 11.485,3.615 11.225,3.28 10.934,2.974 10.612,2.698L10.576,2.665C10.522,2.602 10.479,2.535 10.456,2.454 10.397,2.244 10.485,2.014 10.668,1.897 10.739,1.852 10.816,1.831 10.899,1.82 10.948,1.819 10.947,1.819 10.997,1.822z M4.703,0.682999999999999C4.785,0.698999999999999 4.86,0.725999999999999 4.927,0.775999999999999 4.967,0.804999999999999 5.002,0.839999999999999 5.031,0.879999999999999 5.151,1.04 5.162,1.263 5.059,1.434 5.007,1.522 4.933,1.582 4.845,1.63 4.732,1.676 4.617,1.717 4.505,1.764 4.037,1.965 3.594,2.221 3.192,2.533L3.151,2.561C3.114,2.583 3.105,2.59 3.064,2.605 2.956,2.646 2.836,2.649 2.727,2.613 2.665,2.592 2.607,2.559 2.558,2.516 2.52,2.484 2.488,2.446 2.462,2.405 2.355,2.235 2.361,2.013 2.477,1.849 2.529,1.776 2.601,1.725 2.672,1.672 2.783,1.589 2.896,1.509 3.012,1.433 3.456,1.141 3.931,0.904999999999999 4.428,0.718999999999999L4.461,0.706999999999999C4.51,0.692999999999999 4.554,0.683999999999999 4.605,0.678999999999999 4.654,0.678999999999999 4.654,0.677999999999999 4.703,0.682999999999999z M6.889,0.300999999999999C7.182,0.305999999999999 7.474,0.325999999999999 7.764,0.366999999999999 8.156,0.421999999999999 8.542,0.511999999999999 8.919,0.631999999999999L8.965,0.648999999999999C9.04,0.685999999999999 9.106,0.730999999999999 9.159,0.796999999999999 9.189,0.834999999999999 9.214,0.877999999999999 9.232,0.923999999999999 9.306,1.11 9.26,1.328 9.117,1.467 9.081,1.501 9.041,1.53 8.997,1.553 8.925,1.591 8.843,1.61 8.761,1.609 8.717,1.608 8.707,1.605 8.664,1.598 8.557,1.569 8.451,1.534 8.344,1.504 8.083,1.436 7.819,1.382 7.552,1.347 7.301,1.316 7.049,1.302 6.797,1.3L6.748,1.297C6.665,1.284 6.589,1.261 6.52,1.214 6.479,1.186 6.442,1.153 6.411,1.115 6.381,1.077 6.355,1.034 6.337,0.987999999999999 6.261,0.802999999999999 6.306,0.584999999999999 6.449,0.443999999999999 6.507,0.386999999999999 6.579,0.343999999999999 6.658,0.320999999999999 6.7,0.307999999999999 6.711,0.307999999999999 6.754,0.301999999999999 6.822,0.298999999999999 6.821,0.299999999999999 6.889,0.300999999999999z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.differenceDrawingGroupKey}" ClipGeometry="M0,0 V21 H21 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_differenceGeometry1Key}}" />
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_differenceGeometry2Key}}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.differenceDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.differenceDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_rightGeometryKey}">F0 M22,21z M0,0z M20.4,0.8L20.4,20</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_rightDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_rightGeometryKey}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="1.2,3.543,16.457,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="6.686,11.771,10.971,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_rightDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_rightDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_roundGeometry1Key}">F0 M22,21z M0,0z M1.2,0.8L10.8,0.8C16.098,0.8 20.4,5.102 20.4,10.4 20.4,15.698 16.098,20 10.8,20 10.8,20 1.2,20 1.2,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_roundGeometry2Key}">F0 M22,21z M0,0z M6.1,10.4L1.2,10.4</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.end_roundDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_roundGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_roundGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <EllipseGeometry RadiusX="3.2" RadiusY="3.2" Center="10.8,10.4" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.end_roundDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.end_roundDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_expanderGeometryKey}">F0 M20,10z M0,0z M10,8L3.6,1.6 16.4,1.6 10,8z M6.014,2.6L10,6.586 13.986,2.6 6.014,2.6z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.expanderDrawingGroupKey}" ClipGeometry="M0,0 V10 H20 V0 H0 Z">
+    <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_expanderGeometryKey}}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.expanderDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.expanderDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry1Key}">F0 M22,21z M0,0z M1.2,20L20.4,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry2Key}">F0 M22,21z M0,0z M3.943,0.8L3.943,17.257 9.429,17.257 9.429,0.800000000000001 3.943,0.800000000000001z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry3Key}">F0 M22,21z M0,0z M12.171,6.286L12.171,17.257 17.657,17.257 17.657,6.286 12.171,6.286z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_bottomDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_bottomGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_bottomDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_bottomDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry1Key}">F0 M22,21z M0,0z M20.4,10.4L10.8,10.4 10.8,0.800000000000001</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry2Key}">F0 M22,21z M0,0z M1.2,0.8L1.2,15.2 6,20 20.4,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry3Key}">F0 M22,21z M0,0z M6,0.8L6,15.2 20.4,15.2</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.corner_bevelDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_bevelGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.corner_bevelDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.corner_bevelDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_verticallyGeometry1Key}">F0 M17,21z M0,0z M0.72,8.48L16.08,0.800000000000001 16.08,8.48 0.719999999999999,8.48z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_verticallyGeometry2Key}">F0 M17,21z M0,0z M0.72,12.32L16.08,20 16.08,12.32 0.719999999999999,12.32z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.flip_verticallyDrawingGroupKey}" ClipGeometry="M0,0 V21 H17 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_verticallyGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_verticallyGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.flip_verticallyDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.flip_verticallyDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_neswGeometryKey}">F0 M16,16z M0,0z M5.394,12.582L7.6,14.788 0.811999999999999,14.788 0.811999999999999,8 3.018,10.206 9.806,3.418 7.6,1.212 14.388,1.212 14.388,8 12.182,5.794 5.394,12.582z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.resize_neswDrawingGroupKey}" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_neswGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.resize_neswDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.resize_neswDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_horizontallyGeometry1Key}">F0 M22,18z M0,0z M8.88,1.12L1.2,16.48 8.88,16.48 8.88,1.12z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_horizontallyGeometry2Key}">F0 M22,18z M0,0z M12.72,1.12L20.4,16.48 12.72,16.48 12.72,1.12z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.flip_horizontallyDrawingGroupKey}" ClipGeometry="M0,0 V18 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_horizontallyGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_flip_horizontallyGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.flip_horizontallyDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.flip_horizontallyDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_pointerGeometryKey}">F0 M16,21z M0,0z M14.387,14.374L6.436,14.375 0.875000000000001,20 0.813000000000001,20 0.813000000000001,0.800000000000001 14.387,14.374z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.pointerDrawingGroupKey}" ClipGeometry="M0,0 V21 H16 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_pointerGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.pointerDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.pointerDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_leftGeometryKey}">F0 M22,21z M0,0z M1.2,0.8L1.2,20</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_leftDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_leftGeometryKey}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="3.943,3.543,16.457,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="3.943,11.771,10.971,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_leftDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_leftDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_closeGeometry1Key}">F0 M22,21z M0,0z M1.2,0.8L20.4,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_closeGeometry2Key}">F0 M22,21z M0,0z M20.4,0.8L1.2,20</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.closeDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_closeGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_closeGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.closeDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.closeDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry1Key}">F0 M22,18z M0,0z M1.2,8.8L20.4,8.8</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry2Key}">F0 M22,18z M0,0z M3.943,0.571L3.943,17.029 9.429,17.029 9.429,0.571000000000002 3.943,0.571000000000002z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry3Key}">F0 M22,18z M0,0z M12.171,3.314L12.171,14.286 17.657,14.286 17.657,3.314 12.171,3.314z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_center_verticallyDrawingGroupKey}" ClipGeometry="M0,0 V18 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_verticallyGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_center_verticallyDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_center_verticallyDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_flatGeometry1Key}">F0 M22,21z M0,0z M12.5,10.4L1.2,10.4</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_flatGeometry2Key}">F0 M22,21z M0,0z M16.7,15.073C16.866,15.091 17.033,15.1 17.2,15.1 17.367,15.1 17.534,15.091 17.7,15.073L17.7,20C17.696,20.062 17.69,20.119 17.668,20.177 17.617,20.31 17.51,20.417 17.377,20.468 17.319,20.49 17.262,20.496 17.2,20.5L1.2,20.5C1.147,20.497 1.133,20.498 1.08,20.485 0.981999999999999,20.461 0.892999999999999,20.407 0.825999999999999,20.332 0.659999999999999,20.145 0.659999999999999,19.855 0.825999999999999,19.668 0.865999999999999,19.623 0.913999999999999,19.585 0.967999999999999,19.557 1.042,19.518 1.118,19.505 1.2,19.5L16.7,19.5 16.7,15.073z M16.7,5.727L16.7,1.3 1.2,1.3C1.118,1.295 1.042,1.282 0.967999999999999,1.243 0.913999999999999,1.215 0.865999999999999,1.177 0.825999999999999,1.132 0.659999999999999,0.945000000000001 0.659999999999999,0.655000000000001 0.825999999999999,0.468000000000001 0.892999999999999,0.393000000000001 0.981999999999999,0.339000000000001 1.08,0.315000000000001 1.133,0.302000000000001 1.147,0.303000000000001 1.2,0.300000000000001 6.553,0.300000000000001 11.917,-0.0199999999999993 17.26,0.304000000000001 17.321,0.315000000000001 17.377,0.328000000000001 17.432,0.357000000000001 17.558,0.423000000000001 17.651,0.542000000000001 17.685,0.680000000000001 17.698,0.733000000000001 17.697,0.747000000000001 17.7,0.800000000000001L17.7,5.727C17.574,5.714 17.448,5.706 17.321,5.701 17.2,5.7 17.2,5.7 17.079,5.701 16.952,5.706 16.826,5.714 16.7,5.727z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.end_flatDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_flatGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_flatGeometry2Key}}" />
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <EllipseGeometry RadiusX="3.2" RadiusY="3.2" Center="17.2,10.4" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.end_flatDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.end_flatDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry1Key}">F0 M12,21z M0,0z M1.2,0.8L10.8,0.8</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry2Key}">F0 M12,21z M0,0z M6,0.8L6,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry3Key}">F0 M12,21z M0,0z M1.2,20L10.8,20</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.keyframeDrawingGroupKey}" ClipGeometry="M0,0 V21 H12 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_keyframeGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.keyframeDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.keyframeDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry1Key}">F0 M20,20z M0,0z M10.877,14.15L18.319,17.871C18.336,17.88 18.353,17.889 18.369,17.9 18.434,17.942 18.489,18 18.528,18.067 18.637,18.256 18.609,18.502 18.459,18.661 18.419,18.703 18.372,18.738 18.32,18.765 18.248,18.801 18.174,18.813 18.095,18.818L10.791,18.818 10.798,18.8C10.829,18.707 10.852,18.611 10.864,18.514 10.876,18.427 10.874,18.405 10.877,18.318L10.877,17.818 15.977,17.818 10.877,15.268 10.877,14.15z M0.159000000000001,15.964L0.159000000000001,9.6C0.163000000000001,9.542 0.169000000000001,9.489 0.188000000000001,9.434 0.239000000000001,9.29 0.355000000000001,9.176 0.499000000000001,9.127 0.554000000000001,9.108 0.608000000000001,9.103 0.665000000000001,9.1 0.684000000000001,9.101 0.703000000000001,9.103 0.722000000000001,9.104 0.740000000000001,9.107 0.759000000000001,9.11 0.777000000000001,9.114 0.826000000000001,9.126 0.837000000000001,9.133 0.883000000000001,9.153L3.029,10.226 2.581,11.12 1.159,10.409 1.159,13.964 0.159000000000001,15.964z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry2Key}">F0 M20,20z M0,0z M9.377,0.882L0.659000000000001,18.318 9.377,18.318 9.377,0.882000000000001z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry3Key}">F0 M20,20z M0,0z M19.341,13.751C19.341,10.312,16.553,7.524,13.114,7.524</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry4Key}">F0 M20,20z M0,0z M14.151,9.6L12.076,7.524 14.151,5.449</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.rotate_ccwDrawingGroupKey}" ClipGeometry="M0,0 V20 H20 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry1Key}}" />
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <DrawingGroup>
+        <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry3Key}}">
+          <GeometryDrawing.Pen>
+            <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+        <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_ccwGeometry4Key}}">
+          <GeometryDrawing.Pen>
+            <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.rotate_ccwDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.rotate_ccwDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_stroke_solidGeometryKey}">F0 M22,21z M0,0z M1.2,20L20.4,0.800000000000001</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.stroke_solidDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_stroke_solidGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.stroke_solidDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.stroke_solidDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_nwseGeometryKey}">F0 M16,16z M0,0z M3.018,5.794L0.812,8 0.812,1.212 7.6,1.212 5.394,3.418 12.182,10.206 14.388,8 14.388,14.788 7.6,14.788 9.806,12.582 3.018,5.794z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.resize_nwseDrawingGroupKey}" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_nwseGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.resize_nwseDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.resize_nwseDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry1Key}">F0 M22,20z M0,0z M4.911,9.778L9.471,0.659000000000001C9.496,0.614000000000001 9.501,0.601000000000001 9.534,0.561000000000001 9.609,0.472000000000001 9.715,0.410000000000001 9.83,0.390000000000001 9.882,0.381000000000001 9.895,0.383000000000001 9.946,0.383000000000001 9.966,0.385000000000001 9.985,0.387000000000001 10.004,0.390000000000001 10.062,0.403000000000001 10.115,0.419000000000001 10.168,0.449000000000001 10.286,0.517000000000001 10.373,0.634000000000001 10.404,0.767000000000001 10.416,0.817000000000001 10.415,0.831000000000001 10.418,0.882000000000001L10.418,12.532 9.418,12.032 9.418,3 5.805,10.226 4.911,9.778z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry2Key}">F0 M22,20z M0,0z M18.636,18.318L1.2,9.6 1.2,18.318 18.636,18.318z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry3Key}">F0 M22,20z M0,0z M12.097,5.968C15.536,5.968,18.324,8.756,18.324,12.195</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry4Key}">F0 M22,20z M0,0z M16.249,11.157L18.324,13.232 20.4,11.157</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.rotate_cwDrawingGroupKey}" ClipGeometry="M0,0 V20 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry1Key}}" />
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <DrawingGroup>
+        <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry3Key}}">
+          <GeometryDrawing.Pen>
+            <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+        <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotate_cwGeometry4Key}}">
+          <GeometryDrawing.Pen>
+            <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+      </DrawingGroup>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.rotate_cwDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.rotate_cwDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry1Key}">F0 M22,21z M0,0z M1.2,20L3.333,15.733 18.267,0.800000000000001 20.4,2.933 5.467,17.867 1.2,20z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry2Key}">F0 M22,21z M0,0z M5.467,17.822L4.756,17.822 4.756,17.111 4.044,17.111 4.044,16.4 3.333,16.4 3.333,15.689</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry3Key}">F0 M22,21z M0,0z M1.926,18.548L2.652,19.274</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry4Key}">F0 M22,21z M0,0z M16.133,2.933L18.267,5.067</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.pencilDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_pencilGeometry4Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.pencilDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.pencilDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry1Key}">F0 M21,21z M0,0z M10.2,20.5L8.2,20.5C8.157,20.498 8.145,20.499 8.102,20.49 8.006,20.471 7.916,20.423 7.846,20.354 7.812,20.319 7.782,20.279 7.759,20.236 7.665,20.059 7.687,19.837 7.813,19.683 7.855,19.632 7.907,19.59 7.964,19.559 8.039,19.519 8.117,19.504 8.2,19.5 8.883,19.5 9.567,19.469 10.249,19.502 10.332,19.515 10.408,19.537 10.478,19.584 10.644,19.695 10.729,19.901 10.69,20.098 10.681,20.146 10.664,20.192 10.641,20.236 10.618,20.279 10.588,20.319 10.554,20.354 10.484,20.423 10.394,20.471 10.298,20.49 10.255,20.499 10.244,20.498 10.2,20.5z M14.7,20.5L12.7,20.5C12.617,20.496 12.539,20.481 12.464,20.441 12.407,20.41 12.355,20.368 12.313,20.317 12.187,20.163 12.165,19.941 12.259,19.764 12.282,19.721 12.312,19.681 12.346,19.646 12.416,19.577 12.506,19.529 12.602,19.51 12.645,19.501 12.657,19.502 12.7,19.5 13.383,19.5 14.067,19.469 14.749,19.502 14.832,19.515 14.908,19.537 14.978,19.584 15.144,19.695 15.229,19.901 15.19,20.098 15.181,20.146 15.164,20.192 15.141,20.236 15.118,20.279 15.088,20.319 15.054,20.354 14.984,20.423 14.894,20.471 14.798,20.49 14.755,20.499 14.744,20.498 14.7,20.5z M19.2,20.5L17.2,20.5C17.117,20.496 17.039,20.481 16.964,20.441 16.907,20.41 16.855,20.368 16.813,20.317 16.687,20.163 16.665,19.941 16.759,19.764 16.782,19.721 16.812,19.681 16.846,19.646 16.916,19.577 17.006,19.529 17.102,19.51 17.145,19.501 17.157,19.502 17.2,19.5 17.883,19.5 18.567,19.469 19.249,19.502 19.332,19.515 19.408,19.537 19.478,19.584 19.644,19.695 19.729,19.901 19.69,20.098 19.681,20.146 19.664,20.192 19.641,20.236 19.618,20.279 19.588,20.319 19.554,20.354 19.484,20.423 19.394,20.471 19.298,20.49 19.255,20.499 19.244,20.498 19.2,20.5z M6.849,16.402C6.898,16.41 6.945,16.419 6.991,16.438 7.129,16.495 7.235,16.613 7.278,16.755 7.293,16.803 7.298,16.85 7.3,16.9L7.3,18.9C7.298,18.943 7.299,18.955 7.29,18.998 7.271,19.094 7.223,19.184 7.154,19.254 7.119,19.288 7.079,19.318 7.036,19.341 6.859,19.435 6.637,19.413 6.483,19.287 6.432,19.245 6.39,19.193 6.359,19.136 6.319,19.061 6.304,18.983 6.3,18.9L6.3,16.9C6.302,16.85 6.307,16.803 6.322,16.755 6.365,16.613 6.471,16.495 6.609,16.438 6.655,16.419 6.702,16.41 6.751,16.402 6.8,16.4 6.8,16.4 6.849,16.402z M19.649,15.402C19.698,15.41 19.745,15.419 19.791,15.438 19.929,15.495 20.035,15.613 20.078,15.755 20.093,15.803 20.098,15.85 20.1,15.9L20.1,17.9C20.098,17.943 20.099,17.955 20.09,17.998 20.071,18.094 20.023,18.184 19.954,18.254 19.919,18.288 19.879,18.318 19.836,18.341 19.659,18.435 19.437,18.413 19.283,18.287 19.232,18.245 19.19,18.193 19.159,18.136 19.119,18.061 19.104,17.983 19.1,17.9L19.1,15.9C19.102,15.85 19.107,15.803 19.122,15.755 19.165,15.613 19.271,15.495 19.409,15.438 19.455,15.419 19.502,15.41 19.551,15.402 19.6,15.4 19.6,15.4 19.649,15.402z M19.649,10.902C19.698,10.91 19.745,10.919 19.791,10.938 19.929,10.995 20.035,11.113 20.078,11.255 20.093,11.303 20.098,11.35 20.1,11.4L20.1,13.4C20.098,13.443 20.099,13.455 20.09,13.498 20.071,13.594 20.023,13.684 19.954,13.754 19.919,13.788 19.879,13.818 19.836,13.841 19.659,13.935 19.437,13.913 19.283,13.787 19.232,13.745 19.19,13.693 19.159,13.636 19.119,13.561 19.104,13.483 19.1,13.4L19.1,11.4C19.102,11.35 19.107,11.303 19.122,11.255 19.165,11.113 19.271,10.995 19.409,10.938 19.455,10.919 19.502,10.91 19.551,10.902 19.6,10.9 19.6,10.9 19.649,10.902z M19.649,6.702C19.698,6.71 19.745,6.719 19.791,6.738 19.929,6.795 20.035,6.913 20.078,7.055 20.093,7.103 20.098,7.15 20.1,7.2L20.1,8.9C20.098,8.943 20.099,8.955 20.09,8.998 20.071,9.094 20.023,9.184 19.954,9.254 19.812,9.395 19.594,9.439 19.409,9.362 19.363,9.343 19.321,9.318 19.283,9.287 19.232,9.245 19.19,9.193 19.159,9.136 19.119,9.061 19.104,8.983 19.1,8.9L19.1,7.7 17.6,7.7 17.551,7.698C17.508,7.691 17.497,7.691 17.455,7.678 17.361,7.65 17.276,7.593 17.213,7.517 17.087,7.363 17.065,7.141 17.159,6.964 17.182,6.921 17.212,6.881 17.246,6.846 17.281,6.812 17.321,6.782 17.364,6.759 17.439,6.719 17.517,6.704 17.6,6.7 18.283,6.7 18.967,6.669 19.649,6.702z M14.609,6.688C14.789,6.689 14.969,6.694 15.149,6.702 15.232,6.715 15.308,6.737 15.378,6.784 15.419,6.812 15.455,6.845 15.487,6.883 15.613,7.037 15.635,7.259 15.541,7.436 15.518,7.479 15.488,7.519 15.454,7.554 15.384,7.623 15.294,7.671 15.198,7.69 15.155,7.699 15.144,7.698 15.1,7.7L14.684,7.7C14.686,7.668 14.688,7.637 14.69,7.605 14.695,7.504 14.698,7.403 14.699,7.302 14.701,7.19 14.699,7.079 14.682,6.968 14.667,6.872 14.642,6.778 14.609,6.688z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry2Key}">F0 M21,21z M0,0z M2.792,11.652C2.835,11.658 2.847,11.658 2.888,11.671 2.937,11.685 2.978,11.708 3.021,11.733 3.106,11.796 3.187,11.864 3.271,11.927 3.693,12.239 4.153,12.503 4.643,12.693L4.688,12.713C4.76,12.754 4.823,12.802 4.871,12.872 4.909,12.925 4.936,12.986 4.95,13.05 4.964,13.114 4.966,13.181 4.955,13.245 4.917,13.46 4.739,13.629 4.523,13.655 4.436,13.666 4.351,13.652 4.271,13.621 4.193,13.589 4.115,13.557 4.038,13.524 3.758,13.399 3.485,13.26 3.223,13.1 2.962,12.942 2.714,12.765 2.476,12.576L2.429,12.537C2.367,12.481 2.316,12.42 2.283,12.343 2.193,12.125 2.27,11.866 2.466,11.735 2.536,11.688 2.612,11.665 2.694,11.652 2.744,11.65 2.743,11.65 2.792,11.652z M0.56,7.857C0.609,7.865 0.655,7.875 0.701,7.895 0.807,7.94 0.895,8.022 0.948,8.124 0.968,8.163 0.97,8.174 0.984,8.215 1.009,8.32 1.028,8.427 1.051,8.532 1.173,9.043 1.357,9.534 1.605,9.997L1.626,10.041C1.641,10.082 1.646,10.092 1.654,10.135 1.677,10.248 1.659,10.367 1.605,10.468 1.574,10.526 1.532,10.578 1.482,10.619 1.444,10.651 1.401,10.676 1.356,10.695 1.171,10.772 0.953,10.728 0.811,10.587 0.741,10.518 0.7,10.427 0.656,10.341 0.605,10.241 0.556,10.141 0.51,10.039 0.288,9.548 0.128,9.033 0.0239999999999998,8.505L0.0119999999999998,8.445C0.0039999999999998,8.379 0.0009999999999998,8.316 0.0149999999999998,8.25 0.0489999999999998,8.088 0.165,7.951 0.319,7.89 0.366,7.871 0.412,7.862 0.462,7.856 0.511,7.854 0.51,7.854 0.56,7.857z M1.319,3.515C1.401,3.53 1.476,3.556 1.545,3.605 1.707,3.722 1.784,3.931 1.738,4.126 1.72,4.2 1.683,4.262 1.647,4.327 1.612,4.389 1.579,4.452 1.546,4.516 1.503,4.601 1.461,4.687 1.421,4.773 1.249,5.159 1.115,5.56 1.028,5.973L1.015,6.021C1,6.062 0.998,6.073 0.977,6.111 0.921,6.212 0.831,6.291 0.725,6.334 0.539,6.408 0.321,6.362 0.181,6.219 0.147,6.184 0.118,6.144 0.0949999999999996,6.1 0.0649999999999996,6.042 0.0459999999999996,5.978 0.0409999999999996,5.913 0.0329999999999996,5.821 0.0559999999999996,5.732 0.0769999999999996,5.643 0.109,5.504 0.145,5.367 0.186,5.23 0.338,4.719 0.552,4.23 0.815,3.766 0.828,3.744 0.828,3.745 0.847,3.717 0.874,3.683 0.879,3.673 0.911,3.644 0.972,3.588 1.045,3.547 1.124,3.526 1.167,3.515 1.178,3.516 1.221,3.511 1.271,3.51 1.27,3.51 1.319,3.515z M12.911,5.695C12.921,5.69 12.931,5.686 12.941,5.682 12.988,5.665 13.035,5.658 13.084,5.652 13.133,5.652 13.133,5.652 13.182,5.656 13.231,5.665 13.277,5.676 13.323,5.697 13.331,5.701 13.339,5.704 13.346,5.708 13.318,5.705 13.289,5.703 13.261,5.701 13.144,5.699 13.027,5.697 12.911,5.695z M10.997,1.822C11.046,1.831 11.092,1.841 11.138,1.861 11.206,1.89 11.26,1.936 11.315,1.984 11.398,2.056 11.48,2.13 11.56,2.206 11.981,2.608 12.346,3.061 12.656,3.552 12.673,3.578 12.672,3.578 12.688,3.607 12.705,3.647 12.711,3.657 12.722,3.699 12.743,3.778 12.744,3.862 12.725,3.942 12.714,3.99 12.695,4.036 12.671,4.078 12.561,4.267 12.335,4.364 12.123,4.313 12.027,4.291 11.939,4.239 11.872,4.167 11.832,4.123 11.802,4.072 11.77,4.021 11.732,3.962 11.692,3.903 11.652,3.844 11.598,3.767 11.542,3.69 11.485,3.615 11.225,3.28 10.934,2.974 10.612,2.698L10.576,2.665C10.522,2.602 10.479,2.535 10.456,2.454 10.397,2.244 10.485,2.014 10.668,1.897 10.739,1.852 10.816,1.831 10.899,1.82 10.948,1.819 10.948,1.819 10.997,1.822z M4.703,0.683C4.785,0.699 4.86,0.726 4.927,0.776 5.088,0.895 5.164,1.105 5.115,1.299 5.103,1.346 5.084,1.392 5.059,1.434 5.007,1.522 4.933,1.582 4.844,1.63 4.732,1.676 4.617,1.717 4.505,1.764 4.037,1.965 3.594,2.221 3.192,2.533L3.151,2.561C3.114,2.583 3.105,2.59 3.064,2.605 2.956,2.646 2.836,2.649 2.727,2.613 2.68,2.597 2.636,2.575 2.596,2.546 2.433,2.431 2.353,2.223 2.398,2.028 2.412,1.964 2.439,1.903 2.477,1.849 2.529,1.776 2.601,1.725 2.672,1.672 2.783,1.589 2.896,1.509 3.012,1.433 3.456,1.141 3.931,0.904999999999999 4.428,0.718999999999999L4.461,0.706999999999999C4.51,0.692999999999999 4.554,0.683999999999999 4.605,0.678999999999999 4.654,0.678999999999999 4.654,0.677999999999999 4.703,0.682999999999999z M6.889,0.301C7.182,0.306 7.474,0.326 7.764,0.367 8.156,0.422 8.542,0.512 8.919,0.632L8.965,0.649C9.04,0.686 9.106,0.731 9.159,0.797 9.189,0.835 9.214,0.878 9.232,0.924 9.306,1.11 9.26,1.327 9.117,1.467 9.081,1.501 9.041,1.53 8.998,1.553 8.925,1.591 8.843,1.61 8.761,1.609 8.717,1.608 8.707,1.605 8.664,1.598 8.557,1.569 8.451,1.534 8.344,1.504 8.083,1.436 7.819,1.382 7.551,1.347 7.301,1.316 7.049,1.302 6.797,1.3L6.748,1.297C6.665,1.284 6.589,1.261 6.52,1.214 6.479,1.186 6.442,1.153 6.411,1.115 6.286,0.959 6.265,0.737 6.361,0.562 6.384,0.518 6.414,0.479 6.449,0.444 6.507,0.387 6.579,0.344 6.658,0.321 6.7,0.308 6.711,0.308 6.754,0.302 6.822,0.299 6.821,0.3 6.889,0.301z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry3Key}">F0 M21,21z M0,0z M13.2,7.2C13.2,10.732,10.332,13.6,6.8,13.6L6.8,7.2 13.2,7.2z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.intersectionDrawingGroupKey}" ClipGeometry="M0,0 V21 H21 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry1Key}}" />
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry2Key}}" />
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_intersectionGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.intersectionDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.intersectionDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_zoomGeometryKey}">F0 M22,21z M0,0z M20.4,20L13.49,13.09</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.zoomDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <EllipseGeometry RadiusX="7.2" RadiusY="7.2" Center="8.4,8" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_zoomGeometryKey}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.zoomDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.zoomDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry1Key}">F0 M22,20z M0,0z M13.451,7.046C13.451,7.046 8.676,2.427 5.787,2.621 4.85,2.684 5.007,3.224 5.628,3.899</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry2Key}">F0 M22,20z M0,0z M18.015,11.702L15.201,1.201 1.2,4.952 4.014,15.453 18.015,11.702z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry3Key}">F0 M22,20z M0,0z M15.201,1.201C15.201,1.201 17.546,9.019 18.015,11.702 18.336,13.538 17.674,16.363 18.015,17.296 18.356,18.228 19.722,18.24 20.063,17.296 20.404,16.351 20.609,13.438 20.063,11.631 19.253,8.948 15.201,1.201 15.201,1.201z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.bucketDrawingGroupKey}" ClipGeometry="M0,0 V20 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_bucketGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.bucketDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.bucketDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry1Key}">F0 M22,21z M0,0z M7.6,0.8L7.6,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry2Key}">F0 M22,21z M0,0z M1.2,13.6L20.4,13.6</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry3Key}">F0 M22,21z M0,0z M14,0.8L14,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry4Key}">F0 M22,21z M0,0z M1.2,7.2L20.4,7.2</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.gridDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_gridGeometry4Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.gridDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.gridDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry1Key}">F0 M22,21z M0,0z M1.2,20L3.276,15.849 17.805,1.319 19.881,3.395 5.351,17.924 1.2,20z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry2Key}">F0 M22,21z M0,0z M1.2,20L2.238,18.962</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry3Key}">F0 M22,21z M0,0z M16.216,2.908L15.146,1.838 9.957,7.027 10.476,7.546 15.146,2.876 15.697,3.427</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry4Key}">F0 M22,21z M0,0z M19.103,2.616L20.4,1.319 19.881,0.8 18.584,2.097 19.103,2.616z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.penDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_penGeometry4Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.penDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.penDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_stroke_dashGeometryKey}">F0 M22,21z M0,0z M1.2,20L20.4,0.800000000000001</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.stroke_dashDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_stroke_dashGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.stroke_dashDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.stroke_dashDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_rotateGeometryKey}">F0 M22,18z M0,0z M14.777,8.8C14.777,5.846 12.382,3.451 9.429,3.451 6.477,3.451 4.08,5.848 4.08,8.8 4.08,11.752 6.477,14.149 9.429,14.149 10.847,14.149 12.208,13.585 13.211,12.582L15.247,14.618C13.704,16.162 11.611,17.029 9.429,17.029 4.887,17.029 1.2,13.341 1.2,8.8 1.2,4.259 4.887,0.571000000000002 9.429,0.571000000000002 13.973,0.571000000000002 17.657,4.255 17.657,8.8L20.4,8.8 16.286,12.914 12.171,8.8 14.777,8.8z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.rotateDrawingGroupKey}" ClipGeometry="M0,0 V18 H22 V0 H0 Z">
+    <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_rotateGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.rotateDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.rotateDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_squareGeometry1Key}">F0 M22,21z M0,0z M1.2,0.8L20.4,0.8C20.4,0.8 20.4,20 20.4,20 20.4,20 1.2,20 1.2,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_end_squareGeometry2Key}">F0 M22,21z M0,0z M6.1,10.4L1.2,10.4</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.end_squareDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_squareGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_end_squareGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <EllipseGeometry RadiusX="3.2" RadiusY="3.2" Center="10.8,10.4" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.end_squareDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.end_squareDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry1Key}">F0 M25,13z M0,0z M10.172,6.369C10.172,6.369 7.27,4.476 5.715,6.369 7.343,8.649 10.172,6.369 10.172,6.369z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry2Key}">F0 M25,13z M0,0z M2.929,2.555C2.929,2.555 2.24,7.572 4.044,9.24 5.503,10.59 9.262,10.369 11.286,9.797 11.764,9.663 12.173,8.822 12.4,8.683 12.627,8.822 13.036,9.663 13.514,9.797 15.538,10.369 19.297,10.59 20.756,9.24 22.56,7.572 21.871,2.555 21.871,2.555 21.871,2.555 21.738,2.775 20.756,3.669 18.382,2.001 12.4,3.669 12.4,3.669 12.4,3.669 6.418,2.001 4.044,3.669 3.062,2.775 2.929,2.555 2.929,2.555z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry3Key}">F0 M25,13z M0,0z M14.628,6.369C14.628,6.369 17.53,4.476 19.085,6.369 17.457,8.649 14.628,6.369 14.628,6.369L14.628,6.369z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.maskDrawingGroupKey}" ClipGeometry="M0,0 V13 H25 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Miter" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Miter" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_maskGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Miter" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.maskDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.maskDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_horizontallyGeometryKey}">F0 M19,21z M0,0z M9.2,0.8L9.2,20</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_center_horizontallyDrawingGroupKey}" ClipGeometry="M0,0 V21 H19 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_center_horizontallyGeometryKey}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="0.971,3.543,16.457,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="3.714,11.771,10.971,5.486" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_center_horizontallyDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_center_horizontallyDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_to_backGeometry1Key}">F0 M22,21z M0,0z M4.9,16.3L12.5,16.3 12.5,17.3 4.4,17.3C4.35,17.298 4.303,17.293 4.255,17.278 4.113,17.235 3.995,17.129 3.938,16.991 3.912,16.929 3.903,16.867 3.9,16.8L3.9,8.7 4.9,8.7 4.9,16.3z M9.1,3.447C11.818,3.404 14.536,3.369 17.249,3.502 17.298,3.51 17.345,3.519 17.391,3.538 17.529,3.595 17.635,3.713 17.678,3.855 17.693,3.903 17.698,3.95 17.7,4L17.7,12.07C17.367,12.072,17.033,12.075,16.7,12.078L16.7,4.5 9.1,4.5 9.1,3.447z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_to_backGeometry2Key}">F0 M22,21z M0,0z M20.4,13.6L20.4,20 14,20 14,13.6 20.4,13.6z M7.6,0.799999999999999L7.6,7.2 1.2,7.2 1.2,0.799999999999999 7.6,0.799999999999999z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.to_backDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF58D432" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_to_backGeometry1Key}}" />
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_to_backGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.to_backDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.to_backDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_nsGeometryKey}">F0 M12,21z M0,0z M7.68,15.2L10.8,15.2 6,20 1.2,15.2 4.32,15.2 4.32,5.6 1.2,5.6 6,0.8 10.8,5.6 7.68,5.6 7.68,15.2z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.resize_nsDrawingGroupKey}" ClipGeometry="M0,0 V21 H12 V0 H0 Z">
+    <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_nsGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.resize_nsDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.resize_nsDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_cursorGeometryKey}">F0 M14,21z M0,0z M3.396,3.173L3.476,3.14 3.557,3.334 12.658,12.435 7.327,12.435 10.025,18.95 7.491,20 4.796,13.494 1.076,17.257 1.023,17.257 1.023,4.384 0.942000000000001,4.189 1.023,4.156 1.023,0.799999999999998 3.396,3.173z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.cursorDrawingGroupKey}" ClipGeometry="M0,0 V21 H14 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_cursorGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.cursorDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.cursorDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_textGeometryKey}">F0 M19,23z M0,0z M16.761,0.604L16.848,0.615 16.933,0.634 17.016,0.66 17.097,0.694 17.174,0.734 17.248,0.781 17.317,0.834 17.381,0.893 17.44,0.957 17.493,1.026 17.54,1.1 17.581,1.177 17.614,1.258 17.64,1.341 17.659,1.426 17.67,1.513 17.674,1.6 17.674,6.537 17.67,6.624 17.659,6.711 17.64,6.796 17.614,6.879 17.581,6.96 17.54,7.037 17.493,7.111 17.44,7.18 17.381,7.244 17.317,7.303 17.248,7.356 17.174,7.403 17.097,7.443 17.016,7.477 16.933,7.503 16.848,7.522 16.761,7.533 16.674,7.537 14.891,7.537 14.809,7.534 14.726,7.523 14.645,7.506 14.566,7.483 14.489,7.453 14.414,7.416 14.343,7.374 14.276,7.325 14.213,7.272 14.154,7.213 14.101,7.15 14.053,7.082 14.011,7.011 13.975,6.936 13.945,6.859 13.921,6.78 13.425,4.794 11.64,4.794 11.64,17.786 13.579,18.174 13.662,18.194 13.744,18.222 13.822,18.256 13.898,18.297 13.969,18.344 14.037,18.398 14.099,18.456 14.156,18.52 14.208,18.589 14.253,18.662 14.292,18.738 14.324,18.818 14.35,18.9 14.368,18.983 14.379,19.069 14.383,19.154 14.383,20.8 14.379,20.887 14.368,20.974 14.349,21.059 14.323,21.142 14.289,21.223 14.249,21.3 14.202,21.374 14.149,21.443 14.09,21.507 14.026,21.566 13.956,21.619 13.883,21.666 13.805,21.706 13.725,21.74 13.642,21.766 13.556,21.785 13.47,21.796 13.383,21.8 5.017,21.8 4.93,21.796 4.843,21.785 4.758,21.766 4.675,21.74 4.595,21.706 4.517,21.666 4.444,21.619 4.374,21.566 4.31,21.507 4.251,21.443 4.198,21.374 4.151,21.3 4.111,21.223 4.077,21.142 4.051,21.059 4.032,20.974 4.021,20.887 4.017,20.8 4.017,19.154 4.021,19.069 4.032,18.983 4.05,18.9 4.076,18.818 4.108,18.738 4.147,18.662 4.192,18.589 4.244,18.52 4.301,18.456 4.363,18.398 4.431,18.344 4.502,18.297 4.578,18.256 4.656,18.222 4.738,18.194 4.821,18.174 6.76,17.786 6.76,4.794 4.975,4.794 4.479,6.78 4.455,6.859 4.425,6.936 4.389,7.011 4.347,7.082 4.299,7.15 4.246,7.213 4.187,7.272 4.124,7.325 4.057,7.374 3.986,7.416 3.911,7.453 3.834,7.483 3.755,7.506 3.674,7.523 3.591,7.534 3.509,7.537 1.726,7.537 1.639,7.533 1.552,7.522 1.467,7.503 1.384,7.477 1.303,7.443 1.226,7.403 1.152,7.356 1.083,7.303 1.019,7.244 0.959999999999998,7.18 0.906999999999997,7.111 0.859999999999997,7.037 0.818999999999997,6.96 0.785999999999997,6.879 0.759999999999997,6.796 0.740999999999997,6.711 0.729999999999997,6.624 0.725999999999997,6.537 0.725999999999997,1.6 0.729999999999997,1.513 0.740999999999997,1.426 0.759999999999997,1.341 0.785999999999997,1.258 0.818999999999997,1.177 0.859999999999997,1.1 0.906999999999997,1.026 0.959999999999998,0.957000000000001 1.019,0.893000000000001 1.083,0.834000000000001 1.152,0.781000000000001 1.226,0.734000000000001 1.303,0.694000000000001 1.384,0.660000000000001 1.467,0.634000000000001 1.552,0.615000000000001 1.639,0.604000000000001 1.726,0.600000000000001 16.674,0.600000000000001 16.761,0.604000000000001z M1.726,1.6L1.726,6.537 3.509,6.537 4.194,3.794 7.76,3.794 7.76,18.606 5.017,19.154 5.017,20.8 13.383,20.8 13.383,19.154 10.64,18.606 10.64,3.794 14.206,3.794 14.891,6.537 16.674,6.537 16.674,1.6 1.726,1.6z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.textDrawingGroupKey}" ClipGeometry="M0,0 V23 H19 V0 H0 Z">
+    <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_textGeometryKey}}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.textDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.textDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_forwardGeometryKey}">F0 M22,21z M0,0z M6.1,14.1L1.2,14.1C1.133,14.097 1.071,14.088 1.009,14.062 0.870999999999999,14.005 0.764999999999999,13.887 0.721999999999999,13.745 0.706999999999999,13.697 0.701999999999999,13.65 0.699999999999999,13.6L0.699999999999999,0.799999999999999C0.701999999999999,0.749999999999999 0.706999999999999,0.702999999999999 0.721999999999999,0.654999999999999 0.764999999999999,0.512999999999999 0.870999999999999,0.394999999999999 1.009,0.337999999999999 1.071,0.311999999999999 1.133,0.302999999999999 1.2,0.299999999999999 5.483,0.299999999999999 9.771,0.0919999999999989 14.049,0.301999999999999 14.098,0.309999999999999 14.145,0.318999999999999 14.191,0.337999999999999 14.329,0.394999999999999 14.435,0.512999999999999 14.478,0.654999999999999 14.493,0.702999999999999 14.498,0.749999999999999 14.5,0.799999999999999L14.5,5.652C14.167,5.653,13.833,5.656,13.5,5.659L13.5,1.3 1.7,1.3 1.7,13.1 6.1,13.1 6.1,14.1z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.forwardDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_forwardGeometryKey}}" />
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="7.6,7.2,12.8,12.8" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.forwardDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.forwardDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_backwardGeometryKey}">F0 M22,21z M0,0z M15.5,6.61C17.151,6.602 18.801,6.621 20.449,6.702 20.498,6.71 20.545,6.719 20.591,6.738 20.729,6.795 20.835,6.913 20.878,7.055 20.893,7.103 20.898,7.15 20.9,7.2L20.9,20C20.897,20.067 20.888,20.129 20.862,20.191 20.805,20.329 20.687,20.435 20.545,20.478 20.497,20.493 20.45,20.498 20.4,20.5L7.59999999999999,20.5C7.53299999999999,20.497 7.47099999999999,20.488 7.40899999999999,20.462 7.27099999999999,20.405 7.16499999999999,20.287 7.12199999999999,20.145 7.10699999999999,20.097 7.102,20.05 7.09999999999999,20L7.09999999999999,15.1 8.09999999999999,15.1 8.09999999999999,19.5 19.9,19.5 19.9,7.7 15.5,7.7 15.5,6.61z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.backwardDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF58D432" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_backwardGeometryKey}}" />
+      <GeometryDrawing>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="1.2,0.8,12.8,12.8" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.backwardDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.backwardDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry1Key}">F0 M22,21z M0,0z M1.2,0.8L20.4,0.8</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry2Key}">F0 M22,21z M0,0z M3.943,20L3.943,3.543 9.429,3.543 9.429,20 3.943,20z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry3Key}">F0 M22,21z M0,0z M12.171,14.514L12.171,3.543 17.657,3.543 17.657,14.514 12.171,14.514z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.align_topDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_align_topGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.align_topDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.align_topDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_ewGeometryKey}">F0 M22,12z M0,0z M6,7.016L6,10.136 1.2,5.336 6,0.536 6,3.656 15.6,3.656 15.6,0.536 20.4,5.336 15.6,10.136 15.6,7.016 6,7.016z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.resize_ewDrawingGroupKey}" ClipGeometry="M0,0 V12 H22 V0 H0 Z">
+    <GeometryDrawing Brush="#FFFFFFFF" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_resize_ewGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.resize_ewDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.resize_ewDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry1Key}">F0 M22,21z M0,0z M1.2,20L3.6,15.2 13.2,5.6 15.6,8 6,17.6 1.2,20z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry2Key}">F0 M22,21z M0,0z M10.8,3.2L18,10.4 18.75,9.65 11.55,2.45 10.8,3.2z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry3Key}">F0 M22,21z M0,0z M17.08,7.989C18.954,7.843 20.4,6.28 20.4,4.4 20.4,2.413 18.787,0.8 16.8,0.8 14.92,0.8 13.357,2.246 13.211,4.12L17.08,7.989z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.eyedropperDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_eyedropperGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.eyedropperDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.eyedropperDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry1Key}">F0 M22,21z M0,0z M10.8,0.8L10.8,10.4 20.4,10.4</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry2Key}">F0 M22,21z M0,0z M20.4,20L6,20 5.969,20C3.334,19.983,1.2,17.839,1.2,15.2L1.2,0.799999999999999</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry3Key}">F0 M22,21z M0,0z M6,0.8L6,15.2 20.4,15.2</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.corner_roundDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_roundGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.corner_roundDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.corner_roundDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_unionGeometryKey}">F0 M22,21z M0,0z M7.6,13.6C4.068,13.6 1.2,10.732 1.2,7.2 1.2,3.668 4.068,0.799999999999999 7.6,0.799999999999999 11.132,0.799999999999999 14,3.668 14,7.2L20.4,7.2 20.4,20 7.6,20 7.6,13.6z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.unionDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_unionGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.unionDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.unionDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry1Key}">F0 M22,21z M0,0z M9.55,17.217L15.117,11.65C15.117,11.65 17.929,8.895 15.117,6.083 12.305,3.271 9.55,6.083 9.55,6.083L3.983,11.65 1.2,8.866 6.767,3.3C6.767,3.3 12.276,-2.324 17.9,3.3 23.524,8.924 17.9,14.433 17.9,14.433L12.334,20 9.55,17.217z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry2Key}">F0 M22,21z M0,0z M6.767,8.866L3.983,6.083</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry3Key}">F0 M22,21z M0,0z M15.117,17.217L12.334,14.433</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.snapDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_snapGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.snapDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.snapDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_restoreGeometryKey}">F0 M22,16z M0,0z M2.327,2.048L2.327,1.277C2.33,1.219 2.336,1.166 2.355,1.111 2.405,0.969 2.519,0.854 2.662,0.805 2.716,0.785 2.77,0.78 2.827,0.777 8.753,0.777 14.689,0.447 20.606,0.78 20.663,0.789 20.715,0.801 20.767,0.826 20.886,0.883 20.978,0.987 21.022,1.111 21.041,1.166 21.047,1.219 21.05,1.277L21.05,13.092C21.047,13.149 21.041,13.202 21.022,13.257 20.972,13.4 20.858,13.514 20.715,13.564 20.661,13.583 20.607,13.589 20.55,13.592L19.773,13.592 19.773,12.592 20.05,12.592 20.05,1.777 3.32700000000001,1.777 3.32700000000001,2.041C2.99400000000001,2.044,2.66000000000001,2.046,2.32700000000001,2.048z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.restoreDrawingGroupKey}" ClipGeometry="M0,0 V16 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_restoreGeometryKey}}" />
+      <GeometryDrawing>
+        <GeometryDrawing.Brush>
+          <SolidColorBrush Color="#FFFFFFFF" Opacity="0" />
+        </GeometryDrawing.Brush>
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+        <GeometryDrawing.Geometry>
+          <RectangleGeometry RadiusX="0" RadiusY="0" Rect="0.55,3.553,17.723,11.815" />
+        </GeometryDrawing.Geometry>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.restoreDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.restoreDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_minimizeGeometryKey}">F0 M22,2z M0,0z M1.2,0.8L20.4,0.8</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.minimizeDrawingGroupKey}" ClipGeometry="M0,0 V2 H22 V0 H0 Z">
+    <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_minimizeGeometryKey}}">
+      <GeometryDrawing.Pen>
+        <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+      </GeometryDrawing.Pen>
+    </GeometryDrawing>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.minimizeDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.minimizeDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry1Key}">F0 M22,21z M0,0z M20.4,10.4L10.8,10.4 10.8,0.800000000000001</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry2Key}">F0 M22,21z M0,0z M1.2,0.8L1.2,20 20.4,20</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry3Key}">F0 M22,21z M0,0z M6,0.8L6,15.2 20.4,15.2</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.corner_miterDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry1Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry2Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF404040" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+      <GeometryDrawing Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_corner_miterGeometry3Key}}">
+        <GeometryDrawing.Pen>
+          <Pen Brush="#FF58D432" Thickness="1" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+        </GeometryDrawing.Pen>
+      </GeometryDrawing>
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.corner_miterDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.corner_miterDrawingGroupKey}}" />
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry1Key}">F0 M22,21z M0,0z M15.379,6.61C17.07,6.602 18.76,6.619 20.449,6.702 20.498,6.71 20.545,6.719 20.591,6.738 20.729,6.795 20.835,6.913 20.879,7.055 20.893,7.103 20.898,7.15 20.9,7.2L20.9,20C20.897,20.067 20.888,20.129 20.862,20.191 20.805,20.328 20.687,20.435 20.545,20.478 20.497,20.493 20.45,20.497 20.4,20.5L7.6,20.5C7.533,20.497 7.471,20.488 7.409,20.462 7.272,20.405 7.165,20.287 7.122,20.145 7.107,20.097 7.103,20.05 7.1,20L7.1,15.014C7.187,15.045 7.276,15.068 7.368,15.082 7.479,15.099 7.59,15.101 7.702,15.099 7.803,15.098 7.904,15.095 8.005,15.09 8.037,15.088 8.068,15.086 8.1,15.084L8.1,19.5 19.9,19.5 19.9,7.69999999999999 15.484,7.69999999999999C15.486,7.66799999999999 15.488,7.63699999999999 15.49,7.60499999999999 15.495,7.50399999999999 15.498,7.40299999999999 15.499,7.30199999999999 15.501,7.18899999999999 15.499,7.07899999999999 15.482,6.96799999999999 15.463,6.84399999999999 15.428,6.72399999999999 15.379,6.60999999999999z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry2Key}">F0 M22,21z M0,0z M6.141,13.945C5.749,13.86 5.364,13.741 4.993,13.589 4.196,13.264 3.463,12.787 2.84,12.194 2.239,11.62 1.742,10.939 1.381,10.191 1.073,9.552 0.865,8.866 0.767,8.164 0.662,7.411 0.68,6.641 0.824,5.895 0.941,5.284 1.141,4.691 1.418,4.134 2.11,2.741 3.276,1.603 4.685,0.945000000000001 5.276,0.669000000000001 5.906,0.478000000000001 6.55,0.379000000000001 6.869,0.331000000000001 7.189,0.307000000000001 7.511,0.300000000000001 7.6,0.300000000000001 7.6,0.300000000000001 7.689,0.300000000000001 8.011,0.307000000000001 8.331,0.331000000000001 8.65,0.379000000000001 9.294,0.478000000000001 9.924,0.669000000000001 10.515,0.945000000000001 11.924,1.603 13.09,2.741 13.782,4.134 14.036,4.644 14.225,5.185 14.345,5.741 14.252,5.72 14.157,5.707 14.061,5.701 13.809,5.696 13.556,5.692 13.304,5.688 13.203,5.305 13.063,4.933 12.887,4.579 12.294,3.388 11.297,2.414 10.092,1.851 9.587,1.615 9.049,1.452 8.499,1.368 8.226,1.326 7.952,1.306 7.676,1.3 7.6,1.3 7.6,1.3 7.524,1.3 7.248,1.306 6.974,1.326 6.702,1.368 6.151,1.452 5.613,1.615 5.108,1.851 3.903,2.414 2.906,3.388 2.313,4.579 2.077,5.055 1.906,5.562 1.806,6.083 1.683,6.722 1.667,7.381 1.757,8.025 1.841,8.625 2.019,9.211 2.282,9.756 2.591,10.397 3.016,10.98 3.53,11.47 4.063,11.978 4.69,12.385 5.371,12.664 5.605,12.76 5.845,12.84 6.089,12.904 6.092,13.156 6.096,13.408 6.101,13.661 6.107,13.757 6.12,13.852 6.141,13.945z</Geometry>
+  <Geometry x:Key="{x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry3Key}">F1 M22,21z M0,0z M7.636,12.155C7.696,12.161 7.753,12.173 7.808,12.199 7.939,12.258 8.039,12.374 8.08,12.512 8.093,12.559 8.098,12.605 8.1,12.653L8.1,13.079C8.209,13.07 8.317,13.058 8.425,13.043 8.485,13.034 8.545,13.024 8.606,13.016 8.641,13.014 8.641,13.014 8.677,13.015 8.785,13.025 8.886,13.061 8.97,13.131 9.007,13.162 9.039,13.198 9.065,13.238 9.187,13.42 9.173,13.668 9.032,13.836 8.97,13.909 8.888,13.963 8.797,13.992 8.749,14.007 8.699,14.013 8.65,14.02 8.564,14.034 8.478,14.045 8.391,14.055 8.217,14.075 8.042,14.088 7.866,14.095 7.808,14.097 7.748,14.099 7.689,14.099 7.638,14.1 7.586,14.102 7.535,14.096 7.363,14.073 7.211,13.959 7.142,13.8 7.119,13.747 7.107,13.692 7.101,13.634 7.09,13.307 7.1,12.98 7.1,12.653 7.102,12.605 7.107,12.559 7.12,12.512 7.157,12.386 7.245,12.278 7.36,12.214 7.414,12.185 7.47,12.169 7.529,12.158 7.565,12.155 7.599,12.153 7.636,12.155z M12.514,10.838C12.61,10.848 12.7,10.877 12.779,10.935 12.955,11.066 13.026,11.303 12.951,11.509 12.935,11.554 12.912,11.596 12.884,11.634 12.83,11.706 12.767,11.772 12.707,11.839 12.614,11.941 12.518,12.04 12.419,12.136 12.06,12.487 11.663,12.801 11.235,13.064 11.204,13.082 11.205,13.082 11.172,13.097 11.093,13.128 11.013,13.144 10.928,13.137 10.869,13.131 10.811,13.115 10.757,13.089 10.703,13.064 10.654,13.028 10.613,12.985 10.452,12.818 10.429,12.553 10.558,12.36 10.6,12.298 10.655,12.248 10.718,12.208 10.799,12.158 10.878,12.105 10.956,12.052 11.246,11.848 11.52,11.622 11.771,11.371 11.855,11.288 11.936,11.201 12.014,11.113 12.051,11.071 12.087,11.027 12.126,10.986 12.152,10.961 12.152,10.961 12.179,10.939 12.26,10.882 12.344,10.85 12.443,10.839 12.479,10.837 12.478,10.837 12.514,10.838z M7.636,7.655C7.696,7.661 7.753,7.673 7.808,7.699 7.928,7.753 8.023,7.855 8.069,7.979 8.085,8.024 8.094,8.07 8.099,8.118 8.123,8.796 8.1,9.475 8.1,10.153 8.096,10.274 8.058,10.388 7.978,10.481 7.939,10.526 7.892,10.564 7.84,10.592 7.658,10.691 7.429,10.666 7.273,10.531 7.237,10.5 7.205,10.464 7.179,10.424 7.133,10.352 7.11,10.273 7.101,10.189 7.077,9.511 7.1,8.832 7.1,8.153 7.102,8.105 7.107,8.059 7.12,8.012 7.157,7.886 7.245,7.778 7.36,7.714 7.414,7.685 7.47,7.669 7.529,7.658 7.565,7.655 7.599,7.653 7.636,7.655z M14.002,6.7C14.043,6.699 14.085,6.706 14.125,6.716 14.337,6.771 14.493,6.964 14.499,7.184 14.503,7.278 14.498,7.372 14.495,7.466 14.482,7.758 14.455,8.047 14.407,8.335 14.352,8.669 14.27,8.997 14.168,9.319 14.156,9.353 14.156,9.353 14.141,9.386 14.102,9.46 14.051,9.525 13.982,9.575 13.933,9.609 13.879,9.635 13.821,9.65 13.584,9.714 13.329,9.591 13.232,9.365 13.184,9.253 13.182,9.133 13.215,9.016 13.243,8.926 13.27,8.836 13.296,8.744 13.389,8.392 13.451,8.035 13.481,7.672 13.461,7.665 13.461,7.664 13.439,7.655 13.363,7.617 13.298,7.568 13.246,7.5 13.115,7.324 13.115,7.076 13.246,6.9 13.275,6.862 13.309,6.828 13.347,6.8 13.425,6.741 13.515,6.712 13.611,6.701 13.741,6.697 13.871,6.695 14.002,6.7z M11.182,6.701C11.303,6.714 11.414,6.76 11.5,6.846 11.674,7.02 11.694,7.303 11.547,7.5 11.511,7.547 11.467,7.588 11.417,7.621 11.345,7.667 11.266,7.69 11.182,7.699 10.504,7.723 9.825,7.7 9.147,7.7 9.062,7.697 8.982,7.68 8.907,7.639 8.865,7.616 8.827,7.587 8.793,7.553 8.647,7.407 8.606,7.18 8.692,6.992 8.717,6.938 8.751,6.888 8.793,6.846 8.88,6.76 8.99,6.714 9.111,6.701 9.801,6.677 10.492,6.677 11.182,6.701z</Geometry>
+  <DrawingGroup x:Key="{x:Static Ibinimator.Icon:Assets.combineDrawingGroupKey}" ClipGeometry="M0,0 V21 H22 V0 H0 Z">
+    <DrawingGroup>
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry1Key}}" />
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry2Key}}" />
+      <GeometryDrawing Brush="#FF404040" Geometry="{StaticResource {x:Static Ibinimator.Icon:Assets.Icon_Assets_combineGeometry3Key}}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="{x:Static Ibinimator.Icon:Assets.combineDrawingImageKey}" Drawing="{StaticResource {x:Static Ibinimator.Icon:Assets.combineDrawingGroupKey}}" />
+</ResourceDictionary>

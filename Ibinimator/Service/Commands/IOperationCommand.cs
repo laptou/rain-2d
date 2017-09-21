@@ -341,6 +341,153 @@ namespace Ibinimator.Service.Commands
         }
     }
 
+    public sealed class ModifyPathCommand : LayerCommandBase<Path>
+    {
+        public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
+            int index, NodeOperation operation) : base(id, new[] { target })
+        {
+            if(operation != NodeOperation.Add)
+                throw new InvalidOperationException();
+
+            Nodes = nodes;
+            Index = index;
+            Operation = operation;
+        }
+
+        public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
+            NodeOperation operation) : base(id, new[] { target })
+        {
+            if (operation != NodeOperation.Remove)
+                throw new InvalidOperationException();
+
+            Nodes = nodes;
+            Operation = operation;
+        }
+
+        public ModifyPathCommand(long id, Path target, PathNode[] nodes,
+            Vector2 delta, NodeOperation operation) : base(id, new[] { target })
+        {
+            if (operation != NodeOperation.Move &&
+                operation != NodeOperation.MoveHandle1 &&
+                operation != NodeOperation.MoveHandle2)
+                throw new InvalidOperationException();
+
+            if(nodes.Length > 1 &&
+               operation != NodeOperation.MoveHandle1 &&
+               operation != NodeOperation.MoveHandle2)
+                throw new ArgumentException("Can only move one handle at a time.");
+
+            Nodes = nodes;
+            Delta = delta;
+            Operation = operation;
+        }
+
+        public PathNode[] Nodes { get; }
+
+        public int Index { get; }
+
+        public Vector2 Delta { get; }
+
+        public NodeOperation Operation { get; }
+
+        public override void Do(ArtView artView)
+        {
+            var target = Targets[0];
+
+            switch (Operation)
+            {
+                case NodeOperation.Add:
+                    target.Nodes.InsertItems(Nodes, Index);
+                    break;
+                case NodeOperation.Remove:
+                    target.Nodes.RemoveItems(Nodes);
+                    break;
+                case NodeOperation.Move:
+                    foreach (var node in Nodes)
+                        node.Position += Delta;
+                    break;
+                case NodeOperation.MoveHandle1:
+                {
+                    // braces to avoid variable scope issues for
+                    // cubic
+                    if (Nodes[0] is CubicPathNode cubic)
+                        cubic.Control1 += Delta;
+                    else if (Nodes[0] is QuadraticPathNode quadratic)
+                        quadratic.Control += Delta;
+                }
+                    break;
+                case NodeOperation.MoveHandle2:
+                {
+                    if (Nodes[0] is CubicPathNode cubic)
+                        cubic.Control2 += Delta;
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override void Undo(ArtView artView)
+        {
+            var target = Targets[0];
+
+            switch (Operation)
+            {
+                case NodeOperation.Add:
+                    target.Nodes.RemoveItems(Nodes);
+                    break;
+                case NodeOperation.Remove:
+                    target.Nodes.InsertItems(Nodes, Index);
+                    break;
+                case NodeOperation.Move:
+                    foreach (var node in Nodes)
+                        node.Position -= Delta;
+                    break;
+                case NodeOperation.MoveHandle1:
+                {
+                    // braces to avoid variable scope issues for
+                    // cubic
+                    if (Nodes[0] is CubicPathNode cubic)
+                        cubic.Control1 -= Delta;
+                    else if (Nodes[0] is QuadraticPathNode quadratic)
+                        quadratic.Control -= Delta;
+                }
+                    break;
+                case NodeOperation.MoveHandle2:
+                {
+                    if (Nodes[0] is CubicPathNode cubic)
+                        cubic.Control2 -= Delta;
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override string Description
+        {
+            get
+            {
+                switch (Operation)
+                {
+                    case NodeOperation.Add:
+                        return $"Added {Nodes.Length} node(s)";
+                    case NodeOperation.Remove:
+                        return $"Removed {Nodes.Length} node(s)";
+                    case NodeOperation.Move:
+                        return $"Moved {Nodes.Length} node(s)";
+                    case NodeOperation.MoveHandle1:
+                    case NodeOperation.MoveHandle2:
+                        return "Modified node handle";
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        public enum NodeOperation { Add, Remove, Move, MoveHandle1, MoveHandle2 }
+    }
+
     public sealed class AddLayerCommand : LayerCommandBase<IContainerLayer>
     {
         public AddLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
@@ -365,6 +512,8 @@ namespace Ibinimator.Service.Commands
 
     public sealed class RemoveLayerCommand : LayerCommandBase<IContainerLayer>
     {
+        private int _index;
+
         public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
         {
             Layer = layer;
@@ -376,12 +525,13 @@ namespace Ibinimator.Service.Commands
 
         public override void Do(ArtView artView)
         {
+            _index = Targets[0].SubLayers.IndexOf(Layer as Layer);
             Targets[0].Remove(Layer as Layer);
         }
 
         public override void Undo(ArtView artView)
         {
-            Targets[0].Add(Layer as Layer);
+            Targets[0].Add(Layer as Layer, _index);
         }
     }
 
@@ -402,7 +552,7 @@ namespace Ibinimator.Service.Commands
             {
                 var siblings = target.Parent.SubLayers;
                 var index = siblings.IndexOf(target as Layer);
-                siblings.Move(index, Math.Min(siblings.Count - 1, index + Delta));
+                siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index + Delta));
             }
         }
 
@@ -412,7 +562,7 @@ namespace Ibinimator.Service.Commands
             {
                 var siblings = target.Parent.SubLayers;
                 var index = siblings.IndexOf(target as Layer);
-                siblings.Move(index, Math.Max(0, index - Delta));
+                siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index - Delta));
             }
         }
     }
