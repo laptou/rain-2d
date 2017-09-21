@@ -363,7 +363,10 @@
             <TabControl Grid.Column="1">
                 <TabItem>
                     <Border Background="White">
-                        <control:ArtView x:Name="ArtView" UseLayoutRounding="True" SnapsToDevicePixels="True" />
+                        <Grid>
+                            <control:ArtView x:Name="ArtView"/>
+                            <control:SvgImage/>
+                        </Grid>
                     </Border>
                 </TabItem>
             </TabControl>

@@ -61,8 +61,13 @@
     <Compile Include="MathTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EnumerableTests.cs" />
+    <Compile Include="SvgTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ibinimator.Svg\Ibinimator.Svg.csproj">
+      <Project>{86f9ccb8-de12-45b8-ba94-3024c9f36040}</Project>
+      <Name>Ibinimator.Svg</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Ibinimator\Ibinimator.csproj">
       <Project>{60561d00-30fe-4ce1-b598-d7caea9dc388}</Project>
       <Name>Ibinimator</Name>
