@@ -106,16 +106,21 @@
                             WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="1">
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static SystemCommands.MinimizeWindowCommand}" Height="30" Padding="12,6">
-                        <Image Source="/Ibinimator;component/Resources/Icon/minimize.png"
-                               Style="{DynamicResource Icon}" />
+                        <control:SvgImage 
+                            Source="/Ibinimator;component/Resources/Icon/minimize.svg"
+                            Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static SystemCommands.RestoreWindowCommand}" Height="30" Padding="12,6">
-                        <Image Source="/Ibinimator;component/Resources/Icon/restore.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage 
+                            Source="/Ibinimator;component/Resources/Icon/restore.svg" 
+                            Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static SystemCommands.CloseWindowCommand}" Height="30" Padding="12,6">
-                        <Image Source="/Ibinimator;component/Resources/Icon/close.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage 
+                            Source="/Ibinimator;component/Resources/Icon/close.svg" 
+                            Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -128,26 +133,26 @@
                             Command="{x:Static commands:SelectionCommands.MoveToBottomCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Send to Back">
-                        <Image Source="/Ibinimator;component/Resources/Icon/to back.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/to back.svg" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.MoveDownCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Move Backward">
-                        <Image Source="/Ibinimator;component/Resources/Icon/backward.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/backward.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.MoveUpCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Move Forward">
-                        <Image Source="/Ibinimator;component/Resources/Icon/forward.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/forward.svg" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.MoveToTopCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Move to Front">
-                        <Image Source="/Ibinimator;component/Resources/Icon/to front.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/to front.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
@@ -157,68 +162,68 @@
                             Command="{x:Static commands:SelectionCommands.FlipHorizontalCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Flip Horizontally">
-                        <Image Source="/Ibinimator;component/Resources/Icon/flip horizontally.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/flip horizontally.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.FlipVerticalCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Flip Vertically">
-                        <Image Source="/Ibinimator;component/Resources/Icon/flip vertically.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/flip vertically.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.RotateClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Rotate 90° Clockwise">
-                        <Image Source="/Ibinimator;component/Resources/Icon/rotate cw.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/rotate cw.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:SelectionCommands.RotateCounterClockwiseCommand}"
                             CommandParameter="{Binding SelectionManager}"
                             IsEnabled="{view:ComparisonBinding SelectionManager.Selection.Count, GT, 0}" ToolTip="Rotate 90° Counterclockwise">
-                        <Image Source="/Ibinimator;component/Resources/Icon/rotate ccw.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/rotate ccw.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Show Grid">
-                        <Image Source="/Ibinimator;component/Resources/Icon/grid.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/grid.svg" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Snap to Grid">
-                        <Image Source="/Ibinimator;component/Resources/Icon/snap.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/snap.svg" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
                 <Border Width="50" />
                 <StackPanel Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Left Edges">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align left.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align left.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Horizontal Centers">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align center horizontally.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align center horizontally.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Right Edges">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align right.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align right.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Top Edges">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align top.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align top.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Vertical Centers">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align center vertically.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align center vertically.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Bottom Edges">
-                        <Image Source="/Ibinimator;component/Resources/Icon/align bottom.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/align bottom.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}">
-                        <Image Source="/Ibinimator;component/Resources/Icon/expander.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/expander.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
@@ -227,24 +232,24 @@
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.UnionCommand}"
                             CommandParameter="{Binding HistoryManager}" ToolTip="Union">
-                        <Image Source="/Ibinimator;component/Resources/Icon/union.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/union.svg" Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.DifferenceCommand}"
                             CommandParameter="{Binding HistoryManager}" ToolTip="Difference">
-                        <Image Source="/Ibinimator;component/Resources/Icon/difference.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/difference.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.IntersectionCommand}"
                             CommandParameter="{Binding HistoryManager}" ToolTip="Intersection">
-                        <Image Source="/Ibinimator;component/Resources/Icon/intersection.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/intersection.svg"
                                Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static commands:ObjectCommands.XorCommand}"
                             CommandParameter="{Binding HistoryManager}" ToolTip="XOR">
-                        <Image Source="/Ibinimator;component/Resources/Icon/xor.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/xor.svg" Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
             </ToolBar>
@@ -324,39 +329,39 @@
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Select}, Mode=TwoWay}" ToolTip="Select">
-                        <Image Source="/Ibinimator;component/Resources/Icon/cursor.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/cursor.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Path}, Mode=TwoWay}" ToolTip="Node" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pointer.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pointer.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Pencil}, Mode=TwoWay}" ToolTip="Pencil">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pencil.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pencil.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Pen" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/pen.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pen.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Text}, Mode=TwoWay}" ToolTip="Text">
-                        <Image Source="/Ibinimator;component/Resources/Icon/text.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/text.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Color Picker" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/eyedropper.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/eyedropper.svg"
                                Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Fill Area" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/bucket.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/bucket.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Timeline" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/keyframe.png"
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/keyframe.svg"
                                Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Mask" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/mask.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/mask.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Zoom" IsEnabled="False">
-                        <Image Source="/Ibinimator;component/Resources/Icon/zoom.png" Style="{DynamicResource Icon}" />
+                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/zoom.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                 </ToolBar>
             </ToolBarTray>
@@ -651,7 +656,7 @@
                                                      ConverterParameter={x:Static d2d:DashStyle.Solid}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/stroke-solid.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/stroke-solid.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeDashStyle" Style="{StaticResource ToolbarButton}"
@@ -660,7 +665,7 @@
                                                      ConverterParameter={x:Static d2d:DashStyle.Custom}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/stroke-dash.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/stroke-dash.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                 </UniformGrid>
@@ -675,7 +680,7 @@
                                                      ConverterParameter={x:Static d2d:CapStyle.Flat}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/end-flat.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/end-flat.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
@@ -684,7 +689,7 @@
                                                      ConverterParameter={x:Static d2d:CapStyle.Square}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/end-square.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/end-square.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
@@ -693,7 +698,7 @@
                                                      ConverterParameter={x:Static d2d:CapStyle.Round}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/end-round.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/end-round.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                 </UniformGrid>
@@ -708,7 +713,7 @@
                                                      ConverterParameter={x:Static d2d:LineJoin.Miter}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/corner-miter.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/corner-miter.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
@@ -717,7 +722,7 @@
                                                      ConverterParameter={x:Static d2d:LineJoin.Bevel}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/corner-bevel.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/corner-bevel.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
@@ -726,7 +731,7 @@
                                                      ConverterParameter={x:Static d2d:LineJoin.Round}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <Image Source="/Ibinimator;component/Resources/Icon/corner-round.png"
+                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/corner-round.svg"
                                                Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                 </UniformGrid>
@@ -778,15 +783,15 @@
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ToggleButton}">
                                                 <Border Background="Transparent" Height="16" Width="16">
-                                                    <Image x:Name="ExpandPath"
-                                                           Source="/Ibinimator;component/Resources/Icon/expander.png"
+                                                    <control:SvgImage x:Name="ExpandPath"
+                                                           Source="/Ibinimator;component/Resources/Icon/expander.svg"
                                                            Cursor="Hand"
                                                            Style="{StaticResource Icon}"
                                                            RenderTransformOrigin="0.5,0.5">
-                                                        <Image.RenderTransform>
+                                                        <control:SvgImage.RenderTransform>
                                                             <RotateTransform Angle="-90" />
-                                                        </Image.RenderTransform>
-                                                    </Image>
+                                                        </control:SvgImage.RenderTransform>
+                                                    </control:SvgImage>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsChecked" Value="True">

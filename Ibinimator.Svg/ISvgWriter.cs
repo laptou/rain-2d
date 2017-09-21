@@ -8,7 +8,7 @@ namespace Ibinimator.Svg
 {
     public interface ISvgWriter
     {
-        XDocument Save(SvgDocument document);
+        XDocument Save(Document document);
     }
 
     

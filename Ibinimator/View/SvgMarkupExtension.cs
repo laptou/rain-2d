@@ -10,6 +10,7 @@ using System.Windows.Media;
 using WPF = System.Windows;
 using System.Xml.Linq;
 using Ibinimator.Svg;
+using Ibinimator.View.Control;
 
 namespace Ibinimator.View
 {
@@ -147,7 +148,7 @@ namespace Ibinimator.View
                 if (wpfShape.Stroke != null)
                 {
                     wpfShape.Stroke.Opacity = shape.StrokeOpacity;
-                    wpfShape.StrokeThickness = shape.StrokeWidth;
+                    wpfShape.StrokeThickness = shape.StrokeWidth.To(LengthUnit.Pixels);
                     wpfShape.StrokeDashOffset = shape.StrokeDashOffset;
                     wpfShape.StrokeDashArray = new DoubleCollection(shape.StrokeDashArray.Cast<double>());
                 }
@@ -184,6 +185,8 @@ namespace Ibinimator.View
                     (byte) (color.Green * 255),
                     (byte) (color.Blue * 255));
 
+                wpfColor.A = (byte) (color.Alpha * 255);
+
                 return new SolidColorBrush(wpfColor);
             }
 
@@ -193,24 +196,8 @@ namespace Ibinimator.View
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             var viewbox = new VisualBrush();
-            var root = new Canvas();
 
-            var stream = Application.GetResourceStream(Path)?.Stream ?? System.IO.File.OpenRead(Path.ToString());
-            var doc = SvgSerializer.Parse(XDocument.Load(stream));
-            stream.Dispose();
-
-            foreach (var element in doc)
-                root.Children.Add(ToWpf(element));
-
-            viewbox.Viewbox = new Rect
-            {
-                X = doc.Viewbox.X,
-                Y = doc.Viewbox.Y,
-                Width = doc.Viewbox.Width,
-                Height = doc.Viewbox.Height
-            };
-
-            viewbox.Visual = root;
+            viewbox.Visual = new SvgImage { Source = Path };
             return viewbox;
         }
     }

@@ -11,6 +11,14 @@ namespace Ibinimator.Svg
         private static readonly Regex Pattern = new Regex(@"((?:[+-]?[0-9]*\.[0-9]+(?:[Ee][+-]?[0-9]+)?)|(?:(?:[+-]?[0-9]+)(?:[Ee][+-]?[0-9]+)?))(em|ex|px|in|cm|mm|pt|pc|%)?", 
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        private static readonly Dictionary<LengthUnit, float> Factors = new Dictionary<LengthUnit, float>
+        {
+            [LengthUnit.Number] = 1f,
+            [LengthUnit.Pixels] = 72f / 96f,
+            [LengthUnit.Points] = 1f,
+            [LengthUnit.Inches] = 72f
+        };
+
         public Length(float magnitude, LengthUnit unit) : this()
         {
             Magnitude = magnitude;
@@ -23,7 +31,7 @@ namespace Ibinimator.Svg
 
         public static Length Convert(Length length, LengthUnit target)
         {
-            throw new NotImplementedException();
+            return new Length(Factors[target] / Factors[length.Unit], target);
         }
 
         public static Length Parse(string input)
@@ -45,6 +53,8 @@ namespace Ibinimator.Svg
                     case "pt": unit = LengthUnit.Points; break;
                     case "pc": unit = LengthUnit.Picas; break;
                     case "%": unit = LengthUnit.Percent; break;
+                    case "": unit = LengthUnit.Number;
+                        break;
                     default: throw new FormatException("Invalid unit.");
                 }
 

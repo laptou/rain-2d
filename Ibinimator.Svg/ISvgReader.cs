@@ -8,6 +8,6 @@ namespace Ibinimator.Svg
 {
     public interface ISvgReader
     {
-        SvgDocument Read(XDocument document);
+        Document Read(XDocument document);
     }
 }

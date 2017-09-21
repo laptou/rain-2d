@@ -8,17 +8,17 @@ namespace Ibinimator.Svg
 {
     public class SvgSerializer : ISvgWriter, ISvgReader
     {
-        public XDocument Save(SvgDocument document)
+        public XDocument Save(Document document)
         {
             throw new NotImplementedException();
         }
 
-        public SvgDocument Read(XDocument document)
+        public Document Read(XDocument document)
         {
             return Parse(document);
         }
 
-        public static SvgDocument Parse(XDocument document)
+        public static Document Parse(XDocument document)
         {
             var doc = new Document();
             doc.FromXml(document.Root, null);

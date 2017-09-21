@@ -22,8 +22,6 @@ namespace Ibinimator
             InitializeComponent();
 
             SetDefaultFont();
-
-            Icon.Initialize();
         }
 
         public static Dispatcher Dispatcher => Current.Dispatcher;

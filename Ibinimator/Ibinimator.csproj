@@ -138,11 +138,6 @@
     <Compile Include="Model\Shape.cs" />
     <Compile Include="Model\Text.cs" />
     <Compile Include="Model\Unit.cs" />
-    <Compile Include="Resources\Icon\Icon.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Icon.tt</DependentUpon>
-    </Compile>
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\CommandManager.cs" />
     <Compile Include="Service\Commands\FileCommands.cs" />
@@ -294,64 +289,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icon\align bottom.png" />
-    <Resource Include="Resources\Icon\align center horizontally.png" />
-    <Resource Include="Resources\Icon\align center vertically.png" />
-    <Resource Include="Resources\Icon\align left.png" />
-    <Resource Include="Resources\Icon\align right.png" />
-    <Resource Include="Resources\Icon\align top.png" />
-    <Resource Include="Resources\Icon\backward.png" />
-    <Resource Include="Resources\Icon\bucket.png" />
-    <Resource Include="Resources\Icon\close.png" />
-    <Resource Include="Resources\Icon\combine.png" />
-    <Resource Include="Resources\Icon\corner-bevel.png" />
-    <Resource Include="Resources\Icon\corner-miter.png" />
-    <Resource Include="Resources\Icon\corner-round.png" />
-    <Resource Include="Resources\Icon\cursor.png" />
-    <Resource Include="Resources\Icon\difference.png" />
-    <Resource Include="Resources\Icon\divide.png" />
-    <Resource Include="Resources\Icon\end-flat.png" />
-    <Resource Include="Resources\Icon\end-round.png" />
-    <Resource Include="Resources\Icon\end-square.png" />
-    <Resource Include="Resources\Icon\expander.png" />
-    <Resource Include="Resources\Icon\eyedropper.png" />
-    <Resource Include="Resources\Icon\flip horizontally.png" />
-    <Resource Include="Resources\Icon\flip vertically.png" />
-    <Resource Include="Resources\Icon\forward.png" />
-    <Resource Include="Resources\Icon\grid.png" />
-    <Resource Include="Resources\Icon\intersection.png" />
-    <Resource Include="Resources\Icon\keyframe.png" />
-    <Resource Include="Resources\Icon\mask.png" />
-    <Resource Include="Resources\Icon\minimize.png" />
-    <Resource Include="Resources\Icon\pen.png" />
-    <Resource Include="Resources\Icon\pencil.png" />
-    <Resource Include="Resources\Icon\pointer.png" />
-    <Resource Include="Resources\Icon\resize-ew.png" />
-    <Resource Include="Resources\Icon\resize-nesw.png" />
-    <Resource Include="Resources\Icon\resize-ns.png" />
-    <Resource Include="Resources\Icon\resize-nwse.png" />
-    <Resource Include="Resources\Icon\restore.png" />
-    <Resource Include="Resources\Icon\rotate ccw.png" />
-    <Resource Include="Resources\Icon\rotate cw.png" />
-    <Resource Include="Resources\Icon\rotate.png" />
-    <Resource Include="Resources\Icon\snap.png" />
-    <Resource Include="Resources\Icon\text.png" />
-    <Resource Include="Resources\Icon\to back.png" />
-    <Resource Include="Resources\Icon\to front.png" />
-    <Resource Include="Resources\Icon\union.png" />
-    <Resource Include="Resources\Icon\zoom.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icon\stroke-dash.png" />
-    <Resource Include="Resources\Icon\stroke-solid.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icon\corner-miter.svg" />
-    <Content Include="Resources\Icon\Icon.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Icon.cs</LastGenOutput>
-    </Content>
-    <Resource Include="Resources\Icon\xor.png" />
     <Resource Include="Resources\License\fastmember.txt" />
     <Resource Include="Resources\License\sharpdx.txt" />
   </ItemGroup>
@@ -363,6 +300,65 @@
       <Project>{86f9ccb8-de12-45b8-ba94-3024c9f36040}</Project>
       <Name>Ibinimator.Svg</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\align bottom.svg" />
+    <Resource Include="Resources\Icon\align center horizontally.svg" />
+    <Resource Include="Resources\Icon\align center vertically.svg" />
+    <Resource Include="Resources\Icon\align left.svg" />
+    <Resource Include="Resources\Icon\align right.svg" />
+    <Resource Include="Resources\Icon\align top.svg" />
+    <Resource Include="Resources\Icon\backward.svg" />
+    <Resource Include="Resources\Icon\bucket.svg" />
+    <Resource Include="Resources\Icon\close.svg" />
+    <Resource Include="Resources\Icon\combine.svg" />
+    <Resource Include="Resources\Icon\corner-bevel.svg" />
+    <Resource Include="Resources\Icon\corner-miter.svg" />
+    <Resource Include="Resources\Icon\corner-round.svg" />
+    <Resource Include="Resources\Icon\cursor.svg" />
+    <Resource Include="Resources\Icon\difference.svg" />
+    <Resource Include="Resources\Icon\end-flat.svg" />
+    <Resource Include="Resources\Icon\end-round.svg" />
+    <Resource Include="Resources\Icon\end-square.svg" />
+    <Resource Include="Resources\Icon\expander.svg" />
+    <Resource Include="Resources\Icon\eyedropper.svg" />
+    <Resource Include="Resources\Icon\flip horizontally.svg" />
+    <Resource Include="Resources\Icon\flip vertically.svg" />
+    <Resource Include="Resources\Icon\forward.svg" />
+    <Resource Include="Resources\Icon\grid.svg" />
+    <Resource Include="Resources\Icon\intersection.svg" />
+    <Resource Include="Resources\Icon\keyframe.svg" />
+    <Resource Include="Resources\Icon\mask.svg" />
+    <Resource Include="Resources\Icon\minimize.svg" />
+    <Resource Include="Resources\Icon\pen.svg" />
+    <Resource Include="Resources\Icon\pencil.svg" />
+    <Resource Include="Resources\Icon\pointer.svg" />
+    <Resource Include="Resources\Icon\resize-ew.svg" />
+    <Resource Include="Resources\Icon\resize-nesw.svg" />
+    <Resource Include="Resources\Icon\resize-ns.svg" />
+    <Resource Include="Resources\Icon\resize-nwse.svg" />
+    <Resource Include="Resources\Icon\restore.svg" />
+    <Resource Include="Resources\Icon\rotate ccw.svg" />
+    <Resource Include="Resources\Icon\rotate cw.svg" />
+    <Resource Include="Resources\Icon\rotate.svg" />
+    <Resource Include="Resources\Icon\snap.svg" />
+    <Resource Include="Resources\Icon\stroke-dash.svg" />
+    <Resource Include="Resources\Icon\stroke-solid.svg" />
+    <Resource Include="Resources\Icon\text.svg" />
+    <Resource Include="Resources\Icon\to back.svg" />
+    <Resource Include="Resources\Icon\to front.svg" />
+    <Resource Include="Resources\Icon\union.svg" />
+    <Resource Include="Resources\Icon\zoom.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\xor.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icon\resize-ew.png" />
+    <Resource Include="Resources\Icon\resize-nesw.png" />
+    <Resource Include="Resources\Icon\resize-ns.png" />
+    <Resource Include="Resources\Icon\resize-nwse.png" />
+    <Resource Include="Resources\Icon\rotate.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -5,6 +5,7 @@
     xmlns:local="clr-namespace:Ibinimator"
     xmlns:view="clr-namespace:Ibinimator.View"
     xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+    xmlns:control="clr-namespace:Ibinimator.View.Control"
     x:Class="Ibinimator.App"
     StartupUri="View/MainView.xaml">
     <Application.Resources>
@@ -39,7 +40,7 @@
         <SolidColorBrush x:Key="A3Brush" Color="{StaticResource A3}" />
         <SolidColorBrush x:Key="A4Brush" Color="{StaticResource A4}" />
         <SolidColorBrush x:Key="A5Brush" Color="{StaticResource A5}" />
-        <Style x:Key="Icon" TargetType="{x:Type Image}">
+        <Style x:Key="Icon" TargetType="{x:Type control:SvgImage}">
             <Setter Property="Height" Value="19.2" />
             <Setter Property="Width" Value="19.2" />
             <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
@@ -320,7 +321,7 @@
                                               IsEnabled="{TemplateBinding HasOverflowItems}"
                                               Background="#00000000" BorderBrush="{x:Null}" BorderThickness="0"
                                               ClipToBounds="True">
-                                    <Image Source="/Ibinimator;component/Resources/Icon/expander.png"
+                                    <control:SvgImage Source="/Ibinimator;component/Resources/Icon/expander.svg"
                                            Style="{DynamicResource Icon}" />
                                 </ToggleButton>
                                 <Popup x:Name="OverflowPopup" AllowsTransparency="true" Focusable="false"

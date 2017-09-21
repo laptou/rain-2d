@@ -24,7 +24,7 @@ namespace Ibinimator.Svg
 
         public float StrokeOpacity { get; set; } = 1;
 
-        public float StrokeWidth { get; set; }
+        public Length StrokeWidth { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -32,6 +32,18 @@ namespace Ibinimator.Svg
 
             if (element.Attribute("fill") != null)
                 Fill = Paint.Parse((string) element.Attribute("fill"));
+
+            if (element.Attribute("fill-opacity") != null)
+                FillOpacity = float.Parse((string)element.Attribute("fill-opacity"));
+
+            if (element.Attribute("stroke") != null)
+                Stroke = Paint.Parse((string)element.Attribute("stroke"));
+
+            if (element.Attribute("stroke-width") != null)
+                StrokeWidth = Length.Parse((string)element.Attribute("stroke-width"));
+
+            if (element.Attribute("stroke-opacity") != null)
+                StrokeOpacity = float.Parse((string)element.Attribute("stroke-opacity"));
         }
 
         public override XElement ToXml(SvgContext context)

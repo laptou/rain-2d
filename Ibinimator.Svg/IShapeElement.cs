@@ -14,6 +14,6 @@ namespace Ibinimator.Svg
         float[] StrokeDashArray { get; set; }
         float StrokeDashOffset { get; set; }
         float StrokeOpacity { get; set; }
-        float StrokeWidth { get; set; }
+        Length StrokeWidth { get; set; }
     }
 }
