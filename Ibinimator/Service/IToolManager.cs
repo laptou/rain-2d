@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;

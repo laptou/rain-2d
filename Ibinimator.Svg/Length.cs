@@ -14,9 +14,9 @@ namespace Ibinimator.Svg
         private static readonly Dictionary<LengthUnit, float> Factors = new Dictionary<LengthUnit, float>
         {
             [LengthUnit.Number] = 1f,
-            [LengthUnit.Pixels] = 1f,
-            [LengthUnit.Points] = 1.25f,
-            [LengthUnit.Inches] = 96f
+            [LengthUnit.Pixels] = 72f / 96f,
+            [LengthUnit.Points] = 1f,
+            [LengthUnit.Inches] = 72f
         };
 
         public Length(float magnitude, LengthUnit unit) : this()
@@ -31,7 +31,7 @@ namespace Ibinimator.Svg
 
         public static Length Convert(Length length, LengthUnit target)
         {
-            return new Length(length.Magnitude * Factors[target] / Factors[length.Unit], target);
+            return new Length(Factors[target] / Factors[length.Unit], target);
         }
 
         public static Length Parse(string input)
@@ -126,14 +126,6 @@ namespace Ibinimator.Svg
         public float To(LengthUnit target)
         {
             return Convert(this, target).Magnitude;
-        }
-
-        public float To(LengthUnit target, float baseline)
-        {
-            if (Unit == LengthUnit.Percent)
-                return Magnitude / 100 * baseline;
-
-            return To(target);
         }
     }
 }

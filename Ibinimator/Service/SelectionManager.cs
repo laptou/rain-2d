@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Ibinimator.Shared;
 using System.Linq;
 using System.Windows.Input;
-using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
@@ -63,7 +62,7 @@ namespace Ibinimator.Service
                         if (layer.Selected)
                             Update(true);
                         break;
-                    case nameof(SharpDX.Direct2D1.Layer.Selected):
+                    case nameof(Layer.Selected):
                         var contains = Selection.Contains(layer);
 
                         if (layer.Selected && !contains)
@@ -322,14 +321,14 @@ namespace Ibinimator.Service
 
                 history.Replace(
                     new TransformCommand(
-                        ArtView.HistoryManager.Position,
+                        ArtView.HistoryManager.Time,
                         Selection.ToArray<ILayer>(),
                         lastTransformCommand.Transform * transform));
             }
             else
             {
                 var current = new TransformCommand(
-                    ArtView.HistoryManager.Position + 1,
+                    ArtView.HistoryManager.Time + 1,
                     Selection.ToArray<ILayer>(), transform);
 
                 history.Do(current);
@@ -428,7 +427,7 @@ namespace Ibinimator.Service
                 if (!_moved && _transformHandle != null)
                     ArtView.HistoryManager.Do(
                         new TransformCommand(
-                            ArtView.HistoryManager.Position + 1,
+                            ArtView.HistoryManager.Time + 1,
                             Selection.ToArray<ILayer>(),
                             Matrix3x2.Identity));
 

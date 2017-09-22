@@ -1,17 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator", "Ibinimator\Ibinimator.csproj", "{60561D00-30FE-4CE1-B598-D7CAEA9DC388}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Test", "Ibinimator.Test\Ibinimator.Test.csproj", "{7314B044-4843-4F01-9CBF-31E6F84CF7B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Svg", "Ibinimator.Svg\Ibinimator.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Direct2D", "Ibinimator.Direct2D\Ibinimator.Direct2D.csproj", "{D7013EE5-FF44-43EF-8B5A-74950437C404}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Core", "Ibinimator.Core\Ibinimator.Core.csproj", "{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Svg", "Ibinimator.Svg\Ibinimator.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,14 +27,6 @@ Global
 		{86F9CCB8-DE12-45B8-BA94-3024C9F36040}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86F9CCB8-DE12-45B8-BA94-3024C9F36040}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86F9CCB8-DE12-45B8-BA94-3024C9F36040}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7013EE5-FF44-43EF-8B5A-74950437C404}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7013EE5-FF44-43EF-8B5A-74950437C404}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7013EE5-FF44-43EF-8B5A-74950437C404}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7013EE5-FF44-43EF-8B5A-74950437C404}.Release|Any CPU.Build.0 = Release|Any CPU
-		{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

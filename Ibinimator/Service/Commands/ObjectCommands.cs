@@ -29,7 +29,7 @@ namespace Ibinimator.Service.Commands
             if (selectionManager.Selection[0] is IGeometricLayer x &&
                 selectionManager.Selection[1] is IGeometricLayer y)
                 manager.Do(new BinaryOperationCommand(
-                    manager.Position + 1,
+                    manager.Time + 1,
                     new[] {x, y},
                     operation));
         }

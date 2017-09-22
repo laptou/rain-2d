@@ -10,7 +10,7 @@ using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
-    public class ToolManager : Core.Model, IToolManager
+    public class ToolManager : Model.Model, IToolManager
     {
         public ToolManager(ArtView artView)
         {
@@ -128,7 +128,7 @@ namespace Ibinimator.Service
         MultiSwitch
     }
 
-    public class ToolOption : Core.Model
+    public class ToolOption : Model.Model
     {
         public ImageSource Icon
         {

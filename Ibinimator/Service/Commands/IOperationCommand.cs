@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using Ibinimator.View.Control;
 using SharpDX;
@@ -157,14 +156,6 @@ namespace Ibinimator.Service.Commands
                     (b, i) => (b?.Clone<BrushInfo>(), i?.Clone<StrokeInfo>())).ToArray();
 
             NewStroke = (newStrokeBrush?.Clone<BrushInfo>(), newStrokeInfo?.Clone<StrokeInfo>());
-        }
-
-        public ApplyStrokeCommand(long id, IStrokedLayer[] targets,
-            (BrushInfo, StrokeInfo) newStroke,
-            (BrushInfo, StrokeInfo)[] oldStrokes) : base(id, targets)
-        {
-            NewStroke = newStroke;
-            OldStrokes = oldStrokes;
         }
 
         public override string Description => $"Stroked {Targets.Length} layer(s)";

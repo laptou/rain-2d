@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using Ibinimator.Direct2D;
 using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.View.Control
 {
-    public class ArtView : D2DImage, IArtView
+    public class ArtView : D2DImage
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
 

@@ -67,7 +67,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Position + 1,
+                    history.Time + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     1));
         }
@@ -78,7 +78,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Position + 1,
+                    history.Time + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     100000000));
         }
@@ -89,7 +89,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Position + 1,
+                    history.Time + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     -100000000));
         }
@@ -100,7 +100,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Position + 1,
+                    history.Time + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     -1));
         }

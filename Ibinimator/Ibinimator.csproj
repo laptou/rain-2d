@@ -124,6 +124,19 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\BrushInfo.cs" />
+    <Compile Include="Model\Document.cs" />
+    <Compile Include="Model\Format.cs" />
+    <Compile Include="Model\IContainerLayer.cs" />
+    <Compile Include="Model\IGeometricLayer.cs" />
+    <Compile Include="Model\ILayer.cs" />
+    <Compile Include="Model\ITextLayer.cs" />
+    <Compile Include="Model\Layer.cs" />
+    <Compile Include="Model\Model.cs" />
+    <Compile Include="Model\Path.cs" />
+    <Compile Include="Model\Resource.cs" />
+    <Compile Include="Model\Shape.cs" />
+    <Compile Include="Model\Text.cs" />
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\CommandManager.cs" />
@@ -133,6 +146,7 @@
     <Compile Include="Service\Commands\ObjectCommands.cs" />
     <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
+    <Compile Include="Service\IArtViewManager.cs" />
     <Compile Include="Service\IHistoryManager.cs" />
     <Compile Include="Service\IRecorder.cs" />
     <Compile Include="Service\PencilTool.cs" />
@@ -142,9 +156,22 @@
     <Compile Include="Service\WeakLock.cs" />
     <Compile Include="Service\Commands\SelectionCommands.cs" />
     <Compile Include="Service\FileService.cs" />
+    <Compile Include="Service\SvgSerializer.cs" />
     <Compile Include="Service\ToolManager.cs" />
-    <Compile Include="Service\Commands\ViewCommands.cs" />
+    <Compile Include="Shared\ColorUtils.cs" />
+    <Compile Include="Shared\DictionaryExtensions.cs" />
+    <Compile Include="Shared\DirectWriteExtensions.cs" />
+    <Compile Include="Shared\EnumerableExtensions.cs" />
+    <Compile Include="Shared\MathUtils.cs" />
+    <Compile Include="Shared\Mathematics\Matrix.cs" />
+    <Compile Include="Shared\ObservableList.cs" />
     <Compile Include="Shared\ScreenExtensions.cs" />
+    <Compile Include="Shared\SerializationExtensions.cs" />
+    <Compile Include="Shared\StreamExtensions.cs" />
+    <Compile Include="Shared\TupleUtils.cs" />
+    <Compile Include="Shared\TypeExtensions.cs" />
+    <Compile Include="Service\Commands\ViewCommands.cs" />
+    <Compile Include="Shared\WeakDictionary.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
@@ -153,10 +180,12 @@
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
+    <Compile Include="Service\CacheManager.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
     <Compile Include="View\Control\HSLWheel.xaml.cs">
       <DependentUpon>HSLWheel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Service\ICacheManager.cs" />
     <Compile Include="Service\ISelectionManager.cs" />
     <Compile Include="Service\IToolManager.cs" />
     <Compile Include="Service\IViewManager.cs" />
@@ -267,14 +296,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ibinimator.Core\Ibinimator.Core.csproj">
-      <Project>{488FB825-1BA1-4313-BCAA-99FBDC9BBD53}</Project>
-      <Name>Ibinimator.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ibinimator.Direct2D\Ibinimator.Direct2D.csproj">
-      <Project>{D7013EE5-FF44-43EF-8B5A-74950437C404}</Project>
-      <Name>Ibinimator.Direct2D</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Ibinimator.Svg\Ibinimator.Svg.csproj">
       <Project>{86f9ccb8-de12-45b8-ba94-3024c9f36040}</Project>
       <Name>Ibinimator.Svg</Name>

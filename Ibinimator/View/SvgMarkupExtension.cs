@@ -195,8 +195,9 @@ namespace Ibinimator.View
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var viewbox = new VisualBrush {Visual = new SvgImage {Source = Path}};
+            var viewbox = new VisualBrush();
 
+            viewbox.Visual = new SvgImage { Source = Path };
             return viewbox;
         }
     }

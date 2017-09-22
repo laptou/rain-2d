@@ -4,20 +4,16 @@ using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Core;
-using Ibinimator.Core.Mathematics;
-using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
-using Vector2 = SharpDX.Vector2;
 
 namespace Ibinimator.Service
 {
-    public sealed class PencilTool : Core.Model, ITool
+    public sealed class PencilTool : Model.Model, ITool
     {
         private readonly List<PathNode> _selectedNodes = new List<PathNode>();
         private bool _alt;
@@ -147,7 +143,7 @@ namespace Ibinimator.Service
                 };
 
                 Manager.ArtView.HistoryManager.Do(
-                    new AddLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
+                    new AddLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
                         Root,
                         path));
 
@@ -220,7 +216,7 @@ namespace Ibinimator.Service
                     {
                         Manager.ArtView.HistoryManager.Do(
                             new ModifyPathCommand(
-                                Manager.ArtView.HistoryManager.Position + 1,
+                                Manager.ArtView.HistoryManager.Time + 1,
                                 CurrentPath,
                                 new [] { newNode },
                                 lastIndex - (lastIndex - secondIndex) + 1,
@@ -233,7 +229,7 @@ namespace Ibinimator.Service
                 {
                     Manager.ArtView.HistoryManager.Do(
                         new ModifyPathCommand(
-                            Manager.ArtView.HistoryManager.Position + 1,
+                            Manager.ArtView.HistoryManager.Time + 1,
                             CurrentPath,
                             new[] { newNode },
                             CurrentPath.Nodes.Count,
@@ -258,7 +254,7 @@ namespace Ibinimator.Service
 
                 var newCmd = 
                     new ModifyPathCommand(
-                        history.Position + 1,
+                        history.Time + 1,
                         CurrentPath,
                         _selectedNodes.ToArray(),
                         Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, pos - _lastPos),
@@ -272,7 +268,7 @@ namespace Ibinimator.Service
                     cmd.Nodes.SequenceEqual(newCmd.Nodes))
                     history.Replace(
                         new ModifyPathCommand(
-                            history.Position + 1,
+                            history.Time + 1,
                             CurrentPath,
                             newCmd.Nodes,
                             cmd.Delta + newCmd.Delta,
