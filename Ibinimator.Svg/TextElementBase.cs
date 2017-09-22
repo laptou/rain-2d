@@ -19,7 +19,15 @@ namespace Ibinimator.Svg
         public FontStretch FontStretch { get; set; } = FontStretch.Inherit;
 
         public FontWeight FontWeight { get; set; } = FontWeight.Inherit;
+
         public string Text { get; set; }
+
+        public override void FromXml(XElement element, SvgContext context)
+        {
+            base.FromXml(element, context);
+
+            FontFamily = LazyGet(element, "font-family");
+        }
 
         public override XElement ToXml(SvgContext context)
         {
@@ -31,6 +39,7 @@ namespace Ibinimator.Svg
             LazySet(element, "font-size", FontSize);
             LazySet(element, "font-stretch", FontStretch);
             LazySet(element, "font-weight", FontWeight);
+            element.Add(new XText(Text));
 
             return element;
         }

@@ -12,4 +12,16 @@
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Angle.cs" />
+    <Compile Remove="AngleUnit.cs" />
+    <Compile Remove="Color.cs" />
+    <Compile Remove="Length.cs" />
+    <Compile Remove="LengthUnit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ibinimator.Core\Ibinimator.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -20,7 +20,7 @@ namespace Ibinimator.Svg
             base.FromXml(element, context);
 
             X = float.Parse((string)element.Attribute("x") ?? "0");
-            Y = float.Parse((string)element.Attribute("x") ?? "0");
+            Y = float.Parse((string)element.Attribute("y") ?? "0");
             RadiusX = Length.Parse((string)element.Attribute("rx") ?? "0");
             RadiusY = Length.Parse((string)element.Attribute("ry") ?? "0");
             Width = Length.Parse((string)element.Attribute("width") ?? "0");

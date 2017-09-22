@@ -5,7 +5,7 @@ using System.Linq;
 using SharpDX;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Matrix = Ibinimator.Shared.Mathematics.Matrix;
+using IbiM = Ibinimator.Svg.Mathematics;
 
 namespace Ibinimator.Test
 {
@@ -134,49 +134,6 @@ namespace Ibinimator.Test
 
             m = Matrix3x2.Skew(45, 0);
             Verify(m);
-        }
-
-        [TestMethod]
-        public void MyMatrix()
-        {
-            var m = Matrix.Identity;
-            var v0 = new Vector2(5, 10);
-            var v1 = v0;
-            var rnd = new Random();
-
-            for (var i = 0; i < 10000; i++)
-            {
-                switch (rnd.Next(3))
-                {
-                    case 0:
-                        var t = rnd.NextVector2(Vector2.Zero, Vector2.One * 10);
-                        m = Matrix.Translate(t) * m;
-                        v1 += t;
-                        break;
-                    case 1:
-                        var s = rnd.NextVector2(Vector2.One * 0.9f, Vector2.One * 1.1f);
-                        m = Matrix.Scale(s) * m;
-                        v1 *= s;
-                        break;
-                    case 2:
-                        var r = rnd.NextFloat(0.1f, 6.27f);
-                        m = Matrix.Rotate(r) * m;
-                        v1 = MathUtils.Rotate(v1, r);
-                        break;
-                }
-
-                var d = m.Decompose();
-                var v2 =
-                    MathUtils.Rotate(
-                        MathUtils.ShearX(
-                            v0 * d.scale,
-                            d.shear),
-                        d.rotation)
-                    + d.translation;
-
-                AreEqual(v1, m * v0, 1e-4f);
-                AreEqual(v2, m * v0, 1e-4f);
-            }
         }
 
         [TestMethod]

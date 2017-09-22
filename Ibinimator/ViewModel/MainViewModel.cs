@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using Ibinimator.Service;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
-using Rectangle = Ibinimator.Model.Rectangle;
+using Rectangle = Ibinimator.Direct2D.Rectangle;
 
 namespace Ibinimator.ViewModel
 {
@@ -39,7 +40,7 @@ namespace Ibinimator.ViewModel
 
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
             SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
-            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
+            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
         }
 
         public MainViewModel()

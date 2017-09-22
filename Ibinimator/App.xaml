@@ -41,12 +41,10 @@
         <SolidColorBrush x:Key="A4Brush" Color="{StaticResource A4}" />
         <SolidColorBrush x:Key="A5Brush" Color="{StaticResource A5}" />
         <Style x:Key="Icon" TargetType="{x:Type control:SvgImage}">
-            <Setter Property="Height" Value="19.2" />
-            <Setter Property="Width" Value="19.2" />
-            <Setter Property="RenderOptions.EdgeMode" Value="Unspecified" />
-            <Setter Property="RenderOptions.BitmapScalingMode" Value="Fant" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Width" Value="20" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
-            <Setter Property="UseLayoutRounding" Value="True" />
+            <Setter Property="UseLayoutRounding" Value="False" />
         </Style>
         <!--#endregion-->
         <!--#endregion-->

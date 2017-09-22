@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.Shared;
@@ -32,11 +33,28 @@ namespace Ibinimator.Service
                     .ToArray();
 
             var command = new ApplyFillCommand(
-                Manager.ArtView.HistoryManager.Time + 1,
+                Manager.ArtView.HistoryManager.Position + 1,
                 targets, brush,
                 targets.Select(t => t.FillBrush).ToArray());
 
-            Manager.ArtView.HistoryManager.Do(command);
+            var prev = Manager.ArtView.HistoryManager.Current;
+
+            if (prev is ApplyFillCommand afc &&
+                command.Time - prev.Time <= 500 &&
+                prev.Targets.SequenceEqual(targets))
+            {
+                Manager.ArtView.HistoryManager.Pop();
+                Manager.ArtView.HistoryManager.Do(
+                    new ApplyFillCommand(
+                        Manager.ArtView.HistoryManager.Position + 1,
+                        targets, brush,
+                        afc.OldFills));
+            }
+            else
+            {
+                Manager.ArtView.HistoryManager.Do(command);
+            }
+
         }
 
         public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
@@ -47,12 +65,29 @@ namespace Ibinimator.Service
                     .ToArray();
 
             var command = new ApplyStrokeCommand(
-                Manager.ArtView.HistoryManager.Time + 1,
+                Manager.ArtView.HistoryManager.Position + 1,
                 targets,
                 brush, targets.Select(t => t.StrokeBrush).ToArray(),
                 stroke, targets.Select(t => t.StrokeInfo).ToArray());
 
-            Manager.ArtView.HistoryManager.Do(command);
+            var prev = Manager.ArtView.HistoryManager.Current;
+
+            if (prev is ApplyStrokeCommand asc &&
+                command.Time - prev.Time <= 500 &&
+                prev.Targets.SequenceEqual(targets))
+            {
+                Manager.ArtView.HistoryManager.Pop();
+                Manager.ArtView.HistoryManager.Do(
+                    new ApplyStrokeCommand(
+                        Manager.ArtView.HistoryManager.Position + 1,
+                        targets,
+                        command.NewStroke,
+                        asc.OldStrokes));
+            }
+            else
+            {
+                Manager.ArtView.HistoryManager.Do(command);
+            }
         }
 
         public void Dispose()
@@ -68,7 +103,7 @@ namespace Ibinimator.Service
 
                 foreach (var layer in delete)
                     Manager.ArtView.HistoryManager.Do(
-                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
                             layer.Parent,
                             layer));
 

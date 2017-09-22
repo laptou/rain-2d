@@ -2,10 +2,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Direct2D;
 using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Layer = Ibinimator.Model.Layer;
+using Layer = Ibinimator.Direct2D.Layer;
 
 namespace Ibinimator.Service
 {
@@ -13,7 +14,7 @@ namespace Ibinimator.Service
     {
         Bitmap Cursor { get; set; }
         Group Root { get; }
-        IList<Layer> Selection { get; }
+        IList<Layer> Selection { get; set; }
         RectangleF SelectionBounds { get; }
         float SelectionRotation { get; }
         float SelectionShear { get; }

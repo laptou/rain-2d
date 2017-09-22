@@ -119,7 +119,7 @@
                     <Button Style="{StaticResource ToolbarButton}"
                             Command="{x:Static SystemCommands.CloseWindowCommand}" Height="30" Padding="12,6">
                         <control:SvgImage 
-                            Source="/Ibinimator;component/Resources/Icon/close.svg" 
+                            Source="pack://application:,,,/Resources/Icon/close.svg" 
                             Style="{DynamicResource Icon}" />
                     </Button>
                 </StackPanel>
@@ -1023,7 +1023,7 @@
                         <Grid MinHeight="128" MaxHeight="256">
                             <ListBox ItemsSource="{Binding HistoryManager}" x:Name="HistoryList"
                                      Background="{DynamicResource L1Brush}" SelectionMode="Single"
-                                     SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Time, Mode=TwoWay}"
+                                     SelectedValuePath="Id" SelectedValue="{Binding HistoryManager.Position, Mode=TwoWay}"
                                      BorderBrush="{x:Null}">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">

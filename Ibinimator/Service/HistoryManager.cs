@@ -20,7 +20,7 @@ namespace Ibinimator.Service
             ArtView = artView;
         }
 
-        public long NextId => Time + 1;
+        public long NextId => Position + 1;
 
         #region IHistoryManager Members
 
@@ -34,7 +34,7 @@ namespace Ibinimator.Service
             {
                 _undo.Clear();
                 _redo.Clear();
-                Time = 0;
+                Position = 0;
             }
 
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -65,7 +65,7 @@ namespace Ibinimator.Service
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Time));
+                RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -83,7 +83,7 @@ namespace Ibinimator.Service
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Time));
+                RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -92,7 +92,7 @@ namespace Ibinimator.Service
 
         public void Redo()
         {
-            Time++;
+            Position++;
         }
 
         public void Replace(IOperationCommand<ILayer> command)
@@ -105,7 +105,7 @@ namespace Ibinimator.Service
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Time));
+                RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -114,7 +114,7 @@ namespace Ibinimator.Service
 
         public void Undo()
         {
-            Time--;
+            Position--;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -133,21 +133,21 @@ namespace Ibinimator.Service
             }
         }
 
-        public long Time
+        public long Position
         {
             get => Current?.Id ?? 0;
             set
             {
                 lock (this)
                 {
-                    while (value > Time && _redo.Count > 0)
+                    while (value > Position && _redo.Count > 0)
                     {
                         var record = _redo.Pop();
                         record.Do(ArtView);
                         _undo.Push(record);
                     }
 
-                    while (value < Time && _undo.Count > 0)
+                    while (value < Position && _undo.Count > 0)
                     {
                         var record = _undo.Pop();
                         record.Undo(ArtView);
@@ -156,7 +156,7 @@ namespace Ibinimator.Service
 
                     RaisePropertyChanged(nameof(Current));
                     RaisePropertyChanged(nameof(NextId));
-                    RaisePropertyChanged(nameof(Time));
+                    RaisePropertyChanged(nameof(Position));
                     Traversed?.Invoke(this, value);
                 }
             }

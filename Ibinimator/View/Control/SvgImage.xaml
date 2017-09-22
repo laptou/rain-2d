@@ -7,6 +7,4 @@
              xmlns:view="clr-namespace:Ibinimator.View"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Border>
-    </Border>
 </Viewbox>
