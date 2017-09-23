@@ -12,6 +12,7 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
     xmlns:d2d="clr-namespace:SharpDX.Direct2D1;assembly=SharpDX.Direct2D1"
+    xmlns:tools="clr-namespace:Ibinimator.Service.Tools"
     x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
     mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized"
     Icon="/Ibinimator;component/Resources/logo.png">
@@ -269,7 +270,7 @@
                         <view:EnumTemplateSelector PropertyName="Type" />
                     </ItemsControl.ItemTemplateSelector>
                     <ItemsControl.Resources>
-                        <DataTemplate x:Key="{x:Static service:ToolOptionType.Dropdown}">
+                        <DataTemplate x:Key="{x:Static tools:ToolOptionType.Dropdown}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Name}" />
@@ -291,7 +292,7 @@
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static service:ToolOptionType.Number}">
+                        <DataTemplate x:Key="{x:Static tools:ToolOptionType.Number}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Name}" />
@@ -328,22 +329,22 @@
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Select}, Mode=TwoWay}" ToolTip="Select">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Select}, Mode=TwoWay}" ToolTip="Select">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/cursor.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Path}, Mode=TwoWay}" ToolTip="Node" IsEnabled="False">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Path}, Mode=TwoWay}" ToolTip="Node" IsEnabled="False">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pointer.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Pencil}, Mode=TwoWay}" ToolTip="Pencil">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Pencil}, Mode=TwoWay}" ToolTip="Pencil">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pencil.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Pen" IsEnabled="False">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pen.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static service:ToolType.Text}, Mode=TwoWay}" ToolTip="Text">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Text}, Mode=TwoWay}" ToolTip="Text">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/text.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Color Picker" IsEnabled="False">

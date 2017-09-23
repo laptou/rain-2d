@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SharpDX.DirectWrite;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class DirectWriteExtensions
     {

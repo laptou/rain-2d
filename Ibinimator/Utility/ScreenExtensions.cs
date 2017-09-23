@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using Point = System.Drawing.Point;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class ScreenExtensions
     {

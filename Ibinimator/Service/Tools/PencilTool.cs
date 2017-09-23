@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Shared;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
+using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Tools
 {
     public sealed class PencilTool : Model.Model, ITool
     {

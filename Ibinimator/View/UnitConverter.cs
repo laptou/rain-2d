@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Ibinimator.Model;
+using Ibinimator.Utility;
 
 namespace Ibinimator.View
 {

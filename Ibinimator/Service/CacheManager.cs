@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Ibinimator.Model;
+using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;

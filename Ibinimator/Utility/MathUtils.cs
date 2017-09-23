@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class MathUtils
     {

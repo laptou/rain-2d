@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SharpDX;
 using Color = System.Windows.Media.Color;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class ColorUtils
     {

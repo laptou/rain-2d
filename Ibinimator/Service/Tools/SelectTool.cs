@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.Shared;
+using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Direct2D1;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
 using Layer = Ibinimator.Model.Layer;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Tools
 {
     public sealed class SelectTool : Model.Model, ITool
     {

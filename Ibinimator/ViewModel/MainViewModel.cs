@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service;
+using Ibinimator.Service.Tools;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Mathematics.Interop;

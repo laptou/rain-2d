@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class SerializationExtensions
     {

@@ -7,6 +7,8 @@ using System.Linq;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
+using Ibinimator.Service.Tools;
+using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;

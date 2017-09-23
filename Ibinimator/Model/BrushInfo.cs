@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Direct2D1;
 using WPF = System.Windows.Media;

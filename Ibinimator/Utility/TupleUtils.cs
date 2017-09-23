@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SharpDX;
 
-namespace Ibinimator.Shared
+namespace Ibinimator.Utility
 {
     public static class TupleUtils
     {

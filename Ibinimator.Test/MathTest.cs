@@ -4,6 +4,7 @@ using Ibinimator.Shared;
 using System.Linq;
 using SharpDX;
 using System.Threading.Tasks;
+using Ibinimator.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Matrix = Ibinimator.Shared.Mathematics.Matrix;
 

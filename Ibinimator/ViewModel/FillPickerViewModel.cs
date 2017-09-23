@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Model;
+using Ibinimator.Utility;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
 using DashStyle = SharpDX.Direct2D1.DashStyle;

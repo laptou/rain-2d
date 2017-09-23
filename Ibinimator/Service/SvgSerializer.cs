@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Ibinimator.Utility;
 using Ibinimator.View;
 using SharpDX;
 using SharpDX.Direct2D1;

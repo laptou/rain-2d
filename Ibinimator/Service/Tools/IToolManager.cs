@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +8,7 @@ using Ibinimator.Model;
 using SharpDX;
 using SharpDX.Direct2D1;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Tools
 {
     public interface IToolManager : IArtViewManager
     {

@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Ibinimator.Shared;
+using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;

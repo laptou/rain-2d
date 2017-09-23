@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +8,7 @@ using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Service.Tools
 {
     public class ToolManager : Model.Model, IToolManager
     {

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Service;
+using Ibinimator.Service.Tools;
 using SharpDX;
 using SharpDX.Direct2D1;
 
