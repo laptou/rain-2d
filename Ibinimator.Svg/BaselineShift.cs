@@ -7,12 +7,16 @@ namespace Ibinimator.Svg
 {
     public struct BaselineShift
     {
+        #region Value enum
+
         public enum Value
         {
             Baseline,
             Sub,
             Super
         }
+
+        #endregion
 
         public Value Enum { get; set; }
 

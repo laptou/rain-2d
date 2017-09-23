@@ -17,15 +17,16 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            CenterX = float.Parse((string)element.Attribute("cx") ?? "0");
-            CenterY = float.Parse((string)element.Attribute("cy") ?? "0");
-            RadiusX = Length.Parse((string)element.Attribute("rx") ?? "0");
-            RadiusY = Length.Parse((string)element.Attribute("ry") ?? "0");
+            CenterX = LazyGet(element, "cx", 0);
+            CenterY = LazyGet(element, "cy", 0);
+            RadiusX = LazyGet(element, "rx", Length.Zero);
+            RadiusY = LazyGet(element, "ry", Length.Zero);
         }
 
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
+
             element.Name = "ellipse";
 
             LazySet(element, "cx", CenterX);

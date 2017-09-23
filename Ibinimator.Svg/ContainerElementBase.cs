@@ -11,14 +11,12 @@ namespace Ibinimator.Svg
     {
         private readonly IList<IElement> _list = new List<IElement>();
 
-        public IEnumerator<IElement> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
+        #region IContainerElement Members
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public IElement this[int index]
         {
-            return ((IEnumerable) _list).GetEnumerator();
+            get => _list[index];
+            set => _list[index] = value;
         }
 
         public void Add(IElement item)
@@ -39,36 +37,6 @@ namespace Ibinimator.Svg
         public void CopyTo(IElement[] array, int arrayIndex)
         {
             _list.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(IElement item)
-        {
-            return _list.Remove(item);
-        }
-
-        public int Count => _list.Count;
-
-        public bool IsReadOnly => _list.IsReadOnly;
-
-        public int IndexOf(IElement item)
-        {
-            return _list.IndexOf(item);
-        }
-
-        public void Insert(int index, IElement item)
-        {
-            _list.Insert(index, item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            _list.RemoveAt(index);
-        }
-
-        public IElement this[int index]
-        {
-            get => _list[index];
-            set => _list[index] = value;
         }
 
         public override void FromXml(XElement element, SvgContext context)
@@ -114,5 +82,41 @@ namespace Ibinimator.Svg
                 Add(child);
             }
         }
+
+        public IEnumerator<IElement> GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+
+        public int IndexOf(IElement item)
+        {
+            return _list.IndexOf(item);
+        }
+
+        public void Insert(int index, IElement item)
+        {
+            _list.Insert(index, item);
+        }
+
+        public bool Remove(IElement item)
+        {
+            return _list.Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _list.RemoveAt(index);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _list).GetEnumerator();
+        }
+
+        public int Count => _list.Count;
+
+        public bool IsReadOnly => _list.IsReadOnly;
+
+        #endregion
     }
 }

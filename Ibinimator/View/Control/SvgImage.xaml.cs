@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
+using System.Windows.Shapes;
 using System.Xml.Linq;
 using Ibinimator.Svg;
+using Color = System.Windows.Media.Color;
+using Ellipse = System.Windows.Shapes.Ellipse;
+using Line = Ibinimator.Svg.Line;
+using Path = Ibinimator.Svg.Path;
+using Polygon = Ibinimator.Svg.Polygon;
+using Polyline = Ibinimator.Svg.Polyline;
+using Rectangle = Ibinimator.Svg.Rectangle;
 using WPF = System.Windows;
-using SvgSerializer = Ibinimator.Svg.SvgSerializer;
 
 namespace Ibinimator.View.Control
 {
     /// <inheritdoc />
     /// <summary>
-    /// Interaction logic for SvgImage.xaml
+    ///     Interaction logic for SvgImage.xaml
     /// </summary>
     public partial class SvgImage
     {
@@ -41,33 +42,64 @@ namespace Ibinimator.View.Control
             }
         }
 
-        private FrameworkElement ToWpf(IElement element)
+        private Canvas GetRoot()
+        {
+            if (Source == null) return null;
+
+            var root = new Canvas();
+
+            var stream = WPF.Application.GetResourceStream(Source)?.Stream ?? File.OpenRead(Source.ToString());
+            var doc = SvgSerializer.Parse(XDocument.Load(stream));
+            stream.Dispose();
+
+            foreach (var element in doc)
+                root.Children.Add(ToWpf(element));
+
+            //viewbox.Viewbox = new Rect
+            //{
+            //    X = doc.Viewbox.X,
+            //    Y = doc.Viewbox.Y,
+            //    Width = doc.Viewbox.Width,
+            //    Height = doc.Viewbox.Height
+            //};
+
+            root.Width = doc.Viewbox.Width;
+            root.Height = doc.Viewbox.Height;
+
+            return root;
+        }
+
+        private WPF.FrameworkElement ToWpf(IElement element)
         {
             if (element is IShapeElement shape)
             {
-                WPF.Shapes.Shape wpfShape = null;
+                Shape wpfShape = null;
 
                 switch (element)
                 {
                     case Circle circle:
-                        wpfShape = new WPF.Shapes.Ellipse
+                        wpfShape = new Ellipse
                         {
                             Width = circle.Radius.To(LengthUnit.Pixels) * 2,
                             Height = circle.Radius.To(LengthUnit.Pixels) * 2
                         };
 
-                        wpfShape.SetValue(Canvas.LeftProperty, (double)circle.CenterX - circle.Radius.To(LengthUnit.Pixels));
-                        wpfShape.SetValue(Canvas.TopProperty, (double)circle.CenterY - circle.Radius.To(LengthUnit.Pixels));
+                        wpfShape.SetValue(Canvas.LeftProperty,
+                            (double)circle.CenterX - circle.Radius.To(LengthUnit.Pixels));
+                        wpfShape.SetValue(Canvas.TopProperty,
+                            (double)circle.CenterY - circle.Radius.To(LengthUnit.Pixels));
                         break;
-                    case Ellipse ellipse:
-                        wpfShape = new WPF.Shapes.Ellipse
+                    case Svg.Ellipse ellipse:
+                        wpfShape = new Ellipse
                         {
                             Width = ellipse.RadiusX.To(LengthUnit.Pixels) * 2,
                             Height = ellipse.RadiusY.To(LengthUnit.Pixels) * 2
                         };
 
-                        wpfShape.SetValue(Canvas.LeftProperty, (double)ellipse.CenterX - ellipse.RadiusX.To(LengthUnit.Pixels));
-                        wpfShape.SetValue(Canvas.TopProperty, (double)ellipse.CenterY - ellipse.RadiusY.To(LengthUnit.Pixels));
+                        wpfShape.SetValue(Canvas.LeftProperty,
+                            (double)ellipse.CenterX - ellipse.RadiusX.To(LengthUnit.Pixels));
+                        wpfShape.SetValue(Canvas.TopProperty,
+                            (double)ellipse.CenterY - ellipse.RadiusY.To(LengthUnit.Pixels));
                         break;
                     case Line line:
                         wpfShape = new WPF.Shapes.Line
@@ -84,17 +116,18 @@ namespace Ibinimator.View.Control
                         var start = true;
 
                         foreach (var node in path.Data)
-                        {
                             switch (node)
                             {
                                 case ArcPathNode arcPathNode:
                                     figure.Segments.Add(
                                         new ArcSegment(
-                                            new Point(node.X, node.Y),
-                                            new Size(arcPathNode.RadiusX, arcPathNode.RadiusY), 
+                                            new WPF.Point(node.X, node.Y),
+                                            new WPF.Size(arcPathNode.RadiusX, arcPathNode.RadiusY),
                                             arcPathNode.Rotation,
                                             arcPathNode.LargeArc,
-                                            arcPathNode.Clockwise ? SweepDirection.Clockwise : SweepDirection.Counterclockwise,
+                                            arcPathNode.Clockwise
+                                                ? SweepDirection.Clockwise
+                                                : SweepDirection.Counterclockwise,
                                             true));
                                     break;
                                 case CloseNode closeNode:
@@ -106,30 +139,29 @@ namespace Ibinimator.View.Control
                                 case CubicPathNode cubicPathNode:
                                     figure.Segments.Add(
                                         new BezierSegment(
-                                            new Point(cubicPathNode.Control1.X, cubicPathNode.Control1.Y),
-                                            new Point(cubicPathNode.Control2.X, cubicPathNode.Control2.Y),
-                                            new Point(node.X, node.Y),
+                                            new WPF.Point(cubicPathNode.Control1.X, cubicPathNode.Control1.Y),
+                                            new WPF.Point(cubicPathNode.Control2.X, cubicPathNode.Control2.Y),
+                                            new WPF.Point(node.X, node.Y),
                                             true));
                                     break;
                                 case QuadraticPathNode quadraticPathNode:
                                     figure.Segments.Add(
                                         new QuadraticBezierSegment(
-                                            new Point(quadraticPathNode.Control.X, quadraticPathNode.Control.Y),
-                                            new Point(node.X, node.Y),
+                                            new WPF.Point(quadraticPathNode.Control.X, quadraticPathNode.Control.Y),
+                                            new WPF.Point(node.X, node.Y),
                                             true));
                                     break;
                                 default:
                                     if (start)
                                     {
-                                        figure.StartPoint = new Point(node.X, node.Y);
+                                        figure.StartPoint = new WPF.Point(node.X, node.Y);
                                         start = false;
                                         continue;
                                     }
 
-                                    figure.Segments.Add(new LineSegment(new Point(node.X, node.Y), true));
+                                    figure.Segments.Add(new LineSegment(new WPF.Point(node.X, node.Y), true));
                                     break;
                             }
-                        }
 
                         if (!start) data.Figures.Add(figure);
 
@@ -138,13 +170,13 @@ namespace Ibinimator.View.Control
                     case Polygon polygon:
                         wpfShape = new WPF.Shapes.Polygon
                         {
-                            Points = new PointCollection(polygon.Points.Select(v => new Point(v.X, v.Y)))
+                            Points = new PointCollection(polygon.Points.Select(v => new WPF.Point(v.X, v.Y)))
                         };
                         break;
                     case Polyline polyline:
                         wpfShape = new WPF.Shapes.Polyline
                         {
-                            Points = new PointCollection(polyline.Points.Select(v => new Point(v.X, v.Y)))
+                            Points = new PointCollection(polyline.Points.Select(v => new WPF.Point(v.X, v.Y)))
                         };
                         break;
                     case Rectangle rectangle:
@@ -198,39 +230,17 @@ namespace Ibinimator.View.Control
             {
                 var color = paint.Color.Value;
 
-                var wpfColor = WPF.Media.Color.FromRgb(
-                    (byte) (color.Red * 255),
-                    (byte) (color.Green * 255),
-                    (byte) (color.Blue * 255));
+                var wpfColor = Color.FromRgb(
+                    (byte)(color.Red * 255),
+                    (byte)(color.Green * 255),
+                    (byte)(color.Blue * 255));
 
-                wpfColor.A = (byte) (color.Alpha * 255);
+                wpfColor.A = (byte)(color.Alpha * 255);
 
                 return new SolidColorBrush(wpfColor);
             }
 
             return null;
-        }
-
-        private Canvas GetRoot()
-        {
-            var root = new Canvas();
-
-            var stream = Application.GetResourceStream(Source)?.Stream ?? System.IO.File.OpenRead(Source.ToString());
-            var doc = SvgSerializer.Parse(XDocument.Load(stream));
-            stream.Dispose();
-
-            foreach (var element in doc)
-                root.Children.Add(ToWpf(element));
-
-            //viewbox.Viewbox = new Rect
-            //{
-            //    X = doc.Viewbox.X,
-            //    Y = doc.Viewbox.Y,
-            //    Width = doc.Viewbox.Width,
-            //    Height = doc.Viewbox.Height
-            //};
-
-            return root;
         }
     }
 }

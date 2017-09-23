@@ -13,11 +13,14 @@ namespace Ibinimator.Svg
             Interpolator = interpolator;
         }
 
-        public IInterpolator<T> Interpolator { get; set; }
-
         public T BaseValue { get; set; }
 
-        public T GetValue(float time) => Interpolator.ProvideValue(time);
+        public IInterpolator<T> Interpolator { get; set; }
+
+        public T GetValue(float time)
+        {
+            return Interpolator.ProvideValue(time);
+        }
 
         public static implicit operator T(Animatable<T> animatable)
         {

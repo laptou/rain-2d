@@ -10,6 +10,4 @@ namespace Ibinimator.Svg
     {
         XDocument Save(Document document);
     }
-
-    
 }

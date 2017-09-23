@@ -7,6 +7,8 @@ namespace Ibinimator.Svg
 {
     public struct Paint
     {
+        public static readonly Paint Black = new Paint(new Color());
+
         public Paint(Color color) : this()
         {
             Color = color;
@@ -20,8 +22,6 @@ namespace Ibinimator.Svg
         public Color? Color { get; set; }
 
         public Iri? Iri { get; set; }
-
-        public static readonly Paint Black = new Paint(new Color());
 
         public static Paint Parse(string input)
         {

@@ -70,7 +70,7 @@ namespace Ibinimator.Svg
                 if (instruction != PathDataInstruction.Move &&
                     (lastInstruction == PathDataInstruction.Move ||
                      lastInstruction == PathDataInstruction.Close))
-                    nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                    nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
 
                 switch (instruction)
                 {
@@ -89,14 +89,14 @@ namespace Ibinimator.Svg
                         {
                             start = pos;
                             instruction = PathDataInstruction.Close;
-                            nodes.Add(new CloseNode { Open = true });
+                            nodes.Add(new CloseNode {Open = true});
                         }
 
                         if (coordinates.Count >= 2)
                         {
                             instruction = PathDataInstruction.Line;
 
-                            nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
 
                             while (coordinates.Count >= 2)
                             {
@@ -105,7 +105,7 @@ namespace Ibinimator.Svg
                                 else
                                     pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                                nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                                nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
                             }
                         }
                         break;
@@ -120,7 +120,7 @@ namespace Ibinimator.Svg
                             else
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                            nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
                         }
 
                         break;
@@ -133,7 +133,7 @@ namespace Ibinimator.Svg
                             else
                                 pos.X = coordinates.Pop();
 
-                            nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
                         }
                         break;
 
@@ -145,7 +145,7 @@ namespace Ibinimator.Svg
                             else
                                 pos.Y = coordinates.Pop();
 
-                            nodes.Add(new PathNode { X = pos.X, Y = pos.Y });
+                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
                         }
                         break;
 

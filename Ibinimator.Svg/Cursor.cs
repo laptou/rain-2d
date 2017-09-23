@@ -7,6 +7,8 @@ namespace Ibinimator.Svg
 {
     public struct Cursor
     {
+        #region Value enum
+
         public enum Value
         {
             Auto = 0,
@@ -26,6 +28,8 @@ namespace Ibinimator.Svg
             Wait,
             Help
         }
+
+        #endregion
 
         public Value EnumValue { get; set; }
 

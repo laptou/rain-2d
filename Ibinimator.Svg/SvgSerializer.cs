@@ -8,21 +8,29 @@ namespace Ibinimator.Svg
 {
     public class SvgSerializer : ISvgWriter, ISvgReader
     {
-        public XDocument Save(Document document)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Document Read(XDocument document)
-        {
-            return Parse(document);
-        }
-
         public static Document Parse(XDocument document)
         {
             var doc = new Document();
             doc.FromXml(document.Root, null);
             return doc;
         }
+
+        #region ISvgReader Members
+
+        public Document Read(XDocument document)
+        {
+            return Parse(document);
+        }
+
+        #endregion
+
+        #region ISvgWriter Members
+
+        public XDocument Save(Document document)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

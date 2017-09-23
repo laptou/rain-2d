@@ -19,7 +19,7 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            var strPoints = (string)element.Attribute("points") ?? "";
+            var strPoints = (string) element.Attribute("points") ?? "";
 
             var coords =
                 PointsSyntax.Matches(strPoints)

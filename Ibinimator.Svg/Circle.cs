@@ -16,9 +16,9 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            CenterX = float.Parse((string)element.Attribute("cx") ?? "0");
-            CenterY = float.Parse((string)element.Attribute("cy") ?? "0");
-            Radius = Length.Parse((string)element.Attribute("r") ?? "0");
+            CenterX = float.Parse((string) element.Attribute("cx") ?? "0");
+            CenterY = float.Parse((string) element.Attribute("cy") ?? "0");
+            Radius = Length.Parse((string) element.Attribute("r") ?? "0");
         }
 
         public override XElement ToXml(SvgContext context)

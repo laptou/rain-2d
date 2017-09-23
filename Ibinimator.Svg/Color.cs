@@ -8,18 +8,19 @@ namespace Ibinimator.Svg
 {
     public struct Color
     {
-        private static readonly Regex Hex = new Regex("(?:#(?:([0-9A-F]){3}){1,2})", 
+        private static readonly Regex Hex = new Regex("(?:#(?:([0-9A-F]){3}){1,2})",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex Rgb = new Regex(@"(?:rgb\(([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
+        private static readonly Regex Rgb = new Regex(
+            @"(?:rgb\(([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex Percent = new Regex(@"(?:rgb\(([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%\))",
+        private static readonly Regex Percent = new Regex(
+            @"(?:rgb\(([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%\))",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        
+
         public Color(float red, float green, float blue) : this(red, green, blue, 1)
         {
-
         }
 
         public Color(float red, float green, float blue, float alpha) : this()
@@ -30,13 +31,13 @@ namespace Ibinimator.Svg
             Alpha = alpha;
         }
 
-        public float Red { get; }
-
-        public float Green { get; }
+        public float Alpha { get; }
 
         public float Blue { get; }
 
-        public float Alpha { get; }
+        public float Green { get; }
+
+        public float Red { get; }
 
         public static Color Parse(string input)
         {

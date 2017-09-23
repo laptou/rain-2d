@@ -17,9 +17,9 @@ namespace Ibinimator.Svg
 
         public Color Color { get; set; }
 
-        public ColorInterpolation ColorInterpolation { get; set; }
-
         public ColorInterpolation ColorFilterInterpolation { get; set; }
+
+        public ColorInterpolation ColorInterpolation { get; set; }
 
         public Cursor Cursor { get; set; }
 
