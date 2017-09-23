@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Line : ShapeElementBase
+    public class Line : ShapeElement
     {
         public float X1 { get; set; }
         public float X2 { get; set; }

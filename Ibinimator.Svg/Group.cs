@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
-    public class Group : ContainerElementBase
+    public class Group : ContainerElement
     {
     }
 }

@@ -16,18 +16,28 @@ namespace Ibinimator.Model
     {
         public override string DefaultName => "Ellipse";
 
-        [XmlIgnore] // ignore bc redundant to width and height
         public float RadiusX
         {
             get => Width / 2;
             set => Width = value * 2;
         }
 
-        [XmlIgnore]
         public float RadiusY
         {
             get => Height / 2;
             set => Height = value * 2;
+        }
+
+        public float CenterX
+        {
+            get => X + RadiusX;
+            set => X = value - RadiusX;
+        }
+
+        public float CenterY
+        {
+            get => Y + RadiusY;
+            set => Y = value - RadiusY;
         }
 
         protected override string ElementName => "ellipse";

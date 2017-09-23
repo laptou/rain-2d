@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Rectangle : ShapeElementBase
+    public class Rectangle : ShapeElement
     {
         public Length Height { get; set; }
         public Length RadiusX { get; set; }

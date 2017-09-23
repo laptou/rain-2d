@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Document : ContainerElementBase
+    public class Document : ContainerElement
     {
         public Length Height { get; set; }
         public float Version { get; set; }

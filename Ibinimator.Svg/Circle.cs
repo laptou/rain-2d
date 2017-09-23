@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Circle : ShapeElementBase
+    public class Circle : ShapeElement
     {
         public float CenterX { get; set; }
         public float CenterY { get; set; }

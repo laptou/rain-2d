@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public abstract class ContainerElementBase : GraphicalElementBase, IContainerElement
+    public abstract class ContainerElement : GraphicalElement, IContainerElement
     {
         private readonly IList<IElement> _list = new List<IElement>();
 

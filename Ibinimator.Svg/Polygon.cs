@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Polygon : ShapeElementBase
+    public class Polygon : ShapeElement
     {
         private static readonly Regex PointsSyntax =
             new Regex(@"\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))",

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public abstract class ShapeElementBase : GraphicalElementBase, IShapeElement
+    public abstract class ShapeElement : GraphicalElement, IShapeElement
     {
         #region IShapeElement Members
 

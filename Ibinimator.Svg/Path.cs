@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Path : ShapeElementBase
+    public class Path : ShapeElement
     {
         public PathNode[] Data { get; set; }
 

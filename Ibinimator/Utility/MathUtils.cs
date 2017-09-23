@@ -73,6 +73,11 @@ namespace Ibinimator.Utility
             return new RectangleF(raw.Left, raw.Top, raw.Right - raw.Left, raw.Bottom - raw.Top);
         }
 
+        public static Vector2 Convert(this System.Numerics.Vector2 vec)
+        {
+            return new Vector2(vec.X, vec.Y);
+        }
+
         public static (Vector2, Vector2) CrossSection(Vector2 ray, Vector2 origin, RectangleF bounds)
         {
             bounds.Offset(-origin);

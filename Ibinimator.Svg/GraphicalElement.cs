@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public abstract class GraphicalElementBase : ElementBase, IGraphicalElementBase
+    public abstract class GraphicalElement : ElementBase, IGraphicalElement
     {
         public RectangleF? Clip { get; set; }
 

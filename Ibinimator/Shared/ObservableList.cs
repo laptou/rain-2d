@@ -43,7 +43,7 @@ namespace Ibinimator.Shared
         ///     It then notifies once after all items are added.
         /// </summary>
         /// <param name="items">The source collection.</param>
-        public void AddItems(IList<T> items)
+        public void AddItems(IEnumerable<T> items)
         {
             lock (_locker)
             {
@@ -54,7 +54,7 @@ namespace Ibinimator.Shared
             }
         }
 
-        public void InsertItems(IList<T> items, int index)
+        public void InsertItems(IEnumerable<T> items, int index)
         {
             lock (_locker)
             {
@@ -83,7 +83,7 @@ namespace Ibinimator.Shared
         ///     It then notifies once after all items are removed.
         /// </summary>
         /// <param name="items">The source collection.</param>
-        public void RemoveItems(IList<T> items)
+        public void RemoveItems(IEnumerable<T> items)
         {
             lock (_locker)
             {
