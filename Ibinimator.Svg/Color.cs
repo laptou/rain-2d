@@ -12,7 +12,7 @@ namespace Ibinimator.Svg
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex Rgb = new Regex(
-            @"(?:rgb\(([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
+            @"(?:rgb\(([+-]?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex Percent = new Regex(

@@ -10,6 +10,7 @@ namespace Ibinimator.Svg
 {
     public abstract class ElementBase : IElement
     {
+
         protected string LazyGet(XElement element, XName name)
         {
             return (string) element.Attribute(name);

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -9,6 +11,8 @@ namespace Ibinimator.Svg
 {
     public abstract class GraphicalElement : ElementBase, IGraphicalElement
     {
+        private static Regex _transformSyntax = new Regex(@"(?:(matrix)\s*\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)\)|(translate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(scale)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(rotate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*){2})?\)|(skewX)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)|(skewY)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         public RectangleF? Clip { get; set; }
 
         public Iri? ClipPath { get; set; }
@@ -34,6 +38,8 @@ namespace Ibinimator.Svg
         public Iri? Mask { get; set; }
 
         public float Opacity { get; set; } = 1;
+
+        public Matrix3x2 Transform { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
