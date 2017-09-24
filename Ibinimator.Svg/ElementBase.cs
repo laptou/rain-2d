@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -11,8 +12,13 @@ namespace Ibinimator.Svg
     public abstract class ElementBase : IElement
     {
 
-        protected string LazyGet(XElement element, XName name)
+        protected string LazyGet(XElement element, XName name, bool inherit = false)
         {
+            if(inherit)
+                return (string)element.AncestorsAndSelf()
+                                      .Select(x => x.Attribute(name))
+                                      .FirstOrDefault(a => a != null);
+
             return (string) element.Attribute(name);
         }
 
@@ -30,8 +36,8 @@ namespace Ibinimator.Svg
         {
             var value = LazyGet(element, name);
 
-            if (value != null)
-                return Length.Parse(value);
+            if (value != null && Length.TryParse(value, out var result))
+                return result;
 
             return @default;
         }
@@ -52,17 +58,27 @@ namespace Ibinimator.Svg
             return @default;
         }
 
-        protected T LazyGet<T>(XElement element, XName name) where T : struct
+        protected T LazyGet<T>(XElement element, XName name, bool inherit = false)
         {
-            var value = LazyGet(element, name);
+            var value = LazyGet(element, name, inherit);
 
-            if (typeof(T).IsEnum && !string.IsNullOrWhiteSpace(value))
-                if (Enum.TryParse(
-                    string.Join(
-                        "",
-                        value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1))),
-                    out T t))
-                    return t;
+            if (typeof(T).IsEnum)
+            {
+                if (string.IsNullOrWhiteSpace(value)) return default;
+
+                var pascalCase = string.Join("", value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1)));
+
+                return (T) Enum.Parse(typeof(T), pascalCase);
+            }
+
+            if (typeof(T) == typeof(float[]))
+            {
+                if (string.IsNullOrWhiteSpace(value)) return (T)(object)new float[0];
+
+                return (T)(object)value.Split(',', ' ')
+                                       .Where(s => float.TryParse(s, out var _))
+                                       .Select(float.Parse).ToArray();
+            }
 
             return default;
         }
@@ -85,6 +101,8 @@ namespace Ibinimator.Svg
         public virtual void FromXml(XElement element, SvgContext context)
         {
             Id = (string) element.Attribute("id");
+
+            if(Id == "path4507") Debugger.Break();
 
             var style = (string) element.Attribute("style");
 

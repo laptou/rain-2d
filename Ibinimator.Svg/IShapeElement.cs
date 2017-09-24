@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
-    public interface IShapeElement : IElement
+    public interface IShapeElement : IGraphicalElement
     {
         Paint? Fill { get; set; }
         float FillOpacity { get; set; }

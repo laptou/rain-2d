@@ -11,7 +11,7 @@ namespace Ibinimator.Svg
 {
     public abstract class GraphicalElement : ElementBase, IGraphicalElement
     {
-        private static Regex _transformSyntax = new Regex(@"(?:(matrix)\s*\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)\)|(translate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(scale)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(rotate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*){2})?\)|(skewX)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)|(skewY)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex TransformSyntax = new Regex(@"(?:(matrix)\s*\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*,\s*)(?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)\)|(translate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(scale)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)?\)|(rotate)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)(?:(?:,\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*){2})?\)|(skewX)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*)|(skewY)\((?:\s*((?:[+-]?\d+|[+-]?\d*\.\d+)(?:[Ee][+-]?\d+)?)\s*))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public RectangleF? Clip { get; set; }
 
@@ -39,7 +39,7 @@ namespace Ibinimator.Svg
 
         public float Opacity { get; set; } = 1;
 
-        public Matrix3x2 Transform { get; set; }
+        public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -63,7 +63,7 @@ namespace Ibinimator.Svg
 
             if (!string.IsNullOrWhiteSpace(transformStr))
             {
-                var transformMatches = _transformSyntax.Matches(transformStr);
+                var transformMatches = TransformSyntax.Matches(transformStr);
                 var transform = Matrix3x2.Identity;
 
                 foreach (Match transformMatch in transformMatches)
@@ -71,7 +71,8 @@ namespace Ibinimator.Svg
                     var groups = transformMatch.Groups
                         .OfType<System.Text.RegularExpressions.Group>()
                         .Skip(1)
-                        .Select(g => g.Value)
+                        .SelectMany(g => g.Captures.OfType<Capture>().Select(c => c.Value))
+                        .Where(g => !string.IsNullOrWhiteSpace(g))
                         .ToArray();
 
                     switch (groups[0])
@@ -116,12 +117,12 @@ namespace Ibinimator.Svg
                             if (groups.Length == 2)
                                 transform =
                                     Matrix3x2.CreateRotation(
-                                        float.Parse(groups[1]) * 180 / (float)Math.PI) * transform;
+                                        float.Parse(groups[1]) / 180 * (float)Math.PI) * transform;
 
-                            if (groups.Length == 3)
+                            if (groups.Length == 4)
                                 transform =
                                     Matrix3x2.CreateRotation(
-                                        float.Parse(groups[1]) * 180 / (float)Math.PI,
+                                        float.Parse(groups[1]) / 180 * (float)Math.PI,
                                         new Vector2(
                                             float.Parse(groups[2]),
                                             float.Parse(groups[3]))) * transform;
@@ -130,7 +131,7 @@ namespace Ibinimator.Svg
                         case "skewX":
                             transform =
                                 Matrix3x2.CreateSkew(
-                                    float.Parse(groups[1]) * 180 / (float) Math.PI,
+                                    float.Parse(groups[1]) / 180 * (float)Math.PI,
                                     0) * transform;
                             break;
 
@@ -138,7 +139,7 @@ namespace Ibinimator.Svg
                             transform =
                                 Matrix3x2.CreateSkew(
                                     0,
-                                    float.Parse(groups[1]) * 180 / (float)Math.PI) * transform;
+                                    float.Parse(groups[1]) / 180 * (float)Math.PI) * transform;
                             break;
                     }
                 }
@@ -164,6 +165,9 @@ namespace Ibinimator.Svg
             LazySet(element, "letter-spacing", LetterSpacing);
             LazySet(element, "mask", Mask);
             LazySet(element, "opacity", Opacity, 1);
+
+            if(!Transform.IsIdentity)
+                LazySet(element, "transform", $"matrix({Transform.M11},{Transform.M12},{Transform.M21},{Transform.M22},{Transform.M31},{Transform.M32})");
 
             return element;
         }

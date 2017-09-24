@@ -247,6 +247,8 @@ namespace Ibinimator.Svg
 
         public static Color? TryParse(string input)
         {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+
             var hexMatch = Hex.Match(input);
 
             if (hexMatch.Success)
@@ -286,8 +288,10 @@ namespace Ibinimator.Svg
 
             if (percentMatch.Success)
             {
-                var values = percentMatch.Groups[1].Captures.OfType<Capture>()
-                    .Select(c => c.Value)
+                var values = percentMatch.Groups
+                    .OfType<System.Text.RegularExpressions.Group>()
+                    .Skip(1)
+                    .Select(g => g.Value)
                     .ToArray();
 
                 return new Color(

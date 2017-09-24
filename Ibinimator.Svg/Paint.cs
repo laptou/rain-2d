@@ -25,15 +25,32 @@ namespace Ibinimator.Svg
 
         public static Paint Parse(string input)
         {
-            var color = Svg.Color.TryParse(input);
-
-            if (color != null) return new Paint(color.Value);
-
-            var iri = Svg.Iri.TryParse(input);
-
-            if (iri != null) return new Paint(color.Value);
+            if (TryParse(input, out var paint)) return paint;
 
             throw new FormatException();
+        }
+
+        public static bool TryParse(string input, out Paint paint)
+        {
+            var color = Svg.Color.TryParse(input);
+
+            if (color != null)
+            {
+                paint = new Paint(color.Value);
+                return true;
+            }
+
+            //var iri = Svg.Iri.TryParse(input);
+
+            //if (iri != null)
+            //{
+            //    paint = new Paint(iri.Value);
+            //    return true;
+            //}
+
+            paint = new Paint();
+
+            return false;
         }
     }
 }

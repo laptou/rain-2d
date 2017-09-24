@@ -26,7 +26,7 @@ namespace Ibinimator.Model
         public StrokeInfo()
         {
             Dashes = new ObservableList<float>(new float[4]);
-            Style = new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed};
+            Style = new StrokeStyleProperties1();
         }
 
         public ObservableList<float> Dashes

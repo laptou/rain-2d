@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ibinimator.Shared;
 using SharpDX;
+using SharpDX.Direct2D1;
 using static Ibinimator.Svg.LengthUnit;
 
 namespace Ibinimator.Utility
@@ -18,7 +20,7 @@ namespace Ibinimator.Utility
             };
 
             foreach (var child in svgDocument.Select(FromSvg))
-                doc.Root.Add(child);
+                doc.Root.Add(child, 0);
 
             return doc;
         }
@@ -32,7 +34,7 @@ namespace Ibinimator.Utility
                 var group = new Model.Group();
 
                 foreach (var child in containerElement.Select(FromSvg))
-                    group.Add(child);
+                    group.Add(child, 0);
 
                 layer = group;
             }
@@ -154,6 +156,18 @@ namespace Ibinimator.Utility
                 shape.FillBrush = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
                 shape.StrokeBrush = FromSvg(shapeElement.Stroke, shapeElement.StrokeOpacity);
 
+                var dashes = shapeElement.StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels)).ToArray();
+
+                shape.StrokeInfo = new Model.StrokeInfo
+                {
+                    Width = shapeElement.StrokeWidth.To(Pixels),
+                    Dashes = new ObservableList<float>(dashes),
+                    Style = new StrokeStyleProperties1
+                    {
+                        DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid
+                    }
+                };
+
                 layer = shape;
             }
 
@@ -180,6 +194,140 @@ namespace Ibinimator.Utility
                         color.Green,
                         color.Blue,
                         color.Alpha * opacity));
+            }
+
+            return null;
+        }
+
+        public static Svg.Document ToSvg(Model.Document doc)
+        {
+            var svgDoc = new Svg.Document();
+
+            foreach (var child in doc.Root.SubLayers.Select(ToSvg))
+                svgDoc.Add(child);
+
+            return svgDoc;
+        }
+
+        public static Svg.IElement ToSvg(Model.Layer layer)
+        {
+            Svg.IGraphicalElement element = null;
+
+            if (layer is Model.Group groupLayer)
+            {
+                var group = new Svg.Group();
+
+                foreach (var child in groupLayer.SubLayers.Select(ToSvg))
+                    group.Add(child);
+
+                element = group;
+            }
+
+            if (layer is Model.Shape shapeLayer)
+            {
+                Svg.IShapeElement shape = null;
+
+                switch (shapeLayer)
+                {
+                    case Model.Ellipse ellipse:
+                        shape = new Svg.Ellipse
+                        {
+                            CenterX = ellipse.CenterX,
+                            CenterY = ellipse.CenterY,
+                            RadiusX = (ellipse.RadiusX, Pixels),
+                            RadiusY = (ellipse.RadiusY, Pixels)
+                        };
+                        break;
+                    case Model.Path path:
+                        var pathPath = new Svg.Path();
+
+                        pathPath.Data = path.Nodes.Select(pathNode =>
+                        {
+                            switch (pathNode)
+                            {
+                                case Model.ArcPathNode arcPathNode:
+                                    return new Svg.ArcPathNode
+                                    {
+                                        Clockwise = arcPathNode.Clockwise,
+                                        LargeArc = arcPathNode.LargeArc,
+                                        Position = arcPathNode.Position.Convert(),
+                                        RadiusX = arcPathNode.RadiusX,
+                                        RadiusY = arcPathNode.RadiusY,
+                                        Rotation = arcPathNode.Rotation
+                                    };
+                                case Model.CloseNode closeNode:
+                                    return new Svg.CloseNode
+                                    {
+                                        Open = closeNode.Open
+                                    };
+                                case Model.CubicPathNode cubicPathNode:
+                                    return new Svg.CubicPathNode
+                                    {
+                                        Control1 = cubicPathNode.Control1.Convert(),
+                                        Control2 = cubicPathNode.Control2.Convert(),
+                                        Position = cubicPathNode.Position.Convert()
+                                    };
+                                case Model.QuadraticPathNode quadraticPathNode:
+                                    return new Svg.QuadraticPathNode
+                                    {
+                                        Control = quadraticPathNode.Control.Convert(),
+                                        Position = quadraticPathNode.Position.Convert()
+                                    };
+                                default:
+                                    return new Svg.PathNode
+                                    {
+                                        Position = pathNode.Position.Convert()
+                                    };
+                            }
+                        }).ToArray();
+
+                        shape = pathPath;
+                        break;
+                    case Model.Rectangle rectangle:
+                        shape = new Svg.Rectangle
+                        {
+                            X = rectangle.X,
+                            Y = rectangle.Y,
+                            Width = (rectangle.Width, Pixels),
+                            Height = (rectangle.Height, Pixels)
+                        };
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(shapeLayer));
+                }
+
+                shape.Fill = ToSvg(shapeLayer.FillBrush);
+                shape.FillOpacity = shapeLayer.FillBrush?.Opacity ?? 0;
+
+                shape.Stroke = ToSvg(shapeLayer.StrokeBrush);
+                shape.StrokeOpacity = shapeLayer.StrokeBrush?.Opacity ?? 0;
+
+                var dashes = shapeLayer.StrokeInfo.Dashes.Select(f => f * shapeLayer.StrokeInfo.Width).ToArray();
+
+                shape.StrokeWidth = (shapeLayer.StrokeInfo.Width, Pixels);
+                shape.StrokeDashArray = dashes.ToArray();
+
+                element = shape;
+            }
+
+            element.Transform = layer.Transform.Convert();
+
+            element.Id = layer.Name;
+
+            return element;
+        }
+
+        public static Svg.Paint? ToSvg(Model.BrushInfo brush)
+        {
+            if (brush is Model.SolidColorBrushInfo solidBrush)
+            {
+                return new Svg.Paint(
+                    new Svg.Color(
+                        solidBrush.Color.Red,
+                        solidBrush.Color.Green,
+                        solidBrush.Color.Blue,
+                        solidBrush.Color.Alpha
+                        ));
             }
 
             return null;

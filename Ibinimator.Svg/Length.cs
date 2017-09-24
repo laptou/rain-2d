@@ -58,53 +58,8 @@ namespace Ibinimator.Svg
 
         public static Length Parse(string input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return Zero;
-
-            var match = Pattern.Match(input);
-
-            if (match.Success)
-            {
-                LengthUnit unit;
-
-                switch (match.Groups[2].Value)
-                {
-                    case "em":
-                        unit = LengthUnit.Ems;
-                        break;
-                    case "ex":
-                        unit = LengthUnit.Exs;
-                        break;
-                    case "px":
-                        unit = LengthUnit.Pixels;
-                        break;
-                    case "in":
-                        unit = LengthUnit.Inches;
-                        break;
-                    case "cm":
-                        unit = LengthUnit.Centimeter;
-                        break;
-                    case "mm":
-                        unit = LengthUnit.Millimeter;
-                        break;
-                    case "pt":
-                        unit = LengthUnit.Points;
-                        break;
-                    case "pc":
-                        unit = LengthUnit.Picas;
-                        break;
-                    case "%":
-                        unit = LengthUnit.Percent;
-                        break;
-                    case "":
-                        unit = LengthUnit.Number;
-                        break;
-                    default: throw new FormatException("Invalid unit.");
-                }
-
-                return new Length(float.Parse(match.Groups[1].Value), unit);
-            }
-
-            throw new FormatException("Invalid length.");
+            if (TryParse(input, out var length)) return length;
+            throw new FormatException();
         }
 
         public float To(LengthUnit target)
@@ -177,6 +132,60 @@ namespace Ibinimator.Svg
         public static bool operator !=(Length l1, Length l2)
         {
             return !(l1 == l2);
+        }
+
+        public static bool TryParse(string input, out Length length)
+        {
+            length = Zero;
+
+            if (string.IsNullOrWhiteSpace(input)) return false;
+
+            var match = Pattern.Match(input);
+
+            if (match.Success)
+            {
+                LengthUnit unit;
+
+                switch (match.Groups[2].Value)
+                {
+                    case "em":
+                        unit = LengthUnit.Ems;
+                        break;
+                    case "ex":
+                        unit = LengthUnit.Exs;
+                        break;
+                    case "px":
+                        unit = LengthUnit.Pixels;
+                        break;
+                    case "in":
+                        unit = LengthUnit.Inches;
+                        break;
+                    case "cm":
+                        unit = LengthUnit.Centimeter;
+                        break;
+                    case "mm":
+                        unit = LengthUnit.Millimeter;
+                        break;
+                    case "pt":
+                        unit = LengthUnit.Points;
+                        break;
+                    case "pc":
+                        unit = LengthUnit.Picas;
+                        break;
+                    case "%":
+                        unit = LengthUnit.Percent;
+                        break;
+                    case "":
+                        unit = LengthUnit.Number;
+                        break;
+                    default: throw new FormatException("Invalid unit.");
+                }
+
+                length = new Length(float.Parse(match.Groups[1].Value), unit);
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -14,20 +14,22 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            if (element.Attribute("fill") != null)
-                Fill = Paint.Parse((string) element.Attribute("fill"));
+            if (Paint.TryParse(LazyGet(element, "fill", true), out var fill))
+                Fill = fill;
 
-            if (element.Attribute("fill-opacity") != null)
-                FillOpacity = float.Parse((string) element.Attribute("fill-opacity"));
+            if(float.TryParse(LazyGet(element, "fill-opacity", true), out var fillOpacity))
+                FillOpacity = fillOpacity;
 
-            if (element.Attribute("stroke") != null)
-                Stroke = Paint.Parse((string) element.Attribute("stroke"));
+            if (Paint.TryParse(LazyGet(element, "stroke", true), out var stroke))
+                Stroke = stroke;
 
-            if (element.Attribute("stroke-width") != null)
-                StrokeWidth = Length.Parse((string) element.Attribute("stroke-width"));
+            if (Length.TryParse(LazyGet(element, "stroke-width", true), out var strokeWidth))
+                StrokeWidth = strokeWidth;
 
-            if (element.Attribute("stroke-opacity") != null)
-                StrokeOpacity = float.Parse((string) element.Attribute("stroke-opacity"));
+            if (float.TryParse(LazyGet(element, "stroke-opacity", true), out var strokeOpacity))
+                StrokeOpacity = strokeOpacity;
+
+            StrokeDashArray = LazyGet<float[]>(element, "stroke-dasharray", true);
         }
 
         public override XElement ToXml(SvgContext context)

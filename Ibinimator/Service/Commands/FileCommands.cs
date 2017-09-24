@@ -39,6 +39,11 @@ namespace Ibinimator.Service.Commands
                     var doc = new Document();
                     doc.FromXml(xdoc.Root, new SvgContext());
                     vm.Document = SvgConverter.FromSvg(doc);
+
+                    vm.ArtView.CacheManager.ResetAll();
+                    vm.ArtView.CacheManager.LoadBitmaps(vm.ArtView.RenderTarget);
+                    vm.ArtView.CacheManager.LoadBrushes(vm.ArtView.RenderTarget);
+                    vm.ArtView.CacheManager.Bind(vm.Document);
                 }
             }
         }

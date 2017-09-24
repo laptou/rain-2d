@@ -20,14 +20,24 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            var vb = ((string) element.Attribute("viewBox"))
-                .Split(' ')
-                .Select(float.Parse)
-                .ToArray();
-            Viewbox = new RectangleF(vb[0], vb[1], vb[2], vb[3]);
-            Version = float.Parse((string) element.Attribute("version"));
-            Width = Length.Parse((string) element.Attribute("width"));
-            Height = Length.Parse((string) element.Attribute("height"));
+            if ((string) element.Attribute("viewBox") != null)
+            {
+                var vb = ((string) element.Attribute("viewBox"))
+                    .Split(' ')
+                    .Select(float.Parse)
+                    .ToArray();
+
+                Viewbox = new RectangleF(vb[0], vb[1], vb[2], vb[3]);
+            }
+
+            if (float.TryParse(LazyGet(element, "version"), out var version))
+                Version = version;
+
+            if (Length.TryParse(LazyGet(element, "width"), out var width))
+                Width = width;
+
+            if (Length.TryParse(LazyGet(element, "height"), out var height))
+                Height = height;
         }
     }
 }

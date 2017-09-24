@@ -73,9 +73,19 @@ namespace Ibinimator.Utility
             return new RectangleF(raw.Left, raw.Top, raw.Right - raw.Left, raw.Bottom - raw.Top);
         }
 
+        public static System.Numerics.Vector2 Convert(this Vector2 vec)
+        {
+            return new System.Numerics.Vector2(vec.X, vec.Y);
+        }
+
         public static Vector2 Convert(this System.Numerics.Vector2 vec)
         {
             return new Vector2(vec.X, vec.Y);
+        }
+
+        public static System.Numerics.Matrix3x2 Convert(this Matrix3x2 mat)
+        {
+            return new System.Numerics.Matrix3x2(mat.M11, mat.M12, mat.M21, mat.M22, mat.M31, mat.M32);
         }
 
         public static Matrix3x2 Convert(this System.Numerics.Matrix3x2 mat)
