@@ -49,7 +49,9 @@ namespace Ibinimator.View.Control
             var root = new Canvas();
 
             var stream = WPF.Application.GetResourceStream(Source)?.Stream ?? File.OpenRead(Source.ToString());
-            var doc = SvgSerializer.Parse(XDocument.Load(stream));
+            var xdoc = XDocument.Load(stream);
+            var doc = new Document();
+            doc.FromXml(xdoc.Root, new SvgContext());
             stream.Dispose();
 
             foreach (var element in doc)

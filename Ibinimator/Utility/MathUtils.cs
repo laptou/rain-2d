@@ -78,6 +78,11 @@ namespace Ibinimator.Utility
             return new Vector2(vec.X, vec.Y);
         }
 
+        public static Matrix3x2 Convert(this System.Numerics.Matrix3x2 mat)
+        {
+            return new Matrix3x2(mat.M11, mat.M12, mat.M21, mat.M22, mat.M31, mat.M32);
+        }
+
         public static (Vector2, Vector2) CrossSection(Vector2 ray, Vector2 origin, RectangleF bounds)
         {
             bounds.Offset(-origin);

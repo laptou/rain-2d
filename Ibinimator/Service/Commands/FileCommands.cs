@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Ibinimator.Svg;
+using Ibinimator.Utility;
 using Ibinimator.ViewModel;
 using static Ibinimator.Service.CommandManager;
 
@@ -30,8 +32,15 @@ namespace Ibinimator.Service.Commands
             await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
+            {
                 using (var stream = ofd.OpenFile())
-                    vm.Document = SvgSerializer.DeserializeDocument(XDocument.Load(stream));
+                {
+                    var xdoc = XDocument.Load(stream);
+                    var doc = new Document();
+                    doc.FromXml(xdoc.Root, new SvgContext());
+                    vm.Document = SvgConverter.FromSvg(doc);
+                }
+            }
         }
 
         private static async Task SaveAsync(IViewManager vm)

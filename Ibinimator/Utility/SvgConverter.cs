@@ -152,10 +152,18 @@ namespace Ibinimator.Utility
                 }
 
                 shape.FillBrush = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
-                shape.StrokeBrush = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
+                shape.StrokeBrush = FromSvg(shapeElement.Stroke, shapeElement.StrokeOpacity);
 
                 layer = shape;
             }
+
+            if (element is Svg.IGraphicalElement graphicalElement)
+            {
+                (layer.Scale, layer.Rotation, layer.Position, layer.Shear) = 
+                    graphicalElement.Transform.Convert().Decompose();
+            }
+
+            layer.Name = element.Id;
 
             return layer;
         }

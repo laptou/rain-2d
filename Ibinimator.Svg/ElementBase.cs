@@ -56,7 +56,7 @@ namespace Ibinimator.Svg
         {
             var value = LazyGet(element, name);
 
-            if (typeof(T).IsEnum)
+            if (typeof(T).IsEnum && !string.IsNullOrWhiteSpace(value))
                 if (Enum.TryParse(
                     string.Join(
                         "",

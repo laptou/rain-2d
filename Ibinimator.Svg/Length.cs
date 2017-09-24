@@ -58,6 +58,8 @@ namespace Ibinimator.Svg
 
         public static Length Parse(string input)
         {
+            if (string.IsNullOrWhiteSpace(input)) return Zero;
+
             var match = Pattern.Match(input);
 
             if (match.Success)

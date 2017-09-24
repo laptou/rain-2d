@@ -48,16 +48,103 @@ namespace Ibinimator.Svg
             // LazyGet(element, "clip", RectangleF.Empty);
             //LazyGet(element, "clip-path", ClipPath);
             //LazyGet(element, "clip-rule", ClipRule);
-            //LazyGet(element, "color-interpolation", ColorInterpolation);
-            //LazyGet(element, "filter-color-interpolation", ColorFilterInterpolation);
+            ColorInterpolation = LazyGet<ColorInterpolation>(element, "color-interpolation");
+            ColorFilterInterpolation = LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
             //LazyGet(element, "color", Color);
-            //LazyGet(element, "cursor", Cursor);
-            //LazyGet(element, "direction", Direction);
+            //Cursor = LazyGet<Cursor>(element, "cursor", Cursor);
+            Direction = LazyGet<Direction>(element, "direction");
             //LazyGet(element, "filter", Filter);
-            //LazyGet(element, "kerning", Kerning);
-            //LazyGet(element, "letter-spacing", LetterSpacing);
+            Kerning = LazyGet(element, "kerning", Length.Zero);
+            LetterSpacing = LazyGet(element, "letter-spacing", Length.Zero);
             //LazyGet(element, "mask", Mask);
-            //LazyGet(element, "opacity", Opacity, 1);
+            Opacity = LazyGet(element, "opacity", 1);
+
+            var transformStr = (string)element.Attribute("transform");
+
+            if (!string.IsNullOrWhiteSpace(transformStr))
+            {
+                var transformMatches = _transformSyntax.Matches(transformStr);
+                var transform = Matrix3x2.Identity;
+
+                foreach (Match transformMatch in transformMatches)
+                {
+                    var groups = transformMatch.Groups
+                        .OfType<System.Text.RegularExpressions.Group>()
+                        .Skip(1)
+                        .Select(g => g.Value)
+                        .ToArray();
+
+                    switch (groups[0])
+                    {
+                        case "matrix":
+                            transform = new Matrix3x2(
+                                float.Parse(groups[1]),
+                                float.Parse(groups[2]),
+                                float.Parse(groups[3]),
+                                float.Parse(groups[4]),
+                                float.Parse(groups[5]),
+                                float.Parse(groups[6])) * transform;
+                            break;
+                        case "scale":
+                            if(groups.Length == 2)
+                                transform = 
+                                    Matrix3x2.CreateScale(
+                                        float.Parse(groups[1])) * transform;
+
+                            if (groups.Length == 3)
+                                transform =
+                                    Matrix3x2.CreateScale(
+                                        float.Parse(groups[1]),
+                                        float.Parse(groups[2])) * transform;
+                            break;
+
+                        case "translate":
+                            if (groups.Length == 2)
+                                transform =
+                                    Matrix3x2.CreateTranslation(
+                                        float.Parse(groups[1]), 
+                                        float.Parse(groups[1])) * transform;
+
+                            if (groups.Length == 3)
+                                transform =
+                                    Matrix3x2.CreateTranslation(
+                                        float.Parse(groups[1]),
+                                        float.Parse(groups[2])) * transform;
+                            break;
+
+                        case "rotate":
+                            if (groups.Length == 2)
+                                transform =
+                                    Matrix3x2.CreateRotation(
+                                        float.Parse(groups[1]) * 180 / (float)Math.PI) * transform;
+
+                            if (groups.Length == 3)
+                                transform =
+                                    Matrix3x2.CreateRotation(
+                                        float.Parse(groups[1]) * 180 / (float)Math.PI,
+                                        new Vector2(
+                                            float.Parse(groups[2]),
+                                            float.Parse(groups[3]))) * transform;
+                            break;
+
+                        case "skewX":
+                            transform =
+                                Matrix3x2.CreateSkew(
+                                    float.Parse(groups[1]) * 180 / (float) Math.PI,
+                                    0) * transform;
+                            break;
+
+                        case "skewY":
+                            transform =
+                                Matrix3x2.CreateSkew(
+                                    0,
+                                    float.Parse(groups[1]) * 180 / (float)Math.PI) * transform;
+                            break;
+                    }
+                }
+
+                Transform = transform;
+            }
         }
 
         public override XElement ToXml(SvgContext context)

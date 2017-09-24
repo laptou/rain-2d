@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Numerics;
 using System.Xml.Linq;
 
 namespace Ibinimator.Svg
@@ -18,6 +19,7 @@ namespace Ibinimator.Svg
         Length? LetterSpacing { get; set; }
         Iri? Mask { get; set; }
         float Opacity { get; set; }
+        Matrix3x2 Transform { get; set; }
 
     }
 }

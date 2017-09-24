@@ -143,6 +143,7 @@
     <Compile Include="Model\Text.cs" />
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
+    <Compile Include="Service\Commands\CommandManager.cs" />
     <Compile Include="Service\Commands\FileCommands.cs" />
     <Compile Include="Service\Commands\HistoryCommands.cs" />
     <Compile Include="Service\Commands\IOperationCommand.cs" />
