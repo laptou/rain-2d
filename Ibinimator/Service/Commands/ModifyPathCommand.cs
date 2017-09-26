@@ -72,7 +72,19 @@ namespace Ibinimator.Service.Commands
                     break;
                 case NodeOperation.Move:
                     foreach (var node in Nodes)
+                    {
+                        if (node is CubicPathNode cubic)
+                        {
+                            cubic.Control1 += Delta;
+                            cubic.Control2 += Delta;
+                        }
+
+                        if (node is QuadraticPathNode quadratic)
+                            quadratic.Control += Delta;
+
                         node.Position += Delta;
+                    }
+
                     break;
                 case NodeOperation.MoveHandle1:
                 {
@@ -114,7 +126,18 @@ namespace Ibinimator.Service.Commands
                     break;
                 case NodeOperation.Move:
                     foreach (var node in Nodes)
+                    {
+                        if (node is CubicPathNode cubic)
+                        {
+                            cubic.Control1 -= Delta;
+                            cubic.Control2 -= Delta;
+                        }
+
+                        if (node is QuadraticPathNode quadratic)
+                            quadratic.Control -= Delta;
+
                         node.Position -= Delta;
+                    }
                     break;
                 case NodeOperation.MoveHandle1:
                 {

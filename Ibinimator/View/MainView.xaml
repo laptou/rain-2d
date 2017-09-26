@@ -29,38 +29,58 @@
         <WindowChrome CaptionHeight="30" CornerRadius="5" UseAeroCaptionButtons="False" ResizeBorderThickness="5" />
     </WindowChrome.WindowChrome>
     <Window.InputBindings>
-        <KeyBinding Gesture="CTRL+SHIFT+OemOpenBrackets"
+        <KeyBinding Gesture="Control+SHIFT+OemOpenBrackets"
                     Command="{x:Static command:SelectionCommands.MoveToBottomCommand}"
                     CommandParameter="{Binding SelectionManager}" />
-        <KeyBinding Gesture="CTRL+OemOpenBrackets"
+        <KeyBinding Gesture="Control+OemOpenBrackets"
                     Command="{x:Static command:SelectionCommands.MoveDownCommand}"
                     CommandParameter="{Binding SelectionManager}" />
-        <KeyBinding Gesture="CTRL+OemCloseBrackets"
+        <KeyBinding Gesture="Control+OemCloseBrackets"
                     Command="{x:Static command:SelectionCommands.MoveUpCommand}"
                     CommandParameter="{Binding SelectionManager}" />
-        <KeyBinding Gesture="CTRL+SHIFT+OemCloseBrackets"
+        <KeyBinding Gesture="Control+SHIFT+OemCloseBrackets"
                     Command="{x:Static command:SelectionCommands.MoveToTopCommand}"
                     CommandParameter="{Binding SelectionManager}" />
 
         <KeyBinding
             Command="{x:Static command:ObjectCommands.GroupCommand}"
             CommandParameter="{Binding HistoryManager}" 
-            Gesture="Ctrl+G"/>
+            Gesture="Control+G"/>
         <KeyBinding
             Command="{x:Static command:ObjectCommands.UngroupCommand}"
             CommandParameter="{Binding HistoryManager}" 
-            Gesture="Ctrl+Shift+G"/>
+            Gesture="Control+Shift+G"/>
 
-        <KeyBinding Gesture="CTRL+Z"
+        <KeyBinding
+            Command="{x:Static command:ObjectCommands.UnionCommand}"
+            CommandParameter="{Binding HistoryManager}" 
+            Gesture="Control+OemPlus"/>
+        <KeyBinding
+            Command="{x:Static command:ObjectCommands.DifferenceCommand}"
+            CommandParameter="{Binding HistoryManager}" 
+            Gesture="Control+Shift+OemMinus"/>
+        <KeyBinding
+            Command="{x:Static command:ObjectCommands.IntersectionCommand}"
+            CommandParameter="{Binding HistoryManager}" 
+            Gesture="Control+Shift+8"/>
+        <KeyBinding
+            Command="{x:Static command:ObjectCommands.XorCommand}"
+            CommandParameter="{Binding HistoryManager}" 
+            Gesture="Control+Shift+6"/>
+
+        <KeyBinding Gesture="Control+Z"
                     Command="{x:Static command:HistoryCommands.UndoCommand}"
                     CommandParameter="{Binding HistoryManager}" />
-        <KeyBinding Gesture="CTRL+SHIFT+Z"
+        <KeyBinding Gesture="Control+SHIFT+Z"
                     Command="{x:Static command:HistoryCommands.RedoCommand}"
                     CommandParameter="{Binding HistoryManager}" />
-        <KeyBinding Gesture="CTRL+S"
+        <KeyBinding Gesture="Control+Y"
+                    Command="{x:Static command:HistoryCommands.RedoCommand}"
+                    CommandParameter="{Binding HistoryManager}" />
+        <KeyBinding Gesture="Control+S"
                     Command="{x:Static command:FileCommands.SaveCommand}"
                     CommandParameter="{Binding ViewManager}" />
-        <KeyBinding Gesture="CTRL+O"
+        <KeyBinding Gesture="Control+O"
                     Command="{x:Static command:FileCommands.OpenCommand}"
                     CommandParameter="{Binding ViewManager}" />
     </Window.InputBindings>
@@ -98,44 +118,66 @@
                             <MenuItem Header="_Open"
                                       Command="{x:Static command:FileCommands.OpenCommand}"
                                       CommandParameter="{Binding ViewManager}" 
-                                      InputGestureText="Ctrl+O"/>
+                                      InputGestureText="Control O"/>
                             <MenuItem Header="_Save"
                                       Command="{x:Static command:FileCommands.SaveCommand}"
                                       CommandParameter="{Binding ViewManager}"
-                                      InputGestureText="Ctrl+S" />
+                                      InputGestureText="Control S" />
                         </MenuItem>
-                        <MenuItem Header="_Edit" />
+                        <MenuItem Header="_Edit">
+                            <MenuItem Header="_Undo"
+                                      Command="{x:Static command:HistoryCommands.UndoCommand}"
+                                      CommandParameter="{Binding HistoryManager}" 
+                                      InputGestureText="Control Z"/>
+                            <MenuItem Header="_Redo"
+                                      Command="{x:Static command:HistoryCommands.RedoCommand}"
+                                      CommandParameter="{Binding HistoryManager}"
+                                      InputGestureText="Control Y" />
+                        </MenuItem>
                         <MenuItem Header="_Time" />
                         <MenuItem Header="_Object">
                             <MenuItem Header="Move to Bottom"
                                       Command="{x:Static command:SelectionCommands.MoveToBottomCommand}"
                                       CommandParameter="{Binding SelectionManager}" 
-                                      InputGestureText="Ctrl+Shift+["/>
-                            <MenuItem Header="Move to Bottom"
-                                      Command="{x:Static command:SelectionCommands.MoveToBottomCommand}"
-                                      CommandParameter="{Binding SelectionManager}" 
-                                      InputGestureText="Ctrl+Shift+["/>
+                                      InputGestureText="Control Shift ["/>
                             <MenuItem Header="Move Down"
                                       Command="{x:Static command:SelectionCommands.MoveDownCommand}"
                                       CommandParameter="{Binding SelectionManager}" 
-                                      InputGestureText="Ctrl+["/>
+                                      InputGestureText="Control ["/>
                             <MenuItem Header="Move Up"
                                       Command="{x:Static command:SelectionCommands.MoveUpCommand}"
                                       CommandParameter="{Binding SelectionManager}" 
-                                      InputGestureText="Ctrl+]"/>
+                                      InputGestureText="Control ]"/>
                             <MenuItem Header="Move to Top"
                                       Command="{x:Static command:SelectionCommands.MoveToTopCommand}"
                                       CommandParameter="{Binding SelectionManager}" 
-                                      InputGestureText="Ctrl+Shift+]"/>
+                                      InputGestureText="Control Shift ]"/>
                             <Separator />
                             <MenuItem Header="_Group"
                                       Command="{x:Static command:ObjectCommands.GroupCommand}"
                                       CommandParameter="{Binding HistoryManager}" 
-                                      InputGestureText="Ctrl+G"/>
+                                      InputGestureText="Control G"/>
                             <MenuItem Header="_Ungroup"
                                       Command="{x:Static command:ObjectCommands.UngroupCommand}"
                                       CommandParameter="{Binding HistoryManager}" 
-                                      InputGestureText="Ctrl+Shift+G"/>
+                                      InputGestureText="Control Shift G"/>
+                            <Separator />
+                            <MenuItem Header="Union"
+                                      Command="{x:Static command:ObjectCommands.UnionCommand}"
+                                      CommandParameter="{Binding HistoryManager}" 
+                                      InputGestureText="Control +"/>
+                            <MenuItem Header="Difference"
+                                      Command="{x:Static command:ObjectCommands.DifferenceCommand}"
+                                      CommandParameter="{Binding HistoryManager}" 
+                                      InputGestureText="Control -"/>
+                            <MenuItem Header="Intersect"
+                                      Command="{x:Static command:ObjectCommands.IntersectionCommand}"
+                                      CommandParameter="{Binding HistoryManager}" 
+                                      InputGestureText="Control *"/>
+                            <MenuItem Header="Xor"
+                                      Command="{x:Static command:ObjectCommands.XorCommand}"
+                                      CommandParameter="{Binding HistoryManager}" 
+                                      InputGestureText="Control ^"/>
                         </MenuItem>
                         <MenuItem Header="Te_xt" />
                         <MenuItem Header="_Help">

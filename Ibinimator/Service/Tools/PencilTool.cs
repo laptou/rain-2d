@@ -233,7 +233,7 @@ namespace Ibinimator.Service.Tools
                     }
                     else
                     {
-                        var figures = CurrentPath.Nodes.Split(n => n is CloseNode);
+                        var figures = CurrentPath.Nodes.Split(n => n is CloseNode).ToList();
                         var index = 0;
 
                         foreach (var figure in figures.Select(Enumerable.ToArray))
