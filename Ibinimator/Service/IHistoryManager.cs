@@ -21,7 +21,7 @@ namespace Ibinimator.Service
         /// <summary>
         ///     Returns the position in the stack.
         /// </summary>
-        long Time { get; set; }
+        long Position { get; set; }
 
         /// <summary>
         ///     Fires when Time is changed manually (not when it changes

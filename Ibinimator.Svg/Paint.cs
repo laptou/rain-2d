@@ -52,5 +52,14 @@ namespace Ibinimator.Svg
 
             return false;
         }
+
+        public override string ToString()
+        {
+            if (Color != null) return Color.ToString();
+
+            if (Iri != null) return Iri.ToString();
+
+            return "none";
+        }
     }
 }

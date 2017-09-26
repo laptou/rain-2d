@@ -30,6 +30,9 @@ namespace Ibinimator.View.Control
         public SvgImage()
         {
             InitializeComponent();
+
+            SnapsToDevicePixels = true;
+            UseLayoutRounding = true;
         }
 
         public Uri Source

@@ -37,7 +37,8 @@ namespace Ibinimator.Svg
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
-            element.Name = "polygon";
+
+            element.Name = SvgNames.Polygon;
 
             LazySet(element, "points", string.Join(" ", Points));
 

@@ -5,20 +5,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
 using Ibinimator.ViewModel;
-using static Ibinimator.Service.CommandManager;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.View.Command
 {
     public static class FileCommands
     {
         public static readonly AsyncDelegateCommand<IViewManager> SaveCommand =
-            Instance.RegisterAsync<IViewManager>(SaveAsync);
+            CommandManager.RegisterAsync<IViewManager>(SaveAsync);
 
         public static readonly AsyncDelegateCommand<IViewManager> OpenCommand =
-            Instance.RegisterAsync<IViewManager>(OpenAsync);
+            CommandManager.RegisterAsync<IViewManager>(OpenAsync);
 
         private static async Task OpenAsync(IViewManager vm)
         {
@@ -67,7 +67,9 @@ namespace Ibinimator.Service.Commands
 
             using (var stream = File.Open(doc.Path, FileMode.Create))
             {
-                SvgSerializer.SerializeDocument(doc).Save(stream);
+                var svgDoc = SvgConverter.ToSvg(doc);
+                var xdoc = new XDocument(svgDoc.ToXml(new SvgContext()));
+                xdoc.Save(stream);
             }
         }
     }

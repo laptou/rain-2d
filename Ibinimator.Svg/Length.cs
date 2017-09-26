@@ -124,9 +124,9 @@ namespace Ibinimator.Svg
             return Math.Abs(l1.Magnitude - l3.Magnitude) < C.Epsilon;
         }
 
-        public static implicit operator Length((float magnitude, LengthUnit unit) v)
+        public static implicit operator Length(ValueTuple<float, LengthUnit> v)
         {
-            return new Length(v.magnitude, v.unit);
+            return new Length(v.Item1, v.Item2);
         }
 
         public static bool operator !=(Length l1, Length l2)
@@ -136,7 +136,7 @@ namespace Ibinimator.Svg
 
         public static bool TryParse(string input, out Length length)
         {
-            length = Zero;
+            length = Length.Zero;
 
             if (string.IsNullOrWhiteSpace(input)) return false;
 

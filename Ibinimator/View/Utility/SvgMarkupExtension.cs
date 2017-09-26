@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
-using WPF = System.Windows;
-using System.Xml.Linq;
 using Ibinimator.Svg;
 using Ibinimator.View.Control;
+using WPF = System.Windows;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     public class SvgExtension : MarkupExtension
     {

@@ -3,43 +3,44 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
+using Ibinimator.Service;
+using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 using SharpDX;
-using static Ibinimator.Service.CommandManager;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.View.Command
 {
     public static class SelectionCommands
     {
         public static readonly DelegateCommand<ISelectionManager> SelectAllCommand =
-            Instance.Register<ISelectionManager>(SelectAll);
+            CommandManager.Register<ISelectionManager>(SelectAll);
 
         public static readonly DelegateCommand<ISelectionManager> DeselectAllCommand =
-            Instance.Register<ISelectionManager>(DeselectAll);
+            CommandManager.Register<ISelectionManager>(DeselectAll);
 
         public static readonly DelegateCommand<ISelectionManager> MoveToBottomCommand =
-            Instance.Register<ISelectionManager>(MoveToBottom);
+            CommandManager.Register<ISelectionManager>(MoveToBottom);
 
         public static readonly DelegateCommand<ISelectionManager> MoveToTopCommand =
-            Instance.Register<ISelectionManager>(MoveToTop);
+            CommandManager.Register<ISelectionManager>(MoveToTop);
 
         public static readonly DelegateCommand<ISelectionManager> MoveUpCommand =
-            Instance.Register<ISelectionManager>(MoveUp);
+            CommandManager.Register<ISelectionManager>(MoveUp);
 
         public static readonly DelegateCommand<ISelectionManager> MoveDownCommand =
-            Instance.Register<ISelectionManager>(MoveDown);
+            CommandManager.Register<ISelectionManager>(MoveDown);
 
         public static readonly DelegateCommand<ISelectionManager> FlipVerticalCommand =
-            Instance.Register<ISelectionManager>(FlipVertical);
+            CommandManager.Register<ISelectionManager>(FlipVertical);
 
         public static readonly DelegateCommand<ISelectionManager> FlipHorizontalCommand =
-            Instance.Register<ISelectionManager>(FlipHorizontal);
+            CommandManager.Register<ISelectionManager>(FlipHorizontal);
 
         public static readonly DelegateCommand<ISelectionManager> RotateCounterClockwiseCommand =
-            Instance.Register<ISelectionManager>(RotateCounterClockwise);
+            CommandManager.Register<ISelectionManager>(RotateCounterClockwise);
 
         public static readonly DelegateCommand<ISelectionManager> RotateClockwiseCommand =
-            Instance.Register<ISelectionManager>(RotateClockwise);
+            CommandManager.Register<ISelectionManager>(RotateClockwise);
 
         private static void DeselectAll(ISelectionManager selectionManager)
         {
@@ -67,7 +68,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Time + 1,
+                    history.Position + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     1));
         }
@@ -78,7 +79,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Time + 1,
+                    history.Position + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     100000000));
         }
@@ -89,7 +90,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Time + 1,
+                    history.Position + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     -100000000));
         }
@@ -100,7 +101,7 @@ namespace Ibinimator.Service.Commands
 
             history.Do(
                 new ChangeZIndexCommand(
-                    history.Time + 1,
+                    history.Position + 1,
                     selectionManager.Selection.ToArray<ILayer>(),
                     -1));
         }

@@ -19,6 +19,7 @@ namespace Ibinimator.Service.Tools
         private bool _alt;
         private bool _down;
         private Vector2 _lastPos;
+        private bool _moved;
         private bool _shift;
 
         public PencilTool(IToolManager toolManager)
@@ -80,13 +81,19 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 case Key.Escape:
-                    Manager.ArtView.SelectionManager.ClearSelection();
+                    ArtView.SelectionManager.ClearSelection();
                     _selectedNodes.Clear();
                     break;
 
                 case Key.Delete:
-                    foreach (var node in _selectedNodes)
-                        CurrentPath?.Nodes.Remove(node);
+                    ArtView.HistoryManager.Do(
+                        new ModifyPathCommand(
+                            ArtView.HistoryManager.Position + 1,
+                            CurrentPath,
+                            _selectedNodes.ToArray(),
+                            _selectedNodes.Select(CurrentPath.Nodes.IndexOf).ToArray(),
+                            ModifyPathCommand.NodeOperation.Remove));
+
                     _selectedNodes.Clear();
 
                     Manager.ArtView.InvalidateSurface();
@@ -143,102 +150,14 @@ namespace Ibinimator.Service.Tools
                 };
 
                 Manager.ArtView.HistoryManager.Do(
-                    new AddLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                    new AddLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
                         Root,
                         path));
 
                 path.Selected = true;
             }
 
-            var tpos =
-                Matrix3x2.TransformPoint(
-                    Matrix3x2.Invert(CurrentPath.AbsoluteTransform), pos);
-
-            var node = CurrentPath.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
-
-            if (node != null)
-            {
-                if (_shift)
-                {
-                    _selectedNodes.Add(node);
-                }
-                else
-                {
-                    var figures = CurrentPath.Nodes.Split(n => n is CloseNode);
-                    var index = 0;
-
-                    foreach (var figure in figures.Select(Enumerable.ToArray))
-                    {
-                        var start = figure.FirstOrDefault();
-
-                        if (start == null) continue;
-
-                        index += figure.Length;
-
-                        if (start == node)
-                            if (CurrentPath.Nodes.ElementAtOrDefault(index) is CloseNode close)
-                                close.Open = !close.Open;
-                            else
-                                CurrentPath.Nodes.Insert(index, new CloseNode());
-                    }
-
-                    _selectedNodes.Clear();
-                    _selectedNodes.Add(node);
-                }
-            }
-            else
-            {
-                PathNode newNode;
-
-                if (_shift)
-                {
-                    var cpos =
-                        Matrix3x2.TransformPoint(
-                            Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
-                            Constrain(pos));
-
-                    newNode = new PathNode {X = cpos.X, Y = cpos.Y};
-                }
-                else
-                {
-                    newNode = new PathNode {X = tpos.X, Y = tpos.Y};
-                }
-
-                if (_selectedNodes.Count >= 2 && _alt)
-                {
-                    var last = _selectedNodes[_selectedNodes.Count - 1];
-                    var second = _selectedNodes[_selectedNodes.Count - 2];
-
-                    var lastIndex = CurrentPath.Nodes.IndexOf(last);
-                    var secondIndex = CurrentPath.Nodes.IndexOf(second);
-
-                    if (Math.Abs(lastIndex - secondIndex) == 1)
-                    {
-                        Manager.ArtView.HistoryManager.Do(
-                            new ModifyPathCommand(
-                                Manager.ArtView.HistoryManager.Time + 1,
-                                CurrentPath,
-                                new [] { newNode },
-                                lastIndex - (lastIndex - secondIndex) + 1,
-                                ModifyPathCommand.NodeOperation.Add));
-
-                        _selectedNodes.Insert(_selectedNodes.Count - 1, newNode);
-                    }
-                }
-                else
-                {
-                    Manager.ArtView.HistoryManager.Do(
-                        new ModifyPathCommand(
-                            Manager.ArtView.HistoryManager.Time + 1,
-                            CurrentPath,
-                            new[] { newNode },
-                            CurrentPath.Nodes.Count,
-                            ModifyPathCommand.NodeOperation.Add));
-
-                    _selectedNodes.Clear();
-                }
-            }
-
+            _moved = false;
             _down = true;
 
             Manager.ArtView.SelectionManager.Update(true);
@@ -252,12 +171,22 @@ namespace Ibinimator.Service.Tools
             {
                 var history = Manager.ArtView.HistoryManager;
 
+                var tlpos =
+                    Matrix3x2.TransformPoint(
+                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
+                        _lastPos);
+
+                var tpos =
+                    Matrix3x2.TransformPoint(
+                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
+                        pos);
+
                 var newCmd = 
                     new ModifyPathCommand(
-                        history.Time + 1,
+                        history.Position + 1,
                         CurrentPath,
                         _selectedNodes.ToArray(),
-                        Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, pos - _lastPos),
+                        tpos - tlpos,
                         ModifyPathCommand.NodeOperation.Move);
 
                 newCmd.Do(Manager.ArtView);
@@ -268,7 +197,7 @@ namespace Ibinimator.Service.Tools
                     cmd.Nodes.SequenceEqual(newCmd.Nodes))
                     history.Replace(
                         new ModifyPathCommand(
-                            history.Time + 1,
+                            history.Position + 1,
                             CurrentPath,
                             newCmd.Nodes,
                             cmd.Delta + newCmd.Delta,
@@ -279,15 +208,120 @@ namespace Ibinimator.Service.Tools
 
             _lastPos = pos;
 
-            Manager.ArtView.InvalidateSurface();
+            _moved = true;
+
+            ArtView.InvalidateSurface();
 
             return false;
         }
 
         public bool MouseUp(Vector2 pos)
         {
+            if (!_moved)
+            {
+                var tpos =
+                    Matrix3x2.TransformPoint(
+                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform), pos);
+
+                var node = CurrentPath.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
+
+                if (node != null)
+                {
+                    if (_shift)
+                    {
+                        _selectedNodes.Add(node);
+                    }
+                    else
+                    {
+                        var figures = CurrentPath.Nodes.Split(n => n is CloseNode);
+                        var index = 0;
+
+                        foreach (var figure in figures.Select(Enumerable.ToArray))
+                        {
+                            var start = figure.FirstOrDefault();
+
+                            if (start == null) continue;
+
+                            index += figure.Length;
+
+                            if (start != node) continue;
+
+                            if (CurrentPath.Nodes.ElementAtOrDefault(index) is CloseNode close)
+                                close.Open = !close.Open;
+                            else
+                            {
+                                Manager.ArtView.HistoryManager.Do(
+                                    new ModifyPathCommand(
+                                        Manager.ArtView.HistoryManager.Position + 1,
+                                        CurrentPath,
+                                        new PathNode[] {new CloseNode()},
+                                        index,
+                                        ModifyPathCommand.NodeOperation.Add));
+                            }
+                        }
+
+                        _selectedNodes.Clear();
+                        _selectedNodes.Add(node);
+                    }
+                }
+                else
+                {
+                    PathNode newNode;
+
+                    if (_shift)
+                    {
+                        var cpos =
+                            Matrix3x2.TransformPoint(
+                                Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
+                                Constrain(pos));
+
+                        newNode = new PathNode {X = cpos.X, Y = cpos.Y};
+                    }
+                    else
+                    {
+                        newNode = new PathNode {X = tpos.X, Y = tpos.Y};
+                    }
+
+                    if (_selectedNodes.Count >= 2 && _alt)
+                    {
+                        var last = _selectedNodes[_selectedNodes.Count - 1];
+                        var second = _selectedNodes[_selectedNodes.Count - 2];
+
+                        var lastIndex = CurrentPath.Nodes.IndexOf(last);
+                        var secondIndex = CurrentPath.Nodes.IndexOf(second);
+
+                        if (Math.Abs(lastIndex - secondIndex) == 1)
+                        {
+                            Manager.ArtView.HistoryManager.Do(
+                                new ModifyPathCommand(
+                                    Manager.ArtView.HistoryManager.Position + 1,
+                                    CurrentPath,
+                                    new[] {newNode},
+                                    lastIndex - (lastIndex - secondIndex) + 1,
+                                    ModifyPathCommand.NodeOperation.Add));
+
+                            _selectedNodes.Insert(_selectedNodes.Count - 1, newNode);
+                        }
+                    }
+                    else
+                    {
+                        Manager.ArtView.HistoryManager.Do(
+                            new ModifyPathCommand(
+                                Manager.ArtView.HistoryManager.Position + 1,
+                                CurrentPath,
+                                new[] {newNode},
+                                CurrentPath.Nodes.Count,
+                                ModifyPathCommand.NodeOperation.Add));
+
+                        _selectedNodes.Clear();
+                    }
+                }
+            }
+
+            ArtView.InvalidateSurface();
+
             _down = false;
-            return false;
+            return true;
         }
 
         public void Render(RenderTarget target, ICacheManager cacheManager)
@@ -351,10 +385,13 @@ namespace Ibinimator.Service.Tools
 
                         if (_selectedNodes.Contains(node))
                             target.FillRectangle(rect,
-                                rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A3"));
+                                rect.Contains(_lastPos) && _down ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A3"));
+                        else if (_down)
+                            target.FillRectangle(rect,
+                                rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
                         else
                             target.FillRectangle(rect,
-                                rect.Contains(_lastPos) ? cacheManager.GetBrush("L3") : cacheManager.GetBrush("L1"));
+                                rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
 
                         target.DrawRectangle(rect,
                             i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2"),

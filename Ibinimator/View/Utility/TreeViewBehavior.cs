@@ -10,7 +10,7 @@ using System.Windows.Interactivity;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     /// <summary>
     ///     A behavior that extends a <see cref="TreeView" /> with multiple selection capabilities.

@@ -61,10 +61,22 @@ namespace Ibinimator.View.Control
 
             if (App.IsDesigner) return;
 
+            // Stretch = Stretch.Fill;
+            SnapsToDevicePixels = true;
+            UseLayoutRounding = true;
 
-            Stretch = Stretch.Fill;
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
-            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.Linear);
+            RenderOptions.SetEdgeMode(this, EdgeMode.Unspecified);
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            return constraint;
+        }
+
+        protected override Size ArrangeOverride(Size arrangeSize)
+        {
+            return arrangeSize;
         }
 
         public Device Device => _device;
@@ -123,6 +135,9 @@ namespace Ibinimator.View.Control
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
+
+            if (_surface == null)
+                return;
 
             CreateAndBindTargets();
             PrepareAndCallRender();
@@ -219,9 +234,9 @@ namespace Ibinimator.View.Control
         {
             if (App.IsDesigner) return;
 
-            _invalidated = true;
-
             StartD3D();
+
+            _invalidated = true;
         }
 
         private void OnRendering(object sender, EventArgs e)
@@ -433,7 +448,8 @@ namespace Ibinimator.View.Control
                 return;
 
             var presentParams = GetPresentParameters();
-            var createFlags = D3D9.CreateFlags.HardwareVertexProcessing | D3D9.CreateFlags.Multithreaded |
+            var createFlags = D3D9.CreateFlags.HardwareVertexProcessing | 
+                              D3D9.CreateFlags.Multithreaded |
                               D3D9.CreateFlags.FpuPreserve;
 
             _context = new D3D9.Direct3DEx();

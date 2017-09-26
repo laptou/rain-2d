@@ -232,10 +232,10 @@ namespace Ibinimator.Utility
                     case Model.Ellipse ellipse:
                         shape = new Svg.Ellipse
                         {
-                            CenterX = ellipse.CenterX,
-                            CenterY = ellipse.CenterY,
-                            RadiusX = (ellipse.RadiusX, Pixels),
-                            RadiusY = (ellipse.RadiusY, Pixels)
+                            CenterX = ellipse.RadiusX,
+                            CenterY = ellipse.RadiusY,
+                            RadiusX = new Svg.Length(ellipse.RadiusX, Pixels),
+                            RadiusY = new Svg.Length(ellipse.RadiusY, Pixels)
                         };
                         break;
                     case Model.Path path:
@@ -286,10 +286,8 @@ namespace Ibinimator.Utility
                     case Model.Rectangle rectangle:
                         shape = new Svg.Rectangle
                         {
-                            X = rectangle.X,
-                            Y = rectangle.Y,
-                            Width = (rectangle.Width, Pixels),
-                            Height = (rectangle.Height, Pixels)
+                            Width = new Svg.Length(rectangle.Width, Pixels),
+                            Height = new Svg.Length(rectangle.Height, Pixels)
                         };
                         break;
                     default:
@@ -304,15 +302,18 @@ namespace Ibinimator.Utility
 
                 var dashes = shapeLayer.StrokeInfo.Dashes.Select(f => f * shapeLayer.StrokeInfo.Width).ToArray();
 
-                shape.StrokeWidth = (shapeLayer.StrokeInfo.Width, Pixels);
+                shape.StrokeWidth = new Svg.Length(shapeLayer.StrokeInfo.Width, Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
 
                 element = shape;
             }
 
-            element.Transform = layer.Transform.Convert();
+            if (element != null)
+            {
+                element.Transform = layer.Transform.Convert();
 
-            element.Id = layer.Name;
+                element.Id = layer.Name;
+            }
 
             return element;
         }

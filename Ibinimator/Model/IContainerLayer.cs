@@ -13,7 +13,7 @@ namespace Ibinimator.Model
         event EventHandler<Layer> LayerAdded;
         event EventHandler<Layer> LayerRemoved;
 
-        void Add(Layer child, int index = 0);
+        void Add(Layer child, int index = -1);
         IEnumerable<Layer> Flatten();
         void Remove(Layer child);
     }

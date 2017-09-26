@@ -40,7 +40,7 @@ namespace Ibinimator.Svg
             LazySet(element, "fill-opacity", FillOpacity);
             LazySet(element, "fill-rule", FillRule);
             LazySet(element, "stroke", Stroke);
-            LazySet(element, "stroke-dash-array", StrokeDashArray);
+            LazySet(element, "stroke-dasharray", StrokeDashArray);
             LazySet(element, "stroke-dash-offset", StrokeDashOffset);
             LazySet(element, "stroke-opacity", StrokeOpacity);
             LazySet(element, "stroke-width", StrokeWidth);
@@ -64,7 +64,7 @@ namespace Ibinimator.Svg
 
         public float StrokeOpacity { get; set; } = 1;
 
-        public Length StrokeWidth { get; set; }
+        public Length StrokeWidth { get; set; } = (1, LengthUnit.Pixels);
 
         #endregion
     }

@@ -12,10 +12,9 @@ namespace Ibinimator.Service.Tools
 {
     public class ToolManager : Model.Model, IToolManager
     {
-        public ToolManager(ArtView artView)
+        public ToolManager(ArtView artView, ISelectionManager selectionManager)
         {
             ArtView = artView;
-            SetTool(ToolType.Select);
         }
 
         public void SetTool(ToolType type)
@@ -29,7 +28,7 @@ namespace Ibinimator.Service.Tools
                 switch (type)
                 {
                     case ToolType.Select:
-                        Tool = new SelectTool(this);
+                        Tool = new SelectTool(this, ArtView.SelectionManager);
                         break;
                     case ToolType.Path:
                         break;

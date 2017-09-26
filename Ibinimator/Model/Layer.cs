@@ -95,8 +95,6 @@ namespace Ibinimator.Model
         {
             T hit = null;
 
-            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
-
             foreach (var layer in SubLayers)
             {
                 var result = layer.Hit<T>(cache, point, includeMe);

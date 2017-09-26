@@ -20,7 +20,8 @@ namespace Ibinimator.Svg
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
-            element.Name = "path";
+
+            element.Name = SvgNames.Path;
 
             if (Data.Length <= 0) return element;
 

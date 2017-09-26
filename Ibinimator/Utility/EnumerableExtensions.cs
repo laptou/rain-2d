@@ -9,7 +9,6 @@ namespace Ibinimator.Utility
     {
         public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Func<T, int, bool> predicate)
         {
-            var list = new List<IEnumerable<T>>();
             var set = new List<T>();
             var index = 0;
 
@@ -49,6 +48,34 @@ namespace Ibinimator.Utility
             this IEnumerable<KeyValuePair<TKey, TElement>> source)
         {
             return source.ToDictionary(kv => kv.Key, kv => kv.Value);
+        }
+
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
+            this IEnumerable<(TKey, TElement)> source)
+        {
+            return source.ToDictionary(kv => kv.Item1, kv => kv.Item2);
+        }
+
+        public static IEnumerable<T> TakeUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        {
+            foreach (var element in enumerable)
+            {
+                yield return element;
+
+                if (!predicate(element)) break;
+            }
+        }
+
+        public static IEnumerable<T> SkipUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        {
+            var yielding = false;
+
+            foreach (var element in enumerable)
+            {
+                if (yielding) yield return element;
+
+                if (!yielding && !predicate(element)) yielding = true;
+            }
         }
     }
 }

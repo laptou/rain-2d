@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     // Supported types of comparisons
     [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -55,11 +55,11 @@ namespace Ibinimator.View
     }
 
     // Thie IValueConverter is used by the StyleBinding to implement
-    // the logical comparisson. ConvertBack isnâ€™t supported. Convert
+    // the logical comparisson. ConvertBack isn’t supported. Convert
     // returns null if the condition is met, non-null otherwise.
     internal class ComparisonConverter : IValueConverter
     {
-        // Return this if the condition isnâ€™t met
+        // Return this if the condition isn’t met
         private static readonly object _notNull = new object();
 
         // Keep a back reference to the StyleBinding
@@ -91,7 +91,7 @@ namespace Ibinimator.View
         {
             if (Debugger.IsAttached)
             {
-                Debug.WriteLine("StyleBinding couldnâ€™t convert '"
+                Debug.WriteLine("StyleBinding couldn’t convert '"
                                 + value.GetType()
                                 + "' to '"
                                 + _styleBinding.Comparand.GetType()
@@ -127,7 +127,7 @@ namespace Ibinimator.View
             }
             catch (InvalidCastException)
             {
-                // If Convert.ChangeType didnâ€™t work, try a type converter
+                // If Convert.ChangeType didn’t work, try a type converter
                 var typeConverter = TypeDescriptor.GetConverter(value);
                 if (typeConverter?.CanConvertFrom(_styleBinding.Comparand.GetType()) == true)
                     convertedComparand = typeConverter.ConvertFrom(_styleBinding.Comparand);
@@ -165,7 +165,7 @@ namespace Ibinimator.View
             return _notNull;
         }
 
-        // IValueConverter.ConvertBack isnâ€™t supported.
+        // IValueConverter.ConvertBack isn’t supported.
         public object ConvertBack(
             object value,
             Type targetType,

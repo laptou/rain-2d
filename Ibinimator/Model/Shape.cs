@@ -200,24 +200,24 @@ namespace Ibinimator.Model
         {
             if (!(this is T)) return null;
 
-            point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
+            var pt = Matrix3x2.TransformPoint(Matrix3x2.Invert(AbsoluteTransform), point);
 
             var bounds = cache.GetBounds(this);
 
-            if (!bounds.Contains(point)) return null;
+            if (!bounds.Contains(pt)) return null;
 
             var geometry = cache.GetGeometry(this);
 
             if (FillBrush != null &&
                 geometry.FillContainsPoint(
-                    point,
+                    pt,
                     Matrix3x2.Identity,
                     geometry.FlatteningTolerance))
                 return this as T;
 
             if (StrokeBrush != null &&
                 geometry.StrokeContainsPoint(
-                    point,
+                    pt,
                     StrokeInfo.Width,
                     null,
                     Matrix3x2.Identity,

@@ -15,9 +15,19 @@ namespace Ibinimator.Service.Tools
 {
     public sealed class SelectTool : Model.Model, ITool
     {
-        public SelectTool(IToolManager toolManager)
+        public SelectTool(IToolManager toolManager, ISelectionManager selectionManager)
         {
             Manager = toolManager;
+            Status = "lel";
+
+            selectionManager.Updated += (sender, args) =>
+            {
+                var names = selectionManager.Selection.Select(l => l.Name ?? l.DefaultName)
+                                                      .ToArray();
+
+                Status = $"{selectionManager.Selection.Count} layer(s) selected " +
+                         $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
+            };
         }
 
         private IEnumerable<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
@@ -32,7 +42,7 @@ namespace Ibinimator.Service.Tools
                     .ToArray();
 
             var command = new ApplyFillCommand(
-                Manager.ArtView.HistoryManager.Time + 1,
+                Manager.ArtView.HistoryManager.Position + 1,
                 targets, brush,
                 targets.Select(t => t.FillBrush).ToArray());
 
@@ -47,7 +57,7 @@ namespace Ibinimator.Service.Tools
                     .ToArray();
 
             var command = new ApplyStrokeCommand(
-                Manager.ArtView.HistoryManager.Time + 1,
+                Manager.ArtView.HistoryManager.Position + 1,
                 targets,
                 brush, targets.Select(t => t.StrokeBrush).ToArray(),
                 stroke, targets.Select(t => t.StrokeInfo).ToArray());
@@ -68,7 +78,7 @@ namespace Ibinimator.Service.Tools
 
                 foreach (var layer in delete)
                     Manager.ArtView.HistoryManager.Do(
-                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
                             layer.Parent,
                             layer));
 
@@ -150,7 +160,11 @@ namespace Ibinimator.Service.Tools
 
         public ToolOption[] Options => new ToolOption[0];
 
-        public string Status => "";
+        public string Status
+        {
+            get => Get<string>();
+            private set => Set(value);
+        }
 
         public ToolType Type => ToolType.Select;
 

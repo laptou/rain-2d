@@ -3,25 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Model;
+using Ibinimator.Service;
+using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 using SharpDX.Direct2D1;
-using static Ibinimator.Service.CommandManager;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.View.Command
 {
     public static class ObjectCommands
     {
         public static readonly DelegateCommand<IHistoryManager> UnionCommand =
-            Instance.Register<IHistoryManager>(Union);
+            CommandManager.Register<IHistoryManager>(Union);
 
         public static readonly DelegateCommand<IHistoryManager> IntersectionCommand =
-            Instance.Register<IHistoryManager>(Intersection);
+            CommandManager.Register<IHistoryManager>(Intersection);
 
         public static readonly DelegateCommand<IHistoryManager> DifferenceCommand =
-            Instance.Register<IHistoryManager>(Difference);
+            CommandManager.Register<IHistoryManager>(Difference);
 
         public static readonly DelegateCommand<IHistoryManager> XorCommand =
-            Instance.Register<IHistoryManager>(Xor);
+            CommandManager.Register<IHistoryManager>(Xor);
+
+        public static readonly DelegateCommand<IHistoryManager> GroupCommand =
+            CommandManager.Register<IHistoryManager>(Group);
+
+        public static readonly DelegateCommand<IHistoryManager> UngroupCommand =
+            CommandManager.Register<IHistoryManager>(Ungroup);
 
         private static void BinaryOperation(IHistoryManager manager, CombineMode operation)
         {
@@ -29,7 +36,7 @@ namespace Ibinimator.Service.Commands
             if (selectionManager.Selection[0] is IGeometricLayer x &&
                 selectionManager.Selection[1] is IGeometricLayer y)
                 manager.Do(new BinaryOperationCommand(
-                    manager.Time + 1,
+                    manager.Position + 1,
                     new[] {x, y},
                     operation));
         }
@@ -52,6 +59,32 @@ namespace Ibinimator.Service.Commands
         private static void Xor(IHistoryManager manager)
         {
             BinaryOperation(manager, CombineMode.Xor);
+        }
+
+        private static void Group(IHistoryManager manager)
+        {
+            var selectionManager = manager.ArtView.SelectionManager;
+
+            if (selectionManager.Selection.Count == 0)
+                return;
+
+            var command = new GroupCommand(
+                manager.Position + 1, 
+                selectionManager.Selection.ToArray<ILayer>());
+            manager.Do(command);
+        }
+
+        private static void Ungroup(IHistoryManager manager)
+        {
+            var selectionManager = manager.ArtView.SelectionManager;
+
+            if (selectionManager.Selection.Count == 0)
+                return;
+
+            var command = new UngroupCommand(
+                manager.Position + 1,
+                selectionManager.Selection.OfType<IContainerLayer>().ToArray());
+            manager.Do(command);
         }
     }
 }

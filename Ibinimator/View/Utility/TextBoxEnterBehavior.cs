@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     public class TextBoxEnterBehavior : Behavior<TextBox>
     {

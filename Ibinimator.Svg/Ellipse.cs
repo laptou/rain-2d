@@ -27,7 +27,7 @@ namespace Ibinimator.Svg
         {
             var element = base.ToXml(context);
 
-            element.Name = "ellipse";
+            element.Name = SvgNames.Ellipse;
 
             LazySet(element, "cx", CenterX);
             LazySet(element, "cy", CenterY);

@@ -26,7 +26,8 @@ namespace Ibinimator.Svg
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
-            element.Name = "line";
+
+            element.Name = SvgNames.Line;
 
             LazySet(element, "x1", X1);
             LazySet(element, "y1", Y1);

@@ -143,11 +143,26 @@
     <Compile Include="Model\Text.cs" />
     <Compile Include="Model\Unit.cs" />
     <Compile Include="Service\BrushManager.cs" />
-    <Compile Include="Service\Commands\CommandManager.cs" />
-    <Compile Include="Service\Commands\FileCommands.cs" />
-    <Compile Include="Service\Commands\HistoryCommands.cs" />
+    <Compile Include="Service\Commands\AddLayerCommand.cs" />
+    <Compile Include="Service\Commands\ApplyFillCommand.cs" />
+    <Compile Include="Service\Commands\ApplyFormatCommand.cs" />
+    <Compile Include="Service\Commands\ApplyFormatRangeCommand.cs" />
+    <Compile Include="Service\Commands\ApplyStrokeCommand.cs" />
+    <Compile Include="Service\Commands\BinaryOperationCommand.cs" />
+    <Compile Include="Service\Commands\ChangeZIndexCommand.cs" />
+    <Compile Include="Service\Commands\GroupCommand.cs" />
+    <Compile Include="Service\Commands\InsertTextCommand.cs" />
+    <Compile Include="Service\Commands\LayerCommandBase.cs" />
+    <Compile Include="Service\Commands\ModifyPathCommand.cs" />
+    <Compile Include="Service\Commands\RemoveLayerCommand.cs" />
+    <Compile Include="Service\Commands\RemoveTextCommand.cs" />
+    <Compile Include="Service\Commands\TransformCommand.cs" />
+    <Compile Include="Service\Commands\UngroupCommand.cs" />
+    <Compile Include="View\Command\CommandManager.cs" />
+    <Compile Include="View\Command\FileCommands.cs" />
+    <Compile Include="View\Command\HistoryCommands.cs" />
     <Compile Include="Service\Commands\IOperationCommand.cs" />
-    <Compile Include="Service\Commands\ObjectCommands.cs" />
+    <Compile Include="View\Command\ObjectCommands.cs" />
     <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\IBrushManager.cs" />
     <Compile Include="Service\IArtViewManager.cs" />
@@ -158,7 +173,7 @@
     <Compile Include="Service\Tools\TextTool.cs" />
     <Compile Include="Service\Time.cs" />
     <Compile Include="Service\WeakLock.cs" />
-    <Compile Include="Service\Commands\SelectionCommands.cs" />
+    <Compile Include="View\Command\SelectionCommands.cs" />
     <Compile Include="Service\FileService.cs" />
     <Compile Include="Service\SvgSerializer.cs" />
     <Compile Include="Service\Tools\ToolManager.cs" />
@@ -174,7 +189,7 @@
     <Compile Include="Utility\SvgConverter.cs" />
     <Compile Include="Utility\TupleUtils.cs" />
     <Compile Include="Utility\TypeExtensions.cs" />
-    <Compile Include="Service\Commands\ViewCommands.cs" />
+    <Compile Include="View\Command\ViewCommands.cs" />
     <Compile Include="Shared\WeakDictionary.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\FillPickerViewModel.cs" />
@@ -182,7 +197,7 @@
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
-    <Compile Include="View\ComparisonBinding.cs" />
+    <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="Service\CacheManager.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
@@ -198,21 +213,21 @@
     <Compile Include="View\Control\SvgImage.xaml.cs">
       <DependentUpon>SvgImage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\DataBinder.cs" />
-    <Compile Include="View\EnumTemplateSelector.cs" />
-    <Compile Include="View\EnumToBooleanConverter.cs" />
-    <Compile Include="View\Helper.cs" />
+    <Compile Include="View\Utility\DataBinder.cs" />
+    <Compile Include="View\Utility\EnumTemplateSelector.cs" />
+    <Compile Include="View\Utility\EnumToBooleanConverter.cs" />
+    <Compile Include="View\Utility\Helper.cs" />
     <Compile Include="View\LicenseView.xaml.cs">
       <DependentUpon>LicenseView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\SvgMarkupExtension.cs" />
-    <Compile Include="View\TextBlockHelper.cs" />
-    <Compile Include="View\TextBoxEnterBehavior.cs" />
-    <Compile Include="View\TreeViewBehavior.cs" />
-    <Compile Include="View\UnitConverter.cs" />
+    <Compile Include="View\Utility\SvgMarkupExtension.cs" />
+    <Compile Include="View\Utility\TextBlockHelper.cs" />
+    <Compile Include="View\Utility\TextBoxEnterBehavior.cs" />
+    <Compile Include="View\Utility\TreeViewBehavior.cs" />
+    <Compile Include="View\Utility\UnitConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

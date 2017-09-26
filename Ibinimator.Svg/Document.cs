@@ -7,14 +7,49 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
+    public static class SvgNames
+    {
+        public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
+        public static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
+
+        #region visuals
+        public static readonly XName Svg = Namespace + "svg";
+        public static readonly XName Defs = Namespace + "defs";
+        public static readonly XName Rect = Namespace + "rect";
+        public static readonly XName Ellipse = Namespace + "ellipse";
+        public static readonly XName Circle = Namespace + "circle";
+        public static readonly XName Path = Namespace + "path";
+        public static readonly XName Polygon = Namespace + "polygon";
+        public static readonly XName Polyline = Namespace + "polyline";
+        public static readonly XName Group = Namespace + "g";
+        public static readonly XName Line = Namespace + "line";
+        public static readonly XName[] Visuals = { Rect, Ellipse, Circle, Path, Polygon, Polyline, Group };
+        #endregion
+
+        public static readonly XName SolidColor = Namespace + "solidColor";
+        public static readonly XName LinearGradient = Namespace + "linearGradient";
+        public static readonly XName RadialGradient = Namespace + "radialGradient";
+        public static readonly XName Stop = Namespace + "stop";
+    }
+
     public class Document : ContainerElement
     {
         public Length Height { get; set; }
+
         public float Version { get; set; }
 
         public RectangleF Viewbox { get; set; }
 
         public Length Width { get; set; }
+
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            element.Name = SvgNames.Svg;
+
+            return element;
+        }
 
         public override void FromXml(XElement element, SvgContext context)
         {

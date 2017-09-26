@@ -323,14 +323,14 @@ namespace Ibinimator.Service
 
                 history.Replace(
                     new TransformCommand(
-                        ArtView.HistoryManager.Time,
+                        ArtView.HistoryManager.Position,
                         Selection.ToArray<ILayer>(),
                         lastTransformCommand.Transform * transform));
             }
             else
             {
                 var current = new TransformCommand(
-                    ArtView.HistoryManager.Time + 1,
+                    ArtView.HistoryManager.Position + 1,
                     Selection.ToArray<ILayer>(), transform);
 
                 history.Do(current);
@@ -429,7 +429,7 @@ namespace Ibinimator.Service
                 if (!_moved && _transformHandle != null)
                     ArtView.HistoryManager.Do(
                         new TransformCommand(
-                            ArtView.HistoryManager.Time + 1,
+                            ArtView.HistoryManager.Position + 1,
                             Selection.ToArray<ILayer>(),
                             Matrix3x2.Identity));
 
@@ -469,23 +469,55 @@ namespace Ibinimator.Service
                     var cache = ArtView.CacheManager;
                     var shift = modifiers.HasFlag(ModifierKeys.Shift);
                     var alt = modifiers.HasFlag(ModifierKeys.Alt);
+                    
+                    foreach (var l in Selection.Reverse())
+                    {
+                        var layer = l;
 
+                        while(true)
+                        {
+                            if (layer.Parent == null) break;
 
-                    if (shift)
-                        hit = Selection.Select(l => l.Parent)
-                            .Select(g => g.Hit(cache, pos, false))
-                            .FirstOrDefault(l => l != null);
+                            var siblings = layer.Parent.SubLayers;
+                            var range = siblings.ToList();
+
+                            if (alt) // cycle the list
+                            {
+                                if (siblings.Count < 2)
+                                {
+                                    layer = layer.Parent;
+                                    continue;
+                                }
+
+                                range = siblings.SkipUntil(s => s != layer)
+                                    .Concat(siblings.TakeUntil(s => s != layer))
+                                    .ToList();
+                            }
+
+                            foreach (var child in range)
+                            {
+                                hit = child.Hit(cache, pos, false);
+
+                                if (hit != null) break;
+                            }
+
+                            if (hit != null) break;
+
+                            layer = layer.Parent;
+                        }
+
+                        if (hit != null) break;
+
+                        hit = layer.Hit(cache, pos, false);
+
+                        if (hit != null) break;
+                    }
 
                     if (hit == null)
-                        hit = Selection.OfType<Group>()
-                            .Select(g => g.Hit(cache, pos, false))
+                        hit = Root.SubLayers.Select(l => l.Hit(cache, pos, true))
                             .FirstOrDefault(l => l != null);
 
-                    if (hit == null)
-                        hit = Root.SubLayers.Select(l => l.Hit(cache, pos, !alt))
-                            .FirstOrDefault(l => l != null);
-
-                    if (!modifiers.HasFlag(ModifierKeys.Shift))
+                    if (!shift)
                         ClearSelection();
 
                     if (hit != null)

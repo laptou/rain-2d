@@ -24,7 +24,8 @@ namespace Ibinimator.Svg
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
-            element.Name = "ellipse";
+
+            element.Name = SvgNames.Circle;
 
             LazySet(element, "cx", CenterX);
             LazySet(element, "cy", CenterY);

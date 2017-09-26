@@ -31,7 +31,7 @@ namespace Ibinimator.Svg
         {
             var element = base.ToXml(context);
 
-            element.Name = "rect";
+            element.Name = SvgNames.Rect;
 
             LazySet(element, "x", X);
             LazySet(element, "y", Y);

@@ -25,7 +25,7 @@ namespace Ibinimator.Model
     {
         public StrokeInfo()
         {
-            Dashes = new ObservableList<float>(new float[4]);
+            Dashes = new ObservableList<float>();
             Style = new StrokeStyleProperties1();
         }
 
@@ -72,8 +72,11 @@ namespace Ibinimator.Model
 
         protected override void Dispose(bool disposing)
         {
-            Brush?.Dispose();
-            Style?.Dispose();
+            lock (this)
+            {
+                Brush?.Dispose();
+                Style?.Dispose();
+            }
         }
     }
 

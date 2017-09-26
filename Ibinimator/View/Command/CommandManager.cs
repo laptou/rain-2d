@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 
-namespace Ibinimator.Service
+namespace Ibinimator.View.Command
 {
     public class CommandManager : Model.Model
     {
+        private CommandManager()
+        {
+        }
+
         public static CommandManager Instance = new CommandManager();
 
         public Exception LastError
@@ -16,18 +21,18 @@ namespace Ibinimator.Service
             set => Set(value);
         }
 
-        public DelegateCommand<T> Register<T>(Action<T> action)
+        public static DelegateCommand<T> Register<T>(Action<T> action)
         {
             var command = new DelegateCommand<T>(action, null);
             command.PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName == nameof(DelegateCommand<T>.Exception))
-                    LastError = command.Exception;
+                    Instance.LastError = command.Exception;
             };
             return command;
         }
 
-        public AsyncDelegateCommand<T> RegisterAsync<T>(Func<T, Task> task)
+        public static AsyncDelegateCommand<T> RegisterAsync<T>(Func<T, Task> task)
         {
             var command = new AsyncDelegateCommand<T>(task);
             command.PropertyChanged += (sender, args) =>
@@ -35,11 +40,11 @@ namespace Ibinimator.Service
                 command.Execution.PropertyChanged += (s, a) =>
                 {
                     if (a.PropertyName == nameof(NotifyTaskCompletion.Exception))
-                        LastError = command.Execution.Exception;
+                        Instance.LastError = command.Execution.Exception;
                 };
 
                 if (args.PropertyName == nameof(AsyncDelegateCommand<T>.Execution))
-                    LastError = command.Execution.Exception;
+                    Instance.LastError = command.Execution.Exception;
             };
             return command;
         }

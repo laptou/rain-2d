@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     public class EnumTemplateSelector : DataTemplateSelector
     {

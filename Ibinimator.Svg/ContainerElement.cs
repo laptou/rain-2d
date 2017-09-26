@@ -39,6 +39,16 @@ namespace Ibinimator.Svg
             _list.CopyTo(array, arrayIndex);
         }
 
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            foreach (var child in this)
+                element.Add(child?.ToXml(context));
+
+            return element;
+        }
+
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);

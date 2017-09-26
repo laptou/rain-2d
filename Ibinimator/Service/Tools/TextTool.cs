@@ -77,7 +77,7 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     ArtView.HistoryManager.Do(new ApplyFormatCommand(
-                        ArtView.HistoryManager.Time + 1,
+                        ArtView.HistoryManager.Position + 1,
                         new ITextLayer[] {CurrentText},
                         _fontFamilyOption.Value,
                         CurrentText.FontSize,
@@ -122,7 +122,7 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     ArtView.HistoryManager.Do(new ApplyFormatCommand(
-                        ArtView.HistoryManager.Time + 1,
+                        ArtView.HistoryManager.Position + 1,
                         new ITextLayer[] {CurrentText},
                         CurrentText.FontFamilyName,
                         _fontSizeOption.Value,
@@ -161,7 +161,7 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     ArtView.HistoryManager.Do(new ApplyFormatCommand(
-                        ArtView.HistoryManager.Time + 1,
+                        ArtView.HistoryManager.Position + 1,
                         new ITextLayer[] {CurrentText},
                         CurrentText.FontFamilyName,
                         CurrentText.FontSize,
@@ -232,7 +232,7 @@ namespace Ibinimator.Service.Tools
             var @new = CurrentText.Formats.Select(f => f.Clone()).ToArray();
 
             var current = new ApplyFormatRangeCommand(
-                ArtView.HistoryManager.Time + 1,
+                ArtView.HistoryManager.Position + 1,
                 CurrentText, old, @new);
 
             // no Do() b/c it's already done
@@ -274,7 +274,7 @@ namespace Ibinimator.Service.Tools
         {
             var history = ArtView.HistoryManager;
             var current = new InsertTextCommand(
-                ArtView.HistoryManager.Time + 1,
+                ArtView.HistoryManager.Position + 1,
                 CurrentText, text, index);
 
             history.Do(current);
@@ -284,7 +284,7 @@ namespace Ibinimator.Service.Tools
         {
             var history = ArtView.HistoryManager;
             var current = new RemoveTextCommand(
-                ArtView.HistoryManager.Time + 1,
+                ArtView.HistoryManager.Position + 1,
                 CurrentText,
                 CurrentText.Value.Substring(index, length),
                 index);
@@ -697,7 +697,7 @@ namespace Ibinimator.Service.Tools
                                ArtView.SelectionManager.Root;
 
                     Manager.ArtView.HistoryManager.Do(
-                        new AddLayerCommand(Manager.ArtView.HistoryManager.Time + 1,
+                        new AddLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
                             root,
                             text));
                 }

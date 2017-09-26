@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Ibinimator.Shared;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using System.Windows.Data;
 using Ibinimator.Model;
 using Ibinimator.Utility;
 
-namespace Ibinimator.View
+namespace Ibinimator.View.Util
 {
     public class UnitConverter : DependencyObject, IValueConverter, IMultiValueConverter
     {

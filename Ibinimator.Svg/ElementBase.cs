@@ -91,8 +91,8 @@ namespace Ibinimator.Svg
         protected void LazySet<T>(XElement element, XName name, T value, T @default)
         {
             if (value?.Equals(@default) == false)
-                if (value is object[] array)
-                    element.SetAttributeValue(name, string.Join(",", array));
+                if (value is Array array)
+                    element.SetAttributeValue(name, string.Join(",", array.OfType<object>()));
                 else element.SetAttributeValue(name, value);
         }
 
@@ -101,8 +101,6 @@ namespace Ibinimator.Svg
         public virtual void FromXml(XElement element, SvgContext context)
         {
             Id = (string) element.Attribute("id");
-
-            if(Id == "path4507") Debugger.Break();
 
             var style = (string) element.Attribute("style");
 
@@ -120,7 +118,7 @@ namespace Ibinimator.Svg
 
         public virtual XElement ToXml(SvgContext context)
         {
-            var element = new XElement("");
+            var element = new XElement("error");
 
             LazySet(element, "id", Id);
 

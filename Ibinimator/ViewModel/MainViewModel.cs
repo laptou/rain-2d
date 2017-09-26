@@ -26,7 +26,7 @@ namespace Ibinimator.ViewModel
             HistoryManager = new HistoryManager(artView);
             SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager);
             BrushManager = new BrushManager(artView, SelectionManager, HistoryManager);
-            ToolManager = new ToolManager(artView);
+            ToolManager = new ToolManager(artView, SelectionManager);
             var cache = new CacheManager(artView);
 
             Load();
@@ -38,9 +38,11 @@ namespace Ibinimator.ViewModel
             artView.SetManager(cache);
             artView.SetManager(HistoryManager);
 
+            ToolManager.Type = ToolType.Select;
+
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
             SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
-            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Time = id, null);
+            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
         }
 
         public MainViewModel()

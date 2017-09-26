@@ -454,5 +454,10 @@ namespace Ibinimator.Svg
                 default: return null;
             }
         }
+
+        public override string ToString()
+        {
+            return $"rgb({Red * 100}%, {Green * 100}%, {Blue * 100}%)";
+        }
     }
 }
