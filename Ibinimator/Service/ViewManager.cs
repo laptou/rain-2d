@@ -8,6 +8,7 @@ using Ibinimator.Shared;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
@@ -52,6 +53,12 @@ namespace Ibinimator.Service
         public RectangleF ToArtSpace(RectangleF v)
         {
             return MathUtils.Bounds(v, Matrix3x2.Invert(Transform));
+        }
+
+        public void Render(RenderTarget target, ICacheManager cache)
+        {
+            target.DrawRectangle(Document.Bounds, cache.GetBrush("L3"));
+            target.FillRectangle(Document.Bounds, cache.GetBrush("L1"));
         }
 
         public ArtView ArtView { get; }

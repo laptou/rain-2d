@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Xml.Linq;
 using Ibinimator.Service;
 using Ibinimator.Shared;
+using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Direct2D1;
 
@@ -78,7 +79,14 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds(ICacheManager cache)
         {
-            throw new InvalidOperationException();
+            if(cache != null)
+                return SubLayers
+                        .Select(cache.GetRelativeBounds)
+                        .Aggregate(RectangleF.Union);
+
+            return SubLayers
+                .Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
+                .Aggregate(RectangleF.Union);
         }
 
         public override XElement GetElement()
@@ -149,18 +157,6 @@ namespace Ibinimator.Model
             UpdateTransform();
         }
 
-        public float X
-        {
-            get => Position.X;
-            set => Position = new Vector2(value, Y);
-        }
-
-        public float Y
-        {
-            get => Position.Y;
-            set => Position = new Vector2(X, value);
-        }
-
         protected abstract string ElementName { get; }
 
         /// <summary>
@@ -184,9 +180,11 @@ namespace Ibinimator.Model
         private void UpdateTransform()
         {
             Transform =
+                Matrix3x2.Translation(-Origin) *
                 Matrix3x2.Scaling(Scale) *
                 Matrix3x2.Skew(0, Shear) *
                 Matrix3x2.Rotation(Rotation) *
+                Matrix3x2.Translation(Origin) *
                 Matrix3x2.Translation(Position);
         }
 
@@ -255,6 +253,16 @@ namespace Ibinimator.Model
         {
             get => Get<float>();
             set => Set(value);
+        }
+
+        public virtual Vector2 Origin
+        {
+            get => Get<Vector2>();
+            set
+            {
+                Set(value);
+                UpdateTransform();
+            }
         }
 
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;

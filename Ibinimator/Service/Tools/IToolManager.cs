@@ -47,7 +47,7 @@ namespace Ibinimator.Service.Tools
     public enum ToolType
     {
         Select,
-        Path,
+        Node,
         Pencil,
         Pen,
         Eyedropper,

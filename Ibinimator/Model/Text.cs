@@ -277,7 +277,7 @@ namespace Ibinimator.Model
         {
             return GetFormat(position, out var _);
         }
-
+         
         public DW.TextLayout GetLayout(DW.Factory dwFactory)
         {
             var layout = new DW.TextLayout1((IntPtr) new DW.TextLayout(

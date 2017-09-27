@@ -7,7 +7,6 @@ namespace Ibinimator.Svg
 {
     public enum FontWeight
     {
-        Inherit = 0,
         Thin = 100,
         ExtraLight = 200,
         UltraLight = 200,

@@ -144,8 +144,8 @@ namespace Ibinimator.ViewModel
 
             var e = new Ellipse
             {
-                X = 100,
-                Y = 100,
+                CenterX = 150,
+                CenterY = 150,
                 RadiusX = 50,
                 RadiusY = 50,
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 1f, 0, 1f)},
@@ -177,8 +177,7 @@ namespace Ibinimator.ViewModel
 
             var p = new Path
             {
-                X = 300,
-                Y = 300,
+                Position = new Vector2(300, 300),
                 FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
                 StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
                 StrokeInfo = new StrokeInfo
@@ -205,6 +204,8 @@ namespace Ibinimator.ViewModel
                 Height = 100,
                 Position = new Vector2(200, 200)
             };
+
+            ViewManager.Document.Bounds = new RectangleF(0, 0, 600, 600);
 
             l.Position = new Vector2(100, 100);
 

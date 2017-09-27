@@ -33,7 +33,7 @@ namespace Ibinimator.Service.Commands
 
                     layer.Scale = delta.scale;
                     layer.Rotation = delta.rotation;
-                    layer.Position = delta.translation;
+                    layer.Position = Matrix3x2.TransformPoint(layerTransform, layer.Origin) - layer.Origin;
                     layer.Shear = delta.skew;
                 }
         }
@@ -52,7 +52,7 @@ namespace Ibinimator.Service.Commands
 
                     layer.Scale = delta.scale;
                     layer.Rotation = delta.rotation;
-                    layer.Position = delta.translation;
+                    layer.Position = Matrix3x2.TransformPoint(layerTransform, layer.Origin) - layer.Origin;
                     layer.Shear = delta.skew;
                 }
         }

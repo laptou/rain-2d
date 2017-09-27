@@ -18,15 +18,19 @@ namespace Ibinimator.Service.Tools
         public SelectTool(IToolManager toolManager, ISelectionManager selectionManager)
         {
             Manager = toolManager;
-            Status = "lel";
+
+            Status = "<b>Alt-Click</b> to select-behind, and <b>Shift-Click</b> to multi-select.";
 
             selectionManager.Updated += (sender, args) =>
             {
                 var names = selectionManager.Selection.Select(l => l.Name ?? l.DefaultName)
-                                                      .ToArray();
+                    .ToArray();
 
-                Status = $"{selectionManager.Selection.Count} layer(s) selected " +
-                         $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
+                if (names.Length == 0)
+                    Status = "<b>Alt-Click</b> to select-behind, and <b>Shift-Click</b> to multi-select.";
+                else
+                    Status = $"<b>{names.Length}</b> layer(s) selected " +
+                             $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
             };
         }
 

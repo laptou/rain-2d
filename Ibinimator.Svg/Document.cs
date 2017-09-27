@@ -23,7 +23,7 @@ namespace Ibinimator.Svg
         public static readonly XName Polyline = Namespace + "polyline";
         public static readonly XName Group = Namespace + "g";
         public static readonly XName Line = Namespace + "line";
-        public static readonly XName[] Visuals = { Rect, Ellipse, Circle, Path, Polygon, Polyline, Group };
+        public static readonly XName Text = Namespace + "text";
         #endregion
 
         public static readonly XName SolidColor = Namespace + "solidColor";

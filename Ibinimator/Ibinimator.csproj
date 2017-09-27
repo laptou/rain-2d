@@ -158,6 +158,7 @@
     <Compile Include="Service\Commands\RemoveTextCommand.cs" />
     <Compile Include="Service\Commands\TransformCommand.cs" />
     <Compile Include="Service\Commands\UngroupCommand.cs" />
+    <Compile Include="Service\Tools\NodeTool.cs" />
     <Compile Include="View\Command\CommandManager.cs" />
     <Compile Include="View\Command\FileCommands.cs" />
     <Compile Include="View\Command\HistoryCommands.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
+    <Compile Include="View\Control\SvgImage.cs" />
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="Service\CacheManager.cs" />
@@ -210,9 +212,6 @@
     <Compile Include="Service\IViewManager.cs" />
     <Compile Include="Service\SelectionManager.cs" />
     <Compile Include="Service\ViewManager.cs" />
-    <Compile Include="View\Control\SvgImage.xaml.cs">
-      <DependentUpon>SvgImage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\Utility\DataBinder.cs" />
     <Compile Include="View\Utility\EnumTemplateSelector.cs" />
     <Compile Include="View\Utility\EnumToBooleanConverter.cs" />
@@ -276,10 +275,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="View\Control\HSLWheel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\Control\SvgImage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

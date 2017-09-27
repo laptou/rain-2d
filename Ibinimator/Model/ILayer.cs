@@ -28,6 +28,7 @@ namespace Ibinimator.Model
         Matrix3x2 Transform { get; }
         float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
+        Vector2 Origin { get; set; }
         Layer Find(Guid id);
 
         RectangleF GetBounds(ICacheManager cache);

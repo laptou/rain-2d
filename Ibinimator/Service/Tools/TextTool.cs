@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -7,12 +8,10 @@ using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using Factory1 = SharpDX.Direct2D1.Factory1;
 using Layer = Ibinimator.Model.Layer;
 
 namespace Ibinimator.Service.Tools

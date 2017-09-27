@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
@@ -14,6 +15,7 @@ namespace Ibinimator.Model
     [XmlType(nameof(Ellipse))]
     public class Ellipse : Shape
     {
+        protected override string ElementName { get; }
         public override string DefaultName => "Ellipse";
 
         public float RadiusX
@@ -30,28 +32,20 @@ namespace Ibinimator.Model
 
         public float CenterX
         {
-            get => X + RadiusX;
-            set => X = value - RadiusX;
+            get => Get<float>();
+            set => Set(value);
         }
 
         public float CenterY
         {
-            get => Y + RadiusY;
-            set => Y = value - RadiusY;
+            get => Get<float>();
+            set => Set(value);
         }
 
-        protected override string ElementName => "ellipse";
-
-        public override XElement GetElement()
+        public override Vector2 Origin
         {
-            var element = base.GetElement();
-
-            element.SetAttributeValue("cx", RadiusX);
-            element.SetAttributeValue("cy", RadiusY);
-            element.SetAttributeValue("rx", RadiusX);
-            element.SetAttributeValue("ry", RadiusY);
-
-            return element;
+            get => new Vector2(CenterX - RadiusX, CenterY - RadiusY);
+            set => (CenterX, CenterY) = (value.X + RadiusX, value.Y + RadiusY);
         }
 
         public override Geometry GetGeometry(ICacheManager cache)
@@ -59,9 +53,14 @@ namespace Ibinimator.Model
             return new EllipseGeometry(
                 cache.ArtView.Direct2DFactory,
                 new SharpDX.Direct2D1.Ellipse(
-                    new Vector2(RadiusX, RadiusY),
+                    new Vector2(CenterX, CenterY),
                     RadiusX,
                     RadiusY));
+        }
+
+        public override RectangleF GetBounds(ICacheManager cache)
+        {
+            return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, Width, Height);
         }
     }
 
@@ -91,25 +90,36 @@ namespace Ibinimator.Model
             }
         }
 
-        protected override string ElementName => "rect";
-
-        public override XElement GetElement()
+        public float X
         {
-            var element = base.GetElement();
-
-            element.SetAttributeValue("x", 0);
-            element.SetAttributeValue("y", 0);
-            element.SetAttributeValue("width", Width);
-            element.SetAttributeValue("height", Height);
-
-            return element;
+            get => Get<float>();
+            set => Set(value);
         }
+
+        public float Y
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        public override Vector2 Origin
+        {
+            get => new Vector2(X, Y);
+            set => (X, Y) = (value.X, value.Y);
+        }
+
+        public override RectangleF GetBounds(ICacheManager cache)
+        {
+            return new RectangleF(X, Y, Width, Height);
+        }
+
+        protected override string ElementName => "rect";
 
         public override Geometry GetGeometry(ICacheManager cache)
         {
             return new RectangleGeometry(
                 cache.ArtView.Direct2DFactory,
-                new RectangleF(0, 0, Width, Height));
+                new RectangleF(X, Y, Width, Height));
         }
     }
 

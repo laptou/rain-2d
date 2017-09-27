@@ -420,7 +420,7 @@
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/cursor.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Path}, Mode=TwoWay}" ToolTip="Node" IsEnabled="False">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static tools:ToolType.Node}, Mode=TwoWay}" ToolTip="Node" IsEnabled="False">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/pointer.svg" Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
@@ -454,10 +454,17 @@
                 </ToolBar>
             </ToolBarTray>
             <TabControl Grid.Column="1">
-                <TabItem>
-                    <Border Background="White">
+                <TabItem Background="White">
+                    <Grid>
                         <control:ArtView x:Name="ArtView"/>
-                    </Border>
+                        <TextBlock Text="{Binding Fps, 
+                                    ElementName=ArtView, 
+                                    Mode=OneWay, 
+                                    StringFormat=\{0\} FPS}"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="10"/>
+                    </Grid>
                 </TabItem>
             </TabControl>
             <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2">
@@ -854,8 +861,7 @@
                 </TabControl>
                 <TabControl util:Helper.Accent="{StaticResource A1}" Grid.Row="1">
                     <TabItem Header="Layers">
-                        <ScrollViewer>
-                            <TreeView x:Name="LayerTree" ItemsSource="{Binding ViewManager.Root.SubLayers}"
+                        <TreeView x:Name="LayerTree" ItemsSource="{Binding ViewManager.Root.SubLayers}"
                                       BorderThickness="0" Padding="0"
                                       Background="{DynamicResource L3Brush}">
                                 <TreeView.Resources>
@@ -986,7 +992,6 @@
                                     <view:TreeViewMultipleSelectionBehavior SelectedItems="{Binding Selection}" />
                                 </i:Interaction.Behaviors>-->
                             </TreeView>
-                        </ScrollViewer>
                     </TabItem>
                     <TabItem Header="Effects" />
                 </TabControl>

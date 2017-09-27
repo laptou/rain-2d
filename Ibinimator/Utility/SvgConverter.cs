@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.DirectWrite;
 using static Ibinimator.Svg.LengthUnit;
 
 namespace Ibinimator.Utility
@@ -16,7 +17,10 @@ namespace Ibinimator.Utility
         {
             var doc = new Model.Document
             {
-                Root = new Model.Group()
+                Root = new Model.Group(),
+                Bounds = new RectangleF(
+                    svgDocument.Viewbox.X, svgDocument.Viewbox.Y,
+                    svgDocument.Viewbox.Width, svgDocument.Viewbox.Height)
             };
 
             foreach (var child in svgDocument.Select(FromSvg))
@@ -41,7 +45,7 @@ namespace Ibinimator.Utility
 
             if (element is Svg.IShapeElement shapeElement)
             {
-                Model.Shape shape = null;
+                Model.IGeometricLayer shape = null;
 
                 switch (shapeElement)
                 {
@@ -149,6 +153,16 @@ namespace Ibinimator.Utility
                             RadiusY = circle.Radius.To(Pixels)
                         };
                         break;
+                    case Svg.Text text:
+                        shape = new Model.Text
+                        {
+                            FontFamilyName = text.FontFamily,
+                            FontStretch = (FontStretch) text.FontStretch,
+                            FontWeight = (FontWeight) text.FontWeight,
+                            FontSize = text.FontSize.To(Pixels),
+                            Value = text.Text
+                        };
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(shapeElement));
                 }
@@ -168,7 +182,7 @@ namespace Ibinimator.Utility
                     }
                 };
 
-                layer = shape;
+                layer = shape as Model.Layer;
             }
 
             if (element is Svg.IGraphicalElement graphicalElement)
@@ -206,6 +220,11 @@ namespace Ibinimator.Utility
             foreach (var child in doc.Root.SubLayers.Select(ToSvg))
                 svgDoc.Add(child);
 
+            var bounds = doc.Bounds;
+
+            svgDoc.Viewbox = new System.Drawing.RectangleF(
+                bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
             return svgDoc;
         }
 
@@ -223,7 +242,7 @@ namespace Ibinimator.Utility
                 element = group;
             }
 
-            if (layer is Model.Shape shapeLayer)
+            if (layer is Model.IGeometricLayer shapeLayer)
             {
                 Svg.IShapeElement shape = null;
 
@@ -232,8 +251,8 @@ namespace Ibinimator.Utility
                     case Model.Ellipse ellipse:
                         shape = new Svg.Ellipse
                         {
-                            CenterX = ellipse.RadiusX,
-                            CenterY = ellipse.RadiusY,
+                            CenterX = ellipse.CenterX,
+                            CenterY = ellipse.CenterY,
                             RadiusX = new Svg.Length(ellipse.RadiusX, Pixels),
                             RadiusY = new Svg.Length(ellipse.RadiusY, Pixels)
                         };
@@ -286,8 +305,20 @@ namespace Ibinimator.Utility
                     case Model.Rectangle rectangle:
                         shape = new Svg.Rectangle
                         {
+                            X = rectangle.X,
+                            Y = rectangle.Y,
                             Width = new Svg.Length(rectangle.Width, Pixels),
                             Height = new Svg.Length(rectangle.Height, Pixels)
+                        };
+                        break;
+                    case Model.Text text:
+                        shape = new Svg.Text
+                        {
+                            FontFamily = text.FontFamilyName,
+                            FontStretch = (Svg.FontStretch)text.FontStretch,
+                            FontWeight = (Svg.FontWeight)text.FontWeight,
+                            FontSize = new Svg.Length(text.FontSize, Pixels),
+                            Text = text.Value
                         };
                         break;
                     default:

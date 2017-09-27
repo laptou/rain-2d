@@ -7,7 +7,6 @@ namespace Ibinimator.Svg
 {
     public enum FontStretch
     {
-        Inherit = 0,
         UltraCondensed = 1,
         ExtraCondensed = 2,
         Condensed = 3,

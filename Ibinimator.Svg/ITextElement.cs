@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
-    public interface ITextElement : IElement
+    public interface ITextElement : IShapeElement
     {
         AlignmentBaseline AlignmentBaseline { get; set; }
         BaselineShift BaselineShift { get; set; }

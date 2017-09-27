@@ -395,17 +395,8 @@ namespace Ibinimator.Service
                 {
                     _transformHandle = HandleTest(pos).handle;
 
-                    if (_transformHandle == null && Selection.Any(
-                            l =>
-                            {
-                                var pt =
-                                    Matrix3x2.TransformPoint(
-                                        Matrix3x2.Invert(
-                                            l.WorldTransform),
-                                        pos);
-
-                                return l.Hit(ArtView.CacheManager, pt, true) != null;
-                            }))
+                    if (_transformHandle == null && 
+                        Selection.Any(l => l.Hit(ArtView.CacheManager, pos, true) != null))
                         _transformHandle = SelectionResizeHandle.Translation;
                 }
 
@@ -579,7 +570,7 @@ namespace Ibinimator.Service
                             }
                         }
 
-                    DrawBounds(SelectionBounds, distort, cache.GetBrush("A1"));
+                    DrawBounds(SelectionBounds, distort, cache.GetBrush("A2"));
                 }
 
                 if (!_selectionBox.IsEmpty)

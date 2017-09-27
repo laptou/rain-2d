@@ -15,6 +15,11 @@ namespace Ibinimator.Svg
             base.FromXml(element, context);
 
             FontFamily = LazyGet(element, "font-family");
+            FontSize = LazyGet(element, "font-size", new Length(12, LengthUnit.Pixels));
+            FontStretch = LazyGet<FontStretch>(element, "font-stretch");
+            FontWeight = LazyGet<FontWeight>(element, "font-weight");
+            AlignmentBaseline = LazyGet<AlignmentBaseline>(element, "alignment-baseline", true);
+            Text = element.Value;
         }
 
         public override XElement ToXml(SvgContext context)
@@ -40,12 +45,24 @@ namespace Ibinimator.Svg
 
         public Length FontSize { get; set; } = (12, LengthUnit.Points);
 
-        public FontStretch FontStretch { get; set; } = FontStretch.Inherit;
+        public FontStretch FontStretch { get; set; } = FontStretch.Normal;
 
-        public FontWeight FontWeight { get; set; } = FontWeight.Inherit;
+        public FontWeight FontWeight { get; set; } = FontWeight.Normal;
 
         public string Text { get; set; }
 
         #endregion
+    }
+
+    public class Text : TextElement
+    {
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            element.Name = SvgNames.Text;
+
+            return element;
+        }
     }
 }

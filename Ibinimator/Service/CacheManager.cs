@@ -415,15 +415,7 @@ namespace Ibinimator.Service
 
         public RectangleF GetBounds(ILayer layer)
         {
-            return Get(_bounds, layer, l =>
-            {
-                if (l is Group g)
-                    return g.SubLayers
-                        .Select(GetRelativeBounds)
-                        .Aggregate(RectangleF.Union);
-
-                return l.GetBounds(this);
-            });
+            return Get(_bounds, layer, l => l.GetBounds(this));
         }
 
         public Brush GetBrush(string key)

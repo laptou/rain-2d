@@ -9,6 +9,7 @@ using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
 using Ibinimator.ViewModel;
+using SharpDX;
 
 namespace Ibinimator.View.Command
 {
@@ -44,6 +45,12 @@ namespace Ibinimator.View.Command
                     vm.ArtView.CacheManager.LoadBitmaps(vm.ArtView.RenderTarget);
                     vm.ArtView.CacheManager.LoadBrushes(vm.ArtView.RenderTarget);
                     vm.ArtView.CacheManager.Bind(vm.Document);
+                    vm.Pan = Vector2.One * 10;
+
+                    var artDim = Math.Max(vm.Document.Bounds.Width, vm.Document.Bounds.Height);
+                    var viewDim = Math.Min(vm.ArtView.ActualWidth, vm.ArtView.ActualHeight);
+
+                    vm.Zoom = (float)(viewDim / (artDim + 20));
                 }
             }
         }

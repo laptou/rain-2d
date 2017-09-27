@@ -9,6 +9,7 @@ using Ibinimator.Service;
 using Ibinimator.Service.Tools;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.View.Control
 {
@@ -22,6 +23,8 @@ namespace Ibinimator.View.Control
         private bool _eventLoop;
         private Factory _factory;
         private Vector2 _lastPosition;
+        private long _lastFrame;
+        private float _lastFps;
 
         public ArtView()
         {
@@ -105,9 +108,7 @@ namespace Ibinimator.View.Control
 
             if (e.LeftButton == MouseButtonState.Pressed)
                 lock (_events)
-                {
-                    _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, Vector2.Zero));
-                }
+                    _events.Enqueue((Time.Now, MouseEventType.Up, Vector2.Zero));
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -148,9 +149,7 @@ namespace Ibinimator.View.Control
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
             lock (_events)
-            {
-                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Down, vec));
-            }
+                _events.Enqueue((Time.Now, MouseEventType.Down, vec));
 
             _eventFlag.Set();
         }
@@ -163,9 +162,7 @@ namespace Ibinimator.View.Control
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
             lock (_events)
-            {
-                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Move, vec));
-            }
+                _events.Enqueue((Time.Now, MouseEventType.Move, vec));
 
             _eventFlag.Set();
 
@@ -182,9 +179,7 @@ namespace Ibinimator.View.Control
             var vec = new Vector2((float) pos.X, (float) pos.Y);
 
             lock (_events)
-            {
-                _events.Enqueue((DateTime.Now.Ticks, MouseEventType.Up, vec));
-            }
+                _events.Enqueue((Time.Now, MouseEventType.Up, vec));
 
             _eventFlag.Set();
         }
@@ -224,11 +219,13 @@ namespace Ibinimator.View.Control
 
         protected override void Render(RenderTarget target)
         {
-            target.Clear(Color4.White);
+            target.Clear(new Color4(0.5f));
 
             if (ViewManager == null) return;
 
             target.Transform = ViewManager.Transform;
+
+            ViewManager.Render(target, CacheManager);
 
             ViewManager.Root.Render(target, CacheManager);
 
@@ -246,7 +243,9 @@ namespace Ibinimator.View.Control
                 Matrix3x2.Scaling(1f / 3) *
                 Matrix3x2.Rotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
                 Matrix3x2.Translation(_lastPosition - new Vector2(8));
+
             target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
+
         }
 
         private void EventLoop()
@@ -255,7 +254,7 @@ namespace Ibinimator.View.Control
             {
                 while (_eventLoop)
                 {
-                    (long time, MouseEventType type, Vector2 position) evt;
+                    (long Time, MouseEventType Type, Vector2 position) evt;
 
                     lock (_events)
                     {
@@ -265,7 +264,7 @@ namespace Ibinimator.View.Control
 
                     var pos = ViewManager.ToArtSpace(evt.position);
 
-                    switch (evt.type)
+                    switch (evt.Type)
                     {
                         case MouseEventType.Down:
                             if (!ToolManager.MouseDown(pos))
@@ -276,6 +275,11 @@ namespace Ibinimator.View.Control
                                 SelectionManager.MouseUp(pos);
                             break;
                         case MouseEventType.Move:
+                            if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
+                                lock (_events)
+                                    if(_events.Any() && _events.Peek().type == MouseEventType.Move)
+                                        continue;
+
                             if (!ToolManager.MouseMove(pos))
                                 SelectionManager.MouseMove(pos);
                             break;

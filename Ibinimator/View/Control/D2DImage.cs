@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,34 +25,21 @@ using Resource = SharpDX.DXGI.Resource;
 
 namespace Ibinimator.View.Control
 {
-    public abstract class D2DImage : Image
+    public abstract class D2DImage : Image, INotifyPropertyChanged
     {
-        private static readonly DependencyPropertyKey FpsPropertyKey = DependencyProperty.RegisterReadOnly(
-            "FPS",
-            typeof(int),
-            typeof(D2DImage),
-            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.None)
-        );
-
-        public static readonly DependencyProperty FpsProperty = FpsPropertyKey.DependencyProperty;
-
         public static readonly DependencyProperty RenderModeProperty =
             DependencyProperty.Register("RenderMode", typeof(RenderMode), typeof(D2DImage),
                 new PropertyMetadata(RenderMode.Constant, OnRenderModeChanged));
 
         private readonly Stack<Int32Rect> _dirty = new Stack<Int32Rect>();
-        private readonly Queue<int> _frameCountHist = new Queue<int>();
 
         private readonly Stopwatch _renderTimer = new Stopwatch();
         private D2D.Factory _d2DFactory;
         private D2D.RenderTarget _d2DRenderTarget;
         private Device _device;
         private DW.Factory _dwFactory;
-        private int _frameCount;
-        private int _frameCountHistTotal;
         private bool _invalidated;
         private long _lastFrameTime;
-        private long _lastRenderTime;
         private Texture2D _renderTarget;
         private DX11ImageSource _surface;
 
@@ -91,10 +80,16 @@ namespace Ibinimator.View.Control
             set => _d2DRenderTarget.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
-        public int Fps
+        private float _fps;
+
+        public float Fps
         {
-            get => (int) GetValue(FpsProperty);
-            protected set => SetValue(FpsPropertyKey, value);
+            get { return _fps; }
+            set
+            {
+                _fps = value;
+                OnPropertyChanged();
+            }
         }
 
         public RenderMode RenderMode
@@ -146,19 +141,9 @@ namespace Ibinimator.View.Control
 
         private void CalcFps()
         {
-            _frameCount++;
-            if (_renderTimer.ElapsedMilliseconds - _lastFrameTime > 1000)
-            {
-                _frameCountHist.Enqueue(_frameCount);
-                _frameCountHistTotal += _frameCount;
-                if (_frameCountHist.Count > 5)
-                    _frameCountHistTotal -= _frameCountHist.Dequeue();
+            Fps = 0.25f * (1000f / (_renderTimer.ElapsedMilliseconds - _lastFrameTime)) + 0.75f * Fps;
 
-                Dispatcher.InvokeAsync(() => Fps = _frameCountHistTotal / _frameCountHist.Count);
-
-                _frameCount = 0;
-                _lastFrameTime = _renderTimer.ElapsedMilliseconds;
-            }
+            _lastFrameTime = _renderTimer.ElapsedMilliseconds;
         }
 
         private void CreateAndBindTargets()
@@ -257,7 +242,6 @@ namespace Ibinimator.View.Control
 
                 _surface.Unlock();
 
-                _lastRenderTime = _renderTimer.ElapsedMilliseconds;
             }
         }
 
@@ -289,10 +273,9 @@ namespace Ibinimator.View.Control
                     _d2DRenderTarget.BeginDraw();
                     Render(_d2DRenderTarget);
                     _d2DRenderTarget.EndDraw();
+                    _device.ImmediateContext.Flush();
 
                     CalcFps();
-
-                    _device.ImmediateContext.Flush();
                 }
                 catch (SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
                 {
@@ -331,6 +314,13 @@ namespace Ibinimator.View.Control
             CompositionTarget.Rendering -= OnRendering;
 
             _renderTimer.Stop();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

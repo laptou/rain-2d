@@ -83,6 +83,9 @@ namespace Ibinimator.Svg
                     case "rect":
                         child = new Rectangle();
                         break;
+                    case "text":
+                        child = new Text();
+                        break;
                     default:
                         continue;
                 }
