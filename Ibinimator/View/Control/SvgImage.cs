@@ -3,20 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Xml.Linq;
 using Ibinimator.Svg;
-using Ibinimator.Utility;
-using Color = System.Windows.Media.Color;
-using Ellipse = System.Windows.Shapes.Ellipse;
-using Line = Ibinimator.Svg.Line;
-using Path = Ibinimator.Svg.Path;
-using Polygon = Ibinimator.Svg.Polygon;
-using Polyline = Ibinimator.Svg.Polyline;
-using Rectangle = Ibinimator.Svg.Rectangle;
 using WPF = System.Windows;
+using static Ibinimator.Svg.LengthUnit;
+using Color = System.Windows.Media.Color;
+using Path = Ibinimator.Svg.Path;
 
 // ReSharper disable PossibleInvalidOperationException
 
@@ -45,6 +38,7 @@ namespace Ibinimator.View.Control
             set => SetValue(SourceProperty, value);
         }
 
+        
         public static readonly WPF.DependencyProperty SourceProperty =
             WPF.DependencyProperty.Register("Source", typeof(Uri), typeof(SvgImage),
                 new WPF.FrameworkPropertyMetadata(null,
@@ -142,10 +136,9 @@ namespace Ibinimator.View.Control
             _prepared = false;
 
             XDocument xdoc;
+            
 
-            using (var stream =
-                WPF.Application.GetResourceStream(Source)?.Stream ??
-                File.OpenRead(Source.AbsolutePath))
+            using (var stream = GetStream())
                 xdoc = XDocument.Load(stream);
 
             _document = new Document();
@@ -158,6 +151,18 @@ namespace Ibinimator.View.Control
             Prepare(_document);
 
             _prepared = true;
+        }
+
+        private Stream GetStream()
+        {
+            try
+            {
+                return WPF.Application.GetResourceStream(Source)?.Stream;
+            }
+            catch
+            {
+                return File.OpenRead(Source.AbsolutePath);
+            }
         }
 
         private void Prepare(IElement element)
@@ -174,7 +179,7 @@ namespace Ibinimator.View.Control
 
                 var pen = new Pen(
                     ToWpf(shape.Stroke, shape.StrokeOpacity),
-                    shape.StrokeWidth.To(LengthUnit.Pixels));
+                    shape.StrokeWidth.To(Pixels));
                 pen.Freeze();
                 _strokes[shape] = pen;
 
@@ -185,24 +190,24 @@ namespace Ibinimator.View.Control
                     case Circle circle:
                         wpfShape = new EllipseGeometry
                         {
-                            RadiusX = circle.Radius.To(LengthUnit.Pixels),
-                            RadiusY = circle.Radius.To(LengthUnit.Pixels),
-                            Center = new WPF.Point(circle.CenterX, circle.CenterY)
+                            RadiusX = circle.Radius.To(Pixels),
+                            RadiusY = circle.Radius.To(Pixels),
+                            Center = new WPF.Point(circle.CenterX.To(Pixels), circle.CenterY.To(Pixels))
                         };
                         break;
-                    case Svg.Ellipse ellipse:
+                    case Ellipse ellipse:
                         wpfShape = new EllipseGeometry
                         {
-                            RadiusX = ellipse.RadiusX.To(LengthUnit.Pixels),
-                            RadiusY = ellipse.RadiusY.To(LengthUnit.Pixels),
-                            Center = new WPF.Point(ellipse.CenterX, ellipse.CenterY)
+                            RadiusX = ellipse.RadiusX.To(Pixels),
+                            RadiusY = ellipse.RadiusY.To(Pixels),
+                            Center = new WPF.Point(ellipse.CenterX.To(Pixels), ellipse.CenterY.To(Pixels))
                         };
                         break;
                     case Line line:
                         wpfShape = new LineGeometry
                         {
-                            StartPoint = new WPF.Point(line.X1, line.Y1),
-                            EndPoint = new WPF.Point(line.X2, line.Y2)
+                            StartPoint = new WPF.Point(line.X1.To(Pixels), line.Y1.To(Pixels)),
+                            EndPoint = new WPF.Point(line.X2.To(Pixels), line.Y2.To(Pixels))
                         };
                         break;
                     case Path path:
@@ -295,13 +300,13 @@ namespace Ibinimator.View.Control
                         {
                             Rect = new WPF.Rect
                             {
-                                X = rectangle.X,
-                                Y = rectangle.Y,
-                                Width = rectangle.Width.To(LengthUnit.Pixels),
-                                Height = rectangle.Height.To(LengthUnit.Pixels)
+                                X = rectangle.X.To(Pixels),
+                                Y = rectangle.Y.To(Pixels),
+                                Width = rectangle.Width.To(Pixels),
+                                Height = rectangle.Height.To(Pixels)
                             },
-                            RadiusX = rectangle.RadiusX.To(LengthUnit.Pixels),
-                            RadiusY = rectangle.RadiusY.To(LengthUnit.Pixels)
+                            RadiusX = rectangle.RadiusX.To(Pixels),
+                            RadiusY = rectangle.RadiusY.To(Pixels)
                         };
                         break;
                     default:
@@ -314,11 +319,11 @@ namespace Ibinimator.View.Control
             }
         }
 
-        private Brush ToWpf(Paint? paint, float opacity)
+        private Brush ToWpf(Paint paint, float opacity)
         {
-            if (paint?.Color != null)
+            if (paint is SolidColor solidColor)
             {
-                var color = paint.Value.Color.Value;
+                var color = solidColor.Color;
 
                 var wpfColor = Color.FromArgb(
                     (byte) (color.Alpha * opacity * 255),

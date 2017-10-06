@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using Ibinimator.Shared;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.DirectWrite;
 using static Ibinimator.Svg.LengthUnit;
+using FontStretch = SharpDX.DirectWrite.FontStretch;
+using FontWeight = SharpDX.DirectWrite.FontWeight;
+using LineJoin = SharpDX.Direct2D1.LineJoin;
 
 namespace Ibinimator.Utility
 {
@@ -23,13 +25,13 @@ namespace Ibinimator.Utility
                     svgDocument.Viewbox.Width, svgDocument.Viewbox.Height)
             };
 
-            foreach (var child in svgDocument.Select(FromSvg))
+            foreach (var child in svgDocument.OfType<Svg.IGraphicalElement>().Select(FromSvg))
                 doc.Root.Add(child, 0);
 
             return doc;
         }
 
-        public static Model.Layer FromSvg(Svg.IElement element)
+        public static Model.Layer FromSvg(Svg.IGraphicalElement element)
         {
             Model.Layer layer = null;
 
@@ -37,7 +39,7 @@ namespace Ibinimator.Utility
             {
                 var group = new Model.Group();
 
-                foreach (var child in containerElement.Select(FromSvg))
+                foreach (var child in containerElement.OfType<Svg.IGraphicalElement>().Select(FromSvg))
                     group.Add(child, 0);
 
                 layer = group;
@@ -52,16 +54,27 @@ namespace Ibinimator.Utility
                     case Svg.Ellipse ellipse:
                         shape = new Model.Ellipse
                         {
-                            CenterX = ellipse.CenterX,
-                            CenterY = ellipse.CenterY,
+                            CenterX = ellipse.CenterX.To(Pixels),
+                            CenterY = ellipse.CenterY.To(Pixels),
                             RadiusX = ellipse.RadiusX.To(Pixels),
                             RadiusY = ellipse.RadiusY.To(Pixels)
                         };
                         break;
                     case Svg.Line line:
                         var linePath = new Model.Path();
-                        linePath.Nodes.Add(new Model.PathNode {X = line.X1, Y = line.Y1});
-                        linePath.Nodes.Add(new Model.PathNode {X = line.X2, Y = line.Y2});
+
+                        linePath.Nodes.Add(new Model.PathNode
+                        {
+                            X = line.X1.To(Pixels),
+                            Y = line.Y1.To(Pixels)
+                        });
+
+                        linePath.Nodes.Add(new Model.PathNode
+                        {
+                            X = line.X2.To(Pixels),
+                            Y = line.Y2.To(Pixels)
+                        });
+
                         shape = linePath;
                         break;
                     case Svg.Path path:
@@ -138,8 +151,8 @@ namespace Ibinimator.Utility
                     case Svg.Rectangle rectangle:
                         shape = new Model.Rectangle
                         {
-                            X = rectangle.X,
-                            Y = rectangle.Y,
+                            X = rectangle.X.To(Pixels),
+                            Y = rectangle.Y.To(Pixels),
                             Width = rectangle.Width.To(Pixels),
                             Height = rectangle.Height.To(Pixels)
                         };
@@ -147,8 +160,8 @@ namespace Ibinimator.Utility
                     case Svg.Circle circle:
                         shape = new Model.Ellipse
                         {
-                            CenterX = circle.CenterX,
-                            CenterY = circle.CenterY,
+                            CenterX = circle.CenterX.To(Pixels),
+                            CenterY = circle.CenterY.To(Pixels),
                             RadiusX = circle.Radius.To(Pixels),
                             RadiusY = circle.Radius.To(Pixels)
                         };
@@ -156,10 +169,10 @@ namespace Ibinimator.Utility
                     case Svg.Text text:
                         shape = new Model.Text
                         {
-                            FontFamilyName = text.FontFamily,
-                            FontStretch = (FontStretch) text.FontStretch,
-                            FontWeight = (FontWeight) text.FontWeight,
-                            FontSize = text.FontSize.To(Pixels),
+                            FontFamilyName = text.FontFamily ?? "Arial",
+                            FontStretch = (FontStretch) (text.FontStretch ?? Svg.FontStretch.Normal),
+                            FontWeight = (FontWeight) (text.FontWeight ?? Svg.FontWeight.Normal),
+                            FontSize = text.FontSize?.To(Points) ?? 12,
                             Value = text.Text
                         };
                         break;
@@ -178,36 +191,93 @@ namespace Ibinimator.Utility
                     Dashes = new ObservableList<float>(dashes),
                     Style = new StrokeStyleProperties1
                     {
-                        DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid
+                        DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid,
+                        DashCap = (CapStyle)shapeElement.StrokeLineCap,
+                        StartCap = (CapStyle)shapeElement.StrokeLineCap,
+                        EndCap = (CapStyle)shapeElement.StrokeLineCap,
+                        LineJoin = (LineJoin)shapeElement.StrokeLineJoin,
+                        DashOffset = shapeElement.StrokeDashOffset,
+                        MiterLimit = shapeElement.StrokeMiterLimit
                     }
                 };
 
                 layer = shape as Model.Layer;
             }
 
-            if (element is Svg.IGraphicalElement graphicalElement)
+            if (layer != null)
             {
-                (layer.Scale, layer.Rotation, layer.Position, layer.Shear) = 
-                    graphicalElement.Transform.Convert().Decompose();
-            }
 
-            layer.Name = element.Id;
+                (layer.Scale, layer.Rotation, layer.Position, layer.Shear) =
+                    element.Transform.Convert().Decompose();
+
+                layer.Name = element.Id;
+            }
 
             return layer;
         }
 
-        public static Model.BrushInfo FromSvg(Svg.Paint? paint, float opacity)
+        public static Model.BrushInfo FromSvg(Svg.Paint paint, float opacity)
         {
-            if (paint?.Color != null)
+            switch (paint)
             {
-                var color = paint.Value.Color.Value;
+                case Svg.SolidColor solidColor:
+                    var color = solidColor.Color;
 
-                return new Model.SolidColorBrushInfo(
-                    new Color4(
-                        color.Red,
-                        color.Green,
-                        color.Blue,
-                        color.Alpha * opacity));
+                    return new Model.SolidColorBrushInfo(
+                        new Color4(
+                            color.Red,
+                            color.Green,
+                            color.Blue,
+                            color.Alpha * opacity));
+
+                case Svg.LinearGradient linearGradient:
+                    return new Model.GradientBrushInfo
+                    {
+                        Stops = new ObservableList<GradientStop>(linearGradient.Stops.Select(s => new GradientStop
+                        {
+                            Color = new Color4(
+                                s.Color.Red,
+                                s.Color.Green,
+                                s.Color.Blue,
+                                s.Color.Alpha),
+                            Position = s.Offset.To(Pixels, 1)
+                        })),
+                        StartPoint = new Vector2(linearGradient.X1.To(Pixels, 1), linearGradient.Y1.To(Pixels, 1)),
+                        EndPoint = new Vector2(linearGradient.X2.To(Pixels, 1), linearGradient.Y2.To(Pixels, 1)),
+                        Name = linearGradient.Id,
+                        Transform = linearGradient.Transform.Convert(),
+                        ExtendMode = (ExtendMode)linearGradient.SpreadMethod,
+                        Opacity = opacity,
+                        GradientType = Model.GradientBrushType.Linear
+                    };
+
+                case Svg.RadialGradient radialGradient:
+                    return new Model.GradientBrushInfo
+                    {
+                        Stops = new ObservableList<GradientStop>(radialGradient.Stops.Select(s => new GradientStop
+                        {
+                            Color = new Color4(
+                                s.Color.Red,
+                                s.Color.Green,
+                                s.Color.Blue,
+                                s.Color.Alpha),
+                            Position = s.Offset.To(Pixels, 1)
+                        })),
+                        StartPoint = new Vector2(
+                            radialGradient.CenterX.To(Pixels, 1), 
+                            radialGradient.CenterY.To(Pixels, 1)),
+                        Focus = new Vector2(
+                            radialGradient.FocusX.To(Pixels, 1), 
+                            radialGradient.FocusY.To(Pixels, 1)),
+                        EndPoint = new Vector2(
+                            radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1),
+                            radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1)),
+                        Name = radialGradient.Id,
+                        Transform = radialGradient.Transform.Convert(),
+                        ExtendMode = (ExtendMode)radialGradient.SpreadMethod,
+                        Opacity = opacity,
+                        GradientType = Model.GradientBrushType.Radial
+                    };
             }
 
             return null;
@@ -218,7 +288,7 @@ namespace Ibinimator.Utility
             var svgDoc = new Svg.Document();
 
             foreach (var child in doc.Root.SubLayers.Select(ToSvg))
-                svgDoc.Add(child);
+                svgDoc.Insert(0, child);
 
             var bounds = doc.Bounds;
 
@@ -237,7 +307,7 @@ namespace Ibinimator.Utility
                 var group = new Svg.Group();
 
                 foreach (var child in groupLayer.SubLayers.Select(ToSvg))
-                    group.Add(child);
+                    group.Insert(0, child);
 
                 element = group;
             }
@@ -251,8 +321,8 @@ namespace Ibinimator.Utility
                     case Model.Ellipse ellipse:
                         shape = new Svg.Ellipse
                         {
-                            CenterX = ellipse.CenterX,
-                            CenterY = ellipse.CenterY,
+                            CenterX = new Svg.Length(ellipse.CenterX, Pixels),
+                            CenterY = new Svg.Length(ellipse.CenterY, Pixels),
                             RadiusX = new Svg.Length(ellipse.RadiusX, Pixels),
                             RadiusY = new Svg.Length(ellipse.RadiusY, Pixels)
                         };
@@ -305,21 +375,14 @@ namespace Ibinimator.Utility
                     case Model.Rectangle rectangle:
                         shape = new Svg.Rectangle
                         {
-                            X = rectangle.X,
-                            Y = rectangle.Y,
+                            X = new Svg.Length(rectangle.X, Pixels),
+                            Y = new Svg.Length(rectangle.Y, Pixels),
                             Width = new Svg.Length(rectangle.Width, Pixels),
                             Height = new Svg.Length(rectangle.Height, Pixels)
                         };
                         break;
                     case Model.Text text:
-                        shape = new Svg.Text
-                        {
-                            FontFamily = text.FontFamilyName,
-                            FontStretch = (Svg.FontStretch)text.FontStretch,
-                            FontWeight = (Svg.FontWeight)text.FontWeight,
-                            FontSize = new Svg.Length(text.FontSize, Pixels),
-                            Text = text.Value
-                        };
+                        shape = ToSvg(text);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(shapeLayer));
@@ -335,6 +398,10 @@ namespace Ibinimator.Utility
 
                 shape.StrokeWidth = new Svg.Length(shapeLayer.StrokeInfo.Width, Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
+                shape.StrokeDashOffset = shapeLayer.StrokeInfo.Style.DashOffset;
+                shape.StrokeLineCap = (Svg.LineCap)shapeLayer.StrokeInfo.Style.StartCap;
+                shape.StrokeLineJoin = (Svg.LineJoin)shapeLayer.StrokeInfo.Style.LineJoin;
+                shape.StrokeMiterLimit = shapeLayer.StrokeInfo.Style.MiterLimit;
 
                 element = shape;
             }
@@ -349,11 +416,61 @@ namespace Ibinimator.Utility
             return element;
         }
 
-        public static Svg.Paint? ToSvg(Model.BrushInfo brush)
+        public static Svg.Text ToSvg(Model.Text text)
+        {
+            var svgText = new Svg.Text
+            {
+                FontFamily = text.FontFamilyName,
+                FontStretch = (Svg.FontStretch) text.FontStretch,
+                FontWeight = (Svg.FontWeight) text.FontWeight,
+                FontStyle = (Svg.FontStyle)text.FontStyle,
+                FontSize = new Svg.Length(text.FontSize, Points),
+                Text = text.Value,
+                Y = text.Baseline
+            };
+
+            foreach (var format in text.Formats)
+            {
+                var span = new Svg.Span
+                {
+                    FontFamily = format.FontFamilyName ?? text.FontFamilyName,
+                    FontStretch = (Svg.FontStretch?) format.FontStretch,
+                    FontWeight = (Svg.FontWeight?) format.FontWeight,
+                    FontStyle = (Svg.FontStyle?)format.FontStyle,
+                    FontSize = format.FontSize != null ? new Svg.Length?(new Svg.Length(format.FontSize.Value, Points)) : null,
+                    Text = text.Value?.Substring(format.Range.StartPosition, format.Range.Length),
+                    Position = format.Range.StartPosition,
+
+                    Fill = ToSvg(format.Fill),
+                    FillOpacity = format.Fill?.Opacity ?? 1,
+                    Stroke = ToSvg(format.Stroke),
+                    StrokeOpacity = format.Stroke?.Opacity ?? 1
+                };
+
+
+                if (format.StrokeInfo != null)
+                {
+                    var dashes = format.StrokeInfo.Dashes.Select(f => f * format.StrokeInfo.Width).ToArray();
+
+                    span.StrokeWidth = new Svg.Length(format.StrokeInfo.Width, Pixels);
+                    span.StrokeDashArray = dashes.ToArray();
+                    span.StrokeDashOffset = format.StrokeInfo.Style.DashOffset;
+                    span.StrokeLineCap = (Svg.LineCap) format.StrokeInfo.Style.StartCap;
+                    span.StrokeLineJoin = (Svg.LineJoin) format.StrokeInfo.Style.LineJoin;
+                    span.StrokeMiterLimit = format.StrokeInfo.Style.MiterLimit;
+                }
+
+                svgText.Add(span);
+            }
+
+            return svgText;
+        }
+
+        public static Svg.Paint ToSvg(Model.BrushInfo brush)
         {
             if (brush is Model.SolidColorBrushInfo solidBrush)
             {
-                return new Svg.Paint(
+                return new Svg.SolidColor(
                     new Svg.Color(
                         solidBrush.Color.Red,
                         solidBrush.Color.Green,

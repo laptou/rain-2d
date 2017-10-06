@@ -20,6 +20,5 @@ namespace Ibinimator.Svg
         Iri? Mask { get; set; }
         float Opacity { get; set; }
         Matrix3x2 Transform { get; set; }
-
     }
 }

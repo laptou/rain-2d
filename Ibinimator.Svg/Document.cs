@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace Ibinimator.Svg
         public static readonly XName Group = Namespace + "g";
         public static readonly XName Line = Namespace + "line";
         public static readonly XName Text = Namespace + "text";
+        public static readonly XName Tspan = Namespace + "tspan";
         #endregion
 
         public static readonly XName SolidColor = Namespace + "solidColor";
@@ -32,21 +34,38 @@ namespace Ibinimator.Svg
         public static readonly XName Stop = Namespace + "stop";
     }
 
+    public class Defs : ContainerElement
+    {
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            element.Name = SvgNames.Defs;
+
+            return element;
+        }
+    }
+
     public class Document : ContainerElement
     {
-        public Length Height { get; set; }
+        public Length Height { get; set; } = (100, LengthUnit.Percent);
 
-        public float Version { get; set; }
+        public float Version { get; set; } = 1.1f;
 
         public RectangleF Viewbox { get; set; }
 
-        public Length Width { get; set; }
+        public Length Width { get; set; } = (100, LengthUnit.Percent);
 
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
 
             element.Name = SvgNames.Svg;
+
+            LazySet(element, "viewBox", Viewbox);
+            LazySet(element, "version", Version);
+            LazySet(element, "width", Width);
+            LazySet(element, "height", Height);
 
             return element;
         }
@@ -67,7 +86,7 @@ namespace Ibinimator.Svg
 
             if (float.TryParse(LazyGet(element, "version"), out var version))
                 Version = version;
-
+            
             if (Length.TryParse(LazyGet(element, "width"), out var width))
                 Width = width;
 

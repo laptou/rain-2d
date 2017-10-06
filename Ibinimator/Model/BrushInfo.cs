@@ -51,8 +51,6 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        protected abstract string ElementName { get; }
-
         public abstract Brush ToDirectX(RenderTarget target);
 
         public abstract WPF.Brush ToWpf();
@@ -79,16 +77,6 @@ namespace Ibinimator.Model
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        public override XElement GetElement()
-        {
-            var element = new XElement(ElementName);
-
-            if (Name != null)
-                element.SetAttributeValue("id", Name);
-
-            return element;
         }
     }
 
@@ -123,16 +111,6 @@ namespace Ibinimator.Model
                 color.Alpha = value;
                 Color = color;
             }
-        }
-
-        protected override string ElementName => "solidColor";
-
-        public override XElement GetElement()
-        {
-            var def = new XElement("solidColor");
-            def.SetAttributeValue("solid-color", Color.ToCss());
-            def.SetAttributeValue("solid-opacity", Opacity);
-            return def;
         }
 
         public override string GetReference()
@@ -203,61 +181,6 @@ namespace Ibinimator.Model
             set => Set(value);
         }
 
-        protected override string ElementName =>
-            GradientType == GradientBrushType.Linear ? "linearGradient" : "radialGradient";
-
-        public override XElement GetElement()
-        {
-            var def = base.GetElement();
-
-            switch (GradientType)
-            {
-                case GradientBrushType.Linear:
-                    def.SetAttributeValue("x1", StartPoint.X);
-                    def.SetAttributeValue("y1", StartPoint.Y);
-                    def.SetAttributeValue("x2", EndPoint.X);
-                    def.SetAttributeValue("y2", EndPoint.Y);
-                    break;
-                case GradientBrushType.Radial:
-                    def = new XElement("radialGradient");
-                    def.SetAttributeValue("cx", StartPoint.X);
-                    def.SetAttributeValue("cy", StartPoint.Y);
-                    def.SetAttributeValue("r", Vector2.Distance(StartPoint, EndPoint));
-                    def.SetAttributeValue("fx", Focus.X);
-                    def.SetAttributeValue("fy", Focus.Y);
-                    break;
-            }
-
-            foreach (var stop in Stops)
-                def.Add(
-                    new XElement("stop",
-                        new XAttribute("offset", stop.Position),
-                        new XAttribute("stop-color", ((Color4) stop.Color).ToCss()),
-                        new XAttribute("stop-opacity", stop.Color.A)
-                    ));
-
-            def.SetAttributeValue("gradientTransform", Transform.ToCss());
-
-            switch (ExtendMode)
-            {
-                case ExtendMode.Clamp:
-                    def.SetAttributeValue("spreadMethod", "pad");
-                    break;
-                case ExtendMode.Wrap:
-                    def.SetAttributeValue("spreadMethod", "repeat");
-                    break;
-                case ExtendMode.Mirror:
-                    def.SetAttributeValue("spreadMethod", "reflect");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            def.SetAttributeValue("opacity", Opacity);
-
-            return def;
-        }
-
         public override Brush ToDirectX(RenderTarget target)
         {
             if (Stops.Count == 0) return null;
@@ -321,8 +244,6 @@ namespace Ibinimator.Model
             get => Get<ExtendMode>();
             set => Set(value);
         }
-
-        protected override string ElementName => throw new NotImplementedException();
 
         public override Brush ToDirectX(RenderTarget target)
         {

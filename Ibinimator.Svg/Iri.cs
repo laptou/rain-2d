@@ -1,15 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
     public struct Iri
     {
-        public static Iri? TryParse(string input)
+        private static readonly Regex IriSyntax = new Regex(@"#([A-Za-z][A-Za-z0-9]*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static bool TryParse(string input, out Iri iri)
         {
-            throw new NotImplementedException();
+            iri = default;
+
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            iri = new Iri { Id = IriSyntax.Match(input)?.Groups[1].Value };
+            return true;
         }
+
+        public string Id { get; set; }
     }
 }

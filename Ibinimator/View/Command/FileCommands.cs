@@ -38,7 +38,7 @@ namespace Ibinimator.View.Command
                 {
                     var xdoc = XDocument.Load(stream);
                     var doc = new Document();
-                    doc.FromXml(xdoc.Root, new SvgContext());
+                    doc.FromXml(xdoc.Root, new SvgContext { Root = xdoc.Root });
                     vm.Document = SvgConverter.FromSvg(doc);
 
                     vm.ArtView.CacheManager.ResetAll();

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 using Ibinimator.Service;
 using SharpDX;
@@ -15,37 +13,57 @@ namespace Ibinimator.Model
     [XmlType(nameof(Ellipse))]
     public class Ellipse : Shape
     {
-        protected override string ElementName { get; }
-        public override string DefaultName => "Ellipse";
-
-        public float RadiusX
-        {
-            get => Width / 2;
-            set => Width = value * 2;
-        }
-
-        public float RadiusY
-        {
-            get => Height / 2;
-            set => Height = value * 2;
-        }
-
         public float CenterX
         {
             get => Get<float>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaiseGeometryChanged();
+            }
         }
 
         public float CenterY
         {
             get => Get<float>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaiseGeometryChanged();
+            }
         }
+
+        public override string DefaultName => "Ellipse";
 
         public override Vector2 Origin
         {
             get => new Vector2(CenterX - RadiusX, CenterY - RadiusY);
             set => (CenterX, CenterY) = (value.X + RadiusX, value.Y + RadiusY);
+        }
+
+        public float RadiusX
+        {
+            get => Width / 2;
+            set
+            {
+                Width = value * 2;
+                RaiseGeometryChanged();
+            }
+        }
+
+        public float RadiusY
+        {
+            get => Height / 2;
+            set
+            {
+                Height = value * 2;
+                RaiseGeometryChanged();
+            }
+        }
+
+        public override RectangleF GetBounds(ICacheManager cache)
+        {
+            return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, Width, Height);
         }
 
         public override Geometry GetGeometry(ICacheManager cache)
@@ -56,11 +74,6 @@ namespace Ibinimator.Model
                     new Vector2(CenterX, CenterY),
                     RadiusX,
                     RadiusY));
-        }
-
-        public override RectangleF GetBounds(ICacheManager cache)
-        {
-            return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, Width, Height);
         }
     }
 
@@ -76,30 +89,8 @@ namespace Ibinimator.Model
             set
             {
                 base.Height = value;
-                RaisePropertyChanged("Geometry");
+                RaiseGeometryChanged();
             }
-        }
-
-        public override float Width
-        {
-            get => base.Width;
-            set
-            {
-                base.Width = value;
-                RaisePropertyChanged("Geometry");
-            }
-        }
-
-        public float X
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
-
-        public float Y
-        {
-            get => Get<float>();
-            set => Set(value);
         }
 
         public override Vector2 Origin
@@ -108,12 +99,40 @@ namespace Ibinimator.Model
             set => (X, Y) = (value.X, value.Y);
         }
 
+        public override float Width
+        {
+            get => base.Width;
+            set
+            {
+                base.Width = value;
+                RaiseGeometryChanged();
+            }
+        }
+
+        public float X
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                RaiseGeometryChanged();
+            }
+        }
+
+        public float Y
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                RaiseGeometryChanged();
+            }
+        }
+
         public override RectangleF GetBounds(ICacheManager cache)
         {
             return new RectangleF(X, Y, Width, Height);
         }
-
-        protected override string ElementName => "rect";
 
         public override Geometry GetGeometry(ICacheManager cache)
         {
@@ -136,73 +155,37 @@ namespace Ibinimator.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("Geometry");
+
+                RaiseGeometryChanged();
             }
+        }
+
+        protected void RaiseFillBrushChanged()
+        {
+            FillBrushChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseGeometryChanged()
+        {
+            GeometryChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeBrushChanged()
+        {
+            StrokeBrushChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeInfoChanged()
+        {
+            StrokeInfoChanged?.Invoke(this, null);
         }
 
         #region IGeometricLayer Members
 
-        public override XElement GetElement()
-        {
-            var element = base.GetElement();
-
-            if (FillBrush != null)
-            {
-                element.SetAttributeValue("fill", FillBrush.GetReference());
-                element.SetAttributeValue("fill-opacity", FillBrush.Opacity);
-            }
-            if (StrokeBrush != null)
-            {
-                element.SetAttributeValue("stroke", StrokeBrush.GetReference());
-                element.SetAttributeValue("stroke-opacity", StrokeBrush.Opacity);
-            }
-
-            element.SetAttributeValue("stroke-width", StrokeInfo.Width);
-            element.SetAttributeValue("vector-effect", "non-scaling-stroke");
-
-            if (StrokeInfo.Style.DashStyle != DashStyle.Solid)
-                element.SetAttributeValue(
-                    "stroke-dasharray",
-                    string.Join(
-                        ", ",
-                        StrokeInfo.Dashes.Select(d => d * StrokeInfo.Width)));
-
-            switch (StrokeInfo.Style.LineJoin)
-            {
-                case LineJoin.Miter:
-                    element.SetAttributeValue("stroke-linejoin", "miter");
-                    break;
-                case LineJoin.Bevel:
-                    element.SetAttributeValue("stroke-linejoin", "bevel");
-                    break;
-                case LineJoin.Round:
-                    element.SetAttributeValue("stroke-linejoin", "round");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            switch (StrokeInfo.Style.StartCap)
-            {
-                case CapStyle.Flat:
-                    element.SetAttributeValue("stroke-linecap", "butt");
-                    break;
-                case CapStyle.Square:
-                    element.SetAttributeValue("stroke-linecap", "square");
-                    break;
-                case CapStyle.Round:
-                    element.SetAttributeValue("stroke-linecap", "round");
-                    break;
-                case CapStyle.Triangle:
-                    // warning: not part of SVG standard
-                    element.SetAttributeValue("stroke-linecap", "triangle");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return element;
-        }
+        public event EventHandler FillBrushChanged;
+        public event EventHandler GeometryChanged;
+        public event EventHandler StrokeBrushChanged;
+        public event EventHandler StrokeInfoChanged;
 
         public abstract Geometry GetGeometry(ICacheManager factory);
 
@@ -244,24 +227,25 @@ namespace Ibinimator.Model
             var dc = target.QueryInterfaceOrNull<DeviceContext1>();
 
             if (FillBrush != null)
-                if (dc != null)
-                    dc.DrawGeometryRealization(cache.GetGeometryRealization(this), cache.GetFill(this));
-                else
-                    target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
+                lock (this)
+                {
+                    if (dc != null)
+                        dc.DrawGeometryRealization(cache.GetGeometryRealization(this), cache.GetFill(this));
+                    else
+                        target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
+                }
 
             if (StrokeBrush != null)
-            {
-                var stroke = cache.GetStroke(this);
-
-                lock (stroke)
+                lock (this)
                 {
+                    var stroke = cache.GetStroke(this);
+
                     target.DrawGeometry(
                         cache.GetGeometry(this),
                         stroke.Brush,
                         stroke.Width,
                         stroke.Style);
                 }
-            }
 
             target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
         }
@@ -271,19 +255,34 @@ namespace Ibinimator.Model
         public BrushInfo FillBrush
         {
             get => Get<BrushInfo>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+
+                RaiseFillBrushChanged();
+            }
         }
 
         public BrushInfo StrokeBrush
         {
             get => Get<BrushInfo>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+
+                RaiseStrokeBrushChanged();
+            }
         }
 
         public StrokeInfo StrokeInfo
         {
             get => Get<StrokeInfo>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+
+                RaiseStrokeInfoChanged();
+            }
         }
 
         #endregion

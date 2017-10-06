@@ -31,6 +31,7 @@ namespace Ibinimator.Service.Tools
                         Tool = new SelectTool(this, ArtView.SelectionManager);
                         break;
                     case ToolType.Node:
+                        Tool = new NodeTool(this);
                         break;
                     case ToolType.Pencil:
                         Tool = new PencilTool(this);

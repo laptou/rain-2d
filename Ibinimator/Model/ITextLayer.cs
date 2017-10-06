@@ -7,7 +7,7 @@ using SharpDX.DirectWrite;
 
 namespace Ibinimator.Model
 {
-    public interface ITextLayer : IFilledLayer, IStrokedLayer
+    public interface ITextLayer : IGeometricLayer
     {
         string FontFamilyName { get; set; }
         float FontSize { get; set; }
@@ -19,6 +19,7 @@ namespace Ibinimator.Model
         ParagraphAlignment ParagraphAlignment { get; set; }
         TextAlignment TextAlignment { get; set; }
         string Value { get; set; }
+        float Baseline { get; }
 
         void ClearFormat();
         Format GetFormat(int position);
@@ -27,5 +28,7 @@ namespace Ibinimator.Model
         void Insert(int index, string str);
         void Remove(int index, int length);
         void SetFormat(Format format);
+
+        event EventHandler LayoutChanged;
     }
 }

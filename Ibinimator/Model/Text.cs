@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
 using Ibinimator.Shared;
+using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
@@ -170,7 +171,7 @@ namespace Ibinimator.Model
         #endregion
     }
 
-    public class Text : Layer, ITextLayer, IGeometricLayer
+    public class Text : Layer, ITextLayer
     {
         public Text()
         {
@@ -187,21 +188,57 @@ namespace Ibinimator.Model
         public bool IsBlock
         {
             get => Get<bool>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaiseGeometryChanged();
+            }
         }
 
-        protected override string ElementName => "text";
+        protected void RaiseFillBrushChanged()
+        {
+            FillBrushChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseGeometryChanged()
+        {
+            GeometryChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeBrushChanged()
+        {
+            StrokeBrushChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeInfoChanged()
+        {
+            StrokeInfoChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseLayoutChanged()
+        {
+            LayoutChanged?.Invoke(this, null);
+        }
+
+        public event EventHandler FillBrushChanged;
+        public event EventHandler GeometryChanged;
+        public event EventHandler StrokeBrushChanged;
+        public event EventHandler StrokeInfoChanged;
+        public event EventHandler LayoutChanged;
 
         public Format GetFormat(int position, out int i)
         {
+            var sorted = Formats.OrderBy(f => f.Range.StartPosition).ToArray();
+
             i = 0;
 
             do
             {
                 i++;
-            } while (i < Formats.Count && Formats[i].Range.StartPosition <= position);
+            } while (i < sorted.Length && sorted[i].Range.StartPosition <= position);
 
-            var format = Formats.ElementAtOrDefault(--i);
+            var format = sorted.ElementAtOrDefault(--i);
+
             if (format == null) return null;
 
             return format.Range.StartPosition + format.Range.Length > position
@@ -243,10 +280,11 @@ namespace Ibinimator.Model
                     cache.SetResource(this, i * 2 + 1, new Stroke(target, info.Item2, info.Item3));
                 }
 
-                return new D2D.GeometryGroup(
-                    factory,
-                    D2D.FillMode.Winding,
-                    ctx.Figures.ToArray());
+                return 
+                    new D2D.GeometryGroup(
+                        factory,
+                        D2D.FillMode.Winding,
+                        ctx.Figures.ToArray());
             }
         }
 
@@ -257,11 +295,9 @@ namespace Ibinimator.Model
         public void ClearFormat()
         {
             lock (Formats)
-            {
                 Formats.Clear();
-            }
 
-            RaisePropertyChanged("TextLayout");
+            RaiseLayoutChanged();
         }
 
         public override RectangleF GetBounds(ICacheManager cache)
@@ -277,7 +313,7 @@ namespace Ibinimator.Model
         {
             return GetFormat(position, out var _);
         }
-         
+
         public DW.TextLayout GetLayout(DW.Factory dwFactory)
         {
             var layout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
@@ -296,7 +332,6 @@ namespace Ibinimator.Model
                 TextAlignment = TextAlignment,
                 ParagraphAlignment = ParagraphAlignment
             };
-
 
             lock (Formats)
             {
@@ -348,6 +383,9 @@ namespace Ibinimator.Model
                 }
             }
 
+            Baseline = layout.GetLineMetrics()[0].Baseline;
+            UpdateTransform();
+
             return layout;
         }
 
@@ -357,8 +395,9 @@ namespace Ibinimator.Model
 
             point = Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), point);
 
-            cache.GetTextLayout(this)
-                .HitTestPoint(point.X, point.Y, out var _, out var isInside);
+            var layout = cache.GetTextLayout(this);
+
+            layout.HitTestPoint(point.X, point.Y, out var _, out var isInside);
 
             return isInside ? this as T : null;
         }
@@ -507,13 +546,10 @@ namespace Ibinimator.Model
 
                         var nEnd = nStart + nLen;
 
-                        Formats.Remove(oldFormat);
-                        Formats.Add(newFormat);
-
-                        if (nStart > oStart)
+                        if (start > oStart)
                         {
                             var iFormat = oldFormat.Clone();
-                            iFormat.Range = new DW.TextRange(oStart, nStart - oStart);
+                            iFormat.Range = new DW.TextRange(oStart, start - oStart);
                             Formats.Add(iFormat);
                         }
 
@@ -524,16 +560,17 @@ namespace Ibinimator.Model
                             Formats.Add(iFormat);
                         }
 
-                        if (start < Math.Min(nStart, oStart))
+                        if (nStart > start)
                         {
-                            var iFormat = format.Clone();
-                            iFormat.Range = new DW.TextRange(start, Math.Min(nStart, oStart) - start);
+                            var iFormat = newFormat.Clone();
+                            iFormat.Range = new DW.TextRange(start, nStart - start);
                             Formats.Add(iFormat);
                         }
 
-                        start = Math.Max(nEnd, oEnd);
+                        current = start = Math.Max(nEnd, oEnd);
 
-                        current += oLen;
+                        Formats.Remove(oldFormat);
+                        Formats.Add(newFormat);
                     }
                     else
                     {
@@ -542,17 +579,44 @@ namespace Ibinimator.Model
                 }
 
                 if (start < end)
+                {
+                    format.Range = new DW.TextRange(start, end - start);
                     Formats.Add(format);
+                }
 
                 Trace.WriteLine(string.Join("\n",
-                    Formats.Select(f =>
-                        $"{f.Range.StartPosition} + {f.Range.Length} -> {f.Range.StartPosition + f.Range.Length}: {f.Fill?.ToString()}")));
+                    Formats.OrderBy(f => f.Range.StartPosition)
+                        .Select(f =>
+                            f.ToString())));
+
+                Trace.WriteLine("");
             }
 
             RaisePropertyChanged("TextLayout");
         }
 
+        public float Baseline { get; private set; }
+
         public override string DefaultName => $@"Text ""{Value}""";
+
+        protected override void UpdateTransform()
+        {
+            Transform =
+                Matrix3x2.Translation(-Origin) *
+                Matrix3x2.Scaling(Scale) *
+                Matrix3x2.Skew(0, Shear) *
+                Matrix3x2.Rotation(Rotation) *
+                Matrix3x2.Translation(Origin) *
+                Matrix3x2.Translation(0, -Baseline) *
+                Matrix3x2.Translation(Position);
+        }
+
+        public override void ApplyTransform(Matrix3x2 transform)
+        {
+            base.ApplyTransform(transform);
+
+            Position += new Vector2(0, Baseline);
+        }
 
         public BrushInfo FillBrush
         {

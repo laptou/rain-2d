@@ -14,8 +14,6 @@ namespace Ibinimator.Model
 {
     public class Group : Layer, IContainerLayer
     {
-        protected override string ElementName => "g";
-
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
@@ -79,6 +77,8 @@ namespace Ibinimator.Model
 
         public override RectangleF GetBounds(ICacheManager cache)
         {
+            if(SubLayers.Count == 0) return RectangleF.Empty;
+
             if(cache != null)
                 return SubLayers
                         .Select(cache.GetRelativeBounds)
@@ -87,16 +87,6 @@ namespace Ibinimator.Model
             return SubLayers
                 .Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
                 .Aggregate(RectangleF.Union);
-        }
-
-        public override XElement GetElement()
-        {
-            var element = base.GetElement();
-
-            foreach (var layer in SubLayers.Reverse())
-                element.Add(layer.GetElement());
-
-            return element;
         }
 
         public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
@@ -157,8 +147,6 @@ namespace Ibinimator.Model
             UpdateTransform();
         }
 
-        protected abstract string ElementName { get; }
-
         /// <summary>
         ///     Returns the entire layer graph starting at this layer,
         ///     as a list.
@@ -177,7 +165,7 @@ namespace Ibinimator.Model
             return Id.GetHashCode();
         }
 
-        private void UpdateTransform()
+        protected virtual void UpdateTransform()
         {
             Transform =
                 Matrix3x2.Translation(-Origin) *
@@ -203,23 +191,6 @@ namespace Ibinimator.Model
         public virtual IDisposable GetResource(ICacheManager cache, int id)
         {
             return null;
-        }
-
-        public override XElement GetElement()
-        {
-            var element = new XElement(XNamespace.Get("http://www.w3.org/2000/svg") + ElementName);
-
-            if (Name != null)
-                element.Add(new XAttribute("id", Name));
-
-            element.Add(new XAttribute("opacity", Opacity));
-
-            // extract transform w/o scale
-            // in SVG, transform is also applied to stroke
-            // which is unnacceptable
-            element.Add(new XAttribute("transform", Transform.ToCss()));
-
-            return element;
         }
 
         public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
@@ -253,6 +224,20 @@ namespace Ibinimator.Model
         {
             get => Get<float>();
             set => Set(value);
+        }
+
+        public virtual void ApplyTransform(Matrix3x2 transform)
+        {
+            var layerTransform =
+                AbsoluteTransform
+                * transform
+                * Matrix3x2.Invert(WorldTransform);
+            var delta = layerTransform.Decompose();
+
+            Scale = delta.scale;
+            Rotation = delta.rotation;
+            Position = Matrix3x2.TransformPoint(layerTransform, Origin) - Origin;
+            Shear = delta.skew;
         }
 
         public virtual Vector2 Origin
@@ -338,7 +323,7 @@ namespace Ibinimator.Model
         public Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
-            private set => Set(value);
+            protected set => Set(value);
         }
 
         public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix.Identity;

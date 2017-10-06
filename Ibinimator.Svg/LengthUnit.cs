@@ -7,6 +7,7 @@ namespace Ibinimator.Svg
 {
     public enum LengthUnit
     {
+        Inherit,
         Number,
         Percent,
         Ems,

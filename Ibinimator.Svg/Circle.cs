@@ -8,17 +8,17 @@ namespace Ibinimator.Svg
 {
     public class Circle : ShapeElement
     {
-        public float CenterX { get; set; }
-        public float CenterY { get; set; }
+        public Length CenterX { get; set; }
+        public Length CenterY { get; set; }
         public Length Radius { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);
 
-            CenterX = float.Parse((string) element.Attribute("cx") ?? "0");
-            CenterY = float.Parse((string) element.Attribute("cy") ?? "0");
-            Radius = Length.Parse((string) element.Attribute("r") ?? "0");
+            CenterX = LazyGet(element, "cx", Length.Zero);
+            CenterY = LazyGet(element, "cy", Length.Zero);
+            Radius = LazyGet(element, "r", Length.Zero);
         }
 
         public override XElement ToXml(SvgContext context)

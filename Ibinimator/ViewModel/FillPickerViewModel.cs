@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Ibinimator.Shared;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Model;
-using Ibinimator.Utility;
+using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
 using DashStyle = SharpDX.Direct2D1.DashStyle;
@@ -25,6 +25,11 @@ namespace Ibinimator.ViewModel
 
         public class ColorPickerViewModel : ViewModel
         {
+            private double _alpha;
+            private double _hue;
+            private double _lightness;
+            private double _saturation;
+
             public bool Flag;
 
             public ColorPickerViewModel(ColorPickerTarget target)
@@ -37,12 +42,8 @@ namespace Ibinimator.ViewModel
 
             public double Alpha
             {
-                get => Get<double>();
-                set
-                {
-                    Set(value);
-                    RaisePropertyChanged(nameof(Color));
-                }
+                get => _alpha;
+                set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value);
             }
 
             public double Blue
@@ -57,6 +58,8 @@ namespace Ibinimator.ViewModel
                 set
                 {
                     Set(value);
+                    (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value);
+
                     RaisePropertyChanged(nameof(Red));
                     RaisePropertyChanged(nameof(Green));
                     RaisePropertyChanged(nameof(Blue));
@@ -64,6 +67,15 @@ namespace Ibinimator.ViewModel
                     RaisePropertyChanged(nameof(Saturation));
                     RaisePropertyChanged(nameof(Lightness));
                 }
+            }
+
+            public void SetColor(Color color)
+            {
+                Set(color, nameof(Color));
+
+                RaisePropertyChanged(nameof(Red));
+                RaisePropertyChanged(nameof(Green));
+                RaisePropertyChanged(nameof(Blue));
             }
 
             public double Green
@@ -74,14 +86,14 @@ namespace Ibinimator.ViewModel
 
             public double Hue
             {
-                get => ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f).h;
-                set => Color = ColorUtils.HslaToColor(value, Saturation, Lightness, Alpha);
+                get => _hue;
+                set => SetColor(ColorUtils.HslaToColor(_hue = value, Saturation, Lightness, Alpha));
             }
 
             public double Lightness
             {
-                get => ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f).l;
-                set => Color = ColorUtils.HslaToColor(Hue, Saturation, value, Alpha);
+                get => _lightness;
+                set => SetColor(ColorUtils.HslaToColor(Hue, Saturation, _lightness = value, Alpha));
             }
 
             public double Red
@@ -92,8 +104,8 @@ namespace Ibinimator.ViewModel
 
             public double Saturation
             {
-                get => ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f).s;
-                set => Color = ColorUtils.HslaToColor(Hue, value, Lightness, Alpha);
+                get => _saturation;
+                set => SetColor(ColorUtils.HslaToColor(Hue, _saturation = value, Lightness, Alpha));
             }
 
             public ColorPickerTarget Target { get; }
@@ -120,10 +132,10 @@ namespace Ibinimator.ViewModel
                     _updating = true;
 
                     if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
-                        _fillPicker.Color = fill.Color.ToWpf();
+                        _fillPicker.SetColor(fill.Color.ToWpf());
 
                     if (_parent.BrushManager.Stroke is SolidColorBrushInfo stroke)
-                        _strokePicker.Color = stroke.Color.ToWpf();
+                        _strokePicker.SetColor(stroke.Color.ToWpf());
 
                     RaisePropertyChanged(nameof(FillBrush));
                     RaisePropertyChanged(nameof(StrokeBrush));
@@ -167,6 +179,17 @@ namespace Ibinimator.ViewModel
                     ss.StartCap = value;
                     ss.EndCap = value;
                     ss.DashCap = value;
+                    StrokeStyle = ss;
+                }
+            }
+
+            public float StrokeMiterLimit
+            {
+                get => StrokeStyle.MiterLimit;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.MiterLimit = value;
                     StrokeStyle = ss;
                 }
             }

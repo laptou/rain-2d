@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -9,9 +10,8 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public abstract class ElementBase : IElement
+    public abstract class Element : IElement
     {
-
         protected string LazyGet(XElement element, XName name, bool inherit = false)
         {
             if(inherit)
@@ -22,43 +22,7 @@ namespace Ibinimator.Svg
             return (string) element.Attribute(name);
         }
 
-        protected float LazyGet(XElement element, XName name, float @default)
-        {
-            var value = LazyGet(element, name);
-
-            if (value != null && float.TryParse(value, out var result))
-                return result;
-
-            return @default;
-        }
-
-        protected Length LazyGet(XElement element, XName name, Length @default)
-        {
-            var value = LazyGet(element, name);
-
-            if (value != null && Length.TryParse(value, out var result))
-                return result;
-
-            return @default;
-        }
-
-        protected Matrix3x2 LazyGet(XElement element, XName name, Matrix3x2 @default)
-        {
-            var value = LazyGet(element, name);
-
-            if (value != null)
-            {
-                var values = value.Split('\u0020', '\u000A', '\u000D', '\u0009')
-                    .Select(s => float.TryParse(s, out var result) ? result : float.NaN)
-                    .ToArray();
-
-                return new Matrix3x2(values[0], values[1], values[2], values[3], values[4], values[5]);
-            }
-
-            return @default;
-        }
-
-        protected T LazyGet<T>(XElement element, XName name, bool inherit = false)
+        protected T LazyGet<T>(XElement element, XName name, T @default = default, bool inherit = false)
         {
             var value = LazyGet(element, name, inherit);
 
@@ -80,7 +44,43 @@ namespace Ibinimator.Svg
                                        .Select(float.Parse).ToArray();
             }
 
-            return default;
+            if (typeof(T) == typeof(float))
+            {
+                if (value != null && float.TryParse(value, out var result))
+                    return (T)(object)result;
+            }
+
+            if (typeof(T) == typeof(Length))
+            {
+                if (value != null && Length.TryParse(value, out var result))
+                    return (T)(object)result;
+            }
+
+            if (typeof(T) == typeof(Color))
+            {
+                if (value != null && Color.TryParse(value, out var result))
+                    return (T)(object)result;
+            }
+
+            if (typeof(T) == typeof(Matrix3x2))
+            {
+                if (value != null)
+                {
+                    var values = value.Split('\u0020', '\u000A', '\u000D', '\u0009')
+                        .Select(s => float.TryParse(s, out var result) ? result : float.NaN)
+                        .ToArray();
+
+                    return (T)(object)new Matrix3x2(
+                        values[0], values[1], 
+                        values[2], values[3], 
+                        values[4], values[5]);
+                }
+            }
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)value;
+
+            return @default;
         }
 
         protected void LazySet<T>(XElement element, XName name, T value)
@@ -90,16 +90,32 @@ namespace Ibinimator.Svg
 
         protected void LazySet<T>(XElement element, XName name, T value, T @default)
         {
-            if (value?.Equals(@default) == false)
-                if (value is Array array)
-                    element.SetAttributeValue(name, string.Join(",", array.OfType<object>()));
-                else element.SetAttributeValue(name, value);
+            if (value == null) return;
+            if (Equals(value, @default)) return;
+
+            switch (value)
+            {
+                case Array array:
+                    if(array.Length > 0)
+                        element.SetAttributeValue(name, string.Join(",", array.OfType<object>()));
+                    break;
+                case Enum @enum:
+                    element.SetAttributeValue(name, @enum.Svgify());
+                    break;
+                case RectangleF rect:
+                    element.SetAttributeValue(name, $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
+                    break;
+                default:
+                    element.SetAttributeValue(name, value);
+                    break;
+            }
         }
 
         #region IElement Members
 
         public virtual void FromXml(XElement element, SvgContext context)
         {
+
             Id = (string) element.Attribute("id");
 
             var style = (string) element.Attribute("style");
@@ -114,6 +130,9 @@ namespace Ibinimator.Svg
                     if (element.Attribute(rule.name) == null)
                         element.SetAttributeValue(rule.name, rule.value);
             }
+
+            if(Id != null)
+                context[Id] = this;
         }
 
         public virtual XElement ToXml(SvgContext context)

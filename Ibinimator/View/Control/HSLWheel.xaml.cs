@@ -25,6 +25,10 @@ namespace Ibinimator.View.Control
 
         private bool _draggingTriangle;
 
+        private double _hue;
+        private double _saturation;
+        private double _lightness;
+
         private WriteableBitmap _ring;
 
         private WriteableBitmap _triangle;
@@ -33,7 +37,6 @@ namespace Ibinimator.View.Control
         {
             InitializeComponent();
 
-            Loaded += OnLoaded;
             Ring.MouseDown += OnRingMouseDown;
             Triangle.MouseDown += OnTriangleMouseDown;
 
@@ -83,15 +86,15 @@ namespace Ibinimator.View.Control
             var pos = e.GetPosition(this);
             pos.Offset(-ActualWidth / 2, -ActualHeight / 2);
 
-            var (hue, saturation, lightness) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
-
             if (_draggingRing)
             {
                 var rotation = Math.Atan2(pos.Y, pos.X);
 
-                Color = ColorUtils.HslToColor(rotation / pi2 * 360, saturation, lightness);
+                _hue = (rotation / pi2 * 360 + 360) % 360;
 
-                Dispatcher.BeginInvoke((Action) UpdateTriangle, DispatcherPriority.Render, null);
+                UpdateColor();
+
+                Dispatcher.BeginInvoke((Action)UpdateTriangle, DispatcherPriority.Render, null);
             }
 
             if (_draggingTriangle)
@@ -100,12 +103,18 @@ namespace Ibinimator.View.Control
 
                 var tpos = e.GetPosition(Triangle);
 
-                Color = ColorUtils.HslToColor(hue,
-                    Math.Max(0, Math.Min(1, 1 - tpos.Y / height)),
-                    Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth)));
+                _saturation = Math.Max(0, Math.Min(1, 1 - tpos.Y / height));
+                _lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
 
+                UpdateColor();
                 UpdateHandles();
             }
+        }
+
+        private void UpdateColor()
+        {
+            Color = ColorUtils.HslToColor(_hue, _saturation, _lightness);
+            RaisePropertyChanged(nameof(Color));
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -115,13 +124,37 @@ namespace Ibinimator.View.Control
             _draggingTriangle = _draggingRing = false;
 
             ReleaseMouseCapture();
-
-            RaisePropertyChanged(nameof(Color));
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
+
+            if (PresentationSource.FromVisual(this) == null)
+                return;
+
+            try
+            {
+
+                var pt = PointToScreen(new Point());
+                var screen = Screen.FromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y));
+                var dpi = screen.GetDpiForMonitor(DpiType.Effective);
+                var size = (int)Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
+
+                _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt3Over2), dpi.x, dpi.y,
+                    PixelFormats.Bgra32, null);
+                _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
+
+                Triangle.Fill = new ImageBrush(_triangle);
+                Ring.Fill = new ImageBrush(_ring);
+
+                UpdateTriangle();
+                UpdateRing();
+            }
+            catch
+            {
+
+            }
 
             Triangle.Width = sizeInfo.NewSize.Width * 0.5 * 0.75 * Math.Sqrt(3);
 
@@ -132,31 +165,15 @@ namespace Ibinimator.View.Control
         {
             if (d is HslWheel hslWheel)
             {
+                var (r, g, b, _) = ColorUtils.ColorToRgba(hslWheel.Color);
+
+                (hslWheel._hue, hslWheel._saturation, hslWheel._lightness) = 
+                    ColorUtils.RgbToHsl(r, g, b);
+
                 hslWheel.RaisePropertyChanged(nameof(Color));
                 hslWheel.UpdateHandles();
                 hslWheel.UpdateTriangle();
             }
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            if (PresentationSource.FromVisual(this) == null)
-                return;
-
-            var pt = PointToScreen(new Point());
-            var screen = Screen.FromPoint(new System.Drawing.Point((int) pt.X, (int) pt.Y));
-            var dpi = screen.GetDpiForMonitor(DpiType.Effective);
-            var size = (int) Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
-
-            _triangle = new WriteableBitmap(size, (int) (size / MathUtils.Sqrt3Over2), dpi.x, dpi.y,
-                PixelFormats.Bgra32, null);
-            _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
-
-            Triangle.Fill = new ImageBrush(_triangle);
-            Ring.Fill = new ImageBrush(_ring);
-
-            UpdateTriangle();
-            UpdateRing();
         }
 
         private void OnRingMouseDown(object sender, MouseButtonEventArgs e)
@@ -176,16 +193,14 @@ namespace Ibinimator.View.Control
 
         private void UpdateHandles()
         {
-            var (hue, saturation, lightness) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
-
             var transform = (RotateTransform) Triangle.RenderTransform;
-            transform.Angle = hue + 90;
-            ringRotate.Angle = hue;
+            transform.Angle = _hue + 90;
+            ringRotate.Angle = _hue;
 
             var height = (int) (Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
             var slope = 1.0 / Math.Sqrt(3);
 
-            var hpos = new Point((lightness - 0.5) * Triangle.ActualWidth, (1 - saturation) * height);
+            var hpos = new Point((_lightness - 0.5) * Triangle.ActualWidth, (1 - _saturation) * height);
 
             hpos.Y = Math.Max(0, Math.Min(height, hpos.Y));
             hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) + Triangle.ActualWidth / 2;

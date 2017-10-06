@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DW = SharpDX.DirectWrite;
 
 namespace Ibinimator.Model
 {
+    [DebuggerDisplay("Start = {Range.StartPosition}, Length = {Range.Length}")]
     public sealed class Format
     {
+        public override string ToString()
+        {
+            var f = this;
+
+            return $"{f.Range.StartPosition} + {f.Range.Length}" +
+                   $" -> {f.Range.StartPosition + f.Range.Length}: " +
+                   $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
+        }
+
         private bool _subscript;
         private bool _superscript;
 

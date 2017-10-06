@@ -19,7 +19,7 @@ namespace Ibinimator.Service.Tools
         {
             Manager = toolManager;
 
-            Status = "<b>Alt-Click</b> to select-behind, and <b>Shift-Click</b> to multi-select.";
+            Status = "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
 
             selectionManager.Updated += (sender, args) =>
             {
@@ -27,19 +27,22 @@ namespace Ibinimator.Service.Tools
                     .ToArray();
 
                 if (names.Length == 0)
-                    Status = "<b>Alt-Click</b> to select-behind, and <b>Shift-Click</b> to multi-select.";
+                    Status = "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
                 else
                     Status = $"<b>{names.Length}</b> layer(s) selected " +
                              $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
             };
         }
 
-        private IEnumerable<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
+        private IList<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
 
         #region ITool Members
 
         public void ApplyFill(BrushInfo brush)
         {
+            if (Selection.Count == 0)
+                return;
+
             var targets =
                 Selection.SelectMany(l => l.Flatten())
                     .OfType<IFilledLayer>()
@@ -50,11 +53,26 @@ namespace Ibinimator.Service.Tools
                 targets, brush,
                 targets.Select(t => t.FillBrush).ToArray());
 
+            var old = Manager.ArtView.HistoryManager.Current;
+
+            if (old is ApplyFillCommand oldFillCommand && command.Time - old.Time <= 500)
+            {
+                Manager.ArtView.HistoryManager.Pop();
+
+                command = new ApplyFillCommand(
+                    command.Id,
+                    command.Targets, command.NewFill,
+                    oldFillCommand.OldFills);
+            }
+
             Manager.ArtView.HistoryManager.Do(command);
         }
 
         public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
         {
+            if (Selection.Count == 0)
+                return;
+
             var targets =
                 Selection.SelectMany(l => l.Flatten())
                     .OfType<IStrokedLayer>()
@@ -65,6 +83,19 @@ namespace Ibinimator.Service.Tools
                 targets,
                 brush, targets.Select(t => t.StrokeBrush).ToArray(),
                 stroke, targets.Select(t => t.StrokeInfo).ToArray());
+
+            var old = Manager.ArtView.HistoryManager.Current;
+
+            if (old is ApplyStrokeCommand oldStrokeCommand && command.Time - old.Time <= 500)
+            {
+                Manager.ArtView.HistoryManager.Pop();
+
+                command = new ApplyStrokeCommand(
+                    command.Id,
+                    command.Targets, 
+                    command.NewStroke,
+                    oldStrokeCommand.OldStrokes);
+            }
 
             Manager.ArtView.HistoryManager.Do(command);
         }

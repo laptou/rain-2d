@@ -7,7 +7,7 @@ using Ibinimator.Service;
 
 namespace Ibinimator.Model
 {
-    public abstract class Resource : Model, ISvgSerializable
+    public abstract class Resource : Model
     {
         #region ResoureScope enum
 
@@ -25,11 +25,5 @@ namespace Ibinimator.Model
             get => Get<ResoureScope>();
             set => Set(value);
         }
-
-        #region ISvgSerializable Members
-
-        public abstract XElement GetElement();
-
-        #endregion
     }
 }

@@ -12,15 +12,15 @@ namespace Ibinimator.Svg
         public Length RadiusX { get; set; }
         public Length RadiusY { get; set; }
         public Length Width { get; set; }
-        public float X { get; set; }
-        public float Y { get; set; }
+        public Length X { get; set; }
+        public Length Y { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);
 
-            X = LazyGet(element, "x", 0);
-            Y = LazyGet(element, "y", 0);
+            X = LazyGet(element, "x", Length.Zero);
+            Y = LazyGet(element, "y", Length.Zero);
             RadiusX = LazyGet(element, "rx", Length.Zero);
             RadiusY = LazyGet(element, "ry", Length.Zero);
             Width = LazyGet(element, "width", Length.Zero);

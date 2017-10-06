@@ -13,7 +13,8 @@ namespace Ibinimator.Service.Commands
         public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
             int index, NodeOperation operation) : base(id, new[] { target })
         {
-            if(operation != NodeOperation.Add)
+            if(operation != NodeOperation.Add &&
+               operation != NodeOperation.Remove)
                 throw new InvalidOperationException();
 
             Nodes = nodes;
@@ -24,7 +25,8 @@ namespace Ibinimator.Service.Commands
         public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
             int[] indices, NodeOperation operation) : base(id, new[] { target })
         {
-            if (operation != NodeOperation.Remove)
+            if (operation != NodeOperation.Add &&
+                operation != NodeOperation.Remove)
                 throw new InvalidOperationException();
 
             Nodes = nodes;

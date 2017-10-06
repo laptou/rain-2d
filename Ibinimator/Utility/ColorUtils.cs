@@ -112,9 +112,20 @@ namespace Ibinimator.Utility
             return new Color4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
         }
 
+        public static (double r, double g, double b, double a) ColorToRgba(Color color)
+        {
+            return (color.R / 255d, color.G / 255d, color.B / 255d, color.A / 255d);
+        }
+
         public static Color ToWpf(this Color4 color)
         {
             return RgbaToColor(color.Red, color.Green, color.Blue, color.Alpha);
+        }
+
+        public static (double hue, double saturation, double lightness, double alpha) ColorToHsla(Color color)
+        {
+            var (r, g, b, a) = ColorToRgba(color);
+            return RgbaToHsla(r, g, b, a);
         }
     }
 }

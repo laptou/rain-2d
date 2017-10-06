@@ -9,7 +9,7 @@ namespace Ibinimator.Svg
 {
     public abstract class ContainerElement : GraphicalElement, IContainerElement
     {
-        private readonly IList<IElement> _list = new List<IElement>();
+        private readonly List<IElement> _list = new List<IElement>();
 
         #region IContainerElement Members
 
@@ -53,47 +53,7 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            foreach (var descendant in element.Elements())
-            {
-                IElement child;
-
-                switch (descendant.Name.LocalName)
-                {
-                    case "circle":
-                        child = new Circle();
-                        break;
-                    case "ellipse":
-                        child = new Ellipse();
-                        break;
-                    case "g":
-                        child = new Group();
-                        break;
-                    case "line":
-                        child = new Line();
-                        break;
-                    case "path":
-                        child = new Path();
-                        break;
-                    case "polygon":
-                        child = new Polygon();
-                        break;
-                    case "polyline":
-                        child = new Polyline();
-                        break;
-                    case "rect":
-                        child = new Rectangle();
-                        break;
-                    case "text":
-                        child = new Text();
-                        break;
-                    default:
-                        continue;
-                }
-
-                child.FromXml(descendant, context);
-
-                Add(child);
-            }
+            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
         }
 
         public IEnumerator<IElement> GetEnumerator()
@@ -128,7 +88,7 @@ namespace Ibinimator.Svg
 
         public int Count => _list.Count;
 
-        public bool IsReadOnly => _list.IsReadOnly;
+        public bool IsReadOnly => ((IList<IElement>)_list).IsReadOnly;
 
         #endregion
     }

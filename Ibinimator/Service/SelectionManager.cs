@@ -103,7 +103,7 @@ namespace Ibinimator.Service
             handles.Add((new Vector2(x1, (y1 + y2) / 2), "ew", SelectionResizeHandle.Left));
             handles.Add((new Vector2(x2, (y1 + y2) / 2), "ew", SelectionResizeHandle.Right));
             handles.Add((new Vector2((x1 + x2) / 2, y2), "ns", SelectionResizeHandle.Bottom));
-            handles.Add((new Vector2((x1 + x2) / 2, y1 - 10), "rot", SelectionResizeHandle.Rotation));
+            handles.Add((new Vector2((x1 + x2) / 2, y1 - 10 / ArtView.ViewManager.Zoom), "rot", SelectionResizeHandle.Rotation));
 
             foreach (var h in handles)
                 if ((pos - h.pos).LengthSquared() < 49 / ArtView.ViewManager.Zoom)
@@ -539,11 +539,11 @@ namespace Ibinimator.Service
         {
             void DrawBounds(RectangleF rect, Matrix3x2 transform, Brush brush)
             {
-                target.Transform *= transform;
+                target.Transform = transform * target.Transform;
 
-                target.DrawRectangle(SelectionBounds, brush, 1, _selectionStroke);
+                target.DrawRectangle(rect, brush, 1, _selectionStroke);
 
-                target.Transform *= Matrix3x2.Invert(transform);
+                target.Transform = Matrix3x2.Invert(transform) * target.Transform;
             }
 
             using (new WeakLock(_render))
@@ -576,7 +576,7 @@ namespace Ibinimator.Service
                 if (!_selectionBox.IsEmpty)
                 {
                     target.DrawRectangle(_selectionBox, cache.GetBrush("A1"), 1f / target.Transform.M11);
-                    target.FillRectangle(_selectionBox, cache.GetBrush("A1-1/2"));
+                    target.FillRectangle(_selectionBox, cache.GetBrush("A1A"));
                 }
             }
         }
@@ -610,8 +610,9 @@ namespace Ibinimator.Service
                         break;
 
                     case 1:
-                        var transform = Selection[0].AbsoluteTransform.Decompose();
-                        var local = ArtView.CacheManager.GetBounds(Selection[0]);
+                        var layer = Selection[0];
+                        var local = ArtView.CacheManager.GetBounds(layer);
+                        var transform = layer.AbsoluteTransform.Decompose();
 
                         bounds =
                             MathUtils.Bounds(
@@ -620,7 +621,7 @@ namespace Ibinimator.Service
                                 Matrix3x2.Translation(transform.translation));
 
                         var center = Matrix3x2.TransformPoint(
-                            Selection[0].AbsoluteTransform,
+                            layer.AbsoluteTransform,
                             local.Center);
 
                         bounds.Offset(center - bounds.Center);

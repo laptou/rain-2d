@@ -12,6 +12,8 @@ namespace Ibinimator.Model
     public interface IFilledLayer : ILayer
     {
         BrushInfo FillBrush { get; set; }
+
+        event EventHandler FillBrushChanged;
     }
 
     public interface IStrokedLayer : ILayer
@@ -19,6 +21,10 @@ namespace Ibinimator.Model
         BrushInfo StrokeBrush { get; set; }
 
         StrokeInfo StrokeInfo { get; set; }
+
+        event EventHandler StrokeBrushChanged;
+
+        event EventHandler StrokeInfoChanged;
     }
 
     public class StrokeInfo : Model
@@ -55,7 +61,7 @@ namespace Ibinimator.Model
             Brush = stroke?.ToDirectX(target);
             Style = new StrokeStyle1(
                 target.Factory.QueryInterface<Factory1>(),
-                strokeInfo?.Style ?? default(StrokeStyleProperties1),
+                strokeInfo?.Style ?? default,
                 strokeInfo?.Dashes.ToArray() ?? new float[0]);
             Width = strokeInfo?.Width ?? 0;
         }
@@ -83,24 +89,7 @@ namespace Ibinimator.Model
     public interface IGeometricLayer : IFilledLayer, IStrokedLayer
     {
         Geometry GetGeometry(ICacheManager cache);
-    }
 
-    public class Figure : IDisposable
-    {
-        public BrushInfo FillBrush { get; set; }
-        public Geometry Geometry { get; set; }
-
-        public BrushInfo StrokeBrush { get; set; }
-
-        public StrokeInfo StrokeInfo { get; set; }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            Geometry?.Dispose();
-        }
-
-        #endregion
+        event EventHandler GeometryChanged;
     }
 }

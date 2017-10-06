@@ -21,11 +21,6 @@ using Resource = Ibinimator.Model.Resource;
 
 namespace Ibinimator.Service
 {
-    public interface ISvgSerializable
-    {
-        XElement GetElement();
-    }
-
     public static class SvgNames
     {
         public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
@@ -129,13 +124,7 @@ namespace Ibinimator.Service
 
             var defs = new XElement(SvgNames.Defs);
 
-            foreach (var brush in doc.Swatches)
-                defs.Add(brush.GetElement());
-
             root.Add(defs);
-
-            foreach (var layer in doc.Root.SubLayers)
-                root.Add(layer.GetElement());
 
             return new XDocument(root);
         }

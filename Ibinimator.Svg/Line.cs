@@ -8,19 +8,19 @@ namespace Ibinimator.Svg
 {
     public class Line : ShapeElement
     {
-        public float X1 { get; set; }
-        public float X2 { get; set; }
-        public float Y1 { get; set; }
-        public float Y2 { get; set; }
+        public Length X1 { get; set; }
+        public Length X2 { get; set; }
+        public Length Y1 { get; set; }
+        public Length Y2 { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);
 
-            X1 = float.Parse((string) element.Attribute("x1") ?? "0");
-            Y1 = float.Parse((string) element.Attribute("y1") ?? "0");
-            X2 = float.Parse((string) element.Attribute("x2") ?? "0");
-            Y2 = float.Parse((string) element.Attribute("y2") ?? "0");
+            X1 = LazyGet(element, "x1", Length.Zero);
+            Y1 = LazyGet(element, "y1", Length.Zero);
+            X2 = LazyGet(element, "x2", Length.Zero);
+            Y2 = LazyGet(element, "y2", Length.Zero);
         }
 
         public override XElement ToXml(SvgContext context)

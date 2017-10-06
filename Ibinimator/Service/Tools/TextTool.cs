@@ -788,7 +788,7 @@ namespace Ibinimator.Service.Tools
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(
                         selectionRect,
-                        cacheManager.GetBrush("A1-1/2"));
+                        cacheManager.GetBrush("A1A"));
 
             target.Transform = Matrix3x2.Invert(CurrentText.AbsoluteTransform) * target.Transform;
 

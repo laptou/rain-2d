@@ -20,6 +20,14 @@ namespace Ibinimator.Service.Commands
             NewStroke = (newStrokeBrush?.Clone<BrushInfo>(), newStrokeInfo?.Clone<StrokeInfo>());
         }
 
+        public ApplyStrokeCommand(long id, IStrokedLayer[] targets,
+            (BrushInfo, StrokeInfo) newStroke,
+            (BrushInfo, StrokeInfo)[] oldStrokes) : base(id, targets)
+        {
+            OldStrokes = oldStrokes;
+            NewStroke = newStroke;
+        }
+
         public override string Description => $"Stroked {Targets.Length} layer(s)";
 
         public (BrushInfo, StrokeInfo) NewStroke { get; }

@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Ellipse = SharpDX.Direct2D1.Ellipse;
 
 namespace Ibinimator.Service.Tools
 {
     public sealed class PencilTool : Model.Model, ITool
     {
-        private readonly List<PathNode> _selectedNodes = new List<PathNode>();
         private bool _alt;
         private bool _down;
         private Vector2 _lastPos;
@@ -64,7 +62,6 @@ namespace Ibinimator.Service.Tools
 
         public void Dispose()
         {
-            _selectedNodes.Clear();
         }
 
         public bool KeyDown(Key key)
@@ -82,21 +79,6 @@ namespace Ibinimator.Service.Tools
 
                 case Key.Escape:
                     ArtView.SelectionManager.ClearSelection();
-                    _selectedNodes.Clear();
-                    break;
-
-                case Key.Delete:
-                    ArtView.HistoryManager.Do(
-                        new ModifyPathCommand(
-                            ArtView.HistoryManager.Position + 1,
-                            CurrentPath,
-                            _selectedNodes.ToArray(),
-                            _selectedNodes.Select(CurrentPath.Nodes.IndexOf).ToArray(),
-                            ModifyPathCommand.NodeOperation.Remove));
-
-                    _selectedNodes.Clear();
-
-                    Manager.ArtView.InvalidateSurface();
                     break;
 
                 default:
@@ -145,7 +127,8 @@ namespace Ibinimator.Service.Tools
                     StrokeInfo = new StrokeInfo
                     {
                         Width = Manager.ArtView.BrushManager.StrokeWidth,
-                        Style = Manager.ArtView.BrushManager.StrokeStyle
+                        Style = Manager.ArtView.BrushManager.StrokeStyle,
+                        Dashes = Manager.ArtView.BrushManager.StrokeDashes
                     }
                 };
 
@@ -167,45 +150,6 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseMove(Vector2 pos)
         {
-            if (_selectedNodes.Count > 0 && _down)
-            {
-                var history = Manager.ArtView.HistoryManager;
-
-                var tlpos =
-                    Matrix3x2.TransformPoint(
-                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
-                        _lastPos);
-
-                var tpos =
-                    Matrix3x2.TransformPoint(
-                        Matrix3x2.Invert(CurrentPath.AbsoluteTransform),
-                        pos);
-
-                var newCmd = 
-                    new ModifyPathCommand(
-                        history.Position + 1,
-                        CurrentPath,
-                        _selectedNodes.ToArray(),
-                        tpos - tlpos,
-                        ModifyPathCommand.NodeOperation.Move);
-
-                newCmd.Do(Manager.ArtView);
-
-                if (history.Current is ModifyPathCommand cmd &&
-                    cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
-                    newCmd.Time - cmd.Time < 500 &&
-                    cmd.Nodes.SequenceEqual(newCmd.Nodes))
-                    history.Replace(
-                        new ModifyPathCommand(
-                            history.Position + 1,
-                            CurrentPath,
-                            newCmd.Nodes,
-                            cmd.Delta + newCmd.Delta,
-                            ModifyPathCommand.NodeOperation.Move));
-                else
-                    history.Push(newCmd);
-            }
-
             _lastPos = pos;
 
             _moved = true;
@@ -227,42 +171,14 @@ namespace Ibinimator.Service.Tools
 
                 if (node != null)
                 {
-                    if (_shift)
-                    {
-                        _selectedNodes.Add(node);
-                    }
-                    else
-                    {
-                        var figures = CurrentPath.Nodes.Split(n => n is CloseNode).ToList();
-                        var index = 0;
-
-                        foreach (var figure in figures.Select(Enumerable.ToArray))
-                        {
-                            var start = figure.FirstOrDefault();
-
-                            if (start == null) continue;
-
-                            index += figure.Length;
-
-                            if (start != node) continue;
-
-                            if (CurrentPath.Nodes.ElementAtOrDefault(index) is CloseNode close)
-                                close.Open = !close.Open;
-                            else
-                            {
-                                Manager.ArtView.HistoryManager.Do(
-                                    new ModifyPathCommand(
-                                        Manager.ArtView.HistoryManager.Position + 1,
-                                        CurrentPath,
-                                        new PathNode[] {new CloseNode()},
-                                        index,
-                                        ModifyPathCommand.NodeOperation.Add));
-                            }
-                        }
-
-                        _selectedNodes.Clear();
-                        _selectedNodes.Add(node);
-                    }
+                    if (_alt)
+                        ArtView.HistoryManager.Do(
+                            new ModifyPathCommand(
+                                ArtView.HistoryManager.Position + 1,
+                                CurrentPath,
+                                new[] {node},
+                                CurrentPath.Nodes.IndexOf(node),
+                                ModifyPathCommand.NodeOperation.Remove));
                 }
                 else
                 {
@@ -282,39 +198,13 @@ namespace Ibinimator.Service.Tools
                         newNode = new PathNode {X = tpos.X, Y = tpos.Y};
                     }
 
-                    if (_selectedNodes.Count >= 2 && _alt)
-                    {
-                        var last = _selectedNodes[_selectedNodes.Count - 1];
-                        var second = _selectedNodes[_selectedNodes.Count - 2];
-
-                        var lastIndex = CurrentPath.Nodes.IndexOf(last);
-                        var secondIndex = CurrentPath.Nodes.IndexOf(second);
-
-                        if (Math.Abs(lastIndex - secondIndex) == 1)
-                        {
-                            Manager.ArtView.HistoryManager.Do(
-                                new ModifyPathCommand(
-                                    Manager.ArtView.HistoryManager.Position + 1,
-                                    CurrentPath,
-                                    new[] {newNode},
-                                    lastIndex - (lastIndex - secondIndex) + 1,
-                                    ModifyPathCommand.NodeOperation.Add));
-
-                            _selectedNodes.Insert(_selectedNodes.Count - 1, newNode);
-                        }
-                    }
-                    else
-                    {
-                        Manager.ArtView.HistoryManager.Do(
-                            new ModifyPathCommand(
-                                Manager.ArtView.HistoryManager.Position + 1,
-                                CurrentPath,
-                                new[] {newNode},
-                                CurrentPath.Nodes.Count,
-                                ModifyPathCommand.NodeOperation.Add));
-
-                        _selectedNodes.Clear();
-                    }
+                    Manager.ArtView.HistoryManager.Do(
+                        new ModifyPathCommand(
+                            Manager.ArtView.HistoryManager.Position + 1,
+                            CurrentPath,
+                            new[] {newNode},
+                            CurrentPath.Nodes.Count,
+                            ModifyPathCommand.NodeOperation.Add));
                 }
             }
 
@@ -335,9 +225,9 @@ namespace Ibinimator.Service.Tools
 
                 using (var geom = cacheManager.GetGeometry(CurrentPath))
                 {
-                    target.Transform *= transform;
+                    target.Transform = transform * target.Transform;
                     target.DrawGeometry(geom, cacheManager.GetBrush("A2"), 1, stroke);
-                    target.Transform *= Matrix3x2.Invert(transform);
+                    target.Transform = Matrix3x2.Invert(transform) * target.Transform;
                 }
 
                 var figures = CurrentPath.Nodes.Split(n => n is CloseNode);
@@ -351,42 +241,11 @@ namespace Ibinimator.Service.Tools
                         var node = nodes[i];
 
                         var pos = Matrix3x2.TransformPoint(transform, node.Position);
+                        var zoom = ArtView.ViewManager.Zoom;
 
-                        if (_selectedNodes.Contains(node) ||
-                            _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i - 1, 0, nodes.Length))) ||
-                            _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i + 1, 0, nodes.Length))))
-                            if (node is CubicPathNode cn)
-                            {
-                                target.DrawEllipse(new Ellipse
-                                {
-                                    Point = Matrix3x2.TransformPoint(transform, cn.Control1),
-                                    RadiusX = 3,
-                                    RadiusY = 3
-                                }, cacheManager.GetBrush("A2"), 1, stroke);
+                        var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8 / zoom, 8 / zoom);
 
-                                target.DrawEllipse(new Ellipse
-                                {
-                                    Point = Matrix3x2.TransformPoint(transform, cn.Control2),
-                                    RadiusX = 3,
-                                    RadiusY = 3
-                                }, cacheManager.GetBrush("A2"), 1, stroke);
-                            }
-                            else if (node is QuadraticPathNode qn)
-                            {
-                                target.DrawEllipse(new Ellipse
-                                {
-                                    Point = Matrix3x2.TransformPoint(transform, qn.Control),
-                                    RadiusX = 3,
-                                    RadiusY = 3
-                                }, cacheManager.GetBrush("A2"), 1, stroke);
-                            }
-
-                        var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
-
-                        if (_selectedNodes.Contains(node))
-                            target.FillRectangle(rect,
-                                rect.Contains(_lastPos) && _down ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A3"));
-                        else if (_down)
+                        if (_down)
                             target.FillRectangle(rect,
                                 rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
                         else

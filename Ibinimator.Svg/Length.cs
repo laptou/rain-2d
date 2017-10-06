@@ -22,6 +22,8 @@ namespace Ibinimator.Svg
 
         public static Length Zero = (0, LengthUnit.Number);
 
+        public static Length Inherit = (0, LengthUnit.Inherit);
+
         public Length(float magnitude, LengthUnit unit) : this()
         {
             Magnitude = magnitude;
@@ -71,6 +73,9 @@ namespace Ibinimator.Svg
         {
             if (Unit == LengthUnit.Percent)
                 return Magnitude / 100 * baseline;
+
+            if (Unit == LengthUnit.Inherit)
+                return baseline;
 
             return To(target);
         }

@@ -3,12 +3,11 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Imaging;
-using Ibinimator.Shared;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Ibinimator.Model;
-using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -57,7 +56,7 @@ namespace Ibinimator.Service
 
         public Stroke BindStroke(IStrokedLayer layer, StrokeInfo info)
         {
-            if (info == null) return default(Stroke);
+            if (info == null) return default;
 
             var target = ArtView.RenderTarget;
 
@@ -65,7 +64,7 @@ namespace Ibinimator.Service
 
             StrokeStyle1 style;
 
-            if (info.Style.DashStyle == DashStyle.Solid)
+            if (info.Style.DashStyle == DashStyle.Solid || info.Dashes.Count == 0)
                 style = new StrokeStyle1(
                     target.Factory.QueryInterface<Factory1>(),
                     info.Style);
@@ -217,20 +216,20 @@ namespace Ibinimator.Service
                     lock (_geometries)
                     {
                         if (layer is IGeometricLayer geom)
-                        {
-                            _geometries.TryGet(geom)?.Dispose();
-                            var geometry = _geometries[geom] = geom.GetGeometry(this);
-
-                            var ctx = ArtView.RenderTarget.QueryInterface<DeviceContext1>();
-                            var stroke = GetStroke(geom);
-
-                            if (geometry != null)
+                            lock (layer)
                             {
-                                _geometryRealizations.TryGet(geom)?.Dispose();
-                                _geometryRealizations[geom] =
-                                    new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance);
+                                _geometries.TryGet(geom)?.Dispose();
+                                var geometry = _geometries[geom] = geom.GetGeometry(this);
+
+                                var ctx = ArtView.RenderTarget.QueryInterface<DeviceContext1>();
+
+                                if (geometry != null)
+                                {
+                                    _geometryRealizations.TryGet(geom)?.Dispose();
+                                    _geometryRealizations[geom] =
+                                        new GeometryRealization(ctx, geometry, geometry.FlatteningTolerance);
+                                }
                             }
-                        }
                     }
                     goto case "Bounds";
 
@@ -289,7 +288,7 @@ namespace Ibinimator.Service
 
                     if (layer.Parent != null)
                         OnLayerPropertyChanged(layer.Parent, new PropertyChangedEventArgs("Bounds"));
-                    break;
+                    goto case nameof(Layer.Transform);
 
                 case nameof(Layer.Transform):
                     if (layer.Parent != null)
@@ -305,7 +304,7 @@ namespace Ibinimator.Service
             var info = (StrokeInfo) sender;
             if (info == null) return;
 
-            var (layer, stroke) = Get(_strokeBindings, info, k => (null, default(Stroke)));
+            var (layer, stroke) = Get(_strokeBindings, info, k => (null, default));
 
             if (stroke == null)
             {

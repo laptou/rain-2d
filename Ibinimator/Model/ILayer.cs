@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Ibinimator.Service;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -19,6 +18,7 @@ namespace Ibinimator.Model
         ILayer Mask { get; set; }
         string Name { get; set; }
         float Opacity { get; set; }
+        Vector2 Origin { get; set; }
         Group Parent { get; }
         Vector2 Position { get; set; }
         float Rotation { get; set; }
@@ -28,11 +28,10 @@ namespace Ibinimator.Model
         Matrix3x2 Transform { get; }
         float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
-        Vector2 Origin { get; set; }
-        Layer Find(Guid id);
 
+        void ApplyTransform(Matrix3x2 transform);
+        Layer Find(Guid id);
         RectangleF GetBounds(ICacheManager cache);
-        XElement GetElement();
         IDisposable GetResource(ICacheManager cache, int id);
         Layer Hit(ICacheManager cache, Vector2 point, bool includeMe);
         T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;

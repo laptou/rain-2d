@@ -8,8 +8,8 @@ namespace Ibinimator.Svg
 {
     public class Ellipse : ShapeElement
     {
-        public float CenterX { get; set; }
-        public float CenterY { get; set; }
+        public Length CenterX { get; set; }
+        public Length CenterY { get; set; }
         public Length RadiusX { get; set; }
         public Length RadiusY { get; set; }
 
@@ -17,8 +17,8 @@ namespace Ibinimator.Svg
         {
             base.FromXml(element, context);
 
-            CenterX = LazyGet(element, "cx", 0);
-            CenterY = LazyGet(element, "cy", 0);
+            CenterX = LazyGet(element, "cx", Length.Zero);
+            CenterY = LazyGet(element, "cy", Length.Zero);
             RadiusX = LazyGet(element, "rx", Length.Zero);
             RadiusY = LazyGet(element, "ry", Length.Zero);
         }

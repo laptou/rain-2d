@@ -20,18 +20,20 @@ namespace Ibinimator.Model
     {
         public Path()
         {
-            Nodes.CollectionChanged += (sender, args) =>
-            {
-                if (args.Action == NotifyCollectionChangedAction.Add)
-                    foreach (PathNode node in args.NewItems)
-                        node.PropertyChanged += NodeOnPropertyChanged;
+            Nodes.CollectionChanged += OnNodesChanged;
+        }
 
-                if (args.Action == NotifyCollectionChangedAction.Remove)
-                    foreach (PathNode node in args.OldItems)
-                        node.PropertyChanged -= NodeOnPropertyChanged;
+        private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            if (args.Action == NotifyCollectionChangedAction.Add)
+                foreach (PathNode node in args.NewItems)
+                    node.PropertyChanged += NodeOnPropertyChanged;
 
-                RaisePropertyChanged("Geometry");
-            };
+            if (args.Action == NotifyCollectionChangedAction.Remove)
+                foreach (PathNode node in args.OldItems)
+                    node.PropertyChanged -= NodeOnPropertyChanged;
+
+            RaiseGeometryChanged();
         }
 
         [XmlAttribute]
@@ -58,8 +60,6 @@ namespace Ibinimator.Model
 
         public ObservableList<PathNode> Nodes { get; } = new ObservableList<PathNode>();
 
-        protected override string ElementName => "path";
-
         public override RectangleF GetBounds(ICacheManager cache)
         {
             var first = Nodes.FirstOrDefault();
@@ -78,51 +78,6 @@ namespace Ibinimator.Model
             });
 
             return new RectangleF(x1, y1, x2 - x1, y2 - y1);
-        }
-
-        public override XElement GetElement()
-        {
-            var element = base.GetElement();
-
-            if (Nodes.Count > 0)
-            {
-                var begin = true;
-                var pathData = "";
-
-                foreach (var pathNode in Nodes)
-                {
-                    if (begin)
-                    {
-                        pathData += $" M {Nodes.First().X},{Nodes.First().Y}";
-                        begin = false;
-                        continue;
-                    }
-
-                    switch (pathNode)
-                    {
-                        case CloseNode c:
-                            pathData += $" Z";
-                            begin = true;
-                            break;
-                        case QuadraticPathNode qn:
-                            pathData += $" Q {qn.Control.X},{qn.Control.Y}" +
-                                        $" {qn.X},{qn.Y}";
-                            break;
-                        case CubicPathNode cn:
-                            pathData += $" C {cn.Control1.X},{cn.Control1.Y}" +
-                                        $" {cn.Control2.X},{cn.Control2.Y}" +
-                                        $" {cn.X},{cn.Y}";
-                            break;
-                        case PathNode pn:
-                            pathData += $" L {pn.X},{pn.Y}";
-                            break;
-                    }
-                }
-
-                element.Add(new XAttribute("d", pathData));
-            }
-
-            return element;
         }
 
         public override Geometry GetGeometry(ICacheManager cache)
@@ -204,7 +159,7 @@ namespace Ibinimator.Model
 
         private void NodeOnPropertyChanged(object o, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            RaisePropertyChanged("Geometry");
+            RaiseGeometryChanged();
         }
 
         #region Nested type: MyGeometrySink
@@ -312,7 +267,6 @@ namespace Ibinimator.Model
         #endregion
     }
 
-    [Serializable]
     public class CubicPathNode : PathNode
     {
         public Vector2 Control1
@@ -328,7 +282,6 @@ namespace Ibinimator.Model
         }
     }
 
-    [Serializable]
     public class QuadraticPathNode : PathNode
     {
         public Vector2 Control
@@ -380,7 +333,6 @@ namespace Ibinimator.Model
         }
     }
 
-    [Serializable]
     public class PathNode : Model
     {
         public Vector2 Position

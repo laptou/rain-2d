@@ -57,8 +57,12 @@ namespace Ibinimator.Service
 
         public void Render(RenderTarget target, ICacheManager cache)
         {
-            target.DrawRectangle(Document.Bounds, cache.GetBrush("L3"));
-            target.FillRectangle(Document.Bounds, cache.GetBrush("L1"));
+            using (new StrokeStyle1(target.Factory.QueryInterface<Factory1>(),
+                new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed}))
+            {
+                target.DrawRectangle(Document.Bounds, cache.GetBrush("L3"));
+                target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
+            }
         }
 
         public ArtView ArtView { get; }

@@ -2,64 +2,94 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public struct Paint
+    public abstract class Paint : Element
     {
-        public static readonly Paint Black = new Paint(new Color());
-
-        public Paint(Color color) : this()
-        {
-            Color = color;
-        }
-
-        public Paint(Iri iri) : this()
-        {
-            Iri = iri;
-        }
-
-        public Color? Color { get; set; }
-
-        public Iri? Iri { get; set; }
-
-        public static Paint Parse(string input)
+        public static Reference<Paint> Parse(string input)
         {
             if (TryParse(input, out var paint)) return paint;
 
             throw new FormatException();
         }
 
-        public static bool TryParse(string input, out Paint paint)
+        public static bool TryParse(string input, out Reference<Paint> paint)
         {
-            var color = Svg.Color.TryParse(input);
-
-            if (color != null)
+            if (Color.TryParse(input, out var color))
             {
-                paint = new Paint(color.Value);
+                paint = new SolidColor(color);
                 return true;
             }
 
-            //var iri = Svg.Iri.TryParse(input);
+            if (Iri.TryParse(input, out var iri))
+            {
+                paint = new Reference<Paint>(iri);
+                return true;
+            }
 
-            //if (iri != null)
-            //{
-            //    paint = new Paint(iri.Value);
-            //    return true;
-            //}
-
-            paint = new Paint();
+            paint = null;
 
             return false;
         }
+    }
+
+    public class Reference<T> where T : class, IElement
+    {
+        private readonly Iri _location;
+        private readonly T _target;
+
+        public Reference(T target)
+        {
+            _target = target;
+        }
+
+        public Reference(Iri location)
+        {
+            _location = location;
+        }
+
+        public T Resolve(SvgContext context)
+        {
+            if (_target != null) return _target;
+
+            return context[_location.Id] as T;
+        }
+
+        public static implicit operator Reference<T>(T t)
+        {
+            return new Reference<T>(t);
+        }
+    }
+
+    public class SolidColor : Paint
+    {
+        public override void FromXml(XElement element, SvgContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override XElement ToXml(SvgContext svgContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SolidColor()
+        {
+            
+        }
+
+        public SolidColor(Color color)
+        {
+            Color = color;
+        }
+
+        public Color Color { get; set; }
 
         public override string ToString()
         {
-            if (Color != null) return Color.ToString();
-
-            if (Iri != null) return Iri.ToString();
-
-            return "none";
+            return Color.ToString();
         }
     }
 }

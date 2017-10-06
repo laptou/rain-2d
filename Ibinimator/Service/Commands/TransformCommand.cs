@@ -24,37 +24,15 @@ namespace Ibinimator.Service.Commands
         {
             foreach (var layer in Targets)
                 lock (layer)
-                {
-                    var layerTransform =
-                        layer.AbsoluteTransform
-                        * Transform
-                        * Matrix3x2.Invert(layer.WorldTransform);
-                    var delta = layerTransform.Decompose();
-
-                    layer.Scale = delta.scale;
-                    layer.Rotation = delta.rotation;
-                    layer.Position = Matrix3x2.TransformPoint(layerTransform, layer.Origin) - layer.Origin;
-                    layer.Shear = delta.skew;
-                }
+                    layer.ApplyTransform(Transform);
         }
 
         public override void Undo(ArtView artView)
         {
             foreach (var layer in Targets)
                 lock (layer)
-                {
-                    var layerTransform =
-                        layer.AbsoluteTransform
-                        * Matrix3x2.Invert(Transform)
-                        * Matrix3x2.Invert(layer.WorldTransform);
-                    var delta = layerTransform.Decompose();
+                    layer.ApplyTransform(Matrix3x2.Invert(Transform));
 
-
-                    layer.Scale = delta.scale;
-                    layer.Rotation = delta.rotation;
-                    layer.Position = Matrix3x2.TransformPoint(layerTransform, layer.Origin) - layer.Origin;
-                    layer.Shear = delta.skew;
-                }
         }
     }
 }
