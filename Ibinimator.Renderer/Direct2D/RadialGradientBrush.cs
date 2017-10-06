@@ -83,7 +83,8 @@ namespace Ibinimator.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset.X + CenterX;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset = new RawVector2(value - CenterX, FocusY);
+                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset =
+                    new RawVector2(value - CenterX, FocusY);
                 RaisePropertyChanged();
             }
         }
@@ -93,7 +94,8 @@ namespace Ibinimator.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset.Y + CenterY;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset = new RawVector2(FocusX, value - CenterY);
+                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset =
+                    new RawVector2(FocusX, value - CenterY);
                 RaisePropertyChanged();
             }
         }

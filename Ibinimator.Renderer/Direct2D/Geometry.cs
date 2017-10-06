@@ -13,11 +13,6 @@ namespace Ibinimator.Renderer.Direct2D
         private readonly D2D1.PathGeometry _geometry;
         private readonly D2D1.RenderTarget _target;
 
-        public static implicit operator D2D1.Geometry(Geometry geometry)
-        {
-            return geometry._geometry;
-        }
-
         public Geometry(D2D1.RenderTarget target)
         {
             _target = target;
@@ -92,6 +87,11 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
+        public static implicit operator D2D1.Geometry(Geometry geometry)
+        {
+            return geometry._geometry;
+        }
+
         #region IGeometry Members
 
         public IGeometry Copy()
@@ -111,6 +111,11 @@ namespace Ibinimator.Renderer.Direct2D
         public void Dispose()
         {
             _geometry?.Dispose();
+        }
+
+        public bool FillContains(float x, float y)
+        {
+            return _geometry.FillContainsPoint(new RawVector2(x, y));
         }
 
         public IGeometry Intersection(IGeometry other)
@@ -145,6 +150,11 @@ namespace Ibinimator.Renderer.Direct2D
         public IEnumerable<PathInstruction> Read()
         {
             return Read(_geometry);
+        }
+
+        public bool StrokeContains(float x, float y, float width)
+        {
+            return _geometry.StrokeContainsPoint(new RawVector2(x, y), width);
         }
 
         public IGeometry Union(IGeometry other)
@@ -339,6 +349,9 @@ namespace Ibinimator.Renderer.Direct2D
 
             public void Move(float x, float y)
             {
+                if (_b)
+                    _sink.AddLine(new RawVector2(x, y));
+
                 (_x, _y) = (x, y);
             }
 

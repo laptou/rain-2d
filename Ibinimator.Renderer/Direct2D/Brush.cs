@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SharpDX.Direct2D1;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     internal abstract class Brush : PropertyChangedBase, IBrush
     {
-        public SharpDX.Direct2D1.Brush Direct2DBrush { get; protected set; }
+        protected SharpDX.Direct2D1.Brush Direct2DBrush { get; set; }
+
+        public static implicit operator SharpDX.Direct2D1.Brush(Brush brush)
+        {
+            return brush.Direct2DBrush;
+        }
 
         #region IBrush Members
 
@@ -33,10 +37,5 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         #endregion
-
-        public static implicit operator SharpDX.Direct2D1.Brush(Brush brush)
-        {
-            return brush.Direct2DBrush;
-        }
     }
 }

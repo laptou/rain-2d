@@ -77,7 +77,7 @@ namespace Ibinimator.Renderer.Direct2D
                     case GeometryRenderCommand geometry:
                         if (geometry.Fill)
                             _target.FillGeometry(
-                                geometry.Geometry as SharpDX.Direct2D1.Geometry, 
+                                geometry.Geometry as SharpDX.Direct2D1.Geometry,
                                 brush);
                         else
                             _target.DrawGeometry(
@@ -91,7 +91,7 @@ namespace Ibinimator.Renderer.Direct2D
                                     rect.Left,
                                     rect.Top,
                                     rect.Right,
-                                    rect.Bottom), 
+                                    rect.Bottom),
                                 brush);
                         else
                             _target.DrawRectangle(
@@ -99,7 +99,7 @@ namespace Ibinimator.Renderer.Direct2D
                                     rect.Left,
                                     rect.Top,
                                     rect.Right,
-                                    rect.Bottom), 
+                                    rect.Bottom),
                                 pen.Brush, pen.Width, pen.Style);
                         break;
                 }
