@@ -10,9 +10,9 @@ using System.Drawing;
 
 namespace Ibinimator.Renderer.Direct2D
 {
-    internal class Bitmap : IBitmap
+    internal class Bitmap : ResourceBase, IBitmap
     {
-        private D2D1.Bitmap _bmp;
+        private readonly D2D1.Bitmap _bmp;
 
         public Bitmap(Direct2DRenderContext ctx, Stream stream)
         {
@@ -51,12 +51,14 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _bmp.Dispose();
+
+            base.Dispose();
         }
 
-        public void Optimize()
+        public override void Optimize()
         {
             throw new NotImplementedException();
         }

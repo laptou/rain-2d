@@ -161,6 +161,7 @@
     <Compile Include="WPF\LinearGradientBrush.cs" />
     <Compile Include="WPF\Pen.cs" />
     <Compile Include="WPF\RadialGradientBrush.cs" />
+    <Compile Include="ResourceBase.cs" />
     <Compile Include="WPF\SolidColorBrush.cs" />
     <Compile Include="WPF\WpfConverter.cs" />
     <Compile Include="WPF\WPFRenderContext.cs" />

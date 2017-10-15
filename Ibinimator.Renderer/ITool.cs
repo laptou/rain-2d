@@ -12,7 +12,7 @@ namespace Ibinimator.Renderer
 {
     public interface ITool : INotifyPropertyChanged, IDisposable
     {
-        Bitmap Cursor { get; }
+        IBitmap Cursor { get; }
         float CursorRotate { get; }
         IToolManager Manager { get; }
         // ToolOption[] Options { get; }

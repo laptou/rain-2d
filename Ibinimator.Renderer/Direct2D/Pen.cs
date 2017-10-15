@@ -70,7 +70,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public void Dispose()
         {
-            Brush.Dispose();
+            Style.Dispose();
         }
 
         public IList<float> Dashes { get; }

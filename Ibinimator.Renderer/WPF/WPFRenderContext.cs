@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -76,7 +78,82 @@ namespace Ibinimator.Renderer.WPF
             _ctx = null;
         }
 
-        protected override void Apply(RenderCommand command)
+        public override IBitmap CreateBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Clear(Color color)
+        {
+            _commandQueue.Enqueue(new ClearRenderCommand(color));
+        }
+
+        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
+        {
+            _commandQueue.Enqueue(
+                new EllipseRenderCommand(
+                    cx, cy, rx, ry,
+                    false, null, pen));
+        }
+
+        public override void DrawGeometry(IGeometry geometry, IPen pen)
+        {
+            _commandQueue.Enqueue(new GeometryRenderCommand(geometry, false, null, pen));
+        }
+
+        public override void DrawLine(Vector2 v1, Vector2 v2, IPen pen)
+        {
+            _commandQueue.Enqueue(new LineRenderCommand(v1, v2, pen));
+        }
+
+        public override void DrawRectangle(float left, float top, float width, float height, IPen pen)
+        {
+            _commandQueue.Enqueue(
+                new RectangleRenderCommand(left, top,
+                    top + height, left + width, false, null, pen));
+        }
+
+        public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
+        {
+            _commandQueue.Enqueue(
+                new EllipseRenderCommand(
+                    cx, cy, rx, ry,
+                    true, brush, null));
+        }
+
+        public override void FillGeometry(IGeometry geometry, IBrush brush)
+        {
+            _commandQueue.Enqueue(new GeometryRenderCommand(geometry, true, brush, null));
+        }
+
+        public override void FillRectangle(RectangleF rect, IBrush brush)
+        {
+            FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height, brush);
+        }
+
+        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
+        {
+            _commandQueue.Enqueue(
+                new RectangleRenderCommand(left, top, width, height, true, brush, null));
+        }
+
+        public override void Flush()
+        {
+            Begin(null);
+            while (_commandQueue.Count > 0)
+                Apply(_commandQueue.Dequeue());
+            End();
+        }
+
+        public override void Transform(Matrix3x2 transform, bool absolute = false)
+        {
+            _commandQueue.Enqueue(new TransformRenderCommand(transform, absolute));
+        }
+
+        private readonly Queue<RenderCommand> _commandQueue = new Queue<RenderCommand>();
+
+
+        protected void Apply(RenderCommand command)
         {
             switch (command)
             {
@@ -112,13 +189,13 @@ namespace Ibinimator.Renderer.WPF
             }
         }
 
-        protected override void Begin(object ctx)
+        public override void Begin(object ctx)
         {
             if (ctx is DrawingContext dc)
                 _ctx = dc;
         }
 
-        protected override void End()
+        public override void End()
         {
             _ctx = null;
         }

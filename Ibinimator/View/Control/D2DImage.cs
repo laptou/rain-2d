@@ -281,9 +281,9 @@ namespace Ibinimator.View.Control
             {
                 try
                 {
-                    _d2DRenderTarget.BeginDraw();
+                    RenderContext.Begin(null);
                     Render(RenderContext);
-                    _d2DRenderTarget.EndDraw();
+                    RenderContext.End();
                     _device.ImmediateContext.Flush();
 
                     CalcFps();

@@ -81,7 +81,7 @@ namespace Ibinimator.Renderer.Model
                 if (Fill != null)
                     target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
 
-                if (Stroke != null)
+                if (Stroke?.Brush != null)
                     target.DrawGeometry(cache.GetGeometry(this), cache.GetStroke(this));
             }
 

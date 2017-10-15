@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using SharpDX;
@@ -9,7 +10,7 @@ using Matrix3x2 = System.Numerics.Matrix3x2;
 
 namespace Ibinimator.Renderer.Direct2D
 {
-    public class Geometry : IGeometry
+    internal class Geometry : ResourceBase, IGeometry
     {
         private readonly D2D1.PathGeometry _geometry;
         private readonly D2D1.RenderTarget _target;
@@ -24,7 +25,11 @@ namespace Ibinimator.Renderer.Direct2D
         {
             using (var sink = new ReadingSink())
             {
-                source.Simplify(D2D1.GeometrySimplificationOption.CubicsAndLines, sink);
+                source.Simplify(
+                    D2D1.GeometrySimplificationOption.CubicsAndLines, 
+                    0.05f, 
+                    sink);
+
                 Load(this, sink.Read());
             }
         }
@@ -120,9 +125,11 @@ namespace Ibinimator.Renderer.Direct2D
             return Combine(other, D2D1.CombineMode.Exclude);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _geometry?.Dispose();
+
+            base.Dispose();
         }
 
         public bool FillContains(float x, float y)
@@ -140,7 +147,7 @@ namespace Ibinimator.Renderer.Direct2D
             return new WritingSink(_geometry);
         }
 
-        public void Optimize()
+        public override void Optimize()
         {
             // maybe do a geometry realization, but that transforms this into a device-dependent
             // resource
@@ -222,8 +229,8 @@ namespace Ibinimator.Renderer.Direct2D
                 _instructions.Add(
                     new CubicPathInstruction(
                         bezier.Point3.X, bezier.Point3.Y,
-                        bezier.Point2.X, bezier.Point2.Y,
-                        bezier.Point1.X, bezier.Point1.Y));
+                        bezier.Point1.X, bezier.Point1.Y,
+                        bezier.Point2.X, bezier.Point2.Y));
             }
 
             public void AddBeziers(D2D1.BezierSegment[] beziers)
@@ -284,7 +291,8 @@ namespace Ibinimator.Renderer.Direct2D
 
             public void SetSegmentFlags(D2D1.PathSegment vertexFlags)
             {
-                throw new NotImplementedException();
+                // TODO: SetSegmentFlags
+                // throw new NotImplementedException();
             }
 
             public IDisposable Shadow { get; set; }
@@ -357,6 +365,8 @@ namespace Ibinimator.Renderer.Direct2D
 
             public void Dispose()
             {
+                if (_b) Close(true);
+
                 _sink.Close();
                 _sink.Dispose();
             }

@@ -177,7 +177,7 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        public Bitmap Cursor => Manager.Context.SelectionManager.Cursor;
+        public IBitmap Cursor => Manager.Context.SelectionManager.Cursor;
 
         public float CursorRotate => Manager.Context.SelectionManager.SelectionRotation -
                                      Manager.Context.SelectionManager.SelectionShear;

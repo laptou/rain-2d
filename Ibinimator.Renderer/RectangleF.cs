@@ -29,7 +29,7 @@ namespace Ibinimator.Renderer
         }
 
         public Vector2 BottomLeft => new Vector2(Left, Bottom);
-        public Vector2 BottomRight => new Vector2(Right, Top);
+        public Vector2 BottomRight => new Vector2(Right, Bottom);
 
         public Vector2 Center => new Vector2((Right + Left) / 2, (Bottom + Top) / 2);
 
@@ -79,7 +79,7 @@ namespace Ibinimator.Renderer
 
         public static implicit operator RectangleF((float Left, float Top, float Right, float Bottom) rect)
         {
-            return new RectangleF(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            return new RectangleF(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
         }
 
         public void Offset(Vector2 delta)

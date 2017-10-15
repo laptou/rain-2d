@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.Renderer.Direct2D
 {
@@ -17,11 +19,21 @@ namespace Ibinimator.Renderer.Direct2D
             FactoryDW = new DW.Factory(DW.FactoryType.Shared);
         }
 
-        public D2D.RenderTarget Target { get; }
-
         public D2D.Factory Factory2D => Target.Factory;
 
         public DW.Factory FactoryDW { get; }
+
+        public D2D.RenderTarget Target { get; }
+
+        public override void Clear(Color color)
+        {
+            Target.Clear(color.Convert());
+        }
+
+        public override IBitmap CreateBitmap(Stream stream)
+        {
+            return new Bitmap(this, stream);
+        }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -42,14 +54,17 @@ namespace Ibinimator.Renderer.Direct2D
                 new RawVector2(radiusX, radiusY), new RawVector2(focusX, focusY));
         }
 
-        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
+        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
-            return new Pen(width, brush as Brush, dashes, Target);
-        }
-
-        public override ITextLayout CreateTextLayout()
-        {
-            return new DirectWriteTextLayout(this);
+            return new Geometry(Target,
+                new D2D.EllipseGeometry(
+                    Factory2D,
+                    new D2D.Ellipse(
+                        new RawVector2(cx, cy),
+                        rx, ry))
+                {
+                    FlatteningTolerance = 0.01f
+                });
         }
 
         public override IGeometry CreateGeometry()
@@ -57,25 +72,28 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(Target);
         }
 
-        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
+        public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
         {
-            return new Geometry(Target, 
-                new D2D.EllipseGeometry(Factory2D, 
-                new D2D.Ellipse(new RawVector2(cx, cy), rx, ry)));
+            return new Geometry(Target,
+                new D2D.GeometryGroup(Factory2D,
+                    D2D.FillMode.Alternate, geometries.Select(g => (D2D.Geometry) g).ToArray()));
+        }
+
+        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
+        {
+            return new Pen(width, brush as Brush, dashes, Target);
         }
 
         public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
         {
             return new Geometry(Target,
                 new D2D.RectangleGeometry(Factory2D,
-                new RawRectangleF(x, y, x + w, y + h)));
+                    new RawRectangleF(x, y, x + w, y + h)));
         }
 
-        public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
+        public override ITextLayout CreateTextLayout()
         {
-            return new Geometry(Target,
-                new D2D.GeometryGroup(Factory2D,
-                D2D.FillMode.Alternate, geometries.Select(g => (D2D.Geometry)g).ToArray()));
+            return new DirectWriteTextLayout(this);
         }
 
         public override void Dispose()
@@ -84,81 +102,100 @@ namespace Ibinimator.Renderer.Direct2D
             FactoryDW.Dispose();
         }
 
-        protected override void Apply(RenderCommand command)
+        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
         {
-            if (command is GeometricRenderCommand geometricCommand)
-            {
-                var brush = geometricCommand.Brush as Brush;
-                var pen = geometricCommand.Pen as Pen;
+            var pen = iPen as Pen;
 
-                if (brush == null && pen == null) return;
-
-                switch (geometricCommand)
-                {
-                    case EllipseRenderCommand ellipse:
-                        if (ellipse.Fill)
-                            Target.FillEllipse(
-                                new D2D.Ellipse(
-                                    new RawVector2(
-                                        ellipse.CenterX,
-                                        ellipse.CenterY),
-                                    ellipse.RadiusX, ellipse.RadiusY),
-                                brush);
-                        else
-                            Target.DrawEllipse(
-                                new D2D.Ellipse(
-                                    new RawVector2(
-                                        ellipse.CenterX,
-                                        ellipse.CenterY),
-                                    ellipse.RadiusX, ellipse.RadiusY),
-                                pen.Brush, pen.Width, pen.Style);
-                        break;
-                    case GeometryRenderCommand geometry:
-                        if (geometry.Fill)
-                            Target.FillGeometry(
-                                geometry.Geometry as Geometry,
-                                brush);
-                        else
-                            Target.DrawGeometry(
-                                geometry.Geometry as Geometry,
-                                pen.Brush, pen.Width, pen.Style);
-                        break;
-                    case RectangleRenderCommand rect:
-                        if (rect.Fill)
-                            Target.FillRectangle(
-                                new RawRectangleF(
-                                    rect.Left,
-                                    rect.Top,
-                                    rect.Left + rect.Width,
-                                    rect.Top + rect.Width),
-                                brush);
-                        else
-                            Target.DrawRectangle(
-                                new RawRectangleF(
-                                    rect.Left,
-                                    rect.Top,
-                                    rect.Left + rect.Width,
-                                    rect.Top + rect.Width),
-                                pen.Brush, pen.Width, pen.Style);
-                        break;
-                }
-            }
-
-            if (command is TransformRenderCommand transformCommand)
-            {
-                if (transformCommand.Absolute)
-                    Target.Transform = transformCommand.Transform.Convert();
-                else
-                    Target.Transform = transformCommand.Transform.Convert() * Target.Transform;
-            }
+            Target.DrawEllipse(
+                new D2D.Ellipse(
+                    new RawVector2(
+                        cx,
+                        cy),
+                    rx, ry),
+                pen.Brush, pen.Width, pen.Style);
         }
 
-        protected override void Begin(object ctx)
+        public override void DrawGeometry(IGeometry geometry, IPen iPen)
+        {
+            var pen = iPen as Pen;
+
+            Target.DrawGeometry(
+                geometry as Geometry,
+                pen.Brush, pen.Width, pen.Style);
+        }
+
+        public override void DrawLine(Vector2 v1, Vector2 v2, IPen iPen)
+        {
+            var pen = iPen as Pen;
+
+            Target.DrawLine(
+                v1.Convert(),
+                v2.Convert(),
+                pen.Brush,
+                pen.Width,
+                pen.Style);
+        }
+
+        public override void DrawRectangle(float left, float top, float width, float height, IPen iPen)
+        {
+            var pen = iPen as Pen;
+            Target.DrawRectangle(
+                new RectangleF(
+                    left,
+                    top,
+                    width,
+                    height),
+                pen.Brush, pen.Width, pen.Style);
+        }
+
+        public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
+        {
+            Target.FillEllipse(
+                new D2D.Ellipse(
+                    new RawVector2(
+                        cx,
+                        cy),
+                    rx, ry),
+                brush as Brush);
+        }
+
+        public override void FillGeometry(IGeometry geometry, IBrush brush)
+        {
+            Target.FillGeometry(
+                geometry as Geometry,
+                brush as Brush);
+        }
+
+        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
+        {
+            Target.FillRectangle(
+                new RectangleF(
+                    left,
+                    top,
+                    width,
+                    height),
+                brush as Brush);
+        }
+
+        public override void Flush()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Transform(Matrix3x2 transform, bool absolute = false)
+        {
+            if (absolute)
+                Target.Transform = transform.Convert();
+            else
+                Target.Transform = transform.Convert() * Target.Transform;
+        }
+
+        public override void Begin(object ctx)
         {
             Target.BeginDraw();
         }
 
-        protected override void End()
+        public override void End()
         {
             Target.EndDraw();
         }

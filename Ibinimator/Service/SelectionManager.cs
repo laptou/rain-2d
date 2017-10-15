@@ -82,7 +82,7 @@ namespace Ibinimator.Service
 
         public ObservableList<Layer> Selection { get; }
 
-        private (Bitmap cursor, SelectionResizeHandle? handle) HandleTest(Vector2 pos)
+        private (IBitmap cursor, SelectionResizeHandle? handle) HandleTest(Vector2 pos)
         {
             List<(Vector2 pos, string cur, SelectionResizeHandle handle)> handles =
                 new List<(Vector2, string, SelectionResizeHandle)>();
@@ -659,7 +659,7 @@ namespace Ibinimator.Service
 
         public IArtContext Context { get; }
 
-        public Bitmap Cursor { get; set; }
+        public IBitmap Cursor { get; set; }
 
         public Group Root => Context.ViewManager.Root;
         public RectangleF SelectionBounds { get; set; }

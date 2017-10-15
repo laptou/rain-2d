@@ -244,7 +244,7 @@ namespace Ibinimator.View.Control
             {
                 var height = (int) (_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
                 var slope = 1.0 / Math.Sqrt(3);
-                var (hue, _, _) = ColorUtils.RgbToHsl(Color.R / 255f, Color.G / 255f, Color.B / 255f);
+                var (hue, _, _, _) = ColorUtils.RgbaToHsla(Color.R, Color.G, Color.B, Color.A);
 
                 _triangle.Lock();
                 var pStart = (byte*) (void*) _triangle.BackBuffer;

@@ -4,11 +4,12 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Renderer.WPF;
 using DW = SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
 {
-    internal sealed class DirectWriteTextLayout : ITextLayout
+    internal sealed class DirectWriteTextLayout : ResourceBase, ITextLayout
     {
         private readonly Direct2DRenderContext _ctx;
 
@@ -124,10 +125,12 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region ITextLayout Members
 
-        public void Dispose()
+        public override void Dispose()
         {
             _layout.Dispose();
             _formats = null;
+
+            base.Dispose();
         }
 
         public IBrush GetBrushForGlyph(int index)
@@ -221,7 +224,7 @@ namespace Ibinimator.Renderer.Direct2D
             Update();
         }
 
-        public void Optimize()
+        public override void Optimize()
         {
             throw new NotImplementedException();
         }
@@ -353,7 +356,7 @@ namespace Ibinimator.Renderer.Direct2D
             Update();
         }
 
-        public string FontFamily { get; set; }
+        public string FontFamily { get; set; } = "Arial";
         public float FontSize { get; set; }
         public FontStretch FontStretch { get; set; }
         public int GetPosition(Vector2 point, out bool trailing)
@@ -380,7 +383,7 @@ namespace Ibinimator.Renderer.Direct2D
         public FontStyle FontStyle { get; set; }
         public FontWeight FontWeight { get; set; }
 
-        public string Text { get; private set; }
+        public string Text { get; private set; } = "";
 
         #endregion
     }

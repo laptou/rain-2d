@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     public static class Direct2DConverter
     {
+        public static SharpDX.Color4 Convert(this Color color)
+        {
+            return new SharpDX.Color4(color.R, color.G, color.B, color.A);
+        }
+
         public static SharpDX.Vector2 Convert(this Vector2 vec)
         {
             return new SharpDX.Vector2(vec.X, vec.Y);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -7,7 +6,8 @@ using System.Windows.Media;
 
 namespace Ibinimator.Renderer.WPF
 {
-    internal class Brush : PropertyChangedBase, IBrush
+
+    internal class Brush : ResourceBase, IBrush
     {
         protected System.Windows.Media.Brush WpfBrush { get; set; }
 
@@ -18,12 +18,14 @@ namespace Ibinimator.Renderer.WPF
 
         #region IBrush Members
 
-        public void Dispose()
+        public override void Dispose()
         {
             WpfBrush = null;
+
+            base.Dispose();
         }
 
-        public void Optimize()
+        public override void Optimize()
         {
             WpfBrush.Freeze();
         }

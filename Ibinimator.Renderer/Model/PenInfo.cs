@@ -41,7 +41,7 @@ namespace Ibinimator.Renderer.Model
 
         public IPen CreatePen(RenderContext renderCtx)
         {
-            return renderCtx.CreatePen(Width, Brush.CreateBrush(renderCtx), Dashes);
+            return renderCtx.CreatePen(Width, Brush?.CreateBrush(renderCtx), Dashes);
         }
     }
 }

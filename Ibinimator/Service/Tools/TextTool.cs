@@ -767,7 +767,7 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateSurface();
         }
 
-        public Bitmap Cursor { get; private set; }
+        public IBitmap Cursor { get; private set; }
 
         public float CursorRotate { get; private set; }
 

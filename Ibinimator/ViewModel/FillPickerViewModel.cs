@@ -11,7 +11,6 @@ using Ibinimator.Renderer.WPF;
 using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
-using Color = System.Windows.Media.Color;
 using DashStyle = SharpDX.Direct2D1.DashStyle;
 
 namespace Ibinimator.ViewModel
@@ -46,13 +45,13 @@ namespace Ibinimator.ViewModel
             public double Alpha
             {
                 get => _alpha;
-                set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value).Convert();
+                set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value);
             }
 
             public double Blue
             {
-                get => Color.B / 255f;
-                set => Color = ColorUtils.RgbaToColor(Red, Green, value, Alpha).Convert();
+                get => Color.B;
+                set => Color = ColorUtils.RgbaToColor(Red, Green, value, Alpha);
             }
 
             public Color Color
@@ -61,7 +60,7 @@ namespace Ibinimator.ViewModel
                 set
                 {
                     Set(value);
-                    (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value.Convert());
+                    (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value);
 
                     RaisePropertyChanged(nameof(Red));
                     RaisePropertyChanged(nameof(Green));
@@ -83,8 +82,8 @@ namespace Ibinimator.ViewModel
 
             public double Green
             {
-                get => Color.G / 255f;
-                set => Color = ColorUtils.RgbaToColor(Red, value, Blue, Alpha).Convert();
+                get => Color.G;
+                set => Color = ColorUtils.RgbaToColor(Red, value, Blue, Alpha);
             }
 
             public double Hue
@@ -101,8 +100,8 @@ namespace Ibinimator.ViewModel
 
             public double Red
             {
-                get => Color.R / 255f;
-                set => Color = ColorUtils.RgbaToColor(value, Green, Blue, Alpha).Convert();
+                get => Color.R;
+                set => Color = ColorUtils.RgbaToColor(value, Green, Blue, Alpha);
             }
 
             public double Saturation
@@ -255,10 +254,10 @@ namespace Ibinimator.ViewModel
 
                 if (picker.Target == ColorPickerTarget.Fill)
                     _parent.BrushManager.Fill =
-                        new SolidColorBrushInfo {Color = picker.Color.Convert()};
+                        new SolidColorBrushInfo {Color = picker.Color};
                 else
                     _parent.BrushManager.Stroke.Brush =
-                        new SolidColorBrushInfo {Color = picker.Color.Convert()};
+                        new SolidColorBrushInfo {Color = picker.Color};
 
                 _updating = false;
             }

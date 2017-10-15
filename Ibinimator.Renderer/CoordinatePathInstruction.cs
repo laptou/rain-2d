@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer
@@ -15,5 +16,6 @@ namespace Ibinimator.Renderer
 
         public float X { get; }
         public float Y { get; }
+        public Vector2 Position => new Vector2(X, Y);
     }
 }

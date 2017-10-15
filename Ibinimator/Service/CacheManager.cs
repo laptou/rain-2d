@@ -2,27 +2,15 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Drawing.Imaging;
 using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Ink;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
-using System.Numerics;
 using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.DirectWrite;
-using SharpDX.Mathematics.Interop;
-using Color = Ibinimator.Core.Color;
-using Factory1 = SharpDX.Direct2D1.Factory1;
-using Format = SharpDX.DXGI.Format;
-using Image = System.Drawing.Image;
-using Layer = Ibinimator.Renderer.Model.Layer;
-using PixelFormat = SharpDX.Direct2D1.PixelFormat;
-using Rectangle = Ibinimator.Renderer.Model.Rectangle;
+using Color = System.Windows.Media.Color;
 using RectangleF = Ibinimator.Renderer.RectangleF;
 
 namespace Ibinimator.Service
@@ -37,7 +25,7 @@ namespace Ibinimator.Service
 
         private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
 
-        private readonly Dictionary<IFilledLayer, IBrush> _fills = 
+        private readonly Dictionary<IFilledLayer, IBrush> _fills =
             new Dictionary<IFilledLayer, IBrush>();
 
         private readonly Dictionary<IGeometricLayer, IGeometry> _geometries =
@@ -49,7 +37,7 @@ namespace Ibinimator.Service
         private readonly Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)> _strokeBindings =
             new Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>();
 
-        private readonly Dictionary<IStrokedLayer, IPen> _strokes = 
+        private readonly Dictionary<IStrokedLayer, IPen> _strokes =
             new Dictionary<IStrokedLayer, IPen>();
 
         private readonly Dictionary<ITextLayer, ITextLayout> _texts =
@@ -58,6 +46,22 @@ namespace Ibinimator.Service
         public CacheManager(ArtView context)
         {
             Context = context;
+        }
+
+        public IBrush BindBrush(ILayer shape, BrushInfo brush)
+        {
+            if (brush == null) return null;
+
+            var fill = brush.CreateBrush(Context.RenderContext);
+
+            brush.PropertyChanged += OnBrushPropertyChanged;
+
+            lock (_brushBindings)
+            {
+                _brushBindings[brush] = (shape, fill);
+            }
+
+            return fill;
         }
 
         public IPen BindStroke(IStrokedLayer layer, PenInfo info)
@@ -69,7 +73,9 @@ namespace Ibinimator.Service
             var pen = info.CreatePen(Context.RenderContext);
 
             lock (_strokeBindings)
+            {
                 _strokeBindings[info] = (layer, pen);
+            }
 
             return pen;
         }
@@ -122,7 +128,7 @@ namespace Ibinimator.Service
             lock (dict)
             {
                 if (dict.TryGetValue(key, out var value) &&
-                    (value as DisposeBase)?.IsDisposed != true &&
+                    (value as ResourceBase)?.Disposed != true &&
                     value != null)
                     return value;
 
@@ -138,7 +144,9 @@ namespace Ibinimator.Service
             if (streamResourceInfo == null) return null;
 
             using (var stream = streamResourceInfo.Stream)
+            {
                 return target.CreateBitmap(stream);
+            }
         }
 
         private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -287,20 +295,6 @@ namespace Ibinimator.Service
             BindLayer(doc.Root);
         }
 
-        public IBrush BindBrush(ILayer shape, BrushInfo brush)
-        {
-            if (brush == null) return null;
-
-            var fill = brush.CreateBrush(Context.RenderContext);
-
-            brush.PropertyChanged += OnBrushPropertyChanged;
-
-            lock (_brushBindings)
-                _brushBindings[brush] = (shape, fill);
-
-            return fill;
-        }
-
         public void BindLayer(ILayer layer)
         {
             if (layer is IFilledLayer filled && filled.Fill != null)
@@ -409,10 +403,10 @@ namespace Ibinimator.Service
         public void LoadBrushes(RenderContext target)
         {
             foreach (DictionaryEntry entry in Application.Current.Resources)
-                if (entry.Value is System.Windows.Media.Color color)
+                if (entry.Value is Color color)
                     _brushes[(string) entry.Key] =
                         target.CreateBrush(
-                            new Color(
+                            new Core.Color(
                                 color.R / 255f,
                                 color.G / 255f,
                                 color.B / 255f,

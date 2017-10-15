@@ -253,7 +253,7 @@ namespace Ibinimator.Service.Tools
                 }
         }
 
-        public Bitmap Cursor => null;
+        public IBitmap Cursor => null;
 
         public float CursorRotate => 0;
 
