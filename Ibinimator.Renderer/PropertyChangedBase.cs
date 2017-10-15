@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer
 {
-    internal class PropertyChangedBase : INotifyPropertyChanged
+    public class PropertyChangedBase : INotifyPropertyChanged
     {
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {

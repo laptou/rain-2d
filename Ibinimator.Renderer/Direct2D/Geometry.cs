@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
+using Matrix3x2 = System.Numerics.Matrix3x2;
 
 namespace Ibinimator.Renderer.Direct2D
 {
@@ -41,40 +42,45 @@ namespace Ibinimator.Renderer.Direct2D
             return geometry;
         }
 
+        private static void Load(IGeometrySink sink, IEnumerable<PathInstruction> source)
+        {
+            foreach (var instruction in source)
+                switch (instruction)
+                {
+                    case ClosePathInstruction close:
+                        sink.Close(close.Open);
+                        break;
+                    case ArcPathInstruction arc:
+                        sink.Arc(
+                            arc.X, arc.Y,
+                            arc.RadiusX, arc.RadiusY,
+                            arc.Angle, arc.Clockwise, arc.LargeArc);
+                        break;
+                    case CubicPathInstruction cubic:
+                        sink.Cubic(
+                            cubic.X, cubic.Y,
+                            cubic.Control1X, cubic.Control1Y,
+                            cubic.Control2X, cubic.Control2Y);
+                        break;
+                    case LinePathInstruction line:
+                        sink.Line(line.X, line.Y);
+                        break;
+                    case MovePathInstruction move:
+                        sink.Move(move.X, move.Y);
+                        break;
+                    case QuadraticPathInstruction quadratic:
+                        sink.Quadratic(
+                            quadratic.X, quadratic.Y,
+                            quadratic.ControlX, quadratic.ControlY);
+                        break;
+                }
+        }
+
         private static void Load(IGeometry geometry, IEnumerable<PathInstruction> source)
         {
             using (var sink = geometry.Open())
             {
-                foreach (var instruction in source)
-                    switch (instruction)
-                    {
-                        case ClosePathInstruction close:
-                            sink.Close(close.Open);
-                            break;
-                        case ArcPathInstruction arc:
-                            sink.Arc(
-                                arc.X, arc.Y,
-                                arc.RadiusX, arc.RadiusY,
-                                arc.Angle, arc.Clockwise, arc.LargeArc);
-                            break;
-                        case CubicPathInstruction cubic:
-                            sink.Cubic(
-                                cubic.X, cubic.Y,
-                                cubic.Control1X, cubic.Control1Y,
-                                cubic.Control2X, cubic.Control2Y);
-                            break;
-                        case LinePathInstruction line:
-                            sink.Line(line.X, line.Y);
-                            break;
-                        case MovePathInstruction move:
-                            sink.Move(move.X, move.Y);
-                            break;
-                        case QuadraticPathInstruction quadratic:
-                            sink.Quadratic(
-                                quadratic.X, quadratic.Y,
-                                quadratic.ControlX, quadratic.ControlY);
-                            break;
-                    }
+                Load(sink, source);
             }
         }
 
@@ -93,6 +99,12 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         #region IGeometry Members
+
+        public RectangleF Bounds()
+        {
+            var b = _geometry.GetBounds();
+            return new RectangleF(b.Top, b.Left, b.Right - b.Left, b.Bottom - b.Top);
+        }
 
         public IGeometry Copy()
         {
@@ -152,9 +164,19 @@ namespace Ibinimator.Renderer.Direct2D
             return Read(_geometry);
         }
 
+        public void Read(IGeometrySink sink)
+        {
+            Load(sink, Read());
+        }
+
         public bool StrokeContains(float x, float y, float width)
         {
             return _geometry.StrokeContainsPoint(new RawVector2(x, y), width);
+        }
+
+        public IGeometry Transform(Matrix3x2 transform)
+        {
+            return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geometry, transform.Convert()));
         }
 
         public IGeometry Union(IGeometry other)

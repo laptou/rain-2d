@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Service.Commands;
 using Ibinimator.Utility;
-using SharpDX;
+using System.Numerics;
+using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;
-using Ellipse = SharpDX.Direct2D1.Ellipse;
-using Layer = Ibinimator.Model.Layer;
+using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class SelectTool : Model.Model, ITool
+    public sealed class SelectTool : Model, ITool
     {
         public SelectTool(IToolManager toolManager, ISelectionManager selectionManager)
         {
@@ -34,7 +34,7 @@ namespace Ibinimator.Service.Tools
             };
         }
 
-        private IList<Layer> Selection => Manager.ArtView.SelectionManager.Selection;
+        private IList<Layer> Selection => Manager.Context.SelectionManager.Selection;
 
         #region ITool Members
 
@@ -49,15 +49,15 @@ namespace Ibinimator.Service.Tools
                     .ToArray();
 
             var command = new ApplyFillCommand(
-                Manager.ArtView.HistoryManager.Position + 1,
+                Manager.Context.HistoryManager.Position + 1,
                 targets, brush,
-                targets.Select(t => t.FillBrush).ToArray());
+                targets.Select(t => t.Fill).ToArray());
 
-            var old = Manager.ArtView.HistoryManager.Current;
+            var old = Manager.Context.HistoryManager.Current;
 
             if (old is ApplyFillCommand oldFillCommand && command.Time - old.Time <= 500)
             {
-                Manager.ArtView.HistoryManager.Pop();
+                Manager.Context.HistoryManager.Pop();
 
                 command = new ApplyFillCommand(
                     command.Id,
@@ -65,10 +65,10 @@ namespace Ibinimator.Service.Tools
                     oldFillCommand.OldFills);
             }
 
-            Manager.ArtView.HistoryManager.Do(command);
+            Manager.Context.HistoryManager.Do(command);
         }
 
-        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        public void ApplyStroke(PenInfo pen)
         {
             if (Selection.Count == 0)
                 return;
@@ -79,16 +79,14 @@ namespace Ibinimator.Service.Tools
                     .ToArray();
 
             var command = new ApplyStrokeCommand(
-                Manager.ArtView.HistoryManager.Position + 1,
-                targets,
-                brush, targets.Select(t => t.StrokeBrush).ToArray(),
-                stroke, targets.Select(t => t.StrokeInfo).ToArray());
+                Manager.Context.HistoryManager.Position + 1,
+                targets, pen, targets.Select(t => t.Stroke).ToArray());
 
-            var old = Manager.ArtView.HistoryManager.Current;
+            var old = Manager.Context.HistoryManager.Current;
 
             if (old is ApplyStrokeCommand oldStrokeCommand && command.Time - old.Time <= 500)
             {
-                Manager.ArtView.HistoryManager.Pop();
+                Manager.Context.HistoryManager.Pop();
 
                 command = new ApplyStrokeCommand(
                     command.Id,
@@ -97,7 +95,7 @@ namespace Ibinimator.Service.Tools
                     oldStrokeCommand.OldStrokes);
             }
 
-            Manager.ArtView.HistoryManager.Do(command);
+            Manager.Context.HistoryManager.Do(command);
         }
 
         public void Dispose()
@@ -109,11 +107,11 @@ namespace Ibinimator.Service.Tools
             if (key == Key.Delete)
             {
                 var delete = Selection.ToArray();
-                Manager.ArtView.SelectionManager.ClearSelection();
+                Manager.Context.SelectionManager.ClearSelection();
 
                 foreach (var layer in delete)
-                    Manager.ArtView.HistoryManager.Do(
-                        new RemoveLayerCommand(Manager.ArtView.HistoryManager.Position + 1,
+                    Manager.Context.HistoryManager.Do(
+                        new RemoveLayerCommand(Manager.Context.HistoryManager.Position + 1,
                             layer.Parent,
                             layer));
 
@@ -143,9 +141,9 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public void Render(RenderTarget target, ICacheManager cache)
+        public void Render(RenderContext target, ICacheManager cache)
         {
-            var rect = Manager.ArtView.SelectionManager.SelectionBounds;
+            var rect = Manager.Context.SelectionManager.SelectionBounds;
 
             if (rect.IsEmpty) return;
 
@@ -167,29 +165,22 @@ namespace Ibinimator.Service.Tools
             handles.Add(new Vector2((x1 + x2) / 2, y2));
             handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
 
-            var zoom = MathUtils.GetScale(target.Transform);
+            var zoom = Vector2.One;// MathUtils.GetScale(target.Transform);
 
-            using (var stroke =
-                new StrokeStyle1(
-                    target.Factory.QueryInterface<Factory1>(),
-                    new StrokeStyleProperties1
-                    {
-                        TransformType = StrokeTransformType.Fixed
-                    }))
+            using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
-                foreach (var v in handles.Select(Manager.ArtView.SelectionManager.ToSelectionSpace))
+                foreach (var v in handles.Select(Manager.Context.SelectionManager.ToSelectionSpace))
                 {
-                    var e = new Ellipse(v, 5f / zoom.Y, 5f / zoom.X);
-                    target.FillEllipse(e, cache.GetBrush("A1"));
-                    target.DrawEllipse(e, cache.GetBrush("L1"), 2, stroke);
+                    target.FillEllipse(v, 5f / zoom.Y, 5f / zoom.X, cache.GetBrush("A1"));
+                    target.DrawEllipse(v, 5f / zoom.Y, 5f / zoom.X, pen);
                 }
             }
         }
 
-        public Bitmap Cursor => Manager.ArtView.SelectionManager.Cursor;
+        public Bitmap Cursor => Manager.Context.SelectionManager.Cursor;
 
-        public float CursorRotate => Manager.ArtView.SelectionManager.SelectionRotation -
-                                     Manager.ArtView.SelectionManager.SelectionShear;
+        public float CursorRotate => Manager.Context.SelectionManager.SelectionRotation -
+                                     Manager.Context.SelectionManager.SelectionShear;
 
         public IToolManager Manager { get; }
 

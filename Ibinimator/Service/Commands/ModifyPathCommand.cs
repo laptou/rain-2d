@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
-using SharpDX;
+using System.Numerics;
 
 namespace Ibinimator.Service.Commands
 {
@@ -60,7 +60,7 @@ namespace Ibinimator.Service.Commands
 
         public NodeOperation Operation { get; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             var target = Targets[0];
 
@@ -109,7 +109,7 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             var target = Targets[0];
 

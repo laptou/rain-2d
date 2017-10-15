@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
-using SharpDX;
 
 namespace Ibinimator.Service.Commands
 {
@@ -19,7 +19,7 @@ namespace Ibinimator.Service.Commands
             Description = $"Ungrouped {targets.Length} layer(s)";
         }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
             {
@@ -40,14 +40,14 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             foreach (var (layer, target) in _layers.AsTuples())
             {
                 layer.Parent.Remove(layer);
 
                 (layer.Scale, layer.Rotation, layer.Position, layer.Shear)
-                    = (layer.Transform * Matrix3x2.Invert(target.Transform)).Decompose();
+                    = (layer.Transform * MathUtils.Invert(target.Transform)).Decompose();
 
                 target.Add(layer);
             }

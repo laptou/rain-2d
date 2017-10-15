@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Model;
+using System.Windows.Media;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
-using SharpDX;
-using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service.Tools
 {
-    public class ToolManager : Model.Model, IToolManager
+    public class ToolManager : Model, IToolManager
     {
         public ToolManager(ArtView artView, ISelectionManager selectionManager)
         {
-            ArtView = artView;
+            Context = artView;
         }
 
         public void SetTool(ToolType type)
@@ -28,7 +29,7 @@ namespace Ibinimator.Service.Tools
                 switch (type)
                 {
                     case ToolType.Select:
-                        Tool = new SelectTool(this, ArtView.SelectionManager);
+                        Tool = new SelectTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Node:
                         Tool = new NodeTool(this);
@@ -57,7 +58,7 @@ namespace Ibinimator.Service.Tools
             }
 
             RaisePropertyChanged(nameof(Type));
-            ArtView.InvalidateSurface();
+            Context.InvalidateSurface();
         }
 
         #region IToolManager Members
@@ -65,45 +66,35 @@ namespace Ibinimator.Service.Tools
         public bool KeyDown(KeyEventArgs keyEventArgs)
         {
             lock (this)
-            {
                 return Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) ==
                        true;
-            }
         }
 
         public bool KeyUp(KeyEventArgs keyEventArgs)
         {
             lock (this)
-            {
                 return Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) == true;
-            }
         }
 
         public bool MouseDown(Vector2 pos)
         {
             lock (this)
-            {
                 return Tool?.MouseDown(pos) == true;
-            }
         }
 
         public bool MouseMove(Vector2 pos)
         {
             lock (this)
-            {
                 return Tool?.MouseMove(pos) == true;
-            }
         }
 
         public bool MouseUp(Vector2 pos)
         {
             lock (this)
-            {
                 return Tool?.MouseUp(pos) == true;
-            }
         }
 
-        public ArtView ArtView { get; }
+        public IArtContext Context { get; }
 
         public ITool Tool
         {
@@ -128,7 +119,7 @@ namespace Ibinimator.Service.Tools
         MultiSwitch
     }
 
-    public class ToolOption : Model.Model
+    public class ToolOption : Model
     {
         public ImageSource Icon
         {

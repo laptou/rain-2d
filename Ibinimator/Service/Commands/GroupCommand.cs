@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
@@ -21,7 +21,7 @@ namespace Ibinimator.Service.Commands
             Description = $"Grouped {targets.Length} layer(s)";
         }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             var parents = Targets.Select(target => target.Parent).Distinct().ToArray();
 
@@ -41,7 +41,7 @@ namespace Ibinimator.Service.Commands
             parents[0].Add(_group);
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             if (_group == null) return;
 

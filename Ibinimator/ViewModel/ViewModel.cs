@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.ViewModel
 {
-    public abstract class ViewModel : Model.Model
+    public abstract class ViewModel : Model
     {
         public event Action CloseRequested;
 

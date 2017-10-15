@@ -4,20 +4,21 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class HistoryManager : Model.Model, IHistoryManager
+    public class HistoryManager : Model, IHistoryManager
     {
         private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
         private readonly Stack<IOperationCommand<ILayer>> _undo = new Stack<IOperationCommand<ILayer>>();
 
-        public HistoryManager(ArtView artView)
+        public HistoryManager(ArtView context)
         {
-            ArtView = artView;
+            Context = context;
         }
 
         public long NextId => Position + 1;
@@ -42,7 +43,7 @@ namespace Ibinimator.Service
 
         public void Do(IOperationCommand<ILayer> command)
         {
-            command.Do(ArtView);
+            command.Do(Context);
             Push(command);
         }
 
@@ -122,7 +123,7 @@ namespace Ibinimator.Service
             return GetEnumerator();
         }
 
-        public ArtView ArtView { get; }
+        public IArtContext Context { get; }
 
         public IOperationCommand<ILayer> Current
         {
@@ -143,14 +144,14 @@ namespace Ibinimator.Service
                     while (value > Position && _redo.Count > 0)
                     {
                         var record = _redo.Pop();
-                        record.Do(ArtView);
+                        record.Do(Context);
                         _undo.Push(record);
                     }
 
                     while (value < Position && _undo.Count > 0)
                     {
                         var record = _undo.Pop();
-                        record.Undo(ArtView);
+                        record.Undo(Context);
                         _redo.Push(record);
                     }
 

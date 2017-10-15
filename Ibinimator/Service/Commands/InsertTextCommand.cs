@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
@@ -22,16 +22,16 @@ namespace Ibinimator.Service.Commands
 
         public string Text { get; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
-                target.Insert(Index, Text);
+                target.InsertText(Index, Text);
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             foreach (var target in Targets)
-                target.Remove(Index, Text.Length);
+                target.RemoveText(Index, Text.Length);
         }
     }
 }

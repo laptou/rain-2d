@@ -9,7 +9,8 @@ using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
 using Ibinimator.ViewModel;
-using SharpDX;
+using System.Numerics;
+using Ibinimator.Renderer;
 
 namespace Ibinimator.View.Command
 {
@@ -41,16 +42,16 @@ namespace Ibinimator.View.Command
                     doc.FromXml(xdoc.Root, new SvgContext { Root = xdoc.Root });
                     vm.Document = SvgConverter.FromSvg(doc);
 
-                    vm.ArtView.CacheManager.ResetAll();
-                    vm.ArtView.CacheManager.LoadBitmaps(vm.ArtView.RenderTarget);
-                    vm.ArtView.CacheManager.LoadBrushes(vm.ArtView.RenderTarget);
-                    vm.ArtView.CacheManager.Bind(vm.Document);
+                    vm.Context.CacheManager.ResetAll();
+                    vm.Context.CacheManager.LoadBitmaps(vm.Context.RenderContext);
+                    vm.Context.CacheManager.LoadBrushes(vm.Context.RenderContext);
+                    vm.Context.CacheManager.Bind(vm.Document);
                     vm.Pan = Vector2.One * 10;
 
                     var artDim = Math.Max(vm.Document.Bounds.Width, vm.Document.Bounds.Height);
-                    var viewDim = Math.Min(vm.ArtView.ActualWidth, vm.ArtView.ActualHeight);
+                    // var viewDim = Math.Min(vm.Context.ActualWidth, vm.Context.ActualHeight);
 
-                    vm.Zoom = (float)(viewDim / (artDim + 20));
+                    vm.Zoom = 1; //(float)(viewDim / (artDim + 20));
                 }
             }
         }

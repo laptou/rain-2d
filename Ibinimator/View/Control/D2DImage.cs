@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Shared;
 using Ibinimator.Utility;
 using SharpDX;
@@ -21,6 +23,7 @@ using D3D9 = SharpDX.Direct3D9;
 using Device = SharpDX.Direct3D11.Device;
 using Device1 = SharpDX.DXGI.Device1;
 using DW = SharpDX.DirectWrite;
+using Format = SharpDX.DXGI.Format;
 using Resource = SharpDX.DXGI.Resource;
 
 namespace Ibinimator.View.Control
@@ -36,6 +39,7 @@ namespace Ibinimator.View.Control
         private readonly Stopwatch _renderTimer = new Stopwatch();
         private D2D.Factory _d2DFactory;
         private D2D.RenderTarget _d2DRenderTarget;
+        private RenderContext _renderContext;
         private Device _device;
         private DW.Factory _dwFactory;
         private bool _invalidated;
@@ -84,7 +88,7 @@ namespace Ibinimator.View.Control
 
         public float Fps
         {
-            get { return _fps; }
+            get => _fps;
             set
             {
                 _fps = value;
@@ -100,9 +104,15 @@ namespace Ibinimator.View.Control
 
         public DX11ImageSource Surface => _surface;
 
+        public RenderContext RenderContext
+        {
+            get => _renderContext;
+            set => _renderContext = value;
+        }
+
         public event EventHandler<D2D.RenderTarget> RenderTargetBound;
 
-        protected abstract void Render(D2D.RenderTarget target);
+        protected abstract void Render(RenderContext renderContext);
 
         public virtual void InvalidateSurface(Rectangle? area)
         {
@@ -186,6 +196,7 @@ namespace Ibinimator.View.Control
 
             _d2DRenderTarget =
                 new D2D.RenderTarget(_d2DFactory, dxgiSurface, rtp) {DotsPerInch = _d2DFactory.DesktopDpi};
+            _renderContext = new Direct2DRenderContext(_d2DRenderTarget);
 
             _device.ImmediateContext.Rasterizer.SetViewport(0, 0, width, height);
 
@@ -271,7 +282,7 @@ namespace Ibinimator.View.Control
                 try
                 {
                     _d2DRenderTarget.BeginDraw();
-                    Render(_d2DRenderTarget);
+                    Render(RenderContext);
                     _d2DRenderTarget.EndDraw();
                     _device.ImmediateContext.Flush();
 

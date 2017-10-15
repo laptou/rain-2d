@@ -5,15 +5,17 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
-using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
+using System.Numerics;
+using Ibinimator.Core;
 
 namespace Ibinimator.View.Control
 {
-    public class ArtView : D2DImage
+    public class ArtView : D2DImage, IArtContext
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
 
@@ -40,7 +42,6 @@ namespace Ibinimator.View.Control
         public ICacheManager CacheManager { get; private set; }
         public IHistoryManager HistoryManager { get; private set; }
 
-        public RenderTarget RenderTarget { get; private set; }
         public ISelectionManager SelectionManager { get; private set; }
         public IToolManager ToolManager { get; private set; }
         public IViewManager ViewManager { get; private set; }
@@ -50,13 +51,13 @@ namespace Ibinimator.View.Control
             base.InvalidateSurface(null);
         }
 
-        public void SetManager<T>(T manager) where T : IArtViewManager
+        public void SetManager<T>(T manager) where T : IArtContextManager
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
 
             var managerInterfaces =
                 typeof(T).FindInterfaces((type, criteria) =>
-                        typeof(IArtViewManager).IsAssignableFrom(type), null)
+                        typeof(IArtContextManager).IsAssignableFrom(type), null)
                     .Concat(new[] {typeof(T)});
 
             var interfaces = managerInterfaces.ToList();
@@ -70,10 +71,10 @@ namespace Ibinimator.View.Control
 
                 CacheManager = (ICacheManager) manager;
 
-                if (RenderTarget != null)
+                if (RenderContext != null)
                 {
-                    CacheManager.LoadBrushes(RenderTarget);
-                    CacheManager.LoadBitmaps(RenderTarget);
+                    CacheManager.LoadBrushes(RenderContext);
+                    CacheManager.LoadBitmaps(RenderContext);
 
                     if (ViewManager?.Root != null)
                         CacheManager.Bind(ViewManager.Document);
@@ -207,23 +208,22 @@ namespace Ibinimator.View.Control
         protected void OnRenderTargetBound(object sender, RenderTarget target)
         {
             _factory = target.Factory;
-            RenderTarget = target;
 
             CacheManager?.ResetAll();
-            CacheManager?.LoadBrushes(target);
-            CacheManager?.LoadBitmaps(target);
+            CacheManager?.LoadBrushes(RenderContext);
+            CacheManager?.LoadBitmaps(RenderContext);
 
             if (ViewManager?.Root != null)
                 CacheManager?.Bind(ViewManager.Document);
         }
 
-        protected override void Render(RenderTarget target)
+        protected override void Render(RenderContext target)
         {
-            target.Clear(new Color4(0.5f));
+            target.Clear(new Color(0.5f));
 
             if (ViewManager == null) return;
 
-            target.Transform = ViewManager.Transform;
+            target.Transform(ViewManager.Transform, true);
 
             ViewManager.Render(target, CacheManager);
 
@@ -239,12 +239,12 @@ namespace Ibinimator.View.Control
 
             if (ToolManager.Tool.Cursor == null) return;
 
-            target.Transform =
-                Matrix3x2.Scaling(1f / 3) *
-                Matrix3x2.Rotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
-                Matrix3x2.Translation(_lastPosition - new Vector2(8));
+            target.Transform(
+                Matrix3x2.CreateScale(1f / 3) *
+                Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
+                Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
 
-            target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
+            // target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
 
         }
 

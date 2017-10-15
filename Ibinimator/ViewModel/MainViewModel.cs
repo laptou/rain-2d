@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
+using Ibinimator.Utility;
 using Ibinimator.View.Control;
-using SharpDX;
-using SharpDX.Mathematics.Interop;
-using Rectangle = Ibinimator.Model.Rectangle;
+using Ibinimator.Core;
+using Ibinimator.Renderer;
 
 namespace Ibinimator.ViewModel
 {
@@ -148,10 +149,13 @@ namespace Ibinimator.ViewModel
                 CenterY = 150,
                 RadiusX = 50,
                 RadiusY = 50,
-                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 1f, 0, 1f)},
-                StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 0, 1f)},
-                StrokeInfo = new StrokeInfo {Width = 5},
-                Rotation = MathUtil.Pi
+                Fill = new SolidColorBrushInfo {Color = new Color(1f, 1f, 0, 1f)},
+                Stroke = new PenInfo
+                {
+                    Width = 5,
+                    Brush = new SolidColorBrushInfo { Color = new Color(1f, 0, 0, 1f) }
+                },
+                Rotation = MathUtils.Pi
             };
 
             var r = new Rectangle
@@ -160,9 +164,12 @@ namespace Ibinimator.ViewModel
                 Y = 150,
                 Width = 100,
                 Height = 100,
-                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(1f, 0, 1f, 1f)},
-                StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
-                StrokeInfo = new StrokeInfo {Width = 5}
+                Fill = new SolidColorBrushInfo {Color = new Color(1f, 0, 1f, 1f)},
+                Stroke = new PenInfo
+                {
+                    Width = 5,
+                    Brush = new SolidColorBrushInfo { Color = new Color(0, 1f, 1f, 1f) }
+                }
             };
 
             var r2 = new Rectangle
@@ -171,17 +178,17 @@ namespace Ibinimator.ViewModel
                 Y = 200,
                 Width = 100,
                 Height = 100,
-                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
-                Rotation = MathUtil.Pi / 4
+                Fill = new SolidColorBrushInfo {Color = new Color(0, 0.5f, 1f, 1f)},
+                Rotation = MathUtils.Pi / 4
             };
 
             var p = new Path
             {
                 Position = new Vector2(300, 300),
-                FillBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 0.5f, 1f, 1f)},
-                StrokeBrush = new SolidColorBrushInfo {Color = new RawColor4(0, 1f, 1f, 1f)},
-                StrokeInfo = new StrokeInfo
+                Fill = new SolidColorBrushInfo {Color = new Color(0, 0.5f, 1f, 1f)},
+                Stroke = new PenInfo
                 {
+                    Brush = new SolidColorBrushInfo {Color = new Color(0, 1f, 1f, 1f)},
                     Width = 5
                 },
                 Nodes =
@@ -197,7 +204,7 @@ namespace Ibinimator.ViewModel
             var t = new Text
             {
                 Value = "hello world",
-                FillBrush = r2.FillBrush,
+                Fill = r2.Fill,
                 FontFamilyName = "Roboto",
                 FontSize = 32,
                 Width = 100,

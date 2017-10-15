@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -40,8 +42,16 @@
     <Reference Include="SharpDX.DXGI, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.Mathematics, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Mathematics.4.0.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,42 +63,98 @@
   <ItemGroup>
     <Compile Include="ArcPathInstruction.cs" />
     <Compile Include="ClosePathInstruction.cs" />
-    <Compile Include="Color.cs" />
     <Compile Include="CoordinatePathInstruction.cs" />
     <Compile Include="CubicPathInstruction.cs" />
+    <Compile Include="Direct2D\Bitmap.cs" />
     <Compile Include="Direct2D\Brush.cs" />
+    <Compile Include="Direct2D\Direct2DConverter.cs" />
     <Compile Include="Direct2D\Direct2DRenderContext.cs" />
+    <Compile Include="Direct2D\DirectWriteExtensions.cs" />
+    <Compile Include="Direct2D\DirectWriteTextLayout.cs" />
     <Compile Include="Direct2D\Geometry.cs" />
     <Compile Include="Direct2D\GradientBrush.cs" />
     <Compile Include="Direct2D\LinearGradientBrush.cs" />
     <Compile Include="Direct2D\Pen.cs" />
     <Compile Include="Direct2D\RadialGradientBrush.cs" />
     <Compile Include="Direct2D\SolidColorBrush.cs" />
+    <Compile Include="Direct2D\TextLayoutExtensions.cs" />
+    <Compile Include="Direct2D\TextRenderer.cs" />
     <Compile Include="EllipseRenderCommand.cs" />
+    <Compile Include="FontStretch.cs" />
+    <Compile Include="FontStyle.cs" />
+    <Compile Include="FontWeight.cs" />
+    <Compile Include="Format.cs" />
     <Compile Include="GeometricRenderCommand.cs" />
+    <Compile Include="GeometryRenderCommand.cs" />
     <Compile Include="GradientStop.cs" />
+    <Compile Include="IArtContextManager.cs" />
+    <Compile Include="IBitmap.cs" />
     <Compile Include="IBrush.cs" />
+    <Compile Include="IBrushManager.cs" />
+    <Compile Include="ICacheManager.cs" />
     <Compile Include="IGeometry.cs" />
     <Compile Include="IGeometrySink.cs" />
     <Compile Include="IGradientBrush.cs" />
+    <Compile Include="IHistoryManager.cs" />
     <Compile Include="ILinearGradientBrush.cs" />
+    <Compile Include="IOperationCommand.cs" />
     <Compile Include="IPen.cs" />
     <Compile Include="IRadialGradientBrush.cs" />
+    <Compile Include="IRecorder.cs" />
     <Compile Include="IResource.cs" />
+    <Compile Include="ISelectionManager.cs" />
     <Compile Include="ISolidColorBrush.cs" />
+    <Compile Include="ITextLayout.cs" />
+    <Compile Include="ITool.cs" />
+    <Compile Include="IToolManager.cs" />
+    <Compile Include="IViewManager.cs" />
     <Compile Include="LineCap.cs" />
     <Compile Include="LineJoin.cs" />
     <Compile Include="LinePathInstruction.cs" />
+    <Compile Include="Model\ArcPathNode.cs" />
+    <Compile Include="Model\BitmapBrushInfo.cs" />
+    <Compile Include="Model\BrushInfo.cs" />
+    <Compile Include="Model\CloseNode.cs" />
+    <Compile Include="Model\CubicPathNode.cs" />
+    <Compile Include="Model\Document.cs" />
+    <Compile Include="Model\Ellipse.cs" />
+    <Compile Include="Model\GradientBrushInfo.cs" />
+    <Compile Include="Model\GradientBrushType.cs" />
+    <Compile Include="Model\Group.cs" />
+    <Compile Include="Model\IArtContext.cs" />
+    <Compile Include="Model\IContainerLayer.cs" />
+    <Compile Include="Model\IFilledLayer.cs" />
+    <Compile Include="Model\IGeometricLayer.cs" />
+    <Compile Include="Model\ILayer.cs" />
+    <Compile Include="Model\IStrokedLayer.cs" />
+    <Compile Include="Model\ITextLayer.cs" />
+    <Compile Include="Model\Layer.cs" />
+    <Compile Include="Model\Model.cs" />
+    <Compile Include="Model\Path.cs" />
+    <Compile Include="Model\PathNode.cs" />
+    <Compile Include="Model\PenInfo.cs" />
+    <Compile Include="Model\QuadraticPathNode.cs" />
+    <Compile Include="Model\Rectangle.cs" />
+    <Compile Include="Model\Resource.cs" />
+    <Compile Include="Model\Shape.cs" />
+    <Compile Include="Model\SolidColorBrushInfo.cs" />
+    <Compile Include="Model\Text.cs" />
+    <Compile Include="Model\Unit.cs" />
+    <Compile Include="Model\UnitExtensions.cs" />
+    <Compile Include="Model\UnitType.cs" />
     <Compile Include="MovePathInstruction.cs" />
     <Compile Include="PathInstruction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyChangedBase.cs" />
     <Compile Include="QuadraticPathInstruction.cs" />
+    <Compile Include="RectangleF.cs" />
     <Compile Include="RectangleRenderCommand.cs" />
     <Compile Include="RenderCommand.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="SpreadMethod.cs" />
+    <Compile Include="ToolType.cs" />
     <Compile Include="TransformRenderCommand.cs" />
+    <Compile Include="Utility\ColorUtils.cs" />
     <Compile Include="WPF\Brush.cs" />
     <Compile Include="WPF\Geometry.cs" />
     <Compile Include="WPF\GradientBrush.cs" />
@@ -96,6 +162,7 @@
     <Compile Include="WPF\Pen.cs" />
     <Compile Include="WPF\RadialGradientBrush.cs" />
     <Compile Include="WPF\SolidColorBrush.cs" />
+    <Compile Include="WPF\WpfConverter.cs" />
     <Compile Include="WPF\WPFRenderContext.cs" />
   </ItemGroup>
   <ItemGroup>

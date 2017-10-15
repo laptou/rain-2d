@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer
 {
-    public interface ILinearGradientBrush : IBrush
+    public interface ILinearGradientBrush : IGradientBrush
     {
         float EndX { get; set; }
         float EndY { get; set; }

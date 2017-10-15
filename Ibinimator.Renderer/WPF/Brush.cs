@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -29,7 +31,21 @@ namespace Ibinimator.Renderer.WPF
         public float Opacity
         {
             get => (float) WpfBrush.Opacity;
-            set => WpfBrush.Opacity = value;
+            set
+            {
+                WpfBrush.Opacity = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Matrix3x2 Transform
+        {
+            get => WpfBrush.Transform.Value.Convert();
+            set
+            {
+                WpfBrush.Transform = new MatrixTransform(value.Convert());
+                RaisePropertyChanged();
+            }
         }
 
         #endregion

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
-using SharpDX.DirectWrite;
 
 namespace Ibinimator.Service.Commands
 {
@@ -42,7 +42,7 @@ namespace Ibinimator.Service.Commands
         public FontStyle[] OldFontStyles { get; set; }
         public FontWeight[] OldFontWeights { get; set; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
                 lock (target)
@@ -55,7 +55,7 @@ namespace Ibinimator.Service.Commands
                 }
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             for (var i = 0; i < Targets.Length; i++)
             {

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
-using SharpDX;
+using System.Numerics;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
+using Ibinimator.Utility;
 
 namespace Ibinimator.View.Command
 {
@@ -64,7 +66,7 @@ namespace Ibinimator.View.Command
 
         private static void MoveDown(ISelectionManager selectionManager)
         {
-            var history = selectionManager.ArtView.HistoryManager;
+            var history = selectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
@@ -75,7 +77,7 @@ namespace Ibinimator.View.Command
 
         private static void MoveToBottom(ISelectionManager selectionManager)
         {
-            var history = selectionManager.ArtView.HistoryManager;
+            var history = selectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
@@ -86,7 +88,7 @@ namespace Ibinimator.View.Command
 
         private static void MoveToTop(ISelectionManager selectionManager)
         {
-            var history = selectionManager.ArtView.HistoryManager;
+            var history = selectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
@@ -97,7 +99,7 @@ namespace Ibinimator.View.Command
 
         private static void MoveUp(ISelectionManager selectionManager)
         {
-            var history = selectionManager.ArtView.HistoryManager;
+            var history = selectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
@@ -108,12 +110,12 @@ namespace Ibinimator.View.Command
 
         private static void RotateClockwise(ISelectionManager selectionManager)
         {
-            selectionManager.Transform(Vector2.One, Vector2.Zero, MathUtil.PiOverTwo, 0, Vector2.One * 0.5f);
+            selectionManager.Transform(Vector2.One, Vector2.Zero, MathUtils.PiOverTwo, 0, Vector2.One * 0.5f);
         }
 
         private static void RotateCounterClockwise(ISelectionManager selectionManager)
         {
-            selectionManager.Transform(Vector2.One, Vector2.Zero, -MathUtil.PiOverTwo, 0, Vector2.One * 0.5f);
+            selectionManager.Transform(Vector2.One, Vector2.Zero, -MathUtils.PiOverTwo, 0, Vector2.One * 0.5f);
         }
 
         private static void SelectAll(ISelectionManager selectionManager)

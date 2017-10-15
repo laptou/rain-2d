@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -9,39 +10,18 @@ namespace Ibinimator.Renderer.WPF
     {
         public SolidColorBrush(Color color)
         {
-            Color = color;
+            WpfBrush = new System.Windows.Media.SolidColorBrush(color.Convert());
         }
 
         #region ISolidColorBrush Members
 
         public Color Color
         {
-            get => new Color(
-                ((System.Windows.Media.SolidColorBrush) WpfBrush).Color.R / 255f,
-                ((System.Windows.Media.SolidColorBrush) WpfBrush).Color.G / 255f,
-                ((System.Windows.Media.SolidColorBrush) WpfBrush).Color.B / 255f,
-                ((System.Windows.Media.SolidColorBrush) WpfBrush).Color.A / 255f);
+            get => ((System.Windows.Media.SolidColorBrush)WpfBrush).Color.Convert();
 
-            set => ((System.Windows.Media.SolidColorBrush) WpfBrush).Color =
-                System.Windows.Media.Color.FromArgb(
-                    (byte) (value.R * 255),
-                    (byte) (value.G * 255),
-                    (byte) (value.B * 255),
-                    (byte) (value.A * 255));
+            set => ((System.Windows.Media.SolidColorBrush) WpfBrush).Color = value.Convert();
         }
 
         #endregion
     }
-
-    #region Nested type: GradientBrush
-
-    #endregion
-
-    #region Nested type: LinearGradientBrush
-
-    #endregion
-
-    #region Nested type: RadialGradientBrush
-
-    #endregion
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -8,9 +9,19 @@ namespace Ibinimator.Renderer.WPF
 {
     using WPF = System.Windows.Media;
 
-    public class Geometry : IGeometry
+    internal class Geometry : IGeometry
     {
+        public static implicit operator WPF.Geometry(Geometry geometry)
+        {
+            return geometry._geometry;
+        }
+
         private WPF.PathGeometry _geometry;
+
+        public Geometry()
+        {
+            _geometry = new WPF.PathGeometry();
+        }
 
         public Geometry(WPF.Geometry geometry)
         {
@@ -23,6 +34,11 @@ namespace Ibinimator.Renderer.WPF
         }
 
         #region IGeometry Members
+
+        public RectangleF Bounds()
+        {
+            return _geometry.Bounds.Convert();
+        }
 
         public IGeometry Copy()
         {
@@ -115,6 +131,11 @@ namespace Ibinimator.Renderer.WPF
             }
         }
 
+        public void Read(IGeometrySink sink)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool StrokeContains(float x, float y, float width)
         {
             return _geometry.StrokeContains(
@@ -122,6 +143,11 @@ namespace Ibinimator.Renderer.WPF
                 new Point(x, y),
                 double.Epsilon,
                 WPF.ToleranceType.Relative);
+        }
+
+        public IGeometry Transform(Matrix3x2 transform)
+        {
+            throw new NotImplementedException();
         }
 
         public IGeometry Union(IGeometry other)

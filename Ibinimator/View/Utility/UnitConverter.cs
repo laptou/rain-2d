@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Utility;
 
 namespace Ibinimator.View.Util

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
-using SharpDX;
 
 namespace Ibinimator.Service.Commands
 {
@@ -20,18 +20,18 @@ namespace Ibinimator.Service.Commands
 
         public Matrix3x2 Transform { get; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             foreach (var layer in Targets)
                 lock (layer)
                     layer.ApplyTransform(Transform);
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             foreach (var layer in Targets)
                 lock (layer)
-                    layer.ApplyTransform(Matrix3x2.Invert(Transform));
+                    layer.ApplyTransform(MathUtils.Invert(Transform));
 
         }
     }

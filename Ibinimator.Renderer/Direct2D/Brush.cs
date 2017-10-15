@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -32,6 +33,16 @@ namespace Ibinimator.Renderer.Direct2D
             set
             {
                 Direct2DBrush.Opacity = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Matrix3x2 Transform
+        {
+            get => Direct2DBrush.Transform.Convert();
+            set
+            {
+                Direct2DBrush.Transform = value.Convert();
                 RaisePropertyChanged();
             }
         }

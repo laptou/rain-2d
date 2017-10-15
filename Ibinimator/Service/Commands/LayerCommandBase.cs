@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
@@ -17,9 +18,9 @@ namespace Ibinimator.Service.Commands
 
         #region IOperationCommand<T> Members
 
-        public abstract void Do(ArtView artView);
+        public abstract void Do(IArtContext artContext);
 
-        public abstract void Undo(ArtView artView);
+        public abstract void Undo(IArtContext artContext);
 
         public abstract string Description { get; }
 

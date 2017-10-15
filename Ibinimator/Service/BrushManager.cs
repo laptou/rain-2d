@@ -3,64 +3,48 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
 using Ibinimator.Shared;
 using Ibinimator.View.Control;
-using SharpDX;
+using Ibinimator.Core;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service
 {
-    public class BrushManager : Model.Model, IBrushManager
+    public class BrushManager : Model, IBrushManager
     {
         private bool _selecting;
 
         public BrushManager(ArtView artView, ISelectionManager selectionManager, IHistoryManager historyManager)
         {
-            ArtView = artView;
-            StrokeDashes = new ObservableList<float>(new float[] {0, 0, 0, 0});
+            Context = artView;
 
-            selectionManager.Updated += (sender, args) =>
+            selectionManager.Updated += OnUpdated;
+
+            historyManager.Traversed += (s, e) => OnUpdated(s, null);
+
+            Fill = new SolidColorBrushInfo(new Color(0, 0, 0));
+            Stroke = new PenInfo
             {
-                _selecting = true;
-                var layer = ArtView.SelectionManager.Selection.LastOrDefault();
-
-                if (layer is IFilledLayer filled)
-                    Fill = filled.FillBrush;
-
-                if (layer is IStrokedLayer stroked)
-                {
-                    Stroke = stroked.StrokeBrush;
-                    StrokeStyle = stroked.StrokeInfo.Style;
-                    StrokeWidth = stroked.StrokeInfo.Width;
-                    StrokeDashes = new ObservableList<float>(stroked.StrokeInfo.Dashes);
-                }
-
-                _selecting = false;
+                Brush = new SolidColorBrushInfo(new Color(0, 0, 0)),
             };
-
-            historyManager.Traversed += (sender, args) =>
-            {
-                _selecting = true;
-                var layer = ArtView.SelectionManager.Selection.LastOrDefault();
-
-                if (layer is IFilledLayer filled)
-                    Fill = filled.FillBrush;
-
-                if (layer is IStrokedLayer stroked)
-                {
-                    Stroke = stroked.StrokeBrush;
-                    StrokeStyle = stroked.StrokeInfo.Style;
-                    StrokeWidth = stroked.StrokeInfo.Width;
-                    StrokeDashes = new ObservableList<float>(stroked.StrokeInfo.Dashes);
-                }
-
-                _selecting = false;
-            };
-
-            Fill = new SolidColorBrushInfo(Color4.Black);
 
             PropertyChanged += OnPropertyChanged;
+        }
+
+        private void OnUpdated(object sender, EventArgs args)
+        {
+            _selecting = true;
+            var layer = Context.SelectionManager.Selection.LastOrDefault();
+
+            if (layer is IFilledLayer filled)
+                Fill = filled.Fill;
+
+            if (layer is IStrokedLayer stroked)
+                Stroke = stroked.Stroke;
+
+            _selecting = false;
         }
 
         private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
@@ -75,20 +59,10 @@ namespace Ibinimator.Service
                 switch (args.PropertyName)
                 {
                     case nameof(Fill):
-                        ArtView.ToolManager.Tool?.ApplyFill(Fill);
+                        Context.ToolManager.Tool?.ApplyFill(Fill);
                         break;
                     case nameof(Stroke):
-                    case nameof(StrokeStyle):
-                    case nameof(StrokeWidth):
-                    case nameof(StrokeDashes):
-                        ArtView.ToolManager.Tool?.ApplyStroke(
-                            Stroke,
-                            new StrokeInfo
-                            {
-                                Dashes = StrokeDashes,
-                                Style = StrokeStyle,
-                                Width = StrokeWidth
-                            });
+                        Context.ToolManager.Tool?.ApplyStroke(Stroke);
                         break;
                 }
             }
@@ -97,7 +71,7 @@ namespace Ibinimator.Service
 
         #region IBrushManager Members
 
-        public ArtView ArtView { get; }
+        public IArtContext Context { get; }
 
         public BrushInfo Fill
         {
@@ -105,30 +79,11 @@ namespace Ibinimator.Service
             set => Set(value);
         }
 
-        public BrushInfo Stroke
+        public PenInfo Stroke
         {
-            get => Get<BrushInfo>();
+            get => Get<PenInfo>();
             set => Set(value);
         }
-
-        public ObservableList<float> StrokeDashes
-        {
-            get => Get<ObservableList<float>>();
-            private set => Set(value);
-        }
-
-        public StrokeStyleProperties1 StrokeStyle
-        {
-            get => Get<StrokeStyleProperties1>();
-            set => Set(value);
-        }
-
-        public float StrokeWidth
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
-
         #endregion
     }
 }

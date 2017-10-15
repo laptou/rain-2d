@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
@@ -21,21 +21,21 @@ namespace Ibinimator.Service.Commands
         public BrushInfo NewFill { get; }
         public BrushInfo[] OldFills { get; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
                 lock (target)
                 {
-                    target.FillBrush = NewFill;
+                    target.Fill = NewFill;
                 }
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             for (var i = 0; i < Targets.Length; i++)
                 lock (Targets[i])
                 {
-                    Targets[i].FillBrush = OldFills[i];
+                    Targets[i].Fill = OldFills[i];
                 }
         }
     }

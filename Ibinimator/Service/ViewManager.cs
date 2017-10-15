@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Shared;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
-using SharpDX;
-using SharpDX.Direct2D1;
+using System.Numerics;
+using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service
 {
-    public class ViewManager : Model.Model, IViewManager
+    public class ViewManager : Model, IViewManager
     {
         public ViewManager(ArtView artView)
         {
-            ArtView = artView;
+            Context = artView;
             Document = new Document();
             Zoom = 1;
         }
@@ -28,7 +28,7 @@ namespace Ibinimator.Service
 
         private void Update()
         {
-            Transform = Matrix3x2.Translation(Pan) * Matrix3x2.Scaling(Zoom);
+            Transform = Matrix3x2.CreateTranslation(Pan) * Matrix3x2.CreateScale(Zoom);
         }
 
         #region IViewManager Members
@@ -37,7 +37,7 @@ namespace Ibinimator.Service
 
         public Vector2 FromArtSpace(Vector2 v)
         {
-            return Matrix3x2.TransformPoint(Transform, v);
+            return Vector2.Transform(v, Transform);
         }
 
         public RectangleF FromArtSpace(RectangleF v)
@@ -47,25 +47,23 @@ namespace Ibinimator.Service
 
         public Vector2 ToArtSpace(Vector2 v)
         {
-            return Matrix3x2.TransformPoint(Matrix3x2.Invert(Transform), v);
+            return Vector2.Transform(v, MathUtils.Invert(Transform));
         }
 
         public RectangleF ToArtSpace(RectangleF v)
         {
-            return MathUtils.Bounds(v, Matrix3x2.Invert(Transform));
+            return MathUtils.Bounds(v, MathUtils.Invert(Transform));
         }
 
-        public void Render(RenderTarget target, ICacheManager cache)
+        public void Render(RenderContext target, ICacheManager cache)
         {
-            using (new StrokeStyle1(target.Factory.QueryInterface<Factory1>(),
-                new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed}))
-            {
-                target.DrawRectangle(Document.Bounds, cache.GetBrush("L3"));
-                target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
-            }
+            using (var pen = target.CreatePen(1, cache.GetBrush("L3")))
+                target.DrawRectangle(Document.Bounds, pen);
+
+            target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
         }
 
-        public ArtView ArtView { get; }
+        public IArtContext Context { get; }
 
         public Document Document
         {

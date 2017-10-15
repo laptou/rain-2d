@@ -4,11 +4,14 @@ using System.ComponentModel;
 using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Media;
-using Ibinimator.Model;
+using Ibinimator.Core;
+using Ibinimator.Core.Utility;
+using Ibinimator.Renderer.Model;
+using Ibinimator.Renderer.WPF;
 using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
+using Color = System.Windows.Media.Color;
 using DashStyle = SharpDX.Direct2D1.DashStyle;
 
 namespace Ibinimator.ViewModel
@@ -43,13 +46,13 @@ namespace Ibinimator.ViewModel
             public double Alpha
             {
                 get => _alpha;
-                set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value);
+                set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value).Convert();
             }
 
             public double Blue
             {
                 get => Color.B / 255f;
-                set => Color = ColorUtils.RgbToColor(Red, Green, value);
+                set => Color = ColorUtils.RgbaToColor(Red, Green, value, Alpha).Convert();
             }
 
             public Color Color
@@ -58,7 +61,7 @@ namespace Ibinimator.ViewModel
                 set
                 {
                     Set(value);
-                    (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value);
+                    (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value.Convert());
 
                     RaisePropertyChanged(nameof(Red));
                     RaisePropertyChanged(nameof(Green));
@@ -69,9 +72,9 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public void SetColor(Color color)
+            public void SetColor(Core.Color color)
             {
-                Set(color, nameof(Color));
+                Set(color.Convert(), nameof(Color));
 
                 RaisePropertyChanged(nameof(Red));
                 RaisePropertyChanged(nameof(Green));
@@ -81,7 +84,7 @@ namespace Ibinimator.ViewModel
             public double Green
             {
                 get => Color.G / 255f;
-                set => Color = ColorUtils.RgbToColor(Red, value, Blue);
+                set => Color = ColorUtils.RgbaToColor(Red, value, Blue, Alpha).Convert();
             }
 
             public double Hue
@@ -99,7 +102,7 @@ namespace Ibinimator.ViewModel
             public double Red
             {
                 get => Color.R / 255f;
-                set => Color = ColorUtils.RgbToColor(value, Green, Blue);
+                set => Color = ColorUtils.RgbaToColor(value, Green, Blue, Alpha).Convert();
             }
 
             public double Saturation
@@ -132,10 +135,10 @@ namespace Ibinimator.ViewModel
                     _updating = true;
 
                     if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
-                        _fillPicker.SetColor(fill.Color.ToWpf());
+                        _fillPicker.SetColor(fill.Color);
 
-                    if (_parent.BrushManager.Stroke is SolidColorBrushInfo stroke)
-                        _strokePicker.SetColor(stroke.Color.ToWpf());
+                    if (_parent.BrushManager.Stroke?.Brush is SolidColorBrushInfo stroke)
+                        _strokePicker.SetColor(stroke.Color);
 
                     RaisePropertyChanged(nameof(FillBrush));
                     RaisePropertyChanged(nameof(StrokeBrush));
@@ -153,7 +156,7 @@ namespace Ibinimator.ViewModel
                 _fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
             }
 
-            public Brush FillBrush => _parent.BrushManager.Fill?.ToWpf();
+            public Brush FillBrush => _parent.BrushManager.Fill?.CreateBrush(new WpfRenderContext()) as Brush;
 
             public ColorPickerViewModel Picker =>
                 PickerTarget == ColorPickerTarget.Fill ? _fillPicker : _strokePicker;
@@ -168,7 +171,7 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public Brush StrokeBrush => _parent.BrushManager.Stroke?.ToWpf();
+            public Brush StrokeBrush => _parent.BrushManager.Stroke?.Brush?.CreateBrush(new WpfRenderContext()) as Brush;
 
             public CapStyle StrokeCap
             {
@@ -205,7 +208,7 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public ObservableList<float> StrokeDashes => _parent.BrushManager.StrokeDashes;
+            public ObservableList<float> StrokeDashes => _parent.BrushManager.Stroke.Dashes;
 
             public LineJoin StrokeJoin
             {
@@ -222,14 +225,16 @@ namespace Ibinimator.ViewModel
 
             public StrokeStyleProperties1 StrokeStyle
             {
-                get => _parent.BrushManager.StrokeStyle;
-                set => _parent.BrushManager.StrokeStyle = value;
+                //get => _parent.BrushManager.StrokeStyle;
+                //set => _parent.BrushManager.StrokeStyle = value;
+                get => default;
+                set { }
             }
 
             public float StrokeWidth
             {
-                get => _parent.BrushManager.StrokeWidth;
-                set => _parent.BrushManager.StrokeWidth = value;
+                get => _parent.BrushManager.Stroke?.Width ?? 0;
+                set => _parent.BrushManager.Stroke.Width = value;
             }
 
             private void OnColorPickerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -250,10 +255,10 @@ namespace Ibinimator.ViewModel
 
                 if (picker.Target == ColorPickerTarget.Fill)
                     _parent.BrushManager.Fill =
-                        new SolidColorBrushInfo {Color = picker.Color.ToDirectX()};
+                        new SolidColorBrushInfo {Color = picker.Color.Convert()};
                 else
-                    _parent.BrushManager.Stroke =
-                        new SolidColorBrushInfo {Color = picker.Color.ToDirectX()};
+                    _parent.BrushManager.Stroke.Brush =
+                        new SolidColorBrushInfo {Color = picker.Color.Convert()};
 
                 _updating = false;
             }

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
@@ -32,7 +33,7 @@ namespace Ibinimator.View.Command
 
         private static void BinaryOperation(IHistoryManager manager, CombineMode operation)
         {
-            var selectionManager = manager.ArtView.SelectionManager;
+            var selectionManager = manager.Context.SelectionManager;
             if (selectionManager.Selection[0] is IGeometricLayer x &&
                 selectionManager.Selection[1] is IGeometricLayer y)
                 manager.Do(new BinaryOperationCommand(
@@ -63,7 +64,7 @@ namespace Ibinimator.View.Command
 
         private static void Group(IHistoryManager manager)
         {
-            var selectionManager = manager.ArtView.SelectionManager;
+            var selectionManager = manager.Context.SelectionManager;
 
             if (selectionManager.Selection.Count == 0)
                 return;
@@ -76,7 +77,7 @@ namespace Ibinimator.View.Command
 
         private static void Ungroup(IHistoryManager manager)
         {
-            var selectionManager = manager.ArtView.SelectionManager;
+            var selectionManager = manager.Context.SelectionManager;
 
             if (selectionManager.Selection.Count == 0)
                 return;

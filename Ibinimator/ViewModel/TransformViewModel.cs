@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Service;
-using SharpDX;
+using System.Numerics;
 
 namespace Ibinimator.ViewModel
 {
@@ -86,7 +86,7 @@ namespace Ibinimator.ViewModel
 
             public float X
             {
-                get => _parent.SelectionManager?.SelectionBounds.X ?? 0;
+                get => _parent.SelectionManager?.SelectionBounds.Left ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     new Vector2(value - X, 0),
@@ -97,7 +97,7 @@ namespace Ibinimator.ViewModel
 
             public float Y
             {
-                get => _parent.SelectionManager?.SelectionBounds.Y ?? 0;
+                get => _parent.SelectionManager?.SelectionBounds.Top ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     new Vector2(0, value - Y),

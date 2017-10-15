@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using Ibinimator.Core.Utility;
 using Ibinimator.Utility;
 
 namespace Ibinimator.View.Util
@@ -15,7 +16,7 @@ namespace Ibinimator.View.Util
         public static readonly DependencyProperty AccentProperty =
             DependencyProperty.RegisterAttached("Accent", typeof(Color), typeof(Helper),
                 new FrameworkPropertyMetadata(
-                    ColorUtils.RgbaToColor(0, 0, 0, 1),
+                    Color.FromRgb(0, 0, 0),
                     FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyPropertyKey AccentBrushPropertyKey =

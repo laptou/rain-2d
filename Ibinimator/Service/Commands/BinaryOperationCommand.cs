@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
 using SharpDX;
 using SharpDX.Direct2D1;
-using Layer = Ibinimator.Model.Layer;
+using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service.Commands
 {
@@ -30,35 +31,55 @@ namespace Ibinimator.Service.Commands
 
         public CombineMode Operation { get; }
 
-        public override void Do(ArtView artView)
+        public override void Do(IArtContext artContext)
         {
             if (_product == null)
             {
                 _operand1 = Targets[0];
                 _operand2 = Targets[1];
-                var factory = artView.Direct2DFactory;
 
-                var xg = artView.CacheManager.GetGeometry(_operand1);
-                var yg = artView.CacheManager.GetGeometry(_operand2);
+                var xg = artContext.CacheManager.GetGeometry(_operand1);
+                var yg = artContext.CacheManager.GetGeometry(_operand2);
 
                 var z = new Path
                 {
-                    FillBrush = _operand1.FillBrush,
-                    StrokeBrush = _operand1.StrokeBrush,
-                    StrokeInfo = _operand1.StrokeInfo
+                    Fill = _operand1.Fill,
+                    Stroke = _operand1.Stroke
                 };
 
-                var zSink = z.Open();
-
-                using (var xtg = new TransformedGeometry(factory, xg, _operand1.AbsoluteTransform))
+                using (var zSink = z.Open())
                 {
-                    xtg.Combine(yg, Operation, _operand2.AbsoluteTransform, 0.25f, zSink);
+                    using (var xtg = xg.Transform(_operand1.AbsoluteTransform))
+                    {
+                        using (var ytg = yg.Transform(_operand2.AbsoluteTransform))
+                        {
+                            IGeometry zg;
+
+                            switch (Operation)
+                            {
+                                case CombineMode.Union:
+                                    zg = xtg.Union(ytg);
+                                    break;
+                                case CombineMode.Intersect:
+                                    zg = xtg.Intersection(ytg);
+                                    break;
+                                case CombineMode.Xor:
+                                    zg = xtg.Xor(ytg);
+                                    break;
+                                case CombineMode.Exclude:
+                                    zg = xtg.Difference(ytg);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            zg.Read(zSink);
+                        }
+                    }
                 }
 
-                zSink.Close();
-
                 (z.Scale, z.Rotation, z.Position, z.Shear) =
-                    Matrix3x2.Invert(_operand1.WorldTransform).Decompose();
+                    MathUtils.Invert(_operand1.WorldTransform).Decompose();
 
                 _product = z;
                 _parent1 = _operand1.Parent;
@@ -70,7 +91,7 @@ namespace Ibinimator.Service.Commands
             _parent2.Remove(_operand2 as Layer);
         }
 
-        public override void Undo(ArtView artView)
+        public override void Undo(IArtContext artView)
         {
             _product.Parent.Remove(_product);
             _parent1.Add(_operand1 as Layer);

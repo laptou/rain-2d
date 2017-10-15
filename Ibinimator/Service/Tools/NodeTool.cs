@@ -4,17 +4,21 @@ using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Model;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
-using SharpDX;
 using SharpDX.Direct2D1;
+using Ibinimator.Renderer;
+using SharpDX;
 using Ellipse = SharpDX.Direct2D1.Ellipse;
-using Rectangle = Ibinimator.Model.Rectangle;
+using Matrix3x2 = System.Numerics.Matrix3x2;
+using Rectangle = Ibinimator.Renderer.Model.Rectangle;
+using RectangleF = Ibinimator.Renderer.RectangleF;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Service.Tools
 {
-    public class NodeTool : Model.Model, ITool
+    public class NodeTool : Model, ITool
     {
         private readonly List<PathNode> _selectedNodes = new List<PathNode>();
         private bool _alt;
@@ -36,16 +40,16 @@ namespace Ibinimator.Service.Tools
             Manager = toolManager;
         }
 
-        public Shape CurrentShape => Manager.ArtView.SelectionManager.Selection.LastOrDefault() as Shape;
+        public Shape CurrentShape => Context.SelectionManager.Selection.LastOrDefault() as Shape;
 
-        private ArtView ArtView => Manager.ArtView;
+        private IArtContext Context => Manager.Context;
 
-        private IContainerLayer Root => ArtView.ViewManager.Root;
+        private IContainerLayer Root => Context.ViewManager.Root;
 
         private Vector2 Constrain(Vector2 pos)
         {
             //var lastNode = CurrentPath.Nodes.Last();
-            //var lpos = Matrix3x2.TransformPoint(CurrentPath.AbsoluteTransform, lastNode.Position);
+            //var lpos = Vector2.Transform(CurrentPath.AbsoluteTransform, lastNode.Position);
 
             //var delta = pos - lpos;
 
@@ -60,7 +64,7 @@ namespace Ibinimator.Service.Tools
             throw new Exception();
         }
 
-        private void RenderGeometryHandles(RenderTarget target, ICacheManager cacheManager, StrokeStyle1 stroke,
+        private void RenderGeometryHandles(RenderContext target, ICacheManager cacheManager,
             Matrix3x2 transform)
         {
             if (CurrentShape is Path path)
@@ -75,7 +79,9 @@ namespace Ibinimator.Service.Tools
                     {
                         var node = nodes[i];
 
-                        var pos = Matrix3x2.TransformPoint(transform, node.Position);
+                        var pos = Vector2.Transform(node.Position, transform);
+
+                        var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
 
                         if (_selectedNodes.Contains(node) ||
                             _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i - 1, 0, nodes.Length))) ||
@@ -83,27 +89,11 @@ namespace Ibinimator.Service.Tools
                             switch (node)
                             {
                                 case CubicPathNode cn:
-                                    target.DrawEllipse(new Ellipse
-                                    {
-                                        Point = Matrix3x2.TransformPoint(transform, cn.Control1),
-                                        RadiusX = 3,
-                                        RadiusY = 3
-                                    }, cacheManager.GetBrush("A2"), 1, stroke);
-
-                                    target.DrawEllipse(new Ellipse
-                                    {
-                                        Point = Matrix3x2.TransformPoint(transform, cn.Control2),
-                                        RadiusX = 3,
-                                        RadiusY = 3
-                                    }, cacheManager.GetBrush("A2"), 1, stroke);
+                                    target.DrawEllipse(Vector2.Transform(cn.Control1, transform), 3, 3, pen);
+                                    target.DrawEllipse(Vector2.Transform(cn.Control2, transform), 3, 3, pen);
                                     break;
                                 case QuadraticPathNode qn:
-                                    target.DrawEllipse(new Ellipse
-                                    {
-                                        Point = Matrix3x2.TransformPoint(transform, qn.Control),
-                                        RadiusX = 3,
-                                        RadiusY = 3
-                                    }, cacheManager.GetBrush("A2"), 1, stroke);
+                                    target.DrawEllipse(Vector2.Transform(qn.Control, transform), 3, 3, pen);
                                     break;
                             }
 
@@ -121,9 +111,8 @@ namespace Ibinimator.Service.Tools
                             target.FillRectangle(rect,
                                 rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
 
-                        target.DrawRectangle(rect,
-                            i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2"),
-                            1, stroke);
+                        using(var pen2 = target.CreatePen(1, i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
+                        target.DrawRectangle(rect, pen2);
                     }
                 }
             }
@@ -132,7 +121,7 @@ namespace Ibinimator.Service.Tools
             {
                 void RenderRectHandle(Vector2 position, bool isMouseDown)
                 {
-                    var p = Matrix3x2.TransformPoint(transform, position);
+                    var p = Vector2.Transform(position, transform);
                     var r = new RectangleF(p.X - 4f, p.Y - 4f, 8, 8);
 
                     if (isMouseDown)
@@ -161,29 +150,27 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        private void RenderGradientHandles(RenderTarget target, ICacheManager cacheManager, StrokeStyle1 stroke,
-            Matrix3x2 transform)
+        private void RenderGradientHandles(RenderContext target, ICacheManager cacheManager, Matrix3x2 transform)
         {
-            if (CurrentShape.FillBrush is GradientBrushInfo fill)
+            if (CurrentShape.Fill is GradientBrushInfo fill)
                 foreach (var stop in fill.Stops)
                 {
-                    var pos = Matrix3x2.TransformPoint(transform,
-                        Vector2.Lerp(fill.StartPoint, fill.EndPoint, stop.Position));
+                    var pos = 
+                        Vector2.Transform(
+                            Vector2.Lerp(
+                                fill.StartPoint, 
+                                fill.EndPoint, 
+                                stop.Offset),
+                            transform);
 
-                    using (var brush = new SolidColorBrush(target, stop.Color))
-                    {
-                        target.FillEllipse(new Ellipse(pos, 4, 4), brush);
-                    }
+                    using (var brush = target.CreateBrush(stop.Color))
+                        target.FillEllipse(pos, 4, 4, brush);
 
-                    target.DrawEllipse(
-                        new Ellipse(pos, 5, 5),
-                        cacheManager.GetBrush("L0"),
-                        2, stroke);
+                    using (var pen0 = target.CreatePen(2, cacheManager.GetBrush("L0")))
+                    target.DrawEllipse(pos, 5, 5, pen0);
 
-                    target.DrawEllipse(
-                        new Ellipse(pos, 5.5f, 5.5f),
-                        cacheManager.GetBrush("L2"),
-                        1, stroke);
+                    using (var pen2 = target.CreatePen(1, cacheManager.GetBrush("L2")))
+                    target.DrawEllipse(pos, 5.5f, 5.5f, pen2);
                 }
         }
 
@@ -194,7 +181,7 @@ namespace Ibinimator.Service.Tools
             throw new NotImplementedException();
         }
 
-        public void ApplyStroke(BrushInfo brush, StrokeInfo stroke)
+        public void ApplyStroke(PenInfo pen)
         {
             throw new NotImplementedException();
         }
@@ -218,15 +205,15 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 case Key.Escape:
-                    ArtView.SelectionManager.ClearSelection();
+                    Context.SelectionManager.ClearSelection();
                     _selectedNodes.Clear();
                     break;
 
                 case Key.Delete:
                     if (CurrentShape is Path path)
-                        ArtView.HistoryManager.Do(
+                        Context.HistoryManager.Do(
                             new ModifyPathCommand(
-                                ArtView.HistoryManager.Position + 1,
+                                Context.HistoryManager.Position + 1,
                                 path,
                                 _selectedNodes.ToArray(),
                                 _selectedNodes.Select(path.Nodes.IndexOf).ToArray(),
@@ -234,7 +221,7 @@ namespace Ibinimator.Service.Tools
 
                     _selectedNodes.Clear();
 
-                    Manager.ArtView.InvalidateSurface();
+                    Context.InvalidateSurface();
                     break;
 
                 default:
@@ -269,7 +256,7 @@ namespace Ibinimator.Service.Tools
 
             if (CurrentShape == null)
             {
-                var hit = Root.Hit<Shape>(ArtView.CacheManager, pos, true);
+                var hit = Root.Hit<Shape>(Context.CacheManager, pos, true);
 
                 if (hit != null)
                 {
@@ -277,14 +264,12 @@ namespace Ibinimator.Service.Tools
                     return true;
                 }
 
-                Manager.ArtView.SelectionManager.ClearSelection();
+                Context.SelectionManager.ClearSelection();
 
                 return false;
             }
 
-            var tpos =
-                Matrix3x2.TransformPoint(
-                    Matrix3x2.Invert(CurrentShape.AbsoluteTransform), pos);
+            var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
 
             if (CurrentShape is Path path)
             {
@@ -297,9 +282,9 @@ namespace Ibinimator.Service.Tools
                     }
                     else if (_alt)
                     {
-                        ArtView.HistoryManager.Do(
+                        Context.HistoryManager.Do(
                             new ModifyPathCommand(
-                                ArtView.HistoryManager.Position + 1,
+                                Context.HistoryManager.Position + 1,
                                 path,
                                 new[] {node},
                                 path.Nodes.IndexOf(node),
@@ -329,7 +314,7 @@ namespace Ibinimator.Service.Tools
                     _rectHandles.BottomRight = true;
             }
 
-            Manager.ArtView.SelectionManager.Update(true);
+            Context.SelectionManager.Update(true);
 
             return true;
         }
@@ -339,22 +324,16 @@ namespace Ibinimator.Service.Tools
             if (CurrentShape == null)
                 return false;
 
-            var tlpos =
-                Matrix3x2.TransformPoint(
-                    Matrix3x2.Invert(CurrentShape.AbsoluteTransform),
-                    _lastPos);
+            var tlpos = Vector2.Transform(_lastPos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
 
-            var tpos =
-                Matrix3x2.TransformPoint(
-                    Matrix3x2.Invert(CurrentShape.AbsoluteTransform),
-                    pos);
+            var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
 
             var delta = tpos - tlpos;
 
             if (CurrentShape is Path path)
                 if (_selectedNodes.Count > 0 && _down)
                 {
-                    var history = Manager.ArtView.HistoryManager;
+                    var history = Context.HistoryManager;
 
                     var newCmd =
                         new ModifyPathCommand(
@@ -364,7 +343,7 @@ namespace Ibinimator.Service.Tools
                             delta,
                             ModifyPathCommand.NodeOperation.Move);
 
-                    newCmd.Do(Manager.ArtView);
+                    newCmd.Do(Context);
 
                     if (history.Current is ModifyPathCommand cmd &&
                         cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
@@ -414,7 +393,7 @@ namespace Ibinimator.Service.Tools
 
             _moved = true;
 
-            ArtView.InvalidateSurface();
+            Context.InvalidateSurface();
 
             return false;
         }
@@ -428,9 +407,7 @@ namespace Ibinimator.Service.Tools
 
             if (!_moved && CurrentShape is Path path)
             {
-                var tpos =
-                    Matrix3x2.TransformPoint(
-                        Matrix3x2.Invert(path.AbsoluteTransform), pos);
+                var tpos = Vector2.Transform(pos, MathUtils.Invert(path.AbsoluteTransform));
 
                 var node = path.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
 
@@ -452,9 +429,9 @@ namespace Ibinimator.Service.Tools
                         if (path.Nodes.ElementAtOrDefault(index) is CloseNode close)
                             close.Open = !close.Open;
                         else
-                            Manager.ArtView.HistoryManager.Do(
+                            Context.HistoryManager.Do(
                                 new ModifyPathCommand(
-                                    Manager.ArtView.HistoryManager.Position + 1,
+                                    Context.HistoryManager.Position + 1,
                                     path,
                                     new PathNode[] {new CloseNode()},
                                     index,
@@ -463,33 +440,31 @@ namespace Ibinimator.Service.Tools
                 }
             }
 
-            ArtView.InvalidateSurface();
+            Context.InvalidateSurface();
 
             _down = false;
             return true;
         }
 
-        public void Render(RenderTarget target, ICacheManager cacheManager)
+        public void Render(RenderContext target, ICacheManager cacheManager)
         {
             if (CurrentShape == null)
                 return;
 
-            var props = new StrokeStyleProperties1 {TransformType = StrokeTransformType.Fixed};
-
-            using (var stroke = new StrokeStyle1(target.Factory.QueryInterface<Factory1>(), props))
+            using (var pen = target.CreatePen(1, cacheManager.GetBrush("A2")))
             {
                 var transform = CurrentShape.AbsoluteTransform;
 
                 using (var geom = cacheManager.GetGeometry(CurrentShape))
                 {
-                    target.Transform *= transform;
-                    target.DrawGeometry(geom, cacheManager.GetBrush("A2"), 1, stroke);
-                    target.Transform *= Matrix3x2.Invert(transform);
+                    target.Transform(transform);
+                    target.DrawGeometry(geom, pen);
+                    target.Transform(MathUtils.Invert(transform));
                 }
 
-                RenderGeometryHandles(target, cacheManager, stroke, transform);
+                RenderGeometryHandles(target, cacheManager, transform);
 
-                RenderGradientHandles(target, cacheManager, stroke, transform);
+                RenderGradientHandles(target, cacheManager, transform);
             }
         }
 

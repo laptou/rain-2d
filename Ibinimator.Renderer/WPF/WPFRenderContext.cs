@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
+using Color = Ibinimator.Core.Color;
 
 namespace Ibinimator.Renderer.WPF
 {
     public class WpfRenderContext : RenderContext
     {
+        private DrawingContext _ctx;
+
         public override ISolidColorBrush CreateBrush(Color color)
         {
             return new SolidColorBrush(color);
@@ -38,23 +42,85 @@ namespace Ibinimator.Renderer.WPF
             return new Pen(width, brush as Brush, dashes);
         }
 
+        public override ITextLayout CreateTextLayout()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IGeometry CreateGeometry()
+        {
+            return new Geometry();
+        }
+
+        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
+        {
+            return new Geometry(new EllipseGeometry(new Point(cx, cy), rx, ry));
+        }
+
+        public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
+        {
+            return new Geometry(new RectangleGeometry(new Rect(new Point(x, y), new Size(w, h))));
+        }
+
+        public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
+        {
+            return new Geometry(new GeometryGroup
+            {
+                Children = new GeometryCollection(
+                    geometries.Select(g => (System.Windows.Media.Geometry)g))
+            });
+        }
+
         public override void Dispose()
         {
+            _ctx = null;
         }
 
         protected override void Apply(RenderCommand command)
         {
-            throw new NotImplementedException();
+            switch (command)
+            {
+                case EllipseRenderCommand ellipse:
+                    _ctx?.DrawEllipse(
+                        ellipse.Brush as Brush, 
+                        ellipse.Pen as Pen,
+                        new Point(ellipse.CenterX, ellipse.CenterY),
+                        ellipse.RadiusX, ellipse.RadiusY);
+                    break;
+                case GeometryRenderCommand geometry:
+                    _ctx?.DrawGeometry(
+                        geometry.Brush as Brush,
+                        geometry.Pen as Pen,
+                        geometry.Geometry as Geometry);
+                    break;
+                case RectangleRenderCommand rect:
+                    _ctx?.DrawRectangle(
+                        rect.Brush as Brush,
+                        rect.Pen as Pen,
+                        new Rect(rect.Left, rect.Top, rect.Width, rect.Height));
+                    break;
+                case TransformRenderCommand transform:
+                    _ctx?.PushTransform(
+                        new MatrixTransform(
+                            transform.Transform.M11,
+                            transform.Transform.M12,
+                            transform.Transform.M21,
+                            transform.Transform.M22,
+                            transform.Transform.M31,
+                            transform.Transform.M32));
+                    break;
+            }
         }
 
-        protected override void Begin()
+        protected override void Begin(object ctx)
         {
-            throw new NotImplementedException();
+            if (ctx is DrawingContext dc)
+                _ctx = dc;
         }
 
         protected override void End()
         {
-            throw new NotImplementedException();
+            _ctx = null;
         }
     }
 }
