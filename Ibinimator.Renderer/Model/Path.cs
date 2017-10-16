@@ -134,7 +134,7 @@ namespace Ibinimator.Renderer.Model
         private class MyGeometrySink : IGeometrySink
         {
             private readonly Path _path;
-            private bool _closed;
+            private bool _closed = true;
 
             public MyGeometrySink(Path path)
             {
@@ -192,6 +192,7 @@ namespace Ibinimator.Renderer.Model
 
             public void Quadratic(float x, float y, float cx1, float cy1)
             {
+                _closed = false;
                 _path.Nodes.Add(new CubicPathNode
                 {
                     Control1 = new Vector2(cx1, cy1),
@@ -201,7 +202,6 @@ namespace Ibinimator.Renderer.Model
 
             public void Dispose()
             {
-                throw new NotImplementedException();
             }
 
             public void Optimize()

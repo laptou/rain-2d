@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -7,12 +8,15 @@ using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.Renderer
 {
+    [DebuggerDisplay("Position: {TopLeft}, Size: {Size}")]
     public struct RectangleF
     {
         public float Height;
         public float Left;
         public float Top;
         public float Width;
+
+        public Vector2 Size => new Vector2(Width, Height);
 
         public RectangleF(float left, float top, float width, float height)
         {

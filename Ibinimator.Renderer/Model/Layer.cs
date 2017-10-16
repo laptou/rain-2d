@@ -71,6 +71,12 @@ namespace Ibinimator.Renderer.Model
 
         public abstract void Render(RenderContext target, ICacheManager cache);
 
+        protected void RaiseBoundsChanged()
+        {
+            BoundsChanged?.Invoke(this, null);
+        }
+        public event EventHandler BoundsChanged;
+
         public virtual string DefaultName => "Layer";
 
         public virtual float Height

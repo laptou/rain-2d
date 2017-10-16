@@ -173,90 +173,7 @@ namespace Ibinimator.Service
 
             Context.InvalidateSurface();
         }
-
-        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var layer = (Layer) sender;
-
-            switch (e.PropertyName)
-            {
-                case "Geometry":
-                    lock (_geometries)
-                    {
-                        if (layer is IGeometricLayer geom)
-                            lock (layer)
-                            {
-                                _geometries.TryGet(geom)?.Dispose();
-                                _geometries[geom] = geom.GetGeometry(this);
-                            }
-                    }
-                    goto case "Bounds";
-
-                case nameof(IFilledLayer.Fill):
-                    lock (_fills)
-                    {
-                        if (layer is IFilledLayer shape)
-                        {
-                            _fills.TryGet(shape)?.Dispose();
-                            _fills[shape] = BindBrush(shape, shape.Fill);
-                        }
-                    }
-                    break;
-
-                case nameof(IStrokedLayer.Stroke):
-                    lock (_strokes)
-                    {
-                        if (layer is IStrokedLayer shape)
-                        {
-                            var stroke = _strokes.TryGet(shape);
-
-                            if (stroke != null)
-                                lock (stroke)
-                                {
-                                    stroke.Dispose();
-                                }
-
-                            GetStroke(shape); // GetStroke repopulates it
-                        }
-                    }
-                    break;
-
-                case "TextLayout":
-                    lock (_texts)
-                    {
-                        if (layer is ITextLayer text)
-                        {
-                            _texts.TryGet(text)?.Dispose();
-                            _texts[text] = text.GetLayout(Context);
-                        }
-                    }
-                    goto case "Geometry";
-
-                case "Bounds":
-                    lock (_bounds)
-                    {
-                        if (layer is IContainerLayer g)
-                            _bounds[layer] =
-                                g.SubLayers
-                                    .Select(GetRelativeBounds)
-                                    .Aggregate(RectangleF.Union);
-                        else
-                            _bounds[layer] = layer.GetBounds(this);
-                    }
-
-                    if (layer.Parent != null)
-                        OnLayerPropertyChanged(layer.Parent, new PropertyChangedEventArgs("Bounds"));
-                    goto case nameof(Layer.Transform);
-
-                case nameof(Layer.Transform):
-                    if (layer.Parent != null)
-                        OnLayerPropertyChanged(layer.Parent, new PropertyChangedEventArgs("Bounds"));
-                    break;
-            }
-
-            Context.InvalidateSurface();
-        }
-
+        
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var info = (PenInfo) sender;
@@ -290,8 +207,6 @@ namespace Ibinimator.Service
 
         public void Bind(Document doc)
         {
-            doc.Updated -= OnLayerPropertyChanged;
-            doc.Updated += OnLayerPropertyChanged;
             BindLayer(doc.Root);
         }
 
@@ -302,6 +217,18 @@ namespace Ibinimator.Service
                 {
                     _fills.TryGet(filled)?.Dispose();
                     _fills[filled] = BindBrush(filled, filled.Fill);
+
+                    filled.FillChanged += (s, e) =>
+                    {
+                        lock (_fills)
+                        {
+                            if (s is IFilledLayer shape)
+                            {
+                                _fills.TryGet(shape)?.Dispose();
+                                _fills[shape] = BindBrush(shape, shape.Fill);
+                            }
+                        }
+                    };
                 }
 
             if (layer is IStrokedLayer stroked && stroked.Stroke != null)
@@ -309,7 +236,58 @@ namespace Ibinimator.Service
                 {
                     _strokes.TryGet(stroked)?.Dispose();
                     _strokes[stroked] = BindStroke(stroked, stroked.Stroke);
+
+                    stroked.StrokeChanged += (s, e) =>
+                    {
+                        lock (_strokes)
+                        {
+                            if (s is IStrokedLayer shape)
+                            {
+                                _strokes.TryGet(shape)?.Dispose();
+                                _strokes[shape] = BindStroke(shape, shape.Stroke);
+                            }
+                        }
+                    };
                 }
+
+            if (layer is ITextLayer text)
+            {
+                text.LayoutChanged += (s, e) =>
+                {
+                    lock (_texts)
+                    {
+                        if (s is ITextLayer t)
+                        {
+                            _texts.TryGet(t)?.Dispose();
+                            _texts[t] = t.GetLayout(Context);
+                        }
+                    }
+                };
+            }
+
+            if (layer is IGeometricLayer geometric)
+            {
+                geometric.GeometryChanged += (s, e) =>
+                {
+                    lock (_geometries)
+                    {
+                        if (s is IGeometricLayer g)
+                        {
+                            _geometries.TryGet(g)?.Dispose();
+                            _geometries[g] = g.GetGeometry(this);
+                        }
+                    }
+                };
+            }
+
+            layer.BoundsChanged += (s, e) =>
+            {
+                lock (_bounds)
+                {
+                    if (s is ILayer l)
+                        _bounds[l] = l.GetBounds(this);
+                }
+            };
 
             if (layer is IContainerLayer group)
             {

@@ -10,10 +10,10 @@ namespace Ibinimator.Renderer.Direct2D
 {
     internal class TextRenderer : TextRendererBase
     {
-        public override SharpDX.Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX,
-            float baselineOriginY, SharpDX.Direct2D1.MeasuringMode measuringMode, SharpDX.DirectWrite.GlyphRun glyphRun,
-            SharpDX.DirectWrite.GlyphRunDescription glyphRunDescription,
-            SharpDX.ComObject clientDrawingEffect)
+        public override Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX,
+            float baselineOriginY, SharpDX.Direct2D1.MeasuringMode measuringMode, GlyphRun glyphRun,
+            GlyphRunDescription glyphRunDescription,
+            ComObject clientDrawingEffect)
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
@@ -34,7 +34,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             var geometry = new SharpDX.Direct2D1.TransformedGeometry(
                 context.RenderContext.Factory2D, path,
-                SharpDX.Matrix3x2.Translation(baselineOriginX, baselineOriginY));
+                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
 
             context.Geometries.Add(new Geometry(context.RenderContext.Target, geometry));
             context.Brushes.Add(format?.Fill?.CreateBrush(context.RenderContext));
@@ -44,7 +44,7 @@ namespace Ibinimator.Renderer.Direct2D
             context.CharactersForGeometry.Add(context.GeometryCount, glyphRunDescription.Text.Length);
             context.GeometryCount++;
 
-            return SharpDX.Result.Ok;
+            return Result.Ok;
         }
 
         #region Nested type: Context

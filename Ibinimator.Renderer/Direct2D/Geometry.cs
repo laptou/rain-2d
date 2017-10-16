@@ -34,6 +34,15 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
+        public Geometry(D2D1.RenderTarget target, IGeometry[] geometries)
+            : this (target, new D2D1.GeometryGroup(
+                target.Factory, 
+                D2D1.FillMode.Alternate, 
+                geometries.OfType<Geometry>().Select(g => g._geometry).ToArray<D2D1.Geometry>()))
+        {
+            
+        }
+
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
         {
             var geometry = new Geometry(_target);

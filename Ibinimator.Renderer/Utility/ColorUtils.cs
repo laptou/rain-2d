@@ -42,10 +42,10 @@ namespace Ibinimator.Core.Utility
         {
             return new Color
             {
-                A = (byte) (a * 255f),
-                R = (byte) (r * 255f),
-                G = (byte) (g * 255f),
-                B = (byte) (b * 255f)
+                A = (float) a,
+                R = (float) r,
+                G = (float) g,
+                B = (float) b
             };
         }
 
@@ -54,7 +54,7 @@ namespace Ibinimator.Core.Utility
             double max = MathUtils.Max(r, g, b), min = MathUtils.Min(r, g, b);
             double h, s, l = (max + min) / 2;
 
-            if (max == min)
+            if (Math.Abs(max - min) < double.Epsilon)
             {
                 h = s = 0; // achromatic
             }
@@ -74,13 +74,7 @@ namespace Ibinimator.Core.Utility
 
         public static Color RgbToColor(double r, double g, double b)
         {
-            return new Color
-            {
-                A = 255,
-                R = (byte) (r * 255f),
-                G = (byte) (g * 255f),
-                B = (byte) (b * 255f)
-            };
+            return RgbaToColor(r, g, b, 1);
         }
 
         public static (double h, double s, double l) RgbToHsl(double r, double g, double b)
@@ -108,7 +102,7 @@ namespace Ibinimator.Core.Utility
 
         public static (double r, double g, double b, double a) ColorToRgba(Color color)
         {
-            return (color.R / 255d, color.G / 255d, color.B / 255d, color.A / 255d);
+            return (color.R, color.G, color.B, color.A);
         }
 
         public static (double hue, double saturation, double lightness, double alpha) ColorToHsla(Color color)

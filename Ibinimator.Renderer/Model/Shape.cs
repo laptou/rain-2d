@@ -36,6 +36,7 @@ namespace Ibinimator.Renderer.Model
         protected void RaiseGeometryChanged()
         {
             GeometryChanged?.Invoke(this, null);
+            RaiseBoundsChanged();
         }
 
         protected void RaiseStrokeChanged()

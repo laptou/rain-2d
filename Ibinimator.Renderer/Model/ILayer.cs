@@ -35,5 +35,7 @@ namespace Ibinimator.Renderer.Model
         Layer Hit(ICacheManager cache, Vector2 point, bool includeMe);
         T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
         void Render(RenderContext target, ICacheManager cache);
+
+        event EventHandler BoundsChanged;
     }
 }

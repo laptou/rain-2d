@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,14 +13,38 @@ using Ibinimator.View;
 
 namespace Ibinimator
 {
+    public class DebugTraceListener : TraceListener
+    {
+        public override void Write(string message)
+        {
+        }
+
+        public override void WriteLine(string message)
+        {
+            // Debugger.Break();
+        }
+    }
+
+    /// <inheritdoc />
     /// <summary>
     ///     Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
         public App()
         {
             InitializeComponent();
+
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            PresentationTraceSources.Refresh();
+            PresentationTraceSources.DataBindingSource.Listeners.Add(new ConsoleTraceListener());
+            PresentationTraceSources.DataBindingSource.Listeners.Add(new DebugTraceListener());
+            PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning | SourceLevels.Error;
+
+            base.OnStartup(e);
 
             SetDefaultFont();
         }

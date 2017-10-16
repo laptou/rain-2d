@@ -74,8 +74,8 @@ namespace Ibinimator.Renderer
                 FontStyle = FontStyle,
                 FontStretch = FontStretch,
                 FontWeight = FontWeight,
-                Fill = Fill.Clone<BrushInfo>(),
-                Stroke = Stroke.Clone<PenInfo>(),
+                Fill = Fill?.Clone<BrushInfo>(),
+                Stroke = Stroke?.Clone<PenInfo>(),
                 CharacterSpacing = CharacterSpacing,
                 Kerning = Kerning,
                 Range = Range

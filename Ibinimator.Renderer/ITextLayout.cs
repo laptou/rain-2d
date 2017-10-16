@@ -13,6 +13,7 @@ namespace Ibinimator.Renderer
         IBrush GetBrushForGlyph(int index);
         IPen GetPenForGlyph(int index);
         int GetGlyphCount();
+        int GetGlyphCountForGeometry(int index);
 
         bool Hit(Vector2 point);
         RectangleF Measure();

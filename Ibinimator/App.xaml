@@ -120,8 +120,7 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="SelectionBrush">
                 <Setter.Value>
-                    <SolidColorBrush
-                        Color="{Binding Path=(util:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType=TextBox}}" />
+                    <SolidColorBrush Color="{Binding Path=(util:Helper.Accent), RelativeSource={RelativeSource Self}}" />
                 </Setter.Value>
             </Setter>
             <Setter Property="Template">

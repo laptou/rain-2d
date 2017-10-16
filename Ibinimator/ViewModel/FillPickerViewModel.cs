@@ -73,7 +73,7 @@ namespace Ibinimator.ViewModel
 
             public void SetColor(Core.Color color)
             {
-                Set(color.Convert(), nameof(Color));
+                Set(color, nameof(Color));
 
                 RaisePropertyChanged(nameof(Red));
                 RaisePropertyChanged(nameof(Green));

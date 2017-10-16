@@ -94,6 +94,7 @@ namespace Ibinimator.View.Control
                 _hue = (rotation / pi2 * 360 + 360) % 360;
 
                 UpdateColor();
+                UpdateHandles();
 
                 Dispatcher.BeginInvoke((Action)UpdateTriangle, DispatcherPriority.Render, null);
             }

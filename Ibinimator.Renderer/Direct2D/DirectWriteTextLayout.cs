@@ -139,7 +139,7 @@ namespace Ibinimator.Renderer.Direct2D
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
-                if (j >= index)
+                if (j >= index + 1)
                     return _textContext.Brushes[i];
             }
 
@@ -157,7 +157,7 @@ namespace Ibinimator.Renderer.Direct2D
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
-                if (j >= index)
+                if (j >= index + 1)
                     return _textContext.Geometries[i];
             }
 
@@ -167,6 +167,19 @@ namespace Ibinimator.Renderer.Direct2D
         public int GetGlyphCount()
         {
             return _textContext.GlyphCount;
+        }
+
+        public int GetGlyphCountForGeometry(int index)
+        {
+            var j = 0;
+            for (var i = 0; i < _textContext.Geometries.Count; i++)
+            {
+                j += _textContext.CharactersForGeometry[i];
+                if (j >= index + 1)
+                    return _textContext.CharactersForGeometry[i];
+            }
+
+            return -1;
         }
 
         public bool Hit(Vector2 point)
@@ -187,7 +200,7 @@ namespace Ibinimator.Renderer.Direct2D
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
-                if (j >= index)
+                if (j >= index + 1)
                     return _textContext.Pens[i];
             }
 

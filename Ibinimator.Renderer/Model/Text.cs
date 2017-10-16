@@ -25,6 +25,8 @@ namespace Ibinimator.Renderer.Model
             FontFamilyName = "Arial";
             Value = "";
             Stroke = new PenInfo();
+
+            _formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
         }
 
         public bool IsBlock
@@ -43,15 +45,8 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
-        }
-
-        public BrushInfo StrokeBrush
-        {
-            get => Get<BrushInfo>();
-            set => Set(value);
         }
 
         public DW.TextAlignment TextAlignment
@@ -60,11 +55,9 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
-
 
         public void InsertText(int position, string text)
         {
@@ -164,35 +157,26 @@ namespace Ibinimator.Renderer.Model
 
         public override void Render(RenderContext target, ICacheManager cache)
         {
-            // TODO: reimplement this
+                target.Transform(Transform);
 
-            //target.Transform(Transform);
+            var layout = cache.GetTextLayout(this);
 
-            //var geometry = cache.GetGeometry(this);
+            for (var i = 0; i < layout.GetGlyphCount();)
+            {
+                var geom = layout.GetGeometryForGlyph(i);
+                var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
+                var pen = layout.GetPenForGlyph(i) ?? cache.GetStroke(this);
 
-            //if (geometry is D2D.GeometryGroup geometryGroup)
-            //{
-            //    var geometries = geometryGroup.GetSourceGeometry();
+                if (fill != null)
+                    target.FillGeometry(geom, fill);
 
-            //    for (var i = 0; i < geometries.Length; i++)
-            //    {
-            //        var geom = geometries[i];
-            //        var fill = cache.GetResource<IBrush>(this, i * 2) ?? cache.GetFill(this);
-            //        var stroke = cache.GetResource<IPen>(this, i * 2 + 1) ?? cache.GetStroke(this);
+                if (pen?.Brush != null)
+                    target.DrawGeometry(geom, pen);
 
-            //        if (fill != null)
-            //            target.FillGeometry(geom, fill);
+                i += layout.GetGlyphCountForGeometry(i);
+            }
 
-            //        if (stroke?.Brush != null)
-            //            target.DrawGeometry(
-            //                geom,
-            //                stroke.Brush,
-            //                stroke.Width,
-            //                stroke.Style);
-            //    }
-            //}
-
-            //target.Transform = Matrix3x2.Invert(Transform) * target.Transform;
+            target.Transform(MathUtils.Invert(Transform));
         }
 
         protected void RaiseFillBrushChanged()
@@ -203,14 +187,16 @@ namespace Ibinimator.Renderer.Model
         protected void RaiseGeometryChanged()
         {
             GeometryChanged?.Invoke(this, null);
+            RaiseBoundsChanged();
         }
 
         protected void RaiseLayoutChanged()
         {
             LayoutChanged?.Invoke(this, null);
+            RaiseGeometryChanged();
         }
 
-        protected void RaiseStrokeInfoChanged()
+        protected void RaiseStrokeChanged()
         {
             StrokeChanged?.Invoke(this, null);
         }
@@ -285,6 +271,7 @@ namespace Ibinimator.Renderer.Model
             layout.FontStyle = FontStyle;
             layout.FontWeight = FontWeight;
             layout.FontStretch = FontStretch;
+            layout.FontFamily = FontFamilyName;
             layout.InsertText(0, Value);
 
             lock (_formats)
@@ -400,8 +387,7 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
@@ -411,8 +397,7 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
@@ -422,8 +407,7 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
@@ -433,8 +417,7 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
@@ -444,16 +427,11 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 Set(value);
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
-        public ObservableList<Format> Formats
-        {
-            get => Get<ObservableList<Format>>();
-            set => Set(value);
-        }
+        public ObservableList<Format> Formats => _formats;
 
         public override float Height
         {
@@ -461,14 +439,13 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 base.Height = value;
-                RaisePropertyChanged("TextLayout");
+                RaiseLayoutChanged();
             }
         }
 
         public ObservableList<float> Offsets
         {
             get => Get<ObservableList<float>>();
-            set => Set(value);
         }
 
         public override Vector2 Scale
@@ -491,7 +468,11 @@ namespace Ibinimator.Renderer.Model
         public PenInfo Stroke
         {
             get => Get<PenInfo>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaiseStrokeChanged();
+            }
         }
 
         public string Value
@@ -501,8 +482,7 @@ namespace Ibinimator.Renderer.Model
             {
                 Set(value);
                 RaisePropertyChanged(nameof(DefaultName));
-                RaisePropertyChanged("TextLayout");
-                RaisePropertyChanged("Bounds");
+                RaiseLayoutChanged();
             }
         }
 
@@ -512,7 +492,7 @@ namespace Ibinimator.Renderer.Model
             set
             {
                 base.Width = value;
-                RaisePropertyChanged("TextLayout");
+                RaiseLayoutChanged();
             }
         }
 

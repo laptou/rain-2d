@@ -74,9 +74,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
         {
-            return new Geometry(Target,
-                new D2D.GeometryGroup(Factory2D,
-                    D2D.FillMode.Alternate, geometries.Select(g => (D2D.Geometry) g).ToArray()));
+            return new Geometry(Target, geometries);
         }
 
         public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
