@@ -10,22 +10,22 @@ namespace Ibinimator.Renderer.WPF
 {
     public static class WpfConverter
     {
-        public static Core.Color Convert(this Color c)
+        public static Core.Model.Color Convert(this Color c)
         {
-            return new Core.Color(
+            return new Core.Model.Color(
                 c.R / 255f, 
                 c.G / 255f, 
                 c.B / 255f, 
                 c.A / 255f);
         }
 
-        public static Color Convert(this Core.Color c)
+        public static Color Convert(this Core.Model.Color c)
         {
             return Color.FromArgb(
+                (byte) (c.A * 255),
                 (byte) (c.R * 255), 
                 (byte) (c.G * 255), 
-                (byte) (c.B * 255),
-                (byte) (c.A * 255));
+                (byte) (c.B * 255));
         }
 
         public static Point Convert(this Vector2 vec)

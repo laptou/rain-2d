@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
-using SharpDX;
 using SharpDX.Direct2D1;
 using Layer = Ibinimator.Renderer.Model.Layer;
 
@@ -31,6 +30,8 @@ namespace Ibinimator.Service.Commands
 
         public CombineMode Operation { get; }
 
+        public Path Product => _product;
+
         public override void Do(IArtContext artContext)
         {
             if (_product == null)
@@ -47,34 +48,31 @@ namespace Ibinimator.Service.Commands
                     Stroke = _operand1.Stroke
                 };
 
-                using (var zSink = z.Open())
+                using (var xtg = xg.Transform(_operand1.AbsoluteTransform))
                 {
-                    using (var xtg = xg.Transform(_operand1.AbsoluteTransform))
+                    using (var ytg = yg.Transform(_operand2.AbsoluteTransform))
                     {
-                        using (var ytg = yg.Transform(_operand2.AbsoluteTransform))
+                        IGeometry zg;
+
+                        switch (Operation)
                         {
-                            IGeometry zg;
-
-                            switch (Operation)
-                            {
-                                case CombineMode.Union:
-                                    zg = xtg.Union(ytg);
-                                    break;
-                                case CombineMode.Intersect:
-                                    zg = xtg.Intersection(ytg);
-                                    break;
-                                case CombineMode.Xor:
-                                    zg = xtg.Xor(ytg);
-                                    break;
-                                case CombineMode.Exclude:
-                                    zg = xtg.Difference(ytg);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException();
-                            }
-
-                            zg.Read(zSink);
+                            case CombineMode.Union:
+                                zg = xtg.Union(ytg);
+                                break;
+                            case CombineMode.Intersect:
+                                zg = xtg.Intersection(ytg);
+                                break;
+                            case CombineMode.Xor:
+                                zg = xtg.Xor(ytg);
+                                break;
+                            case CombineMode.Exclude:
+                                zg = xtg.Difference(ytg);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
+
+                        z.Instructions.AddItems(zg.Read());
                     }
                 }
 

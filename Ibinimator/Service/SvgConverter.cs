@@ -5,23 +5,19 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;
-using static Ibinimator.Svg.LengthUnit;
-using ArcPathNode = Ibinimator.Renderer.Model.ArcPathNode;
-using CloseNode = Ibinimator.Renderer.Model.CloseNode;
-using Color = Ibinimator.Core.Color;
-using CubicPathNode = Ibinimator.Renderer.Model.CubicPathNode;
+using static Ibinimator.Core.Model.LengthUnit;
+using Color = Ibinimator.Core.Model.Color;
 using Ellipse = Ibinimator.Renderer.Model.Ellipse;
-using FontStretch = Ibinimator.Renderer.FontStretch;
-using FontWeight = Ibinimator.Renderer.FontWeight;
-using GradientStop = SharpDX.Direct2D1.GradientStop;
+using FontStretch = Ibinimator.Core.Model.FontStretch;
+using FontWeight = Ibinimator.Core.Model.FontWeight;
 using Layer = Ibinimator.Renderer.Model.Layer;
 using LineJoin = SharpDX.Direct2D1.LineJoin;
 using Path = Ibinimator.Renderer.Model.Path;
-using PathNode = Ibinimator.Renderer.Model.PathNode;
-using QuadraticPathNode = Ibinimator.Renderer.Model.QuadraticPathNode;
 using Rectangle = Ibinimator.Renderer.Model.Rectangle;
 using Text = Ibinimator.Renderer.Model.Text;
 
@@ -77,88 +73,42 @@ namespace Ibinimator.Utility
                     case Svg.Line line:
                         var linePath = new Path();
 
-                        linePath.Nodes.Add(new PathNode
-                        {
-                            X = line.X1.To(Pixels),
-                            Y = line.Y1.To(Pixels)
-                        });
+                        linePath.Instructions.Add(
+                            new MovePathInstruction(
+                                line.X1.To(Pixels),
+                                line.Y1.To(Pixels)));
 
-                        linePath.Nodes.Add(new PathNode
-                        {
-                            X = line.X2.To(Pixels),
-                            Y = line.Y2.To(Pixels)
-                        });
+                        linePath.Instructions.Add(
+                            new LinePathInstruction(
+                                line.X2.To(Pixels),
+                                line.Y2.To(Pixels)));
 
                         shape = linePath;
                         break;
                     case Svg.Path path:
                         var pathPath = new Path();
 
-                        pathPath.Nodes.AddItems(path.Data.Select(pathNode =>
-                        {
-                            switch (pathNode)
-                            {
-                                case Svg.ArcPathNode arcPathNode:
-                                    return new ArcPathNode
-                                    {
-                                        Clockwise = arcPathNode.Clockwise,
-                                        LargeArc = arcPathNode.LargeArc,
-                                        Position = arcPathNode.Position,
-                                        RadiusX = arcPathNode.RadiusX,
-                                        RadiusY = arcPathNode.RadiusY,
-                                        Rotation = arcPathNode.Rotation
-                                    };
-                                case Svg.CloseNode closeNode:
-                                    return new CloseNode
-                                    {
-                                        Open = closeNode.Open
-                                    };
-                                case Svg.CubicPathNode cubicPathNode:
-                                    return new CubicPathNode
-                                    {
-                                        Control1 = cubicPathNode.Control1,
-                                        Control2 = cubicPathNode.Control2,
-                                        Position = cubicPathNode.Position
-                                    };
-                                case Svg.QuadraticPathNode quadraticPathNode:
-                                    return new QuadraticPathNode
-                                    {
-                                        Control = quadraticPathNode.Control,
-                                        Position = quadraticPathNode.Position
-                                    };
-                                default:
-                                    return new PathNode
-                                    {
-                                        Position = pathNode.Position
-                                    };
-                            }
-                        }));
+                        pathPath.Instructions.AddItems(path.Data);
 
                         shape = pathPath;
                         break;
                     case Svg.Polygon polygon:
                         var polygonPath = new Path();
 
-                        polygonPath.Nodes.AddItems(
-                            polygon.Points.Select(v => new PathNode
-                            {
-                                Position = v
-                            }));
+                        polygonPath.Instructions.AddItems(
+                            polygon.Points.Select(v => new LinePathInstruction(v)));
 
-                        polygonPath.Nodes.Add(new CloseNode {Open = false});
+                        polygonPath.Instructions.Add(new ClosePathInstruction(false));
 
                         shape = polygonPath;
                         break;
                     case Svg.Polyline polyline:
                         var polylinePath = new Path();
 
-                        polylinePath.Nodes.AddItems(
-                            polyline.Points.Select(v => new PathNode
-                            {
-                                Position = v
-                            }));
+                        polylinePath.Instructions.AddItems(
+                            polyline.Points.Select(v => new LinePathInstruction(v)));
 
-                        polylinePath.Nodes.Add(new CloseNode {Open = true});
+                        polylinePath.Instructions.Add(new ClosePathInstruction(true));
 
                         shape = polylinePath;
                         break;
@@ -184,8 +134,8 @@ namespace Ibinimator.Utility
                         shape = new Text
                         {
                             FontFamilyName = text.FontFamily ?? "Arial",
-                            FontStretch = (FontStretch) (text.FontStretch ?? Svg.FontStretch.Normal),
-                            FontWeight = (FontWeight) (text.FontWeight ?? Svg.FontWeight.Normal),
+                            FontStretch = (FontStretch) (text.FontStretch ?? FontStretch.Normal),
+                            FontWeight = (FontWeight) (text.FontWeight ?? FontWeight.Normal),
                             FontSize = text.FontSize?.To(Points) ?? 12,
                             Value = text.Text
                         };
@@ -223,6 +173,7 @@ namespace Ibinimator.Utility
         {
             var stroke = new PenInfo
             {
+                Brush = FromSvg(paint, opacity),
                 Width = width,
                 Style = new StrokeStyleProperties1
                 {
@@ -349,64 +300,26 @@ namespace Ibinimator.Utility
                     case Ellipse ellipse:
                         shape = new Svg.Ellipse
                         {
-                            CenterX = new Svg.Length(ellipse.CenterX, Pixels),
-                            CenterY = new Svg.Length(ellipse.CenterY, Pixels),
-                            RadiusX = new Svg.Length(ellipse.RadiusX, Pixels),
-                            RadiusY = new Svg.Length(ellipse.RadiusY, Pixels)
+                            CenterX = new Length(ellipse.CenterX, Pixels),
+                            CenterY = new Length(ellipse.CenterY, Pixels),
+                            RadiusX = new Length(ellipse.RadiusX, Pixels),
+                            RadiusY = new Length(ellipse.RadiusY, Pixels)
                         };
                         break;
                     case Path path:
                         var pathPath = new Svg.Path();
 
-                        pathPath.Data = path.Nodes.Select(pathNode =>
-                        {
-                            switch (pathNode)
-                            {
-                                case ArcPathNode arcPathNode:
-                                    return new Svg.ArcPathNode
-                                    {
-                                        Clockwise = arcPathNode.Clockwise,
-                                        LargeArc = arcPathNode.LargeArc,
-                                        Position = arcPathNode.Position,
-                                        RadiusX = arcPathNode.RadiusX,
-                                        RadiusY = arcPathNode.RadiusY,
-                                        Rotation = arcPathNode.Rotation
-                                    };
-                                case CloseNode closeNode:
-                                    return new Svg.CloseNode
-                                    {
-                                        Open = closeNode.Open
-                                    };
-                                case CubicPathNode cubicPathNode:
-                                    return new Svg.CubicPathNode
-                                    {
-                                        Control1 = cubicPathNode.Control1,
-                                        Control2 = cubicPathNode.Control2,
-                                        Position = cubicPathNode.Position
-                                    };
-                                case QuadraticPathNode quadraticPathNode:
-                                    return new Svg.QuadraticPathNode
-                                    {
-                                        Control = quadraticPathNode.Control,
-                                        Position = quadraticPathNode.Position
-                                    };
-                                default:
-                                    return new Svg.PathNode
-                                    {
-                                        Position = pathNode.Position
-                                    };
-                            }
-                        }).ToArray();
+                        pathPath.Data = path.Instructions.ToArray();
 
                         shape = pathPath;
                         break;
                     case Rectangle rectangle:
                         shape = new Svg.Rectangle
                         {
-                            X = new Svg.Length(rectangle.X, Pixels),
-                            Y = new Svg.Length(rectangle.Y, Pixels),
-                            Width = new Svg.Length(rectangle.Width, Pixels),
-                            Height = new Svg.Length(rectangle.Height, Pixels)
+                            X = new Length(rectangle.X, Pixels),
+                            Y = new Length(rectangle.Y, Pixels),
+                            Width = new Length(rectangle.Width, Pixels),
+                            Height = new Length(rectangle.Height, Pixels)
                         };
                         break;
                     case Text text:
@@ -424,7 +337,7 @@ namespace Ibinimator.Utility
 
                 var dashes = shapeLayer.Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width).ToArray();
 
-                shape.StrokeWidth = new Svg.Length(shapeLayer.Stroke.Width, Pixels);
+                shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
                 shape.StrokeDashOffset = shapeLayer.Stroke.Style.DashOffset;
                 shape.StrokeLineCap = (Svg.LineCap)shapeLayer.Stroke.Style.StartCap;
@@ -449,10 +362,10 @@ namespace Ibinimator.Utility
             var svgText = new Svg.Text
             {
                 FontFamily = text.FontFamilyName,
-                FontStretch = (Svg.FontStretch) text.FontStretch,
-                FontWeight = (Svg.FontWeight) text.FontWeight,
-                FontStyle = (Svg.FontStyle)text.FontStyle,
-                FontSize = new Svg.Length(text.FontSize, Points),
+                FontStretch = (FontStretch) text.FontStretch,
+                FontWeight = (FontWeight) text.FontWeight,
+                FontStyle = (FontStyle)text.FontStyle,
+                FontSize = new Length(text.FontSize, Points),
                 Text = text.Value,
                 Y = text.Baseline
             };
@@ -462,10 +375,10 @@ namespace Ibinimator.Utility
                 var span = new Svg.Span
                 {
                     FontFamily = format.FontFamilyName ?? text.FontFamilyName,
-                    FontStretch = (Svg.FontStretch?) format.FontStretch,
-                    FontWeight = (Svg.FontWeight?) format.FontWeight,
-                    FontStyle = (Svg.FontStyle?)format.FontStyle,
-                    FontSize = format.FontSize != null ? new Svg.Length?(new Svg.Length(format.FontSize.Value, Points)) : null,
+                    FontStretch = (FontStretch?) format.FontStretch,
+                    FontWeight = (FontWeight?) format.FontWeight,
+                    FontStyle = (FontStyle?)format.FontStyle,
+                    FontSize = format.FontSize != null ? new Length?(new Length(format.FontSize.Value, Points)) : null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
                     Position = format.Range.Length,
 
@@ -480,7 +393,7 @@ namespace Ibinimator.Utility
                 {
                     var dashes = format.Stroke.Dashes.Select(f => f * format.Stroke.Width).ToArray();
 
-                    span.StrokeWidth = new Svg.Length(format.Stroke.Width, Pixels);
+                    span.StrokeWidth = new Length(format.Stroke.Width, Pixels);
                     span.StrokeDashArray = dashes.ToArray();
                     span.StrokeDashOffset = format.Stroke.Style.DashOffset;
                     span.StrokeLineCap = (Svg.LineCap) format.Stroke.Style.StartCap;

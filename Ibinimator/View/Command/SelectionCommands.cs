@@ -6,6 +6,7 @@ using Ibinimator.Service;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 using System.Numerics;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Utility;

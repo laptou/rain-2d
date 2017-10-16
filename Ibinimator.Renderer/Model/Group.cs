@@ -5,7 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {

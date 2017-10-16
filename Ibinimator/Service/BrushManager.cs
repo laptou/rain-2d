@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ibinimator.Shared;
 using Ibinimator.View.Control;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;

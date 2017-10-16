@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Svg
 {
     public class Path : ShapeElement
     {
-        public PathNode[] Data { get; set; }
+        public PathInstruction[] Data { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -25,37 +27,39 @@ namespace Ibinimator.Svg
 
             if (Data.Length <= 0) return element;
 
-            var begin = true;
             var pathData = "";
+            PathInstruction lastNode = null;
 
             foreach (var pathNode in Data)
             {
-                if (begin)
-                {
-                    pathData += $" M {pathNode.X},{pathNode.Y}";
-                    begin = false;
-                    continue;
-                }
-
                 switch (pathNode)
                 {
-                    case CloseNode c:
-                        pathData += $" Z";
-                        begin = true;
+                    case ClosePathInstruction _:
+                        pathData += " Z";
                         break;
-                    case QuadraticPathNode qn:
-                        pathData += $" Q {qn.Control.X},{qn.Control.Y}" +
-                                    $" {qn.X},{qn.Y}";
+                    case ArcPathInstruction an:
+                        pathData += $"A{an.RadiusX} {an.RadiusY} {an.Angle} " +
+                                    $"{(an.LargeArc ? 1 : 0)} {(an.Clockwise ? 1 : 0)} " +
+                                    $"{an.X} {an.Y}";
                         break;
-                    case CubicPathNode cn:
-                        pathData += $" C {cn.Control1.X},{cn.Control1.Y}" +
-                                    $" {cn.Control2.X},{cn.Control2.Y}" +
-                                    $" {cn.X},{cn.Y}";
+                    case QuadraticPathInstruction qn:
+                        pathData += $"Q{qn.Control.X},{qn.Control.Y} " +
+                                    $"{qn.X},{qn.Y} ";
                         break;
-                    default:
-                        pathData += $" L {pathNode.X},{pathNode.Y}";
+                    case CubicPathInstruction cn:
+                        pathData += $"C{cn.Control1.X},{cn.Control1.Y} " +
+                                    $"{cn.Control2.X},{cn.Control2.Y} " +
+                                    $"{cn.X},{cn.Y} ";
+                        break;
+                    case LinePathInstruction ln:
+                        pathData += $"L{ln.X},{ln.Y} ";
+                        break;
+                    case MovePathInstruction mn:
+                        pathData += $"M{mn.X},{mn.Y} ";
                         break;
                 }
+
+                lastNode = pathNode;
             }
 
             element.SetAttributeValue("d", pathData);

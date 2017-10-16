@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {

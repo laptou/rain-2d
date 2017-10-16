@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
@@ -173,11 +174,6 @@ namespace Ibinimator.Renderer.Direct2D
                     width,
                     height),
                 brush as Brush);
-        }
-
-        public override void Flush()
-        {
-            throw new NotImplementedException();
         }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)

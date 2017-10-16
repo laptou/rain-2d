@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using DW = SharpDX.DirectWrite;
 

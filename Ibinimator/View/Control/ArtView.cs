@@ -11,7 +11,9 @@ using Ibinimator.Service;
 using Ibinimator.Service.Tools;
 using SharpDX.Direct2D1;
 using System.Numerics;
+using System.Windows.Threading;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.View.Control
 {
@@ -23,10 +25,7 @@ namespace Ibinimator.View.Control
             = new Queue<(long, MouseEventType, Vector2)>();
 
         private bool _eventLoop;
-        private Factory _factory;
         private Vector2 _lastPosition;
-        private long _lastFrame;
-        private float _lastFps;
 
         public ArtView()
         {
@@ -207,8 +206,6 @@ namespace Ibinimator.View.Control
 
         protected void OnRenderTargetBound(object sender, RenderTarget target)
         {
-            _factory = target.Factory;
-
             CacheManager?.ResetAll();
             CacheManager?.LoadBrushes(RenderContext);
             CacheManager?.LoadBitmaps(RenderContext);
@@ -288,7 +285,7 @@ namespace Ibinimator.View.Control
                     }
                 }
 
-                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow);
+                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow, DispatcherPriority.Render);
 
                 _eventFlag.WaitOne(1000);
             }

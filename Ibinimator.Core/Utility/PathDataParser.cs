@@ -5,14 +5,15 @@ using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Core.Utility
 {
-    internal static class PathDataParser
+    public static class PathDataParser
     {
-        public static IEnumerable<PathNode> Parse(string data)
+        public static IEnumerable<PathInstruction> Parse(string data)
         {
-            var nodes = new List<PathNode>();
+            var nodes = new List<PathInstruction>();
 
             var commands = Regex.Matches(data ?? "",
                 @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))*");
@@ -23,7 +24,7 @@ namespace Ibinimator.Svg
             {
                 var parameters =
                     from set in command.Groups
-                        .OfType<System.Text.RegularExpressions.Group>()
+                        .OfType<Group>()
                         .Skip(2)
                     from Capture cap in set.Captures
                     select float.Parse(cap.Value);
@@ -68,11 +69,6 @@ namespace Ibinimator.Svg
                         throw new InvalidDataException("Invalid command.");
                 }
 
-                if (instruction != PathDataInstruction.Move &&
-                    (lastInstruction == PathDataInstruction.Move ||
-                     lastInstruction == PathDataInstruction.Close))
-                    nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
-
                 switch (instruction)
                 {
                     case PathDataInstruction.Move:
@@ -81,35 +77,11 @@ namespace Ibinimator.Svg
                         else
                             pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                        if (lastInstruction == PathDataInstruction.Close)
-                        {
-                            start = pos;
-                            instruction = PathDataInstruction.Close;
-                        }
-                        else if (lastInstruction != PathDataInstruction.Move)
-                        {
-                            start = pos;
-                            instruction = PathDataInstruction.Close;
-                            nodes.Add(new CloseNode {Open = true});
-                        }
+                        nodes.Add(new MovePathInstruction(pos));
 
-                        if (coordinates.Count >= 2)
-                        {
-                            instruction = PathDataInstruction.Line;
+                        start = pos;
 
-                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
-
-                            while (coordinates.Count >= 2)
-                            {
-                                if (relative)
-                                    pos += new Vector2(coordinates.Pop(), coordinates.Pop());
-                                else
-                                    pos = new Vector2(coordinates.Pop(), coordinates.Pop());
-
-                                nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
-                            }
-                        }
-                        break;
+                        goto case PathDataInstruction.Line;
 
                     #region Linear
 
@@ -121,9 +93,8 @@ namespace Ibinimator.Svg
                             else
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
+                            nodes.Add(new LinePathInstruction(pos));
                         }
-
                         break;
 
                     case PathDataInstruction.Horizontal:
@@ -134,7 +105,7 @@ namespace Ibinimator.Svg
                             else
                                 pos.X = coordinates.Pop();
 
-                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
+                            nodes.Add(new LinePathInstruction(pos));
                         }
                         break;
 
@@ -146,7 +117,7 @@ namespace Ibinimator.Svg
                             else
                                 pos.Y = coordinates.Pop();
 
-                            nodes.Add(new PathNode {X = pos.X, Y = pos.Y});
+                            nodes.Add(new LinePathInstruction(pos));
                         }
                         break;
 
@@ -168,12 +139,7 @@ namespace Ibinimator.Svg
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
                             }
 
-                            nodes.Add(new QuadraticPathNode
-                            {
-                                Control = control,
-                                X = pos.X,
-                                Y = pos.Y
-                            });
+                            nodes.Add(new QuadraticPathInstruction(pos, control));
                         }
                         break;
                     case PathDataInstruction.ShortQuadratic:
@@ -190,12 +156,7 @@ namespace Ibinimator.Svg
                             else
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                            nodes.Add(new QuadraticPathNode
-                            {
-                                Control = control,
-                                X = pos.X,
-                                Y = pos.Y
-                            });
+                            nodes.Add(new QuadraticPathInstruction(pos, control));
                         }
                         break;
 
@@ -219,13 +180,7 @@ namespace Ibinimator.Svg
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
                             }
 
-                            nodes.Add(new CubicPathNode
-                            {
-                                Control1 = control,
-                                Control2 = control2,
-                                X = pos.X,
-                                Y = pos.Y
-                            });
+                            nodes.Add(new CubicPathInstruction(pos, control, control2));
                         }
                         break;
                     case PathDataInstruction.ShortCubic:
@@ -248,13 +203,7 @@ namespace Ibinimator.Svg
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
                             }
 
-                            nodes.Add(new CubicPathNode
-                            {
-                                Control1 = control,
-                                Control2 = control2,
-                                X = pos.X,
-                                Y = pos.Y
-                            });
+                            nodes.Add(new CubicPathInstruction(pos, control, control2));
                         }
                         break;
 
@@ -263,29 +212,22 @@ namespace Ibinimator.Svg
                     case PathDataInstruction.Arc:
                         while (coordinates.Count >= 7)
                         {
-                            var node = new ArcPathNode
-                            {
-                                RadiusX = coordinates.Pop(),
-                                RadiusY = coordinates.Pop(),
-                                Rotation = coordinates.Pop(),
-                                LargeArc = coordinates.Pop() == 1,
-                                Clockwise = coordinates.Pop() == 1
-                            };
+                            var radii = new Vector2(coordinates.Pop(), coordinates.Pop());
+                            var angle = coordinates.Pop();
+                            var large = coordinates.Pop() == 1;
+                            var clockwise = coordinates.Pop() == 1;
 
                             if (relative)
                                 pos += new Vector2(coordinates.Pop(), coordinates.Pop());
                             else
                                 pos = new Vector2(coordinates.Pop(), coordinates.Pop());
 
-                            node.X = pos.X;
-                            node.Y = pos.Y;
-
-                            nodes.Add(node);
+                            nodes.Add(new ArcPathInstruction(pos, radii, angle, clockwise, large));
                         }
                         break;
 
                     case PathDataInstruction.Close:
-                        nodes.Add(new CloseNode());
+                        nodes.Add(new ClosePathInstruction(false));
                         pos = start;
                         break;
                 }

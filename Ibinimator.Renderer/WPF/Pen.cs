@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -45,6 +47,8 @@ namespace Ibinimator.Renderer.WPF
 
         public static implicit operator WPF.Pen(Pen pen)
         {
+            if (pen == null) return null;
+
             return new WPF.Pen(pen.Brush, pen.Width)
             {
                 DashCap = (WPF.PenLineCap) pen.LineCap,

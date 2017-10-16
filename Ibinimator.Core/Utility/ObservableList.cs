@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace Ibinimator.Core
+namespace Ibinimator.Core.Utility
 {
     public class ObservableList<T> : ObservableCollection<T>
     {

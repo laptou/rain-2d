@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {

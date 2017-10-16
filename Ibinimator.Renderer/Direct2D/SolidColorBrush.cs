@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
 

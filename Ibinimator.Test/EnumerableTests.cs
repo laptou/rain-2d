@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ibinimator.Test

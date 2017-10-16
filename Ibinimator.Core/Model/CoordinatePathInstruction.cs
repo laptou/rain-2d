@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
     public abstract class CoordinatePathInstruction : PathInstruction
     {

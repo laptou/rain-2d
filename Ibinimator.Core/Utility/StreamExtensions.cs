@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Utility
+namespace Ibinimator.Core.Utility
 {
     public static class StreamExtensions
     {

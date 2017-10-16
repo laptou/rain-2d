@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Core.Model
 {
     public enum FontWeight
     {
+        Normal = 400,
         Thin = 100,
         ExtraLight = 200,
         UltraLight = 200,
         Light = 300,
         SemiLight = 350,
-        Normal = 400,
         Regular = 400,
         Medium = 500,
         DemiBold = 600,

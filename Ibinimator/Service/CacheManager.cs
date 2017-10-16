@@ -6,6 +6,7 @@ using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
@@ -43,7 +44,7 @@ namespace Ibinimator.Service
         private readonly Dictionary<ITextLayer, ITextLayout> _texts =
             new Dictionary<ITextLayer, ITextLayout>();
 
-        public CacheManager(ArtView context)
+        public CacheManager(IArtContext context)
         {
             Context = context;
         }
@@ -384,7 +385,7 @@ namespace Ibinimator.Service
                 if (entry.Value is Color color)
                     _brushes[(string) entry.Key] =
                         target.CreateBrush(
-                            new Core.Color(
+                            new Core.Model.Color(
                                 color.R / 255f,
                                 color.G / 255f,
                                 color.B / 255f,

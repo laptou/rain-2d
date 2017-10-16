@@ -9,6 +9,8 @@ using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 using SharpDX.Direct2D1;
 using System.Numerics;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 
 namespace Ibinimator.Service.Tools
@@ -34,7 +36,7 @@ namespace Ibinimator.Service.Tools
 
         private Vector2 Constrain(Vector2 pos)
         {
-            var lastNode = CurrentPath.Nodes.Last();
+            var lastNode = CurrentPath.Instructions.OfType<CoordinatePathInstruction>().Last();
             var lpos = Vector2.Transform(lastNode.Position, CurrentPath.AbsoluteTransform);
 
             var delta = pos - lpos;
@@ -161,7 +163,11 @@ namespace Ibinimator.Service.Tools
                 var tpos =
                     Vector2.Transform(pos, MathUtils.Invert(CurrentPath.AbsoluteTransform));
 
-                var node = CurrentPath.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
+                var node = 
+                    CurrentPath
+                        .Instructions
+                        .OfType<CoordinatePathInstruction>()
+                        .FirstOrDefault(n => (n.Position - tpos).Length() < 5);
 
                 if (node != null)
                 {
@@ -170,13 +176,12 @@ namespace Ibinimator.Service.Tools
                             new ModifyPathCommand(
                                 Context.HistoryManager.Position + 1,
                                 CurrentPath,
-                                new[] {node},
-                                CurrentPath.Nodes.IndexOf(node),
+                                new [] { CurrentPath.Instructions.IndexOf(node) },
                                 ModifyPathCommand.NodeOperation.Remove));
                 }
                 else
                 {
-                    PathNode newNode;
+                    PathInstruction newNode;
 
                     if (_shift)
                     {
@@ -185,11 +190,11 @@ namespace Ibinimator.Service.Tools
                                 Constrain(pos), 
                                 MathUtils.Invert(CurrentPath.AbsoluteTransform));
 
-                        newNode = new PathNode {X = cpos.X, Y = cpos.Y};
+                        newNode = new LinePathInstruction(cpos);
                     }
                     else
                     {
-                        newNode = new PathNode {X = tpos.X, Y = tpos.Y};
+                        newNode = new LinePathInstruction(tpos);
                     }
 
                     Context.HistoryManager.Do(
@@ -197,7 +202,7 @@ namespace Ibinimator.Service.Tools
                             Context.HistoryManager.Position + 1,
                             CurrentPath,
                             new[] {newNode},
-                            CurrentPath.Nodes.Count,
+                            CurrentPath.Instructions.Count,
                             ModifyPathCommand.NodeOperation.Add));
                 }
             }
@@ -221,11 +226,11 @@ namespace Ibinimator.Service.Tools
 
                 target.Transform(MathUtils.Invert(transform));
 
-                var figures = CurrentPath.Nodes.Split(n => n is CloseNode);
+                var figures = CurrentPath.Instructions.Split(n => n is ClosePathInstruction);
 
                 foreach (var figure in figures)
                 {
-                    var nodes = figure.ToArray();
+                    var nodes = figure.Cast<CoordinatePathInstruction>().ToArray();
 
                     for (var i = 0; i < nodes.Length; i++)
                     {

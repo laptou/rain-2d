@@ -6,13 +6,15 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+using Ibinimator.Core;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
 using Ibinimator.Utility;
 using Ibinimator.View.Control;
-using Ibinimator.Core;
-using Ibinimator.Renderer;
 
 namespace Ibinimator.ViewModel
 {
@@ -153,7 +155,7 @@ namespace Ibinimator.ViewModel
                 Stroke = new PenInfo
                 {
                     Width = 5,
-                    Brush = new SolidColorBrushInfo { Color = new Color(1f, 0, 0, 1f) }
+                    Brush = new SolidColorBrushInfo {Color = new Color(1f, 0, 0, 1f)}
                 },
                 Rotation = MathUtils.Pi
             };
@@ -168,7 +170,7 @@ namespace Ibinimator.ViewModel
                 Stroke = new PenInfo
                 {
                     Width = 5,
-                    Brush = new SolidColorBrushInfo { Color = new Color(0, 1f, 1f, 1f) }
+                    Brush = new SolidColorBrushInfo {Color = new Color(0, 1f, 1f, 1f)}
                 }
             };
 
@@ -191,13 +193,13 @@ namespace Ibinimator.ViewModel
                     Brush = new SolidColorBrushInfo {Color = new Color(0, 1f, 1f, 1f)},
                     Width = 5
                 },
-                Nodes =
+                Instructions =
                 {
-                    new PathNode {X = 100, Y = 100},
-                    new PathNode {X = 150, Y = 100},
-                    new PathNode {X = 150, Y = 150},
-                    new PathNode {X = 200, Y = 150},
-                    new PathNode {X = 200, Y = 200}
+                    new MovePathInstruction(100, 100),
+                    new LinePathInstruction(150, 100),
+                    new LinePathInstruction(150, 150),
+                    new LinePathInstruction(200, 150),
+                    new LinePathInstruction(200, 200)
                 }
             };
 

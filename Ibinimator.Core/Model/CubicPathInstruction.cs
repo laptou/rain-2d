@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
+    [DebuggerDisplay("C {Control1} {Control2} {" + nameof(Position) + "}")]
     public class CubicPathInstruction : CoordinatePathInstruction
     {
         public CubicPathInstruction(float x, float y, float control1X, float control1Y, float control2X,
@@ -15,6 +17,12 @@ namespace Ibinimator.Renderer
             Control1Y = control1Y;
             Control2X = control2X;
             Control2Y = control2Y;
+        }
+
+        public CubicPathInstruction(Vector2 position, Vector2 control1, Vector2 control2) :
+            this(position.X, position.Y, control1.X, control1.Y, control2.X, control2.Y)
+        {
+            
         }
 
         public float Control1X { get; }

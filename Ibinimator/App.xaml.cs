@@ -49,7 +49,7 @@ namespace Ibinimator
             SetDefaultFont();
         }
 
-        public static Dispatcher Dispatcher => Current.Dispatcher;
+        public new static Dispatcher Dispatcher => Current.Dispatcher;
 
         public static bool IsDesigner =>
             LicenseManager.UsageMode == LicenseUsageMode.Designtime;

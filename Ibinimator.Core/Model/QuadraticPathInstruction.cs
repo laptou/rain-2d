@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
     public class QuadraticPathInstruction : CoordinatePathInstruction
     {
@@ -13,6 +13,10 @@ namespace Ibinimator.Renderer
             ControlX = controlX;
             ControlY = controlY;
         }
+
+        public QuadraticPathInstruction(Vector2 position, Vector2 control) :
+            this(position.X, position.Y, control.X, control.Y)
+        { }
 
         public float ControlX { get; }
         public float ControlY { get; }

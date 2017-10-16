@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.WPF
 {

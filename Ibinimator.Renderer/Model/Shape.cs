@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
 using Layer = Ibinimator.Renderer.Model.Layer;
 
