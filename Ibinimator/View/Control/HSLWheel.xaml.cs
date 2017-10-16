@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Ibinimator.Core.Utility;
 using Ibinimator.Utility;
+using Color = Ibinimator.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 namespace Ibinimator.View.Control
@@ -20,7 +21,7 @@ namespace Ibinimator.View.Control
     public partial class HslWheel : INotifyPropertyChanged
     {
         public static readonly DependencyProperty ColorProperty = DependencyProperty.Register(
-            "Color", typeof(Core.Color), typeof(HslWheel), new PropertyMetadata(new Core.Color(), OnDependencyPropertyChanged));
+            "Color", typeof(Color), typeof(HslWheel), new PropertyMetadata(new Color(), OnDependencyPropertyChanged));
 
         private bool _draggingRing;
 
@@ -44,9 +45,9 @@ namespace Ibinimator.View.Control
             UpdateHandles();
         }
 
-        public Core.Color Color
+        public Color Color
         {
-            get => (Core.Color) GetValue(ColorProperty);
+            get => (Color) GetValue(ColorProperty);
             set => SetValue(ColorProperty, value);
         }
 

@@ -11,12 +11,13 @@ using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 using System.Numerics;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Direct2D;
 using SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using FontStretch = Ibinimator.Renderer.FontStretch;
-using FontStyle = Ibinimator.Renderer.FontStyle;
-using FontWeight = Ibinimator.Renderer.FontWeight;
+using FontStretch = Ibinimator.Core.Model.FontStretch;
+using FontStyle = Ibinimator.Core.Model.FontStyle;
+using FontWeight = Ibinimator.Core.Model.FontWeight;
 using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service.Tools

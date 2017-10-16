@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Core
+namespace Ibinimator.Core.Model
 {
+    [DebuggerDisplay("{R} {G} {B} × {A}")]
     public struct Color
     {
         public Color(float r, float g, float b, float a) : this()

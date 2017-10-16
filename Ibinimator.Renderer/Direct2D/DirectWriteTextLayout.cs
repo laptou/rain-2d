@@ -4,6 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.WPF;
 using DW = SharpDX.DirectWrite;
 

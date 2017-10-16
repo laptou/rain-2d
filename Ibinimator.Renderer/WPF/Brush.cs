@@ -13,7 +13,7 @@ namespace Ibinimator.Renderer.WPF
 
         public static implicit operator System.Windows.Media.Brush(Brush brush)
         {
-            return brush.WpfBrush;
+            return brush?.WpfBrush;
         }
 
         #region IBrush Members

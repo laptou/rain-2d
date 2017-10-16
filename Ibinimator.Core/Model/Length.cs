@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Core.Model
 {
     public struct Length
     {
@@ -126,7 +126,7 @@ namespace Ibinimator.Svg
         {
             var l3 = Convert(l2, l1.Unit);
 
-            return Math.Abs(l1.Magnitude - l3.Magnitude) < C.Epsilon;
+            return Math.Abs(l1.Magnitude - l3.Magnitude) < float.Epsilon;
         }
 
         public static implicit operator Length(ValueTuple<float, LengthUnit> v)

@@ -5,6 +5,7 @@ using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.WPF;
@@ -12,6 +13,7 @@ using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
 using DashStyle = SharpDX.Direct2D1.DashStyle;
+using LineJoin = SharpDX.Direct2D1.LineJoin;
 
 namespace Ibinimator.ViewModel
 {
@@ -71,7 +73,7 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public void SetColor(Core.Color color)
+            public void SetColor(Color color)
             {
                 Set(color, nameof(Color));
 

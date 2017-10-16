@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
-    public enum SpreadMethod
+    public abstract class PathInstruction
     {
-        Pad,
-        Reflect,
-        Repeat
     }
 }

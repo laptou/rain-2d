@@ -12,6 +12,7 @@ using Ibinimator.View.Control;
 using SharpDX.Direct2D1;
 using System.Numerics;
 using Ibinimator.Core;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Layer = Ibinimator.Renderer.Model.Layer;

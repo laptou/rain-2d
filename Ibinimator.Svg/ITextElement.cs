@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {
@@ -15,13 +16,6 @@ namespace Ibinimator.Svg
         FontStyle? FontStyle { get; set; }
         FontWeight? FontWeight { get; set; }
         string Text { get; set; }
-    }
-
-    public enum FontStyle
-    {
-        Normal,
-        Italic,
-        Oblique
     }
 
     public interface IInlineTextElement : ITextElement

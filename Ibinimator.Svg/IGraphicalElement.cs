@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Xml.Linq;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {

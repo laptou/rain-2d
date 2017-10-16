@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-using Color = Ibinimator.Core.Color;
+using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -137,14 +137,6 @@ namespace Ibinimator.Renderer.WPF
                 new RectangleRenderCommand(left, top, width, height, true, brush, null));
         }
 
-        public override void Flush()
-        {
-            Begin(null);
-            while (_commandQueue.Count > 0)
-                Apply(_commandQueue.Dequeue());
-            End();
-        }
-
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             _commandQueue.Enqueue(new TransformRenderCommand(transform, absolute));
@@ -197,6 +189,9 @@ namespace Ibinimator.Renderer.WPF
 
         public override void End()
         {
+            while (_commandQueue.Count > 0)
+                Apply(_commandQueue.Dequeue());
+
             _ctx = null;
         }
     }

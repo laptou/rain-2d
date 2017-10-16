@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using Ibinimator.Utility;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
@@ -20,18 +23,12 @@ namespace Ibinimator.Service.Tools
 {
     public class NodeTool : Model, ITool
     {
-        private readonly List<PathNode> _selectedNodes = new List<PathNode>();
+        private readonly List<(int index, bool c1, bool c2)> _selection = new List<(int, bool, bool)>();
         private bool _alt;
         private bool _down;
 
-        private (bool Center, bool RadiusX, bool RadiusY) _ellipseHandles =
-            (false, false, false);
-
         private Vector2 _lastPos;
         private bool _moved;
-
-        private (bool TopLeft, bool TopRight, bool BottomLeft, bool BottomRight) _rectHandles =
-            (false, false, false, false);
 
         private bool _shift;
 
@@ -70,6 +67,7 @@ namespace Ibinimator.Service.Tools
             var geom = cacheManager.GetGeometry(CurrentShape);
             var nodes = geom.Read();
             var figures = nodes.Split(n => n is ClosePathInstruction);
+            var index = 0;
 
             foreach (var figure in figures)
             {
@@ -83,9 +81,8 @@ namespace Ibinimator.Service.Tools
 
                     var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
 
-                    //if (_selectedNodes.Contains(node) ||
-                    //    _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i - 1, 0, nodes.Length))) ||
-                    //    _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i + 1, 0, nodes.Length))))
+                    if(_selection.Any(n => Math.Abs(n.index - index) <= 2))
+                    {
                         switch (node)
                         {
                             case CubicPathInstruction cn:
@@ -96,24 +93,33 @@ namespace Ibinimator.Service.Tools
                                 target.DrawEllipse(Vector2.Transform(qn.Control, transform), 3, 3, pen);
                                 break;
                         }
+                    }
 
                     var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
 
-                    //if (_selectedNodes.Contains(node))
-                    //    target.FillRectangle(rect,
-                    //        rect.Contains(_lastPos) && _down
-                    //            ? cacheManager.GetBrush("A4")
-                    //            : cacheManager.GetBrush("A3"));
-                    /* else */ if (_down)
+                    if (_selection.Any(n => n.index == index))
                         target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) && _down
+                                ? cacheManager.GetBrush("A4")
+                                : cacheManager.GetBrush("A3"));
+                    else if (_down)
+                        target.FillRectangle(rect,
+                            rect.Contains(_lastPos) ? 
+                            cacheManager.GetBrush("A4") : 
+                            cacheManager.GetBrush("L1"));
                     else
                         target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) ? 
+                            cacheManager.GetBrush("A3") : 
+                            cacheManager.GetBrush("L1"));
 
                     using (var pen2 = target.CreatePen(1, i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
                         target.DrawRectangle(rect, pen2);
+
+                    index++;
                 }
+
+                index++;
             }
 
             //if (CurrentShape is Path path)
@@ -237,7 +243,7 @@ namespace Ibinimator.Service.Tools
 
         public void Dispose()
         {
-            _selectedNodes.Clear();
+            _selection.Clear();
         }
 
         public bool KeyDown(Key key)
@@ -255,7 +261,7 @@ namespace Ibinimator.Service.Tools
 
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
-                    _selectedNodes.Clear();
+                    _selection.Clear();
                     break;
 
                 case Key.Delete:
@@ -264,11 +270,10 @@ namespace Ibinimator.Service.Tools
                             new ModifyPathCommand(
                                 Context.HistoryManager.Position + 1,
                                 path,
-                                _selectedNodes.ToArray(),
-                                _selectedNodes.Select(path.Nodes.IndexOf).ToArray(),
+                                _selection.Select(n => n.index).ToArray(),
                                 ModifyPathCommand.NodeOperation.Remove));
 
-                    _selectedNodes.Clear();
+                    _selection.Clear();
 
                     Context.InvalidateSurface();
                     break;
@@ -320,47 +325,43 @@ namespace Ibinimator.Service.Tools
 
             var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
 
-            if (CurrentShape is Path path)
+            var geometry = Context.CacheManager.GetGeometry(CurrentShape);
+            var instructions = geometry.Read();
+
+            var node = instructions
+                .OfType<CoordinatePathInstruction>()
+                .Select((c, i) => (instruction: c, index: i))
+                .FirstOrDefault(n => (n.instruction.Position - tpos).Length() < 5);
+
+            if (node.instruction != null)
             {
-                var node = path.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
-
-                if (node != null)
-                    if (_shift)
+                if (_alt)
+                {
+                    if (!(CurrentShape is Path))
                     {
-                        _selectedNodes.Add(node);
+                        var ctp = new ConvertToPathCommand(
+                            Context.HistoryManager.Position + 1,
+                            new IGeometricLayer[] {CurrentShape});
+                        Context.HistoryManager.Do(ctp);
+
+                        ctp.Products[0].Selected = true;
                     }
-                    else if (_alt)
-                    {
-                        Context.HistoryManager.Do(
-                            new ModifyPathCommand(
-                                Context.HistoryManager.Position + 1,
-                                path,
-                                new[] {node},
-                                path.Nodes.IndexOf(node),
-                                ModifyPathCommand.NodeOperation.Remove));
 
-                        _selectedNodes.Remove(node);
-                    }
-                    else
-                    {
-                        _selectedNodes.Clear();
-                        _selectedNodes.Add(node);
-                    }
-            }
+                    Context.HistoryManager.Do(
+                        new ModifyPathCommand(
+                            Context.HistoryManager.Position + 1,
+                            (Path)CurrentShape,
+                            new[] { node.index },
+                            ModifyPathCommand.NodeOperation.Remove));
 
-            if (CurrentShape is Rectangle rect)
-            {
-                if (Math.Abs(tpos.X - rect.X) <= 4 && Math.Abs(tpos.Y - rect.Y) <= 4)
-                    _rectHandles.TopLeft = true;
+                    _selection.RemoveAll(n => n.index == node.index);
+                }
+                else
+                {
+                    if (!_shift) _selection.Clear();
 
-                if (Math.Abs(tpos.X - (rect.X + rect.Width)) <= 4 && Math.Abs(tpos.Y - rect.Y) <= 4)
-                    _rectHandles.TopRight = true;
-
-                if (Math.Abs(tpos.X - rect.X) <= 4 && Math.Abs(tpos.Y - (rect.Y + rect.Height)) <= 4)
-                    _rectHandles.BottomLeft = true;
-
-                if (Math.Abs(tpos.X - (rect.X + rect.Width)) <= 4 && Math.Abs(tpos.Y - (rect.Y + rect.Height)) <= 4)
-                    _rectHandles.BottomRight = true;
+                    _selection.Add((node.index, false, false));
+                }
             }
 
             Context.SelectionManager.Update(true);
@@ -380,7 +381,7 @@ namespace Ibinimator.Service.Tools
             var delta = tpos - tlpos;
 
             if (CurrentShape is Path path)
-                if (_selectedNodes.Count > 0 && _down)
+                if (_selection.Count > 0 && _down)
                 {
                     var history = Context.HistoryManager;
 
@@ -388,7 +389,7 @@ namespace Ibinimator.Service.Tools
                         new ModifyPathCommand(
                             history.Position + 1,
                             path,
-                            _selectedNodes.ToArray(),
+                            _selection.Select(s => s.index).ToArray(),
                             delta,
                             ModifyPathCommand.NodeOperation.Move);
 
@@ -397,12 +398,12 @@ namespace Ibinimator.Service.Tools
                     if (history.Current is ModifyPathCommand cmd &&
                         cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
                         newCmd.Time - cmd.Time < 500 &&
-                        cmd.Nodes.SequenceEqual(newCmd.Nodes))
+                        cmd.Instructions.SequenceEqual(newCmd.Instructions))
                         history.Replace(
                             new ModifyPathCommand(
                                 history.Position + 1,
                                 path,
-                                newCmd.Nodes,
+                                newCmd.Indices,
                                 cmd.Delta + newCmd.Delta,
                                 ModifyPathCommand.NodeOperation.Move));
                     else
@@ -410,33 +411,7 @@ namespace Ibinimator.Service.Tools
 
                     return true;
                 }
-
-            if (CurrentShape is Rectangle rect)
-            {
-                if (_rectHandles.TopLeft)
-                {
-                    rect.X += delta.X;
-                    rect.Y += delta.Y;
-                }
-
-                if (_rectHandles.TopRight)
-                {
-                    rect.Width += delta.X;
-                    rect.Y += delta.Y;
-                }
-
-                if (_rectHandles.BottomLeft)
-                {
-                    rect.X += delta.X;
-                    rect.Height += delta.Y;
-                }
-
-                if (_rectHandles.BottomRight)
-                {
-                    rect.Width += delta.X;
-                    rect.Height += delta.Y;
-                }
-            }
+            
 
             _lastPos = pos;
 
@@ -449,8 +424,6 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseUp(Vector2 pos)
         {
-            _rectHandles = (false, false, false, false);
-
             if (CurrentShape == null)
                 return false;
 
@@ -458,11 +431,12 @@ namespace Ibinimator.Service.Tools
             {
                 var tpos = Vector2.Transform(pos, MathUtils.Invert(path.AbsoluteTransform));
 
-                var node = path.Nodes.FirstOrDefault(n => (n.Position - tpos).Length() < 5);
+                var node = path.Instructions.OfType<CoordinatePathInstruction>().FirstOrDefault(
+                    n => (n.Position - tpos).Length() < 5);
 
                 if (node != null)
                 {
-                    var figures = path.Nodes.Split(n => n is CloseNode).ToList();
+                    var figures = path.Instructions.Split(n => n is ClosePathInstruction).ToList();
                     var index = 0;
 
                     foreach (var figure in figures.Select(Enumerable.ToArray))
@@ -475,14 +449,14 @@ namespace Ibinimator.Service.Tools
 
                         if (start != node) continue;
 
-                        if (path.Nodes.ElementAtOrDefault(index) is CloseNode close)
-                            close.Open = !close.Open;
+                        if (path.Instructions.ElementAtOrDefault(index) is ClosePathInstruction close)
+                            path.Instructions[index] = new ClosePathInstruction(!close.Open);
                         else
                             Context.HistoryManager.Do(
                                 new ModifyPathCommand(
                                     Context.HistoryManager.Position + 1,
                                     path,
-                                    new PathNode[] {new CloseNode()},
+                                    new PathInstruction[] {new ClosePathInstruction(false)},
                                     index,
                                     ModifyPathCommand.NodeOperation.Add));
                     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -127,13 +128,71 @@ namespace Ibinimator.Renderer.WPF
                             break;
                     }
 
-                yield return new ClosePathInstruction(figure.IsClosed);
+                yield return new ClosePathInstruction(!figure.IsClosed);
             }
         }
 
         public void Read(IGeometrySink sink)
         {
             throw new NotImplementedException();
+        }
+
+        public void Load(IEnumerable<PathInstruction> source)
+        {
+            _geometry = new WPF.PathGeometry();
+
+            var figure = new WPF.PathFigure();
+            foreach (var instruction in source)
+            {
+                switch (instruction)
+                {
+                    case ClosePathInstruction close:
+                        figure.IsClosed = !close.Open;
+
+                        if (figure.Segments.Count > 0)
+                            _geometry.Figures.Add(figure);
+
+                        figure = new WPF.PathFigure { IsFilled = true };
+                        break;
+                    case ArcPathInstruction arc:
+                        figure.Segments.Add(
+                            new WPF.ArcSegment(
+                                arc.Position.Convert(), new Size(arc.RadiusX, arc.RadiusY), 
+                                arc.Angle, arc.LargeArc,
+                                arc.Clockwise ? WPF.SweepDirection.Clockwise : WPF.SweepDirection.Counterclockwise, true));
+                        break;
+                    case CubicPathInstruction cubic:
+                        figure.Segments.Add(
+                            new WPF.BezierSegment(
+                                cubic.Control1.Convert(),
+                                cubic.Control2.Convert(),
+                                cubic.Position.Convert(), true));
+                        break;
+                    case LinePathInstruction line:
+                        figure.Segments.Add(new WPF.LineSegment(line.Position.Convert(), true));
+                        break;
+                    case MovePathInstruction move:
+                        if(figure.Segments.Count > 0)
+                            _geometry.Figures.Add(figure);
+
+                        figure = new WPF.PathFigure
+                        {
+                            StartPoint = move.Position.Convert(),
+                            IsFilled = true
+                        };
+
+                        break;
+                    case QuadraticPathInstruction quadratic:
+                        figure.Segments.Add(
+                            new WPF.QuadraticBezierSegment(
+                                quadratic.Control.Convert(),
+                                quadratic.Position.Convert(), true));
+                        break;
+                }
+            }
+
+            if (figure.Segments.Count > 0)
+                _geometry.Figures.Add(figure);
         }
 
         public bool StrokeContains(float x, float y, float width)

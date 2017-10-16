@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
-    public enum LineJoin
+    public enum SpreadMethod
     {
-        Miter,
-        Bevel,
-        Round
+        Pad,
+        Reflect,
+        Repeat
     }
 }

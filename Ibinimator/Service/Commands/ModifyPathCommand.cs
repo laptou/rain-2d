@@ -1,62 +1,100 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 using System.Numerics;
+using System.Threading.Tasks;
+using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ModifyPathCommand : LayerCommandBase<Path>
     {
-        public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
-            int index, NodeOperation operation) : base(id, new[] { target })
+        #region NodeOperation enum
+
+        public enum NodeOperation
         {
-            if(operation != NodeOperation.Add &&
-               operation != NodeOperation.Remove)
+            Add,
+            Remove,
+            Move,
+            MoveHandle1,
+            MoveHandle2
+        }
+
+        #endregion
+
+        public ModifyPathCommand(long id, Path target, PathInstruction[] instructions,
+            int index, NodeOperation operation) : base(id, new[] {target})
+        {
+            if (operation != NodeOperation.Add)
                 throw new InvalidOperationException();
 
-            Nodes = nodes;
+            Instructions = instructions;
             Indices = new[] {index};
             Operation = operation;
         }
 
-        public ModifyPathCommand(long id, Path target, PathNode[] nodes, 
-            int[] indices, NodeOperation operation) : base(id, new[] { target })
+        public ModifyPathCommand(long id, Path target, PathInstruction[] instructions,
+            int[] indices, NodeOperation operation) : base(id, new[] {target})
         {
-            if (operation != NodeOperation.Add &&
-                operation != NodeOperation.Remove)
+            if (operation != NodeOperation.Add)
                 throw new InvalidOperationException();
 
-            Nodes = nodes;
+            Instructions = instructions;
             Indices = indices;
             Operation = operation;
         }
 
-        public ModifyPathCommand(long id, Path target, PathNode[] nodes,
-            Vector2 delta, NodeOperation operation) : base(id, new[] { target })
+        public ModifyPathCommand(long id, Path target, int[] indices,
+            Vector2 delta, NodeOperation operation) : base(id, new[] {target})
         {
             if (operation != NodeOperation.Move &&
                 operation != NodeOperation.MoveHandle1 &&
                 operation != NodeOperation.MoveHandle2)
                 throw new InvalidOperationException();
 
-            if(nodes.Length > 1 &&
-               (operation == NodeOperation.MoveHandle1 ||
-               operation == NodeOperation.MoveHandle2))
-                throw new ArgumentException("Can only move one handle at a time.");
-
-            Nodes = nodes;
+            Indices = indices;
             Delta = delta;
             Operation = operation;
         }
 
-        public PathNode[] Nodes { get; }
+        public ModifyPathCommand(long id, Path target, int[] indices, 
+            NodeOperation operation) : base(id, new[] { target })
+        {
+            if (operation != NodeOperation.Remove)
+                throw new InvalidOperationException();
+
+            Indices = indices;
+            Operation = operation;
+        }
+
+        public Vector2 Delta { get; }
+
+        public override string Description
+        {
+            get
+            {
+                switch (Operation)
+                {
+                    case NodeOperation.Add:
+                        return $"Added {Instructions.Length} node(s)";
+                    case NodeOperation.Remove:
+                        return $"Removed {Instructions.Length} node(s)";
+                    case NodeOperation.Move:
+                        return $"Moved {Instructions.Length} node(s)";
+                    case NodeOperation.MoveHandle1:
+                    case NodeOperation.MoveHandle2:
+                        return "Modified node handle(s)";
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
 
         public int[] Indices { get; }
 
-        public Vector2 Delta { get; }
+        public PathInstruction[] Instructions { get; }
 
         public NodeOperation Operation { get; }
 
@@ -67,42 +105,80 @@ namespace Ibinimator.Service.Commands
             switch (Operation)
             {
                 case NodeOperation.Add:
-                    target.Nodes.InsertItems(Nodes, Indices[0]);
+                    for (var i = 0; i < Indices.Length; i++)
+                        target.Instructions.Insert(Indices[i], Instructions[i]);
                     break;
                 case NodeOperation.Remove:
-                    target.Nodes.RemoveItems(Nodes);
+                    for (var i = 0; i < Indices.Length; i++)
+                        target.Instructions.RemoveAt(i);
                     break;
                 case NodeOperation.Move:
-                    foreach (var node in Nodes)
-                    {
-                        if (node is CubicPathNode cubic)
+                    for (var i = 0; i < Indices.Length; i++)
+                        switch (target.Instructions[i])
                         {
-                            cubic.Control1 += Delta;
-                            cubic.Control2 += Delta;
+                            case CubicPathInstruction cubic:
+                                target.Instructions[i] =
+                                    new CubicPathInstruction(
+                                        cubic.Position + Delta,
+                                        cubic.Control1 + Delta,
+                                        cubic.Control2 + Delta
+                                    );
+                                break;
+                            case QuadraticPathInstruction quad:
+                                target.Instructions[i] =
+                                    new QuadraticPathInstruction(
+                                        quad.Position + Delta,
+                                        quad.Control + Delta
+                                    );
+                                break;
+                            case LinePathInstruction line:
+                                target.Instructions[i] =
+                                    new LinePathInstruction(line.Position + Delta);
+                                break;
+                            case MovePathInstruction move:
+                                target.Instructions[i] =
+                                    new MovePathInstruction(move.Position + Delta);
+                                break;
                         }
-
-                        if (node is QuadraticPathNode quadratic)
-                            quadratic.Control += Delta;
-
-                        node.Position += Delta;
-                    }
 
                     break;
                 case NodeOperation.MoveHandle1:
-                {
-                    // braces to avoid variable scope issues for
-                    // cubic
-                    if (Nodes[0] is CubicPathNode cubic)
-                        cubic.Control1 += Delta;
-                    else if (Nodes[0] is QuadraticPathNode quadratic)
-                        quadratic.Control += Delta;
-                }
+                    for (var i = 0; i < Indices.Length; i++)
+
+                        // braces to avoid variable scope issues for
+                        // cubic
+                        switch (target.Instructions[i])
+                        {
+                            case CubicPathInstruction cubic:
+                                target.Instructions[i] =
+                                    new CubicPathInstruction(
+                                        cubic.Position,
+                                        cubic.Control1 + Delta,
+                                        cubic.Control2
+                                    );
+                                break;
+                            case QuadraticPathInstruction quad:
+                                target.Instructions[i] =
+                                    new QuadraticPathInstruction(
+                                        quad.Position,
+                                        quad.Control + Delta
+                                    );
+                                break;
+                        }
                     break;
                 case NodeOperation.MoveHandle2:
-                {
-                    if (Nodes[0] is CubicPathNode cubic)
-                        cubic.Control2 += Delta;
-                }
+                    for (var i = 0; i < Indices.Length; i++)
+
+                    {
+                        if (target.Instructions[i] is CubicPathInstruction cubic)
+                            target.Instructions[i] =
+                                new CubicPathInstruction(
+                                    cubic.Position,
+                                    cubic.Control1,
+                                    cubic.Control2 + Delta
+                                );
+                        break;
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -116,73 +192,87 @@ namespace Ibinimator.Service.Commands
             switch (Operation)
             {
                 case NodeOperation.Add:
-                    target.Nodes.RemoveItems(Nodes);
+                    target.Instructions.RemoveItems(Instructions);
                     break;
                 case NodeOperation.Remove:
-                    target.Nodes.SuspendCollectionChangeNotification();
+                    target.Instructions.SuspendCollectionChangeNotification();
 
-                    for (var i = 0; i < Nodes.Length; i++)
-                        target.Nodes.Insert(Indices[i], Nodes[i]);
+                    for (var i = 0; i < Instructions.Length; i++)
+                        target.Instructions.Insert(Indices[i], Instructions[i]);
 
-                    target.Nodes.ResumeCollectionChangeNotification();
+                    target.Instructions.ResumeCollectionChangeNotification();
                     break;
                 case NodeOperation.Move:
-                    foreach (var node in Nodes)
-                    {
-                        if (node is CubicPathNode cubic)
+                    for (var i = 0; i < Indices.Length; i++)
+                        switch (target.Instructions[i])
                         {
-                            cubic.Control1 -= Delta;
-                            cubic.Control2 -= Delta;
+                            case CubicPathInstruction cubic:
+                                target.Instructions[i] =
+                                    new CubicPathInstruction(
+                                        cubic.Position - Delta,
+                                        cubic.Control1 - Delta,
+                                        cubic.Control2 - Delta
+                                    );
+                                break;
+                            case QuadraticPathInstruction quad:
+                                target.Instructions[i] =
+                                    new QuadraticPathInstruction(
+                                        quad.Position - Delta,
+                                        quad.Control - Delta
+                                    );
+                                break;
+                            case LinePathInstruction line:
+                                target.Instructions[i] =
+                                    new LinePathInstruction(line.Position - Delta);
+                                break;
+                            case MovePathInstruction move:
+                                target.Instructions[i] =
+                                    new MovePathInstruction(move.Position - Delta);
+                                break;
                         }
 
-                        if (node is QuadraticPathNode quadratic)
-                            quadratic.Control -= Delta;
-
-                        node.Position -= Delta;
-                    }
                     break;
                 case NodeOperation.MoveHandle1:
-                {
-                    // braces to avoid variable scope issues for
-                    // cubic
-                    if (Nodes[0] is CubicPathNode cubic)
-                        cubic.Control1 -= Delta;
-                    else if (Nodes[0] is QuadraticPathNode quadratic)
-                        quadratic.Control -= Delta;
-                }
+                    for (var i = 0; i < Indices.Length; i++)
+
+                        // braces to avoid variable scope issues for
+                        // cubic
+                        switch (target.Instructions[i])
+                        {
+                            case CubicPathInstruction cubic:
+                                target.Instructions[i] =
+                                    new CubicPathInstruction(
+                                        cubic.Position,
+                                        cubic.Control1 - Delta,
+                                        cubic.Control2
+                                    );
+                                break;
+                            case QuadraticPathInstruction quad:
+                                target.Instructions[i] =
+                                    new QuadraticPathInstruction(
+                                        quad.Position,
+                                        quad.Control - Delta
+                                    );
+                                break;
+                        }
                     break;
                 case NodeOperation.MoveHandle2:
-                {
-                    if (Nodes[0] is CubicPathNode cubic)
-                        cubic.Control2 -= Delta;
-                }
+                    for (var i = 0; i < Indices.Length; i++)
+
+                    {
+                        if (target.Instructions[i] is CubicPathInstruction cubic)
+                            target.Instructions[i] =
+                                new CubicPathInstruction(
+                                    cubic.Position,
+                                    cubic.Control1,
+                                    cubic.Control2 - Delta
+                                );
+                        break;
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        public override string Description
-        {
-            get
-            {
-                switch (Operation)
-                {
-                    case NodeOperation.Add:
-                        return $"Added {Nodes.Length} node(s)";
-                    case NodeOperation.Remove:
-                        return $"Removed {Nodes.Length} node(s)";
-                    case NodeOperation.Move:
-                        return $"Moved {Nodes.Length} node(s)";
-                    case NodeOperation.MoveHandle1:
-                    case NodeOperation.MoveHandle2:
-                        return "Modified node handle";
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-
-        public enum NodeOperation { Add, Remove, Move, MoveHandle1, MoveHandle2 }
     }
 }

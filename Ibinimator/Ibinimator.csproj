@@ -142,6 +142,7 @@
     <Compile Include="Service\Commands\ApplyStrokeCommand.cs" />
     <Compile Include="Service\Commands\BinaryOperationCommand.cs" />
     <Compile Include="Service\Commands\ChangeZIndexCommand.cs" />
+    <Compile Include="Service\Commands\ConvertToPathCommand.cs" />
     <Compile Include="Service\Commands\GroupCommand.cs" />
     <Compile Include="Service\Commands\InsertTextCommand.cs" />
     <Compile Include="Service\Commands\LayerCommandBase.cs" />

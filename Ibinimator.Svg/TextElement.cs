@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {
@@ -169,9 +170,9 @@ namespace Ibinimator.Svg
 
         public Length? FontSize { get; set; } = (12, LengthUnit.Points);
 
-        public FontStretch? FontStretch { get; set; } = Svg.FontStretch.Normal;
+        public FontStretch? FontStretch { get; set; } = Core.Model.FontStretch.Normal;
 
-        public FontWeight? FontWeight { get; set; } = Svg.FontWeight.Normal;
+        public FontWeight? FontWeight { get; set; } = Core.Model.FontWeight.Normal;
 
         public bool IsReadOnly => ((IList<IInlineTextElement>) _spans).IsReadOnly;
 

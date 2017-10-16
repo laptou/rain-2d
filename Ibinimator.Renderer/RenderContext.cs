@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Renderer
 {
@@ -55,8 +56,6 @@ namespace Ibinimator.Renderer
         }
 
         public abstract void FillRectangle(float left, float top, float width, float height, IBrush brush);
-
-        public abstract void Flush();
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
@@ -30,7 +31,7 @@ namespace Ibinimator.Renderer.Direct2D
                     0.05f, 
                     sink);
 
-                Load(this, sink.Read());
+                Load(sink.Read());
             }
         }
 
@@ -50,7 +51,7 @@ namespace Ibinimator.Renderer.Direct2D
             using (var sink = new ReadingSink())
             {
                 _geometry.Combine(((Geometry) other)._geometry, mode, sink);
-                Load(geometry, sink.Read());
+                geometry.Load(sink.Read());
             }
 
             return geometry;
@@ -90,9 +91,9 @@ namespace Ibinimator.Renderer.Direct2D
                 }
         }
 
-        private static void Load(IGeometry geometry, IEnumerable<PathInstruction> source)
+        public void Load(IEnumerable<PathInstruction> source)
         {
-            using (var sink = geometry.Open())
+            using (var sink = Open())
             {
                 Load(sink, source);
             }
@@ -124,7 +125,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var geometry = new Geometry(_target);
 
-            Load(geometry, Read());
+            geometry.Load(Read());
 
             return geometry;
         }
@@ -169,7 +170,7 @@ namespace Ibinimator.Renderer.Direct2D
             using (var sink = new ReadingSink())
             {
                 _geometry.Outline(sink);
-                Load(geometry, sink.Read());
+                geometry.Load(sink.Read());
             }
 
             return geometry;
