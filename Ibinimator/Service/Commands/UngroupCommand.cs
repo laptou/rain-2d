@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
+using System.Linq;
+using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {
@@ -19,6 +16,8 @@ namespace Ibinimator.Service.Commands
         {
             Description = $"Ungrouped {targets.Length} layer(s)";
         }
+
+        public override string Description { get; }
 
         public override void Do(IArtContext artView)
         {
@@ -54,14 +53,10 @@ namespace Ibinimator.Service.Commands
             }
 
             foreach (var (target, parent) in _parents.AsTuples())
-            {
                 parent.Add(target as Layer);
-            }
 
             _layers.Clear();
             _parents.Clear();
         }
-
-        public override string Description { get; }
     }
 }

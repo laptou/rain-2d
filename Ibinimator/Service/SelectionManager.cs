@@ -2,19 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Ibinimator.Shared;
-using System.Linq;
-using System.Windows.Input;
-using Ibinimator.Service.Commands;
-using Ibinimator.Service.Tools;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
-using SharpDX.Direct2D1;
-using System.Numerics;
-using Ibinimator.Core;
 using Ibinimator.Core.Utility;
+using System.Linq;
+using System.Numerics;
+using System.Windows.Input;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Service.Commands;
+using Ibinimator.View.Control;
+using SharpDX.Direct2D1;
 using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service
@@ -106,7 +102,9 @@ namespace Ibinimator.Service
             handles.Add((new Vector2(x1, (y1 + y2) / 2), "ew", SelectionResizeHandle.Left));
             handles.Add((new Vector2(x2, (y1 + y2) / 2), "ew", SelectionResizeHandle.Right));
             handles.Add((new Vector2((x1 + x2) / 2, y2), "ns", SelectionResizeHandle.Bottom));
-            handles.Add((new Vector2((x1 + x2) / 2, y1 - 10 / Context.ViewManager.Zoom), "rot", SelectionResizeHandle.Rotation));
+            handles.Add(
+                (new Vector2((x1 + x2) / 2, y1 - 10 / Context.ViewManager.Zoom), "rot", SelectionResizeHandle
+                    .Rotation));
 
             foreach (var h in handles)
                 if ((pos - h.pos).LengthSquared() < 49 / Context.ViewManager.Zoom)
@@ -396,7 +394,7 @@ namespace Ibinimator.Service
                 {
                     _transformHandle = HandleTest(pos).handle;
 
-                    if (_transformHandle == null && 
+                    if (_transformHandle == null &&
                         Selection.Any(l => l.Hit(Context.CacheManager, pos, true) != null))
                         _transformHandle = SelectionResizeHandle.Translation;
                 }
@@ -461,12 +459,12 @@ namespace Ibinimator.Service
                     var cache = Context.CacheManager;
                     var shift = modifiers.HasFlag(ModifierKeys.Shift);
                     var alt = modifiers.HasFlag(ModifierKeys.Alt);
-                    
+
                     foreach (var l in Selection.Reverse())
                     {
                         var layer = l;
 
-                        while(true)
+                        while (true)
                         {
                             if (layer.Parent == null) break;
 
@@ -541,8 +539,10 @@ namespace Ibinimator.Service
             {
                 target.Transform(transform);
 
-                using(var pen = target.CreatePen(1, brush))
+                using (var pen = target.CreatePen(1, brush))
+                {
                     target.DrawRectangle(rect, pen);
+                }
 
                 target.Transform(MathUtils.Invert(transform));
             }
@@ -566,8 +566,10 @@ namespace Ibinimator.Service
                             {
                                 target.Transform(shape.AbsoluteTransform);
 
-                                using(var pen = target.CreatePen(1, cache.GetBrush("A1")))
+                                using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
+                                {
                                     target.DrawGeometry(geom, pen);
+                                }
 
                                 target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
                             }
@@ -578,8 +580,10 @@ namespace Ibinimator.Service
 
                 if (!_selectionBox.IsEmpty)
                 {
-                                using(var pen = target.CreatePen(1, cache.GetBrush("A1")))
-                    target.DrawRectangle(_selectionBox, pen);
+                    using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
+                    {
+                        target.DrawRectangle(_selectionBox, pen);
+                    }
                     target.FillRectangle(_selectionBox, cache.GetBrush("A1A"));
                 }
             }

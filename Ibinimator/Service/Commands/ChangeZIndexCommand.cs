@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {

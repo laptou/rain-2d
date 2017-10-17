@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using Ibinimator.Service;
+using Ibinimator.Renderer;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
 using Ibinimator.ViewModel;
-using System.Numerics;
-using Ibinimator.Renderer;
 
 namespace Ibinimator.View.Command
 {
@@ -34,12 +33,11 @@ namespace Ibinimator.View.Command
             await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
-            {
                 using (var stream = ofd.OpenFile())
                 {
                     var xdoc = XDocument.Load(stream);
                     var doc = new Document();
-                    doc.FromXml(xdoc.Root, new SvgContext { Root = xdoc.Root });
+                    doc.FromXml(xdoc.Root, new SvgContext {Root = xdoc.Root});
                     vm.Document = SvgConverter.FromSvg(doc);
 
                     vm.Context.CacheManager.ResetAll();
@@ -53,7 +51,6 @@ namespace Ibinimator.View.Command
 
                     vm.Zoom = 1; //(float)(viewDim / (artDim + 20));
                 }
-            }
         }
 
         private static async Task SaveAsync(IViewManager vm)

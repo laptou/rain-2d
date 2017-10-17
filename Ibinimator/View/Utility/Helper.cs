@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using Ibinimator.Core.Utility;
-using Ibinimator.Utility;
 
 namespace Ibinimator.View.Util
 {

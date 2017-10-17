@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Ibinimator.Service;
-using Ibinimator.Service.Commands;
-using Ibinimator.ViewModel;
 using System.Numerics;
+using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Utility;
+using Ibinimator.Service.Commands;
+using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command
 {

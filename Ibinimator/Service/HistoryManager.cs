@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Service.Commands;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
@@ -130,7 +129,9 @@ namespace Ibinimator.Service
             get
             {
                 lock (this)
+                {
                     return _undo.Count > 0 ? _undo.Peek() : null;
+                }
             }
         }
 

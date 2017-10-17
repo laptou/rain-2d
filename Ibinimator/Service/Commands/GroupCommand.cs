@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {
     public class GroupCommand : LayerCommandBase<ILayer>
     {
-        private Group _group;
         private readonly Dictionary<ILayer, int> _indices = new Dictionary<ILayer, int>();
+        private Group _group;
 
         public GroupCommand(long id, ILayer[] targets) : base(id, targets)
         {
-            if(targets.Length == 0)
+            if (targets.Length == 0)
                 throw new ArgumentException("Must group at least one layer.");
 
             Description = $"Grouped {targets.Length} layer(s)";
         }
+
+        public override string Description { get; }
 
         public override void Do(IArtContext artView)
         {
@@ -55,7 +55,5 @@ namespace Ibinimator.Service.Commands
             _group = null;
             _indices.Clear();
         }
-
-        public override string Description { get; }
     }
 }

@@ -22,13 +22,14 @@ namespace Ibinimator.Renderer
         void ApplyFill(BrushInfo brush);
         void ApplyStroke(PenInfo pen);
 
-        bool KeyDown(Key key);
-        bool KeyUp(Key key);
+        bool KeyDown(Key key, ModifierKeys modifiers);
+        bool KeyUp(Key key, ModifierKeys modifiers);
 
         bool MouseDown(Vector2 pos);
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
 
         void Render(RenderContext target, ICacheManager cacheManager);
+        bool TextInput(string text);
     }
 }

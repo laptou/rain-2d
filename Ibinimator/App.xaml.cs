@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Ibinimator.View;
 
 namespace Ibinimator
 {
@@ -34,8 +33,12 @@ namespace Ibinimator
         public App()
         {
             InitializeComponent();
-
         }
+
+        public new static Dispatcher Dispatcher => Current.Dispatcher;
+
+        public static bool IsDesigner =>
+            LicenseManager.UsageMode == LicenseUsageMode.Designtime;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -48,11 +51,6 @@ namespace Ibinimator
 
             SetDefaultFont();
         }
-
-        public new static Dispatcher Dispatcher => Current.Dispatcher;
-
-        public static bool IsDesigner =>
-            LicenseManager.UsageMode == LicenseUsageMode.Designtime;
 
         private void SetDefaultFont()
         {

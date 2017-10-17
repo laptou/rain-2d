@@ -34,7 +34,7 @@ namespace Ibinimator.ViewModel
 
         public bool IsSuccessfullyCompleted => Task.Status == TaskStatus.RanToCompletion;
 
-        public TResult Result => Task.Status == TaskStatus.RanToCompletion ? Task.Result : default(TResult);
+        public TResult Result => Task.Status == TaskStatus.RanToCompletion ? Task.Result : default;
 
         public TaskStatus Status => Task.Status;
 

@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Svg;
 using SharpDX.Direct2D1;
 using static Ibinimator.Core.Model.LengthUnit;
 using Color = Ibinimator.Core.Model.Color;
-using Ellipse = Ibinimator.Renderer.Model.Ellipse;
-using FontStretch = Ibinimator.Core.Model.FontStretch;
-using FontWeight = Ibinimator.Core.Model.FontWeight;
+using Document = Ibinimator.Renderer.Model.Document;
+using Ellipse = Ibinimator.Svg.Ellipse;
+using GradientStop = Ibinimator.Renderer.GradientStop;
+using Group = Ibinimator.Renderer.Model.Group;
 using Layer = Ibinimator.Renderer.Model.Layer;
-using LineJoin = SharpDX.Direct2D1.LineJoin;
+using LineCap = Ibinimator.Svg.LineCap;
+using LineJoin = Ibinimator.Svg.LineJoin;
 using Path = Ibinimator.Renderer.Model.Path;
-using Rectangle = Ibinimator.Renderer.Model.Rectangle;
-using Text = Ibinimator.Renderer.Model.Text;
+using Rectangle = Ibinimator.Svg.Rectangle;
+using Text = Ibinimator.Svg.Text;
 
 namespace Ibinimator.Utility
 {
@@ -35,34 +36,34 @@ namespace Ibinimator.Utility
                     svgDocument.Viewbox.Width, svgDocument.Viewbox.Height)
             };
 
-            foreach (var child in svgDocument.OfType<Svg.IGraphicalElement>().Select(FromSvg))
+            foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(FromSvg))
                 doc.Root.Add(child, 0);
 
             return doc;
         }
 
-        public static Layer FromSvg(Svg.IGraphicalElement element)
+        public static Layer FromSvg(IGraphicalElement element)
         {
             Layer layer = null;
 
-            if (element is Svg.IContainerElement containerElement)
+            if (element is IContainerElement containerElement)
             {
                 var group = new Group();
 
-                foreach (var child in containerElement.OfType<Svg.IGraphicalElement>().Select(FromSvg))
+                foreach (var child in containerElement.OfType<IGraphicalElement>().Select(FromSvg))
                     group.Add(child, 0);
 
                 layer = group;
             }
 
-            if (element is Svg.IShapeElement shapeElement)
+            if (element is IShapeElement shapeElement)
             {
                 IGeometricLayer shape = null;
 
                 switch (shapeElement)
                 {
-                    case Svg.Ellipse ellipse:
-                        shape = new Ellipse
+                    case Ellipse ellipse:
+                        shape = new Renderer.Model.Ellipse
                         {
                             CenterX = ellipse.CenterX.To(Pixels),
                             CenterY = ellipse.CenterY.To(Pixels),
@@ -70,7 +71,7 @@ namespace Ibinimator.Utility
                             RadiusY = ellipse.RadiusY.To(Pixels)
                         };
                         break;
-                    case Svg.Line line:
+                    case Line line:
                         var linePath = new Path();
 
                         linePath.Instructions.Add(
@@ -92,7 +93,7 @@ namespace Ibinimator.Utility
 
                         shape = pathPath;
                         break;
-                    case Svg.Polygon polygon:
+                    case Polygon polygon:
                         var polygonPath = new Path();
 
                         polygonPath.Instructions.AddItems(
@@ -102,7 +103,7 @@ namespace Ibinimator.Utility
 
                         shape = polygonPath;
                         break;
-                    case Svg.Polyline polyline:
+                    case Polyline polyline:
                         var polylinePath = new Path();
 
                         polylinePath.Instructions.AddItems(
@@ -112,8 +113,8 @@ namespace Ibinimator.Utility
 
                         shape = polylinePath;
                         break;
-                    case Svg.Rectangle rectangle:
-                        shape = new Rectangle
+                    case Rectangle rectangle:
+                        shape = new Renderer.Model.Rectangle
                         {
                             X = rectangle.X.To(Pixels),
                             Y = rectangle.Y.To(Pixels),
@@ -121,8 +122,8 @@ namespace Ibinimator.Utility
                             Height = rectangle.Height.To(Pixels)
                         };
                         break;
-                    case Svg.Circle circle:
-                        shape = new Ellipse
+                    case Circle circle:
+                        shape = new Renderer.Model.Ellipse
                         {
                             CenterX = circle.CenterX.To(Pixels),
                             CenterY = circle.CenterY.To(Pixels),
@@ -130,12 +131,12 @@ namespace Ibinimator.Utility
                             RadiusY = circle.Radius.To(Pixels)
                         };
                         break;
-                    case Svg.Text text:
-                        shape = new Text
+                    case Text text:
+                        shape = new Renderer.Model.Text
                         {
                             FontFamilyName = text.FontFamily ?? "Arial",
-                            FontStretch = (FontStretch) (text.FontStretch ?? FontStretch.Normal),
-                            FontWeight = (FontWeight) (text.FontWeight ?? FontWeight.Normal),
+                            FontStretch = text.FontStretch ?? FontStretch.Normal,
+                            FontWeight = text.FontWeight ?? FontWeight.Normal,
                             FontSize = text.FontSize?.To(Points) ?? 12,
                             Value = text.Text
                         };
@@ -144,11 +145,12 @@ namespace Ibinimator.Utility
                         throw new ArgumentOutOfRangeException(nameof(shapeElement));
                 }
 
-                var dashes = shapeElement.StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels)).ToArray();
+                var dashes = shapeElement.StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels))
+                    .ToArray();
 
                 shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
                 shape.Stroke = FromSvg(
-                    shapeElement.Stroke, shapeElement.StrokeOpacity, 
+                    shapeElement.Stroke, shapeElement.StrokeOpacity,
                     shapeElement.StrokeWidth.To(Pixels), dashes, shapeElement.StrokeDashOffset,
                     shapeElement.StrokeLineCap, shapeElement.StrokeLineJoin, shapeElement.StrokeMiterLimit);
 
@@ -157,7 +159,6 @@ namespace Ibinimator.Utility
 
             if (layer != null)
             {
-
                 (layer.Scale, layer.Rotation, layer.Position, layer.Shear) =
                     element.Transform.Decompose();
 
@@ -167,36 +168,11 @@ namespace Ibinimator.Utility
             return layer;
         }
 
-        private static PenInfo FromSvg(Svg.Paint paint, float opacity,
-            float width, float[] dashes, float dashOffset, Svg.LineCap lineCap, 
-            Svg.LineJoin lineJoin, float miterLimit)
-        {
-            var stroke = new PenInfo
-            {
-                Brush = FromSvg(paint, opacity),
-                Width = width,
-                Style = new StrokeStyleProperties1
-                {
-                    DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid,
-                    DashCap = (CapStyle)lineCap,
-                    StartCap = (CapStyle)lineCap,
-                    EndCap = (CapStyle)lineCap,
-                    LineJoin = (LineJoin)lineJoin,
-                    DashOffset = dashOffset,
-                    MiterLimit = miterLimit
-                }
-            };
-
-            stroke.Dashes.AddItems(dashes);
-
-            return stroke;
-        }
-
-        public static BrushInfo FromSvg(Svg.Paint paint, float opacity)
+        public static BrushInfo FromSvg(Paint paint, float opacity)
         {
             switch (paint)
             {
-                case Svg.SolidColor solidColor:
+                case SolidColor solidColor:
                     var color = solidColor.Color;
 
                     return new SolidColorBrushInfo(
@@ -206,53 +182,53 @@ namespace Ibinimator.Utility
                             color.Blue,
                             color.Alpha * opacity));
 
-                case Svg.LinearGradient linearGradient:
+                case LinearGradient linearGradient:
                     return new GradientBrushInfo
                     {
-                        Stops = new ObservableList<Renderer.GradientStop>(
-                            linearGradient.Stops.Select(s => new Renderer.GradientStop
-                        {
-                            Color = new Color(
-                                s.Color.Red,
-                                s.Color.Green,
-                                s.Color.Blue,
-                                s.Color.Alpha),
-                            Offset = s.Offset.To(Pixels, 1)
-                        })),
+                        Stops = new ObservableList<GradientStop>(
+                            linearGradient.Stops.Select(s => new GradientStop
+                            {
+                                Color = new Color(
+                                    s.Color.Red,
+                                    s.Color.Green,
+                                    s.Color.Blue,
+                                    s.Color.Alpha),
+                                Offset = s.Offset.To(Pixels, 1)
+                            })),
                         StartPoint = new Vector2(linearGradient.X1.To(Pixels, 1), linearGradient.Y1.To(Pixels, 1)),
                         EndPoint = new Vector2(linearGradient.X2.To(Pixels, 1), linearGradient.Y2.To(Pixels, 1)),
                         Name = linearGradient.Id,
                         Transform = linearGradient.Transform,
-                        ExtendMode = (ExtendMode)linearGradient.SpreadMethod,
+                        ExtendMode = (ExtendMode) linearGradient.SpreadMethod,
                         Opacity = opacity,
                         GradientType = GradientBrushType.Linear
                     };
 
-                case Svg.RadialGradient radialGradient:
+                case RadialGradient radialGradient:
                     return new GradientBrushInfo
                     {
-                        Stops = new ObservableList<Renderer.GradientStop>(
-                            radialGradient.Stops.Select(s => new Renderer.GradientStop
-                        {
-                            Color = new Color(
-                                s.Color.Red,
-                                s.Color.Green,
-                                s.Color.Blue,
-                                s.Color.Alpha),
-                            Offset = s.Offset.To(Pixels, 1)
-                        })),
+                        Stops = new ObservableList<GradientStop>(
+                            radialGradient.Stops.Select(s => new GradientStop
+                            {
+                                Color = new Color(
+                                    s.Color.Red,
+                                    s.Color.Green,
+                                    s.Color.Blue,
+                                    s.Color.Alpha),
+                                Offset = s.Offset.To(Pixels, 1)
+                            })),
                         StartPoint = new Vector2(
-                            radialGradient.CenterX.To(Pixels, 1), 
+                            radialGradient.CenterX.To(Pixels, 1),
                             radialGradient.CenterY.To(Pixels, 1)),
                         Focus = new Vector2(
-                            radialGradient.FocusX.To(Pixels, 1), 
+                            radialGradient.FocusX.To(Pixels, 1),
                             radialGradient.FocusY.To(Pixels, 1)),
                         EndPoint = new Vector2(
                             radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1),
                             radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1)),
                         Name = radialGradient.Id,
                         Transform = radialGradient.Transform,
-                        ExtendMode = (ExtendMode)radialGradient.SpreadMethod,
+                        ExtendMode = (ExtendMode) radialGradient.SpreadMethod,
                         Opacity = opacity,
                         GradientType = GradientBrushType.Radial
                     };
@@ -260,7 +236,7 @@ namespace Ibinimator.Utility
 
             return null;
         }
-        
+
 
         public static Svg.Document ToSvg(Document doc)
         {
@@ -277,9 +253,9 @@ namespace Ibinimator.Utility
             return svgDoc;
         }
 
-        public static Svg.IElement ToSvg(Layer layer)
+        public static IElement ToSvg(Layer layer)
         {
-            Svg.IGraphicalElement element = null;
+            IGraphicalElement element = null;
 
             if (layer is Group groupLayer)
             {
@@ -293,12 +269,12 @@ namespace Ibinimator.Utility
 
             if (layer is IGeometricLayer shapeLayer)
             {
-                Svg.IShapeElement shape = null;
+                IShapeElement shape = null;
 
                 switch (shapeLayer)
                 {
-                    case Ellipse ellipse:
-                        shape = new Svg.Ellipse
+                    case Renderer.Model.Ellipse ellipse:
+                        shape = new Ellipse
                         {
                             CenterX = new Length(ellipse.CenterX, Pixels),
                             CenterY = new Length(ellipse.CenterY, Pixels),
@@ -313,8 +289,8 @@ namespace Ibinimator.Utility
 
                         shape = pathPath;
                         break;
-                    case Rectangle rectangle:
-                        shape = new Svg.Rectangle
+                    case Renderer.Model.Rectangle rectangle:
+                        shape = new Rectangle
                         {
                             X = new Length(rectangle.X, Pixels),
                             Y = new Length(rectangle.Y, Pixels),
@@ -322,7 +298,7 @@ namespace Ibinimator.Utility
                             Height = new Length(rectangle.Height, Pixels)
                         };
                         break;
-                    case Text text:
+                    case Renderer.Model.Text text:
                         shape = ToSvg(text);
                         break;
                     default:
@@ -340,8 +316,8 @@ namespace Ibinimator.Utility
                 shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
                 shape.StrokeDashOffset = shapeLayer.Stroke.Style.DashOffset;
-                shape.StrokeLineCap = (Svg.LineCap)shapeLayer.Stroke.Style.StartCap;
-                shape.StrokeLineJoin = (Svg.LineJoin)shapeLayer.Stroke.Style.LineJoin;
+                shape.StrokeLineCap = (LineCap) shapeLayer.Stroke.Style.StartCap;
+                shape.StrokeLineJoin = (LineJoin) shapeLayer.Stroke.Style.LineJoin;
                 shape.StrokeMiterLimit = shapeLayer.Stroke.Style.MiterLimit;
 
                 element = shape;
@@ -357,14 +333,14 @@ namespace Ibinimator.Utility
             return element;
         }
 
-        public static Svg.Text ToSvg(Text text)
+        public static Text ToSvg(Renderer.Model.Text text)
         {
-            var svgText = new Svg.Text
+            var svgText = new Text
             {
                 FontFamily = text.FontFamilyName,
-                FontStretch = (FontStretch) text.FontStretch,
-                FontWeight = (FontWeight) text.FontWeight,
-                FontStyle = (FontStyle)text.FontStyle,
+                FontStretch = text.FontStretch,
+                FontWeight = text.FontWeight,
+                FontStyle = text.FontStyle,
                 FontSize = new Length(text.FontSize, Points),
                 Text = text.Value,
                 Y = text.Baseline
@@ -372,12 +348,12 @@ namespace Ibinimator.Utility
 
             foreach (var format in text.Formats)
             {
-                var span = new Svg.Span
+                var span = new Span
                 {
                     FontFamily = format.FontFamilyName ?? text.FontFamilyName,
-                    FontStretch = (FontStretch?) format.FontStretch,
-                    FontWeight = (FontWeight?) format.FontWeight,
-                    FontStyle = (FontStyle?)format.FontStyle,
+                    FontStretch = format.FontStretch,
+                    FontWeight = format.FontWeight,
+                    FontStyle = format.FontStyle,
                     FontSize = format.FontSize != null ? new Length?(new Length(format.FontSize.Value, Points)) : null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
                     Position = format.Range.Length,
@@ -396,8 +372,8 @@ namespace Ibinimator.Utility
                     span.StrokeWidth = new Length(format.Stroke.Width, Pixels);
                     span.StrokeDashArray = dashes.ToArray();
                     span.StrokeDashOffset = format.Stroke.Style.DashOffset;
-                    span.StrokeLineCap = (Svg.LineCap) format.Stroke.Style.StartCap;
-                    span.StrokeLineJoin = (Svg.LineJoin) format.Stroke.Style.LineJoin;
+                    span.StrokeLineCap = (LineCap) format.Stroke.Style.StartCap;
+                    span.StrokeLineJoin = (LineJoin) format.Stroke.Style.LineJoin;
                     span.StrokeMiterLimit = format.Stroke.Style.MiterLimit;
                 }
 
@@ -407,20 +383,43 @@ namespace Ibinimator.Utility
             return svgText;
         }
 
-        public static Svg.Paint ToSvg(BrushInfo brush)
+        public static Paint ToSvg(BrushInfo brush)
         {
             if (brush is SolidColorBrushInfo solidBrush)
-            {
-                return new Svg.SolidColor(
+                return new SolidColor(
                     new Svg.Color(
                         solidBrush.Color.R,
                         solidBrush.Color.G,
                         solidBrush.Color.B,
                         solidBrush.Color.A
-                        ));
-            }
+                    ));
 
             return null;
+        }
+
+        private static PenInfo FromSvg(Paint paint, float opacity,
+            float width, float[] dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit)
+        {
+            var stroke = new PenInfo
+            {
+                Brush = FromSvg(paint, opacity),
+                Width = width,
+                Style = new StrokeStyleProperties1
+                {
+                    DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid,
+                    DashCap = (CapStyle) lineCap,
+                    StartCap = (CapStyle) lineCap,
+                    EndCap = (CapStyle) lineCap,
+                    LineJoin = (SharpDX.Direct2D1.LineJoin) lineJoin,
+                    DashOffset = dashOffset,
+                    MiterLimit = miterLimit
+                }
+            };
+
+            stroke.Dashes.AddItems(dashes);
+
+            return stroke;
         }
     }
 }

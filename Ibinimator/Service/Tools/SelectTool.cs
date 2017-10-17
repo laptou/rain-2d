@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Renderer;
-using Ibinimator.Service.Commands;
-using Ibinimator.Utility;
-using System.Numerics;
 using Ibinimator.Renderer.Model;
-using SharpDX.Direct2D1;
-using Layer = Ibinimator.Renderer.Model.Layer;
+using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
@@ -33,6 +30,8 @@ namespace Ibinimator.Service.Tools
                              $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
             };
         }
+
+        public ToolOption[] Options => new ToolOption[0];
 
         private IList<Layer> Selection => Manager.Context.SelectionManager.Selection;
 
@@ -90,7 +89,7 @@ namespace Ibinimator.Service.Tools
 
                 command = new ApplyStrokeCommand(
                     command.Id,
-                    command.Targets, 
+                    command.Targets,
                     command.NewStroke,
                     oldStrokeCommand.OldStrokes);
             }
@@ -102,7 +101,7 @@ namespace Ibinimator.Service.Tools
         {
         }
 
-        public bool KeyDown(Key key)
+        public bool KeyDown(Key key, ModifierKeys modifier)
         {
             if (key == Key.Delete)
             {
@@ -121,7 +120,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool KeyUp(Key key)
+        public bool KeyUp(Key key, ModifierKeys modifier)
         {
             return false;
         }
@@ -165,7 +164,7 @@ namespace Ibinimator.Service.Tools
             handles.Add(new Vector2((x1 + x2) / 2, y2));
             handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
 
-            var zoom = Vector2.One;// MathUtils.GetScale(target.Transform);
+            var zoom = Vector2.One; // MathUtils.GetScale(target.Transform);
 
             using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
@@ -177,14 +176,17 @@ namespace Ibinimator.Service.Tools
             }
         }
 
+        public bool TextInput(string text)
+        {
+            return false;
+        }
+
         public IBitmap Cursor => Manager.Context.SelectionManager.Cursor;
 
         public float CursorRotate => Manager.Context.SelectionManager.SelectionRotation -
                                      Manager.Context.SelectionManager.SelectionShear;
 
         public IToolManager Manager { get; }
-
-        public ToolOption[] Options => new ToolOption[0];
 
         public string Status
         {

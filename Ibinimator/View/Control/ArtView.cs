@@ -1,30 +1,27 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using Ibinimator.Renderer.WPF;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
-using Ibinimator.Service.Tools;
 using SharpDX.Direct2D1;
-using System.Numerics;
-using System.Windows.Threading;
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage, IArtContext
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
-
-        private readonly Queue<(long time, MouseEventType type, Vector2 position)> _events
-            = new Queue<(long, MouseEventType, Vector2)>();
-
+        private readonly Queue<InputEvent> _events = new Queue<InputEvent>();
         private bool _eventLoop;
+
         private Vector2 _lastPosition;
 
         public ArtView()
@@ -35,19 +32,6 @@ namespace Ibinimator.View.Control
             RenderTargetBound += OnRenderTargetBound;
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
-        }
-
-        public IBrushManager BrushManager { get; private set; }
-        public ICacheManager CacheManager { get; private set; }
-        public IHistoryManager HistoryManager { get; private set; }
-
-        public ISelectionManager SelectionManager { get; private set; }
-        public IToolManager ToolManager { get; private set; }
-        public IViewManager ViewManager { get; private set; }
-
-        public void InvalidateSurface()
-        {
-            base.InvalidateSurface(null);
         }
 
         public void SetManager<T>(T manager) where T : IArtContextManager
@@ -106,9 +90,14 @@ namespace Ibinimator.View.Control
         {
             base.OnLostMouseCapture(e);
 
-            if (e.LeftButton == MouseButtonState.Pressed)
-                lock (_events)
-                    _events.Enqueue((Time.Now, MouseEventType.Up, Vector2.Zero));
+            lock (_events)
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.MouseUp,
+                        true, true, true,
+                        Vector2.Zero));
+            }
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -129,14 +118,32 @@ namespace Ibinimator.View.Control
         {
             base.OnPreviewKeyDown(e);
 
-            e.Handled = ToolManager?.KeyDown(e) == true;
+            lock (_events)
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.KeyDown,
+                        e.Key == Key.System ? e.SystemKey : e.Key,
+                        Keyboard.Modifiers));
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnPreviewKeyUp(KeyEventArgs e)
         {
             base.OnPreviewKeyUp(e);
 
-            e.Handled = ToolManager?.KeyUp(e) == true;
+            lock (_events)
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.KeyUp,
+                        e.Key == Key.System ? e.SystemKey : e.Key,
+                        Keyboard.Modifiers));
+            }
+
+            e.Handled = true;
         }
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -145,11 +152,16 @@ namespace Ibinimator.View.Control
 
             CaptureMouse();
 
-            var pos = e.GetPosition(this);
-            var vec = new Vector2((float) pos.X, (float) pos.Y);
-
             lock (_events)
-                _events.Enqueue((Time.Now, MouseEventType.Down, vec));
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.MouseDown,
+                        e.LeftButton == MouseButtonState.Pressed,
+                        e.MiddleButton == MouseButtonState.Pressed,
+                        e.RightButton == MouseButtonState.Pressed,
+                        e.GetPosition(this).Convert()));
+            }
 
             _eventFlag.Set();
         }
@@ -158,15 +170,19 @@ namespace Ibinimator.View.Control
         {
             base.OnPreviewMouseMove(e);
 
-            var pos = e.GetPosition(this);
-            var vec = new Vector2((float) pos.X, (float) pos.Y);
+            var pos = e.GetPosition(this).Convert();
 
             lock (_events)
-                _events.Enqueue((Time.Now, MouseEventType.Move, vec));
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.MouseMove,
+                        pos));
+            }
 
             _eventFlag.Set();
 
-            _lastPosition = vec;
+            _lastPosition = pos;
         }
 
         protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
@@ -175,11 +191,16 @@ namespace Ibinimator.View.Control
 
             ReleaseMouseCapture();
 
-            var pos = e.GetPosition(this);
-            var vec = new Vector2((float) pos.X, (float) pos.Y);
-
             lock (_events)
-                _events.Enqueue((Time.Now, MouseEventType.Up, vec));
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.MouseUp,
+                        e.LeftButton == MouseButtonState.Pressed,
+                        e.MiddleButton == MouseButtonState.Pressed,
+                        e.RightButton == MouseButtonState.Pressed,
+                        e.GetPosition(this).Convert()));
+            }
 
             _eventFlag.Set();
         }
@@ -212,6 +233,23 @@ namespace Ibinimator.View.Control
 
             if (ViewManager?.Root != null)
                 CacheManager?.Bind(ViewManager.Document);
+
+            InvalidateVisual();
+        }
+
+        protected override void OnTextInput(TextCompositionEventArgs e)
+        {
+            base.OnTextInput(e);
+
+            lock (_events)
+            {
+                _events.Enqueue(
+                    new InputEvent(
+                        InputEventType.TextInput,
+                        e.Text));
+            }
+
+            _eventFlag.Set();
         }
 
         protected override void Render(RenderContext target)
@@ -242,7 +280,6 @@ namespace Ibinimator.View.Control
                 Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
 
             // target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
-
         }
 
         private void EventLoop()
@@ -251,7 +288,7 @@ namespace Ibinimator.View.Control
             {
                 while (_eventLoop)
                 {
-                    (long Time, MouseEventType Type, Vector2 position) evt;
+                    InputEvent evt;
 
                     lock (_events)
                     {
@@ -259,33 +296,48 @@ namespace Ibinimator.View.Control
                         evt = _events.Dequeue();
                     }
 
-                    var pos = ViewManager.ToArtSpace(evt.position);
+                    var pos = ViewManager.ToArtSpace(evt.Position);
 
                     switch (evt.Type)
                     {
-                        case MouseEventType.Down:
+                        case InputEventType.MouseDown:
                             if (!ToolManager.MouseDown(pos))
                                 SelectionManager.MouseDown(pos);
                             break;
-                        case MouseEventType.Up:
+                        case InputEventType.MouseUp:
                             if (!ToolManager.MouseUp(pos))
                                 SelectionManager.MouseUp(pos);
                             break;
-                        case MouseEventType.Move:
+                        case InputEventType.MouseMove:
                             if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
                                 lock (_events)
-                                    if(_events.Any() && _events.Peek().type == MouseEventType.Move)
+                                {
+                                    if (_events.Any() && _events.Peek().Type == InputEventType.MouseMove)
                                         continue;
+                                }
 
                             if (!ToolManager.MouseMove(pos))
                                 SelectionManager.MouseMove(pos);
+                            break;
+
+                        case InputEventType.TextInput:
+                            ToolManager.TextInput(evt.Text);
+                            break;
+                        case InputEventType.KeyUp:
+                            ToolManager.KeyUp(evt.Key, evt.Modifier);
+                            break;
+                        case InputEventType.KeyDown:
+                            ToolManager.KeyDown(evt.Key, evt.Modifier);
+                            break;
+                        case InputEventType.Scroll:
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
 
-                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow, DispatcherPriority.Render);
+                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow,
+                    DispatcherPriority.Render);
 
                 _eventFlag.WaitOne(1000);
             }
@@ -304,12 +356,95 @@ namespace Ibinimator.View.Control
             CacheManager?.ResetAll();
             _eventLoop = false;
         }
+
+        #region IArtContext Members
+
+        public void InvalidateSurface()
+        {
+            base.InvalidateSurface(null);
+        }
+
+        public IBrushManager BrushManager { get; private set; }
+        public ICacheManager CacheManager { get; private set; }
+        public IHistoryManager HistoryManager { get; private set; }
+
+        public ISelectionManager SelectionManager { get; private set; }
+        public IToolManager ToolManager { get; private set; }
+        public IViewManager ViewManager { get; private set; }
+
+        #endregion
     }
 
-    public enum MouseEventType
+    public struct InputEvent
     {
-        Down,
-        Up,
-        Move
+        public InputEvent(InputEventType type, Key key, ModifierKeys modifier) : this(Service.Time.Now)
+        {
+            if (Type != InputEventType.KeyDown &&
+                Type != InputEventType.KeyUp)
+                throw new ArgumentException(nameof(type));
+
+            Type = type;
+            Key = key;
+            Modifier = modifier;
+        }
+
+        public InputEvent(InputEventType type, string text) : this(Service.Time.Now)
+        {
+            if (Type != InputEventType.TextInput)
+                throw new ArgumentException(nameof(type));
+
+            Type = type;
+            Text = text;
+        }
+
+        public InputEvent(InputEventType type, bool left, bool middle, bool right, Vector2 position) : this(Service.Time
+            .Now)
+        {
+            if (Type != InputEventType.MouseUp &&
+                Type != InputEventType.MouseDown)
+                throw new ArgumentException(nameof(type));
+
+            Type = type;
+            LeftMouse = left;
+            MiddleMouse = middle;
+            RightMouse = right;
+            Position = position;
+        }
+
+        public InputEvent(InputEventType type, Vector2 position) : this(Service.Time.Now)
+        {
+            if (Type != InputEventType.MouseMove &&
+                Type != InputEventType.Scroll)
+                throw new ArgumentException(nameof(type));
+
+            Type = type;
+            Position = position;
+        }
+
+        private InputEvent(long time) : this()
+        {
+            Time = time;
+        }
+
+        public Key Key { get; }
+        public bool LeftMouse { get; }
+        public bool MiddleMouse { get; }
+        public ModifierKeys Modifier { get; }
+        public Vector2 Position { get; }
+        public bool RightMouse { get; }
+        public string Text { get; }
+        public long Time { get; }
+        public InputEventType Type { get; }
+    }
+
+    public enum InputEventType
+    {
+        TextInput,
+        KeyUp,
+        KeyDown,
+        MouseUp,
+        MouseDown,
+        MouseMove,
+        Scroll
     }
 }

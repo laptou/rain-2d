@@ -11,11 +11,12 @@ namespace Ibinimator.Renderer
     {
         ITool Tool { get; }
         ToolType Type { get; set; }
-        bool KeyDown(KeyEventArgs keyEventArgs);
-        bool KeyUp(KeyEventArgs keyEventArgs);
+        bool KeyDown(Key key, ModifierKeys modifiers);
+        bool KeyUp(Key key, ModifierKeys modifiers);
 
         bool MouseDown(Vector2 pos);
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
+        bool TextInput(string text);
     }
 }

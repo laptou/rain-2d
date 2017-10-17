@@ -63,35 +63,52 @@ namespace Ibinimator.Service.Tools
 
         #region IToolManager Members
 
-        public bool KeyDown(KeyEventArgs keyEventArgs)
+        public bool KeyDown(Key key, ModifierKeys modifiers)
         {
             lock (this)
-                return Tool?.KeyDown(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) ==
-                       true;
+            {
+                return Tool?.KeyDown(key, modifiers) == true;
+            }
         }
 
-        public bool KeyUp(KeyEventArgs keyEventArgs)
+        public bool KeyUp(Key key, ModifierKeys modifiers)
         {
             lock (this)
-                return Tool?.KeyUp(keyEventArgs.Key == Key.System ? keyEventArgs.SystemKey : keyEventArgs.Key) == true;
+            {
+                return Tool?.KeyUp(key, modifiers) == true;
+            }
         }
 
         public bool MouseDown(Vector2 pos)
         {
             lock (this)
+            {
                 return Tool?.MouseDown(pos) == true;
+            }
         }
 
         public bool MouseMove(Vector2 pos)
         {
             lock (this)
+            {
                 return Tool?.MouseMove(pos) == true;
+            }
         }
 
         public bool MouseUp(Vector2 pos)
         {
             lock (this)
+            {
                 return Tool?.MouseUp(pos) == true;
+            }
+        }
+
+        public bool TextInput(string text)
+        {
+            lock (this)
+            {
+                return Tool?.TextInput(text) == true;
+            }
         }
 
         public IArtContext Context { get; }

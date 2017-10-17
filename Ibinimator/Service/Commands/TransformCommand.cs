@@ -5,8 +5,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {
@@ -25,15 +23,18 @@ namespace Ibinimator.Service.Commands
         {
             foreach (var layer in Targets)
                 lock (layer)
+                {
                     layer.ApplyTransform(Transform);
+                }
         }
 
         public override void Undo(IArtContext artView)
         {
             foreach (var layer in Targets)
                 lock (layer)
+                {
                     layer.ApplyTransform(MathUtils.Invert(Transform));
-
+                }
         }
     }
 }

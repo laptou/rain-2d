@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Shared;
-using Ibinimator.View.Control;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using SharpDX.Direct2D1;
+using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
@@ -28,24 +25,10 @@ namespace Ibinimator.Service
             Fill = new SolidColorBrushInfo(new Color(0, 0, 0));
             Stroke = new PenInfo
             {
-                Brush = new SolidColorBrushInfo(new Color(0, 0, 0)),
+                Brush = new SolidColorBrushInfo(new Color(0, 0, 0))
             };
 
             PropertyChanged += OnPropertyChanged;
-        }
-
-        private void OnUpdated(object sender, EventArgs args)
-        {
-            _selecting = true;
-            var layer = Context.SelectionManager.Selection.LastOrDefault();
-
-            if (layer is IFilledLayer filled)
-                Fill = filled.Fill;
-
-            if (layer is IStrokedLayer stroked)
-                Stroke = stroked.Stroke;
-
-            _selecting = false;
         }
 
         private void OnPropertyChanged(object o, PropertyChangedEventArgs args)
@@ -70,6 +53,20 @@ namespace Ibinimator.Service
             //});
         }
 
+        private void OnUpdated(object sender, EventArgs args)
+        {
+            _selecting = true;
+            var layer = Context.SelectionManager.Selection.LastOrDefault();
+
+            if (layer is IFilledLayer filled)
+                Fill = filled.Fill;
+
+            if (layer is IStrokedLayer stroked)
+                Stroke = stroked.Stroke;
+
+            _selecting = false;
+        }
+
         #region IBrushManager Members
 
         public IArtContext Context { get; }
@@ -85,6 +82,7 @@ namespace Ibinimator.Service
             get => Get<PenInfo>();
             set => Set(value);
         }
+
         #endregion
     }
 }

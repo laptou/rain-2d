@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {

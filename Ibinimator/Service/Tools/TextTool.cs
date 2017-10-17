@@ -1,35 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Utility;
+using Ibinimator.Renderer.Direct2D;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.View.Control;
-using System.Numerics;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Direct2D;
-using SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
 using FontStyle = Ibinimator.Core.Model.FontStyle;
 using FontWeight = Ibinimator.Core.Model.FontWeight;
-using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service.Tools
 {
     public sealed class TextTool : Model, ITool
     {
+        private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
         private readonly Dictionary<string, (FontStyle style, FontStretch stretch, FontWeight weight)>
             _fontFaceDescriptions = new Dictionary<string, (FontStyle, FontStretch, FontWeight)>();
-
-        private readonly DW.Factory _dwFactory;
 
         private readonly ToolOption<string> _fontFamilyOption;
 
@@ -208,24 +203,9 @@ namespace Ibinimator.Service.Tools
 
         public Text CurrentText => Context.SelectionManager.Selection.LastOrDefault() as Text;
 
+        public ToolOption[] Options { get; }
+
         private IArtContext Context => Manager.Context;
-
-        private void ArtViewOnTextInput(object sender, TextCompositionEventArgs e)
-        {
-            if (CurrentText == null) return;
-
-            if (_selectionRange > 0)
-                Remove(_selectionIndex, _selectionRange);
-
-            Insert(_selectionIndex, e.Text);
-
-            _selectionIndex += e.Text.Length;
-            _selectionRange = 0;
-
-            Update();
-
-            _inputTime = Time.Now;
-        }
 
         private void Format(Format format)
         {
@@ -352,9 +332,9 @@ namespace Ibinimator.Service.Tools
                             var name = dwFont.FaceNames.ToCurrentCulture();
                             fontFaces.Add(name);
                             _fontFaceDescriptions[name] =
-                                ((FontStyle)dwFont.Style, 
-                                 (FontStretch)dwFont.Stretch, 
-                                 (FontWeight)dwFont.Weight);
+                                ((FontStyle) dwFont.Style,
+                                (FontStretch) dwFont.Stretch,
+                                (FontWeight) dwFont.Weight);
                         }
                 }
 
@@ -376,7 +356,7 @@ namespace Ibinimator.Service.Tools
 
         public void ApplyStroke(PenInfo pen)
         {
-            if (CurrentText == null ||  pen == null) return;
+            if (CurrentText == null || pen == null) return;
 
             Format(new Format
             {
@@ -385,19 +365,17 @@ namespace Ibinimator.Service.Tools
             });
         }
 
+
         public void Dispose()
         {
             _dwFontCollection?.Dispose();
             Cursor?.Dispose();
-
-            (Manager.Context as ArtView).TextInput -= ArtViewOnTextInput;
         }
 
-        public bool KeyDown(Key key)
+        public bool KeyDown(Key key, ModifierKeys mods)
         {
             if (CurrentText != null)
             {
-                var mods = App.Dispatcher.Invoke(() => Keyboard.Modifiers);
                 var text = CurrentText.Value;
 
                 Format format;
@@ -608,7 +586,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool KeyUp(Key key)
+        public bool KeyUp(Key key, ModifierKeys modifiers)
         {
             return false;
         }
@@ -635,9 +613,9 @@ namespace Ibinimator.Service.Tools
                 if (Vector2.Distance(tlpos, tpos) > 18)
                 {
                     var layout = Context.CacheManager.GetTextLayout(CurrentText);
-                    
+
                     _selectionIndex = layout.GetPosition(tlpos, out var isTrailingHit) + (isTrailingHit ? 1 : 0);
-                    
+
                     var end = layout.GetPosition(tpos, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
                     _selectionRange = Math.Abs(end - _selectionIndex);
@@ -704,7 +682,7 @@ namespace Ibinimator.Service.Tools
                 var layout = Context.CacheManager.GetTextLayout(CurrentText);
 
                 var rect = layout.Measure();
-                
+
                 if (rect.Contains(tpos))
                 {
                     var str = CurrentText.Value;
@@ -768,13 +746,30 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateSurface();
         }
 
+        public bool TextInput(string text)
+        {
+            if (CurrentText == null) return false;
+
+            if (_selectionRange > 0)
+                Remove(_selectionIndex, _selectionRange);
+
+            Insert(_selectionIndex, text);
+
+            _selectionIndex += text.Length;
+            _selectionRange = 0;
+
+            Update();
+
+            _inputTime = Time.Now;
+
+            return true;
+        }
+
         public IBitmap Cursor { get; private set; }
 
         public float CursorRotate { get; private set; }
 
         public IToolManager Manager { get; }
-
-        public ToolOption[] Options { get; }
 
         public string Status
         {

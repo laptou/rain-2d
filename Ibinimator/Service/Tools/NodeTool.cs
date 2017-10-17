@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.View.Control;
-using SharpDX.Direct2D1;
-using Ibinimator.Renderer;
-using SharpDX;
-using Ellipse = SharpDX.Direct2D1.Ellipse;
-using Matrix3x2 = System.Numerics.Matrix3x2;
-using Rectangle = Ibinimator.Renderer.Model.Rectangle;
-using RectangleF = Ibinimator.Renderer.RectangleF;
-using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Service.Tools
 {
@@ -38,6 +29,8 @@ namespace Ibinimator.Service.Tools
         }
 
         public Shape CurrentShape => Context.SelectionManager.Selection.LastOrDefault() as Shape;
+
+        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         private IArtContext Context => Manager.Context;
 
@@ -61,6 +54,22 @@ namespace Ibinimator.Service.Tools
             throw new Exception();
         }
 
+        private void ConvertToPath()
+        {
+            if (!(CurrentShape is Path))
+            {
+                var shape = CurrentShape;
+                shape.Selected = false;
+
+                var ctp = new ConvertToPathCommand(
+                    Context.HistoryManager.Position + 1,
+                    new IGeometricLayer[] {shape});
+                Context.HistoryManager.Do(ctp);
+
+                ctp.Products[0].Selected = true;
+            }
+        }
+
         private void RenderGeometryHandles(RenderContext target, ICacheManager cacheManager,
             Matrix3x2 transform)
         {
@@ -81,8 +90,7 @@ namespace Ibinimator.Service.Tools
 
                     var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
 
-                    if(_selection.Any(n => Math.Abs(n.index - index) <= 2))
-                    {
+                    if (_selection.Any(n => Math.Abs(n.index - index) <= 2))
                         switch (node)
                         {
                             case CubicPathInstruction cn:
@@ -93,7 +101,6 @@ namespace Ibinimator.Service.Tools
                                 target.DrawEllipse(Vector2.Transform(qn.Control, transform), 3, 3, pen);
                                 break;
                         }
-                    }
 
                     var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
 
@@ -104,17 +111,16 @@ namespace Ibinimator.Service.Tools
                                 : cacheManager.GetBrush("A3"));
                     else if (_down)
                         target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? 
-                            cacheManager.GetBrush("A4") : 
-                            cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
                     else
                         target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? 
-                            cacheManager.GetBrush("A3") : 
-                            cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
 
-                    using (var pen2 = target.CreatePen(1, i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
+                    using (var pen2 = target.CreatePen(1,
+                        i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
+                    {
                         target.DrawRectangle(rect, pen2);
+                    }
 
                     index++;
                 }
@@ -210,22 +216,28 @@ namespace Ibinimator.Service.Tools
             if (CurrentShape.Fill is GradientBrushInfo fill)
                 foreach (var stop in fill.Stops)
                 {
-                    var pos = 
+                    var pos =
                         Vector2.Transform(
                             Vector2.Lerp(
-                                fill.StartPoint, 
-                                fill.EndPoint, 
+                                fill.StartPoint,
+                                fill.EndPoint,
                                 stop.Offset),
                             transform);
 
                     using (var brush = target.CreateBrush(stop.Color))
+                    {
                         target.FillEllipse(pos, 4, 4, brush);
+                    }
 
                     using (var pen0 = target.CreatePen(2, cacheManager.GetBrush("L0")))
-                    target.DrawEllipse(pos, 5, 5, pen0);
+                    {
+                        target.DrawEllipse(pos, 5, 5, pen0);
+                    }
 
                     using (var pen2 = target.CreatePen(1, cacheManager.GetBrush("L2")))
-                    target.DrawEllipse(pos, 5.5f, 5.5f, pen2);
+                    {
+                        target.DrawEllipse(pos, 5.5f, 5.5f, pen2);
+                    }
                 }
         }
 
@@ -246,19 +258,13 @@ namespace Ibinimator.Service.Tools
             _selection.Clear();
         }
 
-        public bool KeyDown(Key key)
+        public bool KeyDown(Key key, ModifierKeys modifiers)
         {
+            _shift = modifiers.HasFlag(ModifierKeys.Shift);
+            _alt = modifiers.HasFlag(ModifierKeys.Alt);
+
             switch (key)
             {
-                case Key.LeftShift:
-                case Key.RightShift:
-                    _shift = true;
-                    break;
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    _alt = true;
-                    break;
-
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
                     _selection.Clear();
@@ -285,20 +291,10 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public bool KeyUp(Key key)
+        public bool KeyUp(Key key, ModifierKeys modifiers)
         {
-            switch (key)
-            {
-                case Key.LeftShift:
-                case Key.RightShift:
-                    _shift = false;
-                    break;
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    _alt = false;
-                    break;
-                default: return false;
-            }
+            _shift = modifiers.HasFlag(ModifierKeys.Shift);
+            _alt = modifiers.HasFlag(ModifierKeys.Alt);
 
             return true;
         }
@@ -334,24 +330,15 @@ namespace Ibinimator.Service.Tools
                 .FirstOrDefault(n => (n.instruction.Position - tpos).Length() < 5);
 
             if (node.instruction != null)
-            {
                 if (_alt)
                 {
-                    if (!(CurrentShape is Path))
-                    {
-                        var ctp = new ConvertToPathCommand(
-                            Context.HistoryManager.Position + 1,
-                            new IGeometricLayer[] {CurrentShape});
-                        Context.HistoryManager.Do(ctp);
-
-                        ctp.Products[0].Selected = true;
-                    }
+                    ConvertToPath();
 
                     Context.HistoryManager.Do(
                         new ModifyPathCommand(
                             Context.HistoryManager.Position + 1,
-                            (Path)CurrentShape,
-                            new[] { node.index },
+                            (Path) CurrentShape,
+                            new[] {node.index},
                             ModifyPathCommand.NodeOperation.Remove));
 
                     _selection.RemoveAll(n => n.index == node.index);
@@ -362,7 +349,6 @@ namespace Ibinimator.Service.Tools
 
                     _selection.Add((node.index, false, false));
                 }
-            }
 
             Context.SelectionManager.Update(true);
 
@@ -380,38 +366,39 @@ namespace Ibinimator.Service.Tools
 
             var delta = tpos - tlpos;
 
-            if (CurrentShape is Path path)
-                if (_selection.Count > 0 && _down)
-                {
-                    var history = Context.HistoryManager;
+            if (_selection.Count > 0 && _down)
+            {
+                if (!(CurrentShape is Path path))
+                    ConvertToPath();
 
-                    var newCmd =
+                var history = Context.HistoryManager;
+
+                var newCmd =
+                    new ModifyPathCommand(
+                        history.Position + 1,
+                        CurrentShape as Path,
+                        _selection.Select(s => s.index).ToArray(),
+                        delta,
+                        ModifyPathCommand.NodeOperation.Move);
+
+                newCmd.Do(Context);
+
+                if (history.Current is ModifyPathCommand cmd &&
+                    cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
+                    newCmd.Time - cmd.Time < 500 &&
+                    cmd.Indices.SequenceEqual(newCmd.Indices))
+                    history.Replace(
                         new ModifyPathCommand(
                             history.Position + 1,
-                            path,
-                            _selection.Select(s => s.index).ToArray(),
-                            delta,
-                            ModifyPathCommand.NodeOperation.Move);
+                            cmd.Targets[0],
+                            newCmd.Indices,
+                            cmd.Delta + newCmd.Delta,
+                            ModifyPathCommand.NodeOperation.Move));
+                else
+                    history.Push(newCmd);
 
-                    newCmd.Do(Context);
-
-                    if (history.Current is ModifyPathCommand cmd &&
-                        cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
-                        newCmd.Time - cmd.Time < 500 &&
-                        cmd.Instructions.SequenceEqual(newCmd.Instructions))
-                        history.Replace(
-                            new ModifyPathCommand(
-                                history.Position + 1,
-                                path,
-                                newCmd.Indices,
-                                cmd.Delta + newCmd.Delta,
-                                ModifyPathCommand.NodeOperation.Move));
-                    else
-                        history.Push(newCmd);
-
-                    return true;
-                }
-            
+                return true;
+            }
 
             _lastPos = pos;
 
@@ -491,13 +478,16 @@ namespace Ibinimator.Service.Tools
             }
         }
 
+        public bool TextInput(string text)
+        {
+            return false;
+        }
+
         public IBitmap Cursor => null;
 
         public float CursorRotate => 0;
 
         public IToolManager Manager { get; }
-
-        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         public string Status =>
             "<b>Click</b> to select, <b>Alt Click</b> to delete, <b>Shift Click</b> to multi-select.";

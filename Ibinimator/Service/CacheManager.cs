@@ -2,17 +2,13 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Ibinimator.Core.Utility;
+using System.Windows.Media;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
-using SharpDX;
-using Color = System.Windows.Media.Color;
-using RectangleF = Ibinimator.Renderer.RectangleF;
 
 namespace Ibinimator.Service
 {
@@ -174,7 +170,7 @@ namespace Ibinimator.Service
 
             Context.InvalidateSurface();
         }
-        
+
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var info = (PenInfo) sender;
@@ -252,7 +248,6 @@ namespace Ibinimator.Service
                 }
 
             if (layer is ITextLayer text)
-            {
                 text.LayoutChanged += (s, e) =>
                 {
                     lock (_texts)
@@ -264,10 +259,8 @@ namespace Ibinimator.Service
                         }
                     }
                 };
-            }
 
             if (layer is IGeometricLayer geometric)
-            {
                 geometric.GeometryChanged += (s, e) =>
                 {
                     lock (_geometries)
@@ -279,7 +272,6 @@ namespace Ibinimator.Service
                         }
                     }
                 };
-            }
 
             layer.BoundsChanged += (s, e) =>
             {

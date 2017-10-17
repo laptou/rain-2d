@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.Service;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 using SharpDX.Direct2D1;
@@ -47,21 +46,6 @@ namespace Ibinimator.View.Command
             BinaryOperation(manager, CombineMode.Exclude);
         }
 
-        private static void Intersection(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Intersect);
-        }
-
-        private static void Union(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Union);
-        }
-
-        private static void Xor(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Xor);
-        }
-
         private static void Group(IHistoryManager manager)
         {
             var selectionManager = manager.Context.SelectionManager;
@@ -70,9 +54,14 @@ namespace Ibinimator.View.Command
                 return;
 
             var command = new GroupCommand(
-                manager.Position + 1, 
+                manager.Position + 1,
                 selectionManager.Selection.ToArray<ILayer>());
             manager.Do(command);
+        }
+
+        private static void Intersection(IHistoryManager manager)
+        {
+            BinaryOperation(manager, CombineMode.Intersect);
         }
 
         private static void Ungroup(IHistoryManager manager)
@@ -86,6 +75,16 @@ namespace Ibinimator.View.Command
                 manager.Position + 1,
                 selectionManager.Selection.OfType<IContainerLayer>().ToArray());
             manager.Do(command);
+        }
+
+        private static void Union(IHistoryManager manager)
+        {
+            BinaryOperation(manager, CombineMode.Union);
+        }
+
+        private static void Xor(IHistoryManager manager)
+        {
+            BinaryOperation(manager, CombineMode.Xor);
         }
     }
 }

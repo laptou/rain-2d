@@ -327,7 +327,7 @@
                                               Background="#00000000" BorderBrush="{x:Null}" BorderThickness="0"
                                               ClipToBounds="True">
                                     <control:SvgImage Source="/Ibinimator;component/Resources/Icon/expander.svg"
-                                           Style="{DynamicResource Icon}" />
+                                                      Style="{DynamicResource Icon}" />
                                 </ToggleButton>
                                 <Popup x:Name="OverflowPopup" AllowsTransparency="true" Focusable="false"
                                        IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}"

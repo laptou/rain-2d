@@ -56,7 +56,7 @@ namespace Ibinimator.ViewModel
         public bool CanExecute(object parameter)
         {
             return _action != null &&
-                   _predicate?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter) != false;
+                   _predicate?.Invoke(default(T) != null && parameter == null ? default : (T) parameter) != false;
         }
 
         public void Execute(object parameter)
@@ -64,7 +64,7 @@ namespace Ibinimator.ViewModel
             try
             {
                 // casting null to a value type causes problems
-                _action?.Invoke(default(T) != null && parameter == null ? default(T) : (T) parameter);
+                _action?.Invoke(default(T) != null && parameter == null ? default : (T) parameter);
             }
             catch (Exception e)
             {
@@ -116,7 +116,7 @@ namespace Ibinimator.ViewModel
 
         public void Execute(object parameter)
         {
-            var castedParameter = default(T) != null && parameter == null ? default(T) : (T) parameter;
+            var castedParameter = default(T) != null && parameter == null ? default : (T) parameter;
             Execution = new NotifyTaskCompletion(_task?.Invoke(castedParameter));
             Executed?.Invoke(this, null);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Execution"));

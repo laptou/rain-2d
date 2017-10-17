@@ -6,14 +6,12 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
-using Ibinimator.Utility;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.ViewModel

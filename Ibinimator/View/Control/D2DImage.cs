@@ -13,8 +13,6 @@ using System.Windows.Media;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Direct2D;
-using Ibinimator.Shared;
-using Ibinimator.Utility;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
@@ -40,9 +38,10 @@ namespace Ibinimator.View.Control
         private readonly Stopwatch _renderTimer = new Stopwatch();
         private D2D.Factory _d2DFactory;
         private D2D.RenderTarget _d2DRenderTarget;
-        private RenderContext _renderContext;
         private Device _device;
         private DW.Factory _dwFactory;
+
+        private float _fps;
         private bool _invalidated;
         private long _lastFrameTime;
         private Texture2D _renderTarget;
@@ -63,16 +62,6 @@ namespace Ibinimator.View.Control
             RenderOptions.SetEdgeMode(this, EdgeMode.Unspecified);
         }
 
-        protected override Size MeasureOverride(Size constraint)
-        {
-            return constraint;
-        }
-
-        protected override Size ArrangeOverride(Size arrangeSize)
-        {
-            return arrangeSize;
-        }
-
         public Device Device => _device;
 
         public D2D.Factory Direct2DFactory => _d2DFactory;
@@ -85,8 +74,6 @@ namespace Ibinimator.View.Control
             set => _d2DRenderTarget.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
-        private float _fps;
-
         public float Fps
         {
             get => _fps;
@@ -97,6 +84,8 @@ namespace Ibinimator.View.Control
             }
         }
 
+        public RenderContext RenderContext { get; set; }
+
         public RenderMode RenderMode
         {
             get => (RenderMode) GetValue(RenderModeProperty);
@@ -104,12 +93,6 @@ namespace Ibinimator.View.Control
         }
 
         public DX11ImageSource Surface => _surface;
-
-        public RenderContext RenderContext
-        {
-            get => _renderContext;
-            set => _renderContext = value;
-        }
 
         public event EventHandler<D2D.RenderTarget> RenderTargetBound;
 
@@ -136,6 +119,21 @@ namespace Ibinimator.View.Control
             if (rect.Width < 0) Debugger.Break();
 
             _dirty.Push(new Int32Rect(rect.X, rect.Y, rect.Width, rect.Height));
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected override Size ArrangeOverride(Size arrangeSize)
+        {
+            return arrangeSize;
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            return constraint;
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -197,7 +195,7 @@ namespace Ibinimator.View.Control
 
             _d2DRenderTarget =
                 new D2D.RenderTarget(_d2DFactory, dxgiSurface, rtp) {DotsPerInch = _d2DFactory.DesktopDpi};
-            _renderContext = new Direct2DRenderContext(_d2DRenderTarget);
+            RenderContext = new Direct2DRenderContext(_d2DRenderTarget);
 
             _device.ImmediateContext.Rasterizer.SetViewport(0, 0, width, height);
 
@@ -253,7 +251,6 @@ namespace Ibinimator.View.Control
                     _surface.AddDirtyRect(_dirty.Pop());
 
                 _surface.Unlock();
-
             }
         }
 
@@ -328,12 +325,11 @@ namespace Ibinimator.View.Control
             _renderTimer.Stop();
         }
 
+        #region INotifyPropertyChanged Members
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        #endregion
     }
 
     public class DX11ImageSource : D3DImage, IDisposable
@@ -355,7 +351,7 @@ namespace Ibinimator.View.Control
 
             lock (this)
             {
-                TryLock(new Duration(default(TimeSpan)));
+                TryLock(new Duration(default));
                 AddDirtyRect(rect ?? new Int32Rect(0, 0, PixelWidth, PixelHeight));
                 Unlock();
             }
@@ -450,7 +446,7 @@ namespace Ibinimator.View.Control
                 return;
 
             var presentParams = GetPresentParameters();
-            var createFlags = D3D9.CreateFlags.HardwareVertexProcessing | 
+            var createFlags = D3D9.CreateFlags.HardwareVertexProcessing |
                               D3D9.CreateFlags.Multithreaded |
                               D3D9.CreateFlags.FpuPreserve;
 

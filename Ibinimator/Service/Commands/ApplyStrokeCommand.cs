@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Commands
 {
@@ -26,14 +25,18 @@ namespace Ibinimator.Service.Commands
         {
             foreach (var target in Targets)
                 lock (target)
+                {
                     target.Stroke = NewStroke;
+                }
         }
 
         public override void Undo(IArtContext artView)
         {
             for (var i = 0; i < Targets.Length; i++)
                 lock (Targets[i])
+                {
                     Targets[i].Stroke = OldStrokes[i];
+                }
         }
     }
 }

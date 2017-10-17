@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
-using Ibinimator.Renderer;
-using Ibinimator.Shared;
-using Ibinimator.Utility;
-using Ibinimator.View.Control;
 using System.Numerics;
+using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
@@ -46,6 +44,16 @@ namespace Ibinimator.Service
             return MathUtils.Bounds(v, Transform);
         }
 
+        public void Render(RenderContext target, ICacheManager cache)
+        {
+            using (var pen = target.CreatePen(1, cache.GetBrush("L3")))
+            {
+                target.DrawRectangle(Document.Bounds, pen);
+            }
+
+            target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
+        }
+
         public Vector2 ToArtSpace(Vector2 v)
         {
             return Vector2.Transform(v, MathUtils.Invert(Transform));
@@ -54,14 +62,6 @@ namespace Ibinimator.Service
         public RectangleF ToArtSpace(RectangleF v)
         {
             return MathUtils.Bounds(v, MathUtils.Invert(Transform));
-        }
-
-        public void Render(RenderContext target, ICacheManager cache)
-        {
-            using (var pen = target.CreatePen(1, cache.GetBrush("L3")))
-                target.DrawRectangle(Document.Bounds, pen);
-
-            target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
         }
 
         public IArtContext Context { get; }

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.View.Control;
-using SharpDX.Direct2D1;
-using System.Numerics;
-using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 
 namespace Ibinimator.Service.Tools
 {
@@ -29,6 +26,8 @@ namespace Ibinimator.Service.Tools
         }
 
         public Path CurrentPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
+
+        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         private IArtContext Context => Manager.Context;
 
@@ -67,19 +66,13 @@ namespace Ibinimator.Service.Tools
         {
         }
 
-        public bool KeyDown(Key key)
+        public bool KeyDown(Key key, ModifierKeys modifiers)
         {
+            _shift = modifiers.HasFlag(ModifierKeys.Shift);
+            _alt = modifiers.HasFlag(ModifierKeys.Alt);
+
             switch (key)
             {
-                case Key.LeftShift:
-                case Key.RightShift:
-                    _shift = true;
-                    break;
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    _alt = true;
-                    break;
-
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
                     break;
@@ -91,20 +84,10 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public bool KeyUp(Key key)
+        public bool KeyUp(Key key, ModifierKeys modifiers)
         {
-            switch (key)
-            {
-                case Key.LeftShift:
-                case Key.RightShift:
-                    _shift = false;
-                    break;
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    _alt = false;
-                    break;
-                default: return false;
-            }
+            _shift = modifiers.HasFlag(ModifierKeys.Shift);
+            _alt = modifiers.HasFlag(ModifierKeys.Alt);
 
             return true;
         }
@@ -163,7 +146,7 @@ namespace Ibinimator.Service.Tools
                 var tpos =
                     Vector2.Transform(pos, MathUtils.Invert(CurrentPath.AbsoluteTransform));
 
-                var node = 
+                var node =
                     CurrentPath
                         .Instructions
                         .OfType<CoordinatePathInstruction>()
@@ -176,7 +159,7 @@ namespace Ibinimator.Service.Tools
                             new ModifyPathCommand(
                                 Context.HistoryManager.Position + 1,
                                 CurrentPath,
-                                new [] { CurrentPath.Instructions.IndexOf(node) },
+                                new[] {CurrentPath.Instructions.IndexOf(node)},
                                 ModifyPathCommand.NodeOperation.Remove));
                 }
                 else
@@ -187,7 +170,7 @@ namespace Ibinimator.Service.Tools
                     {
                         var cpos =
                             Vector2.Transform(
-                                Constrain(pos), 
+                                Constrain(pos),
                                 MathUtils.Invert(CurrentPath.AbsoluteTransform));
 
                         newNode = new LinePathInstruction(cpos);
@@ -216,46 +199,52 @@ namespace Ibinimator.Service.Tools
         public void Render(RenderContext target, ICacheManager cacheManager)
         {
             if (CurrentPath == null) return;
-            
-                var transform = CurrentPath.AbsoluteTransform;
-                target.Transform(transform);
 
-                using (var geom = cacheManager.GetGeometry(CurrentPath))
-                using (var pen = target.CreatePen(1, cacheManager.GetBrush("A2")))
-                        target.DrawGeometry(geom, pen);
+            var transform = CurrentPath.AbsoluteTransform;
+            target.Transform(transform);
 
-                target.Transform(MathUtils.Invert(transform));
+            using (var geom = cacheManager.GetGeometry(CurrentPath))
+            using (var pen = target.CreatePen(1, cacheManager.GetBrush("A2")))
+            {
+                target.DrawGeometry(geom, pen);
+            }
 
-                var figures = CurrentPath.Instructions.Split(n => n is ClosePathInstruction);
+            target.Transform(MathUtils.Invert(transform));
 
-                foreach (var figure in figures)
+            var figures = CurrentPath.Instructions.Split(n => n is ClosePathInstruction);
+
+            foreach (var figure in figures)
+            {
+                var nodes = figure.Cast<CoordinatePathInstruction>().ToArray();
+
+                for (var i = 0; i < nodes.Length; i++)
                 {
-                    var nodes = figure.Cast<CoordinatePathInstruction>().ToArray();
+                    var node = nodes[i];
 
-                    for (var i = 0; i < nodes.Length; i++)
+                    var pos = Vector2.Transform(node.Position, transform);
+                    var zoom = Context.ViewManager.Zoom;
+
+                    var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8 / zoom, 8 / zoom);
+
+                    if (_down)
+                        target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height,
+                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
+                    else
+                        target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height,
+                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
+
+                    using (var pen = target.CreatePen(1,
+                        i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
                     {
-                        var node = nodes[i];
-
-                        var pos = Vector2.Transform(node.Position, transform);
-                        var zoom = Context.ViewManager.Zoom;
-
-                        var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8 / zoom, 8 / zoom);
-
-                        if (_down)
-                            target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height, 
-                                rect.Contains(_lastPos) ? 
-                                    cacheManager.GetBrush("A4") : 
-                                    cacheManager.GetBrush("L1"));
-                        else
-                            target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height,
-                                rect.Contains(_lastPos) ? 
-                                    cacheManager.GetBrush("A3") : 
-                                    cacheManager.GetBrush("L1"));
-
-                        using(var pen = target.CreatePen(1, i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
-                            target.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height, pen);
+                        target.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height, pen);
                     }
                 }
+            }
+        }
+
+        public bool TextInput(string text)
+        {
+            return false;
         }
 
         public IBitmap Cursor => null;
@@ -263,8 +252,6 @@ namespace Ibinimator.Service.Tools
         public float CursorRotate => 0;
 
         public IToolManager Manager { get; }
-
-        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
 
         public string Status => "";
 

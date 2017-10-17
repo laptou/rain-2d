@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Ibinimator.Shared;
+using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Ibinimator.Core.Utility;
-using Ibinimator.Utility;
 using Color = Ibinimator.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -28,10 +27,10 @@ namespace Ibinimator.View.Control
         private bool _draggingTriangle;
 
         private double _hue;
-        private double _saturation;
         private double _lightness;
 
         private WriteableBitmap _ring;
+        private double _saturation;
 
         private WriteableBitmap _triangle;
 
@@ -97,7 +96,7 @@ namespace Ibinimator.View.Control
                 UpdateColor();
                 UpdateHandles();
 
-                Dispatcher.BeginInvoke((Action)UpdateTriangle, DispatcherPriority.Render, null);
+                Dispatcher.BeginInvoke((Action) UpdateTriangle, DispatcherPriority.Render, null);
             }
 
             if (_draggingTriangle)
@@ -112,12 +111,6 @@ namespace Ibinimator.View.Control
                 UpdateColor();
                 UpdateHandles();
             }
-        }
-
-        private void UpdateColor()
-        {
-            Color = ColorUtils.HslToColor(_hue, _saturation, _lightness);
-            RaisePropertyChanged(nameof(Color));
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -138,13 +131,12 @@ namespace Ibinimator.View.Control
 
             try
             {
-
                 var pt = PointToScreen(new Point());
-                var screen = Screen.FromPoint(new System.Drawing.Point((int)pt.X, (int)pt.Y));
+                var screen = Screen.FromPoint(new System.Drawing.Point((int) pt.X, (int) pt.Y));
                 var dpi = screen.GetDpiForMonitor(DpiType.Effective);
-                var size = (int)Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
+                var size = (int) Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
 
-                _triangle = new WriteableBitmap(size, (int)(size / MathUtils.Sqrt3Over2), dpi.x, dpi.y,
+                _triangle = new WriteableBitmap(size, (int) (size / MathUtils.Sqrt3Over2), dpi.x, dpi.y,
                     PixelFormats.Bgra32, null);
                 _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
 
@@ -156,7 +148,6 @@ namespace Ibinimator.View.Control
             }
             catch
             {
-
             }
 
             Triangle.Width = sizeInfo.NewSize.Width * 0.5 * 0.75 * Math.Sqrt(3);
@@ -170,7 +161,7 @@ namespace Ibinimator.View.Control
             {
                 var (r, g, b, _) = ColorUtils.ColorToRgba(hslWheel.Color);
 
-                (hslWheel._hue, hslWheel._saturation, hslWheel._lightness) = 
+                (hslWheel._hue, hslWheel._saturation, hslWheel._lightness) =
                     ColorUtils.RgbToHsl(r, g, b);
 
                 hslWheel.RaisePropertyChanged(nameof(Color));
@@ -192,6 +183,12 @@ namespace Ibinimator.View.Control
         private void RaisePropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void UpdateColor()
+        {
+            Color = ColorUtils.HslToColor(_hue, _saturation, _lightness);
+            RaisePropertyChanged(nameof(Color));
         }
 
         private void UpdateHandles()

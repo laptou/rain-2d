@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Ibinimator.Utility;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.WPF;
-using Ibinimator.Shared;
 using SharpDX.Direct2D1;
 using Brush = System.Windows.Media.Brush;
-using DashStyle = SharpDX.Direct2D1.DashStyle;
-using LineJoin = SharpDX.Direct2D1.LineJoin;
+using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.ViewModel
 {
@@ -73,15 +68,6 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public void SetColor(Color color)
-            {
-                Set(color, nameof(Color));
-
-                RaisePropertyChanged(nameof(Red));
-                RaisePropertyChanged(nameof(Green));
-                RaisePropertyChanged(nameof(Blue));
-            }
-
             public double Green
             {
                 get => Color.G;
@@ -113,6 +99,15 @@ namespace Ibinimator.ViewModel
             }
 
             public ColorPickerTarget Target { get; }
+
+            public void SetColor(Color color)
+            {
+                Set(color, nameof(Color));
+
+                RaisePropertyChanged(nameof(Red));
+                RaisePropertyChanged(nameof(Green));
+                RaisePropertyChanged(nameof(Blue));
+            }
         }
 
         #endregion
@@ -172,7 +167,8 @@ namespace Ibinimator.ViewModel
                 }
             }
 
-            public Brush StrokeBrush => _parent.BrushManager.Stroke?.Brush?.CreateBrush(new WpfRenderContext()) as Brush;
+            public Brush StrokeBrush =>
+                _parent.BrushManager.Stroke?.Brush?.CreateBrush(new WpfRenderContext()) as Brush;
 
             public CapStyle StrokeCap
             {
@@ -183,17 +179,6 @@ namespace Ibinimator.ViewModel
                     ss.StartCap = value;
                     ss.EndCap = value;
                     ss.DashCap = value;
-                    StrokeStyle = ss;
-                }
-            }
-
-            public float StrokeMiterLimit
-            {
-                get => StrokeStyle.MiterLimit;
-                set
-                {
-                    var ss = StrokeStyle;
-                    ss.MiterLimit = value;
                     StrokeStyle = ss;
                 }
             }
@@ -220,6 +205,17 @@ namespace Ibinimator.ViewModel
                     ss.LineJoin = value;
                     if (value == LineJoin.Miter)
                         ss.MiterLimit = StrokeWidth;
+                    StrokeStyle = ss;
+                }
+            }
+
+            public float StrokeMiterLimit
+            {
+                get => StrokeStyle.MiterLimit;
+                set
+                {
+                    var ss = StrokeStyle;
+                    ss.MiterLimit = value;
                     StrokeStyle = ss;
                 }
             }

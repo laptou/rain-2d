@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
 
@@ -9,13 +8,17 @@ namespace Ibinimator.Service.Commands
 {
     public class ConvertToPathCommand : LayerCommandBase<IGeometricLayer>
     {
-        private IContainerLayer[] _targetParents;
         private Path[] _products;
+        private IContainerLayer[] _targetParents;
 
         public ConvertToPathCommand(long id, IGeometricLayer[] targets) : base(id, targets)
         {
             Description = $"Converted {targets.Length} layer(s) to paths";
         }
+
+        public override string Description { get; }
+
+        public IReadOnlyList<Path> Products => _products;
 
         public override void Do(IArtContext artContext)
         {
@@ -45,9 +48,5 @@ namespace Ibinimator.Service.Commands
                 _targetParents[i].Remove(_products[i]);
             }
         }
-
-        public override string Description { get; }
-
-        public IReadOnlyList<Path> Products => _products;
     }
 }

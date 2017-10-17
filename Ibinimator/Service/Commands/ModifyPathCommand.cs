@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
@@ -59,8 +58,8 @@ namespace Ibinimator.Service.Commands
             Operation = operation;
         }
 
-        public ModifyPathCommand(long id, Path target, int[] indices, 
-            NodeOperation operation) : base(id, new[] { target })
+        public ModifyPathCommand(long id, Path target, int[] indices,
+            NodeOperation operation) : base(id, new[] {target})
         {
             if (operation != NodeOperation.Remove)
                 throw new InvalidOperationException();
@@ -78,11 +77,11 @@ namespace Ibinimator.Service.Commands
                 switch (Operation)
                 {
                     case NodeOperation.Add:
-                        return $"Added {Instructions.Length} node(s)";
+                        return $"Added {Indices.Length} node(s)";
                     case NodeOperation.Remove:
-                        return $"Removed {Instructions.Length} node(s)";
+                        return $"Removed {Indices.Length} node(s)";
                     case NodeOperation.Move:
-                        return $"Moved {Instructions.Length} node(s)";
+                        return $"Moved {Indices.Length} node(s)";
                     case NodeOperation.MoveHandle1:
                     case NodeOperation.MoveHandle2:
                         return "Modified node handle(s)";
@@ -94,7 +93,7 @@ namespace Ibinimator.Service.Commands
 
         public int[] Indices { get; }
 
-        public PathInstruction[] Instructions { get; }
+        public PathInstruction[] Instructions { get; private set; }
 
         public NodeOperation Operation { get; }
 
@@ -109,11 +108,18 @@ namespace Ibinimator.Service.Commands
                         target.Instructions.Insert(Indices[i], Instructions[i]);
                     break;
                 case NodeOperation.Remove:
-                    for (var i = 0; i < Indices.Length; i++)
+                    var j = 0;
+                    Instructions = new PathInstruction[Indices.Length];
+
+                    foreach (var i in Indices)
+                    {
+                        Instructions[j++] = target.Instructions[i];
                         target.Instructions.RemoveAt(i);
+                    }
+
                     break;
                 case NodeOperation.Move:
-                    for (var i = 0; i < Indices.Length; i++)
+                    foreach (var i in Indices)
                         switch (target.Instructions[i])
                         {
                             case CubicPathInstruction cubic:
@@ -143,10 +149,7 @@ namespace Ibinimator.Service.Commands
 
                     break;
                 case NodeOperation.MoveHandle1:
-                    for (var i = 0; i < Indices.Length; i++)
-
-                        // braces to avoid variable scope issues for
-                        // cubic
+                    foreach (var i in Indices)
                         switch (target.Instructions[i])
                         {
                             case CubicPathInstruction cubic:
@@ -167,9 +170,7 @@ namespace Ibinimator.Service.Commands
                         }
                     break;
                 case NodeOperation.MoveHandle2:
-                    for (var i = 0; i < Indices.Length; i++)
-
-                    {
+                    foreach (var i in Indices)
                         if (target.Instructions[i] is CubicPathInstruction cubic)
                             target.Instructions[i] =
                                 new CubicPathInstruction(
@@ -177,8 +178,6 @@ namespace Ibinimator.Service.Commands
                                     cubic.Control1,
                                     cubic.Control2 + Delta
                                 );
-                        break;
-                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -203,7 +202,7 @@ namespace Ibinimator.Service.Commands
                     target.Instructions.ResumeCollectionChangeNotification();
                     break;
                 case NodeOperation.Move:
-                    for (var i = 0; i < Indices.Length; i++)
+                    foreach (var i in Indices)
                         switch (target.Instructions[i])
                         {
                             case CubicPathInstruction cubic:
@@ -234,13 +233,10 @@ namespace Ibinimator.Service.Commands
                     break;
                 case NodeOperation.MoveHandle1:
                     for (var i = 0; i < Indices.Length; i++)
-
-                        // braces to avoid variable scope issues for
-                        // cubic
-                        switch (target.Instructions[i])
+                        switch (target.Instructions[Indices[i]])
                         {
                             case CubicPathInstruction cubic:
-                                target.Instructions[i] =
+                                target.Instructions[Indices[i]] =
                                     new CubicPathInstruction(
                                         cubic.Position,
                                         cubic.Control1 - Delta,
@@ -248,18 +244,17 @@ namespace Ibinimator.Service.Commands
                                     );
                                 break;
                             case QuadraticPathInstruction quad:
-                                target.Instructions[i] =
+                                target.Instructions[Indices[i]] =
                                     new QuadraticPathInstruction(
                                         quad.Position,
                                         quad.Control - Delta
                                     );
                                 break;
                         }
+
                     break;
                 case NodeOperation.MoveHandle2:
-                    for (var i = 0; i < Indices.Length; i++)
-
-                    {
+                    foreach (var i in Indices)
                         if (target.Instructions[i] is CubicPathInstruction cubic)
                             target.Instructions[i] =
                                 new CubicPathInstruction(
@@ -267,8 +262,6 @@ namespace Ibinimator.Service.Commands
                                     cubic.Control1,
                                     cubic.Control2 - Delta
                                 );
-                        break;
-                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Utility;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;
@@ -17,7 +16,6 @@ namespace Ibinimator.Service.Commands
         private IGeometricLayer _operand2;
         private IContainerLayer _parent1;
         private IContainerLayer _parent2;
-        private Path _product;
 
         public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(id, targets)
         {
@@ -30,11 +28,11 @@ namespace Ibinimator.Service.Commands
 
         public CombineMode Operation { get; }
 
-        public Path Product => _product;
+        public Path Product { get; private set; }
 
         public override void Do(IArtContext artContext)
         {
-            if (_product == null)
+            if (Product == null)
             {
                 _operand1 = Targets[0];
                 _operand2 = Targets[1];
@@ -79,19 +77,19 @@ namespace Ibinimator.Service.Commands
                 (z.Scale, z.Rotation, z.Position, z.Shear) =
                     MathUtils.Invert(_operand1.WorldTransform).Decompose();
 
-                _product = z;
+                Product = z;
                 _parent1 = _operand1.Parent;
                 _parent2 = _operand2.Parent;
             }
 
-            _parent1.Add(_product);
+            _parent1.Add(Product);
             _parent1.Remove(_operand1 as Layer);
             _parent2.Remove(_operand2 as Layer);
         }
 
         public override void Undo(IArtContext artView)
         {
-            _product.Parent.Remove(_product);
+            Product.Parent.Remove(Product);
             _parent1.Add(_operand1 as Layer);
             _parent2.Add(_operand2 as Layer);
         }
