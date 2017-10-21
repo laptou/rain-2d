@@ -30,6 +30,9 @@ namespace Ibinimator.View.Command
         public static readonly DelegateCommand<IHistoryManager> UngroupCommand =
             CommandManager.Register<IHistoryManager>(Ungroup);
 
+        public static readonly DelegateCommand<IHistoryManager> PathifyCommand =
+            CommandManager.Register<IHistoryManager>(Pathify);
+
         private static void BinaryOperation(IHistoryManager manager, CombineMode operation)
         {
             var selectionManager = manager.Context.SelectionManager;
@@ -85,6 +88,18 @@ namespace Ibinimator.View.Command
         private static void Xor(IHistoryManager manager)
         {
             BinaryOperation(manager, CombineMode.Xor);
+        }
+
+        private static void Pathify(IHistoryManager manager)
+        {
+            manager.Do(
+                new ConvertToPathCommand(
+                    manager.Position + 1, 
+                    manager.Context
+                        .SelectionManager
+                        .Selection
+                        .OfType<IGeometricLayer>()
+                        .ToArray()));
         }
     }
 }

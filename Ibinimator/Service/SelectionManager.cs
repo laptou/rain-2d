@@ -558,22 +558,19 @@ namespace Ibinimator.Service
                         Matrix3x2.CreateRotation(SelectionRotation, SelectionBounds.Center);
 
                     foreach (var layer in Selection)
+                    {
                         if (layer is IGeometricLayer shape)
                         {
-                            var geom = Context.CacheManager.GetGeometry(shape);
+                            target.Transform(shape.AbsoluteTransform);
 
-                            if (geom != null)
+                            using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
                             {
-                                target.Transform(shape.AbsoluteTransform);
-
-                                using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
-                                {
-                                    target.DrawGeometry(geom, pen);
-                                }
-
-                                target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
+                                target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
                             }
+
+                            target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
                         }
+                    }
 
                     DrawBounds(SelectionBounds, distort, cache.GetBrush("A2"));
                 }
@@ -581,9 +578,8 @@ namespace Ibinimator.Service
                 if (!_selectionBox.IsEmpty)
                 {
                     using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
-                    {
                         target.DrawRectangle(_selectionBox, pen);
-                    }
+
                     target.FillRectangle(_selectionBox, cache.GetBrush("A1A"));
                 }
             }

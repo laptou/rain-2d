@@ -14,6 +14,11 @@ namespace Ibinimator.Renderer.Direct2D
     {
         private readonly D2D1.Bitmap _bmp;
 
+        public static implicit operator D2D1.Bitmap(Bitmap bmp)
+        {
+            return bmp._bmp;
+        }
+
         public Bitmap(Direct2DRenderContext ctx, Stream stream)
         {
             using (var bitmap = (System.Drawing.Bitmap)Image.FromStream(stream))

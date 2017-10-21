@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
@@ -23,6 +24,7 @@ namespace Ibinimator.Service.Commands
         public override void Do(IArtContext artContext)
         {
             _targetParents = Targets.Select(t => t.Parent).ToArray<IContainerLayer>();
+
             _products = Targets.Select(t =>
             {
                 var path = new Path();
@@ -30,13 +32,18 @@ namespace Ibinimator.Service.Commands
                 path.Instructions.AddItems(geometry.Read());
                 path.Fill = t.Fill;
                 path.Stroke = t.Stroke;
+
+                (path.Scale, path.Rotation, path.Shear, path.Position, path.Origin) =
+                    (t.Scale, t.Rotation, t.Shear, t.Position, t.Origin);
+
                 return path;
             }).ToArray();
 
             for (var i = 0; i < _products.Length; i++)
             {
+                var index = _targetParents[i].SubLayers.IndexOf(Targets[i] as Layer);
                 _targetParents[i].Remove(Targets[i] as Layer);
-                _targetParents[i].Add(_products[i]);
+                _targetParents[i].Add(_products[i], index);
             }
         }
 

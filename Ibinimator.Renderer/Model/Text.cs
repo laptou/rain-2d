@@ -62,6 +62,11 @@ namespace Ibinimator.Renderer.Model
 
         public void InsertText(int position, string text)
         {
+            // Inserting inside of the lock leads to RaiseGeometryChanged()
+            // which triggers a re-render, which then asks for the layout
+            // which locks the _formats
+            Value = Value.Insert(position, text);
+
             lock (_formats)
             {
                 // expand the length of the format
@@ -83,9 +88,9 @@ namespace Ibinimator.Renderer.Model
                         format.Range.Length);
                     index++;
                 }
-
-                Value = Value.Insert(position, text);
             }
+
+            RaiseLayoutChanged();
         }
 
         public Format GetFormat(int position, out int index)
@@ -111,6 +116,8 @@ namespace Ibinimator.Renderer.Model
 
         public void RemoveText(int position, int range)
         {
+            Value = Value.Remove(position, range);
+
             lock (_formats)
             {
                 var current = position;
@@ -150,8 +157,6 @@ namespace Ibinimator.Renderer.Model
                     format.Range = (format.Range.Index - range, format.Range.Length);
                     index++;
                 }
-
-                Value = Value.Remove(position, range);
             }
 
         }

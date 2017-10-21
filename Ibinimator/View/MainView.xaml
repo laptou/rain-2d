@@ -179,6 +179,11 @@
                                       Command="{x:Static command:ObjectCommands.XorCommand}"
                                       CommandParameter="{Binding HistoryManager}"
                                       InputGestureText="Control ^" />
+                            <Separator/>
+                            <MenuItem Header="Pathify"
+                                      Command="{x:Static command:ObjectCommands.PathifyCommand}"
+                                      CommandParameter="{Binding HistoryManager}"
+                                      InputGestureText="Control Shift Enter" ></MenuItem>
                         </MenuItem>
                         <MenuItem Header="Te_xt" />
                         <MenuItem Header="_Help">

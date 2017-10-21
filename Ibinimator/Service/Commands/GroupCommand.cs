@@ -8,7 +8,7 @@ namespace Ibinimator.Service.Commands
 {
     public class GroupCommand : LayerCommandBase<ILayer>
     {
-        private readonly Dictionary<ILayer, int> _indices = new Dictionary<ILayer, int>();
+        private readonly Dictionary<ILayer, int> _zIndices = new Dictionary<ILayer, int>();
         private Group _group;
 
         public GroupCommand(long id, ILayer[] targets) : base(id, targets)
@@ -32,7 +32,7 @@ namespace Ibinimator.Service.Commands
 
             foreach (var target in Targets)
             {
-                _indices.Add(target, target.Parent.SubLayers.IndexOf(target as Layer));
+                _zIndices.Add(target, target.Parent.SubLayers.IndexOf(target as Layer));
 
                 target.Parent.Remove(target as Layer);
                 _group.Add(target as Layer);
@@ -48,12 +48,12 @@ namespace Ibinimator.Service.Commands
             foreach (var target in Targets)
             {
                 _group.Remove(target as Layer);
-                _group.Parent.Add(target as Layer, _indices[target]);
+                _group.Parent.Add(target as Layer, _zIndices[target]);
             }
 
             _group.Parent.Remove(_group);
             _group = null;
-            _indices.Clear();
+            _zIndices.Clear();
         }
     }
 }

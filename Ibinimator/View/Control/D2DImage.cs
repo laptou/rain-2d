@@ -229,6 +229,7 @@ namespace Ibinimator.View.Control
         {
             if (App.IsDesigner) return;
 
+            InvalidateVisual();
             StartD3D();
 
             _invalidated = true;

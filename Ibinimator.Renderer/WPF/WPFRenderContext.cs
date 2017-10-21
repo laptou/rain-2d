@@ -78,6 +78,11 @@ namespace Ibinimator.Renderer.WPF
             _ctx = null;
         }
 
+        public override void DrawBitmap(IBitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
+
         public override IBitmap CreateBitmap(Stream stream)
         {
             throw new NotImplementedException();

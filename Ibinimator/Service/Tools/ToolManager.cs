@@ -116,7 +116,11 @@ namespace Ibinimator.Service.Tools
         public ITool Tool
         {
             get => Get<ITool>();
-            private set => Set(value);
+            private set
+            {
+                RaisePropertyChanged(nameof(Type));
+                Set(value);
+            }
         }
 
         public ToolType Type

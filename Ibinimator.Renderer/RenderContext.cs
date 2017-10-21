@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using SharpDX.Direct2D1;
 
 namespace Ibinimator.Renderer
 {
@@ -88,6 +89,8 @@ namespace Ibinimator.Renderer
         public abstract void Dispose();
 
         #endregion
+
+        public abstract void DrawBitmap(IBitmap bitmap);
     }
 
     internal class LineRenderCommand : GeometricRenderCommand

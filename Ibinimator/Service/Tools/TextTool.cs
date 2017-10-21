@@ -196,7 +196,6 @@ namespace Ibinimator.Service.Tools
             };
 
             Context.SelectionManager.Updated += (_, e) => Update();
-            // TODO: Context.TextInput += ArtViewOnTextInput;
 
             Update();
         }

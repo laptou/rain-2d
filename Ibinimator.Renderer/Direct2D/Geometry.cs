@@ -13,33 +13,46 @@ namespace Ibinimator.Renderer.Direct2D
 {
     internal class Geometry : ResourceBase, IGeometry
     {
-        private readonly D2D1.PathGeometry _geometry;
+        private D2D1.Geometry _geom;
+        private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
         private readonly D2D1.RenderTarget _target;
 
-        public Geometry(D2D1.RenderTarget target)
+        public Geometry(D2D1.RenderTarget target) 
+            : this(target, new D2D1.PathGeometry(target.Factory))
         {
-            _target = target;
-            _geometry = new D2D1.PathGeometry(target.Factory);
         }
 
-        public Geometry(D2D1.RenderTarget target, D2D1.Geometry source) : this(target)
+        public Geometry(D2D1.RenderTarget target, D2D1.Geometry source)
         {
+            _target = target;
+            _geom = source;
+
+            
+        }
+
+        private void Pathify()
+        {
+            if (Path != null)
+                return;
+
             using (var sink = new ReadingSink())
             {
-                source.Simplify(
-                    D2D1.GeometrySimplificationOption.CubicsAndLines, 
-                    0.05f, 
+                _geom.Simplify(
+                    D2D1.GeometrySimplificationOption.CubicsAndLines,
+                    0.05f,
                     sink);
+
+                _geom = new D2D1.PathGeometry(_target.Factory);
 
                 Load(sink.Read());
             }
         }
 
-        public Geometry(D2D1.RenderTarget target, IGeometry[] geometries)
+        public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries)
             : this (target, new D2D1.GeometryGroup(
                 target.Factory, 
                 D2D1.FillMode.Alternate, 
-                geometries.OfType<Geometry>().Select(g => g._geometry).ToArray<D2D1.Geometry>()))
+                geometries.OfType<Geometry>().Select(g => g._geom).ToArray()))
         {
             
         }
@@ -50,7 +63,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             using (var sink = new ReadingSink())
             {
-                _geometry.Combine(((Geometry) other)._geometry, mode, sink);
+                _geom.Combine(((Geometry) other)._geom, mode, sink);
                 geometry.Load(sink.Read());
             }
 
@@ -60,6 +73,7 @@ namespace Ibinimator.Renderer.Direct2D
         private static void Load(IGeometrySink sink, IEnumerable<PathInstruction> source)
         {
             foreach (var instruction in source)
+            {
                 switch (instruction)
                 {
                     case ClosePathInstruction close:
@@ -89,14 +103,13 @@ namespace Ibinimator.Renderer.Direct2D
                             quadratic.ControlX, quadratic.ControlY);
                         break;
                 }
+            }
         }
 
         public void Load(IEnumerable<PathInstruction> source)
         {
             using (var sink = Open())
-            {
                 Load(sink, source);
-            }
         }
 
         private static IEnumerable<PathInstruction> Read(D2D1.PathGeometry geometry)
@@ -110,15 +123,15 @@ namespace Ibinimator.Renderer.Direct2D
 
         public static implicit operator D2D1.Geometry(Geometry geometry)
         {
-            return geometry._geometry;
+            return geometry._geom;
         }
 
         #region IGeometry Members
 
         public RectangleF Bounds()
         {
-            var b = _geometry.GetBounds();
-            return new RectangleF(b.Top, b.Left, b.Right - b.Left, b.Bottom - b.Top);
+            var b = _geom.GetBounds();
+            return new RectangleF(b.Left, b.Top, b.Right - b.Left, b.Bottom - b.Top);
         }
 
         public IGeometry Copy()
@@ -137,14 +150,14 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void Dispose()
         {
-            _geometry?.Dispose();
+            lock(this) _geom?.Dispose();
 
             base.Dispose();
         }
 
         public bool FillContains(float x, float y)
         {
-            return _geometry.FillContainsPoint(new RawVector2(x, y));
+            return _geom.FillContainsPoint(new RawVector2(x, y));
         }
 
         public IGeometry Intersection(IGeometry other)
@@ -154,7 +167,9 @@ namespace Ibinimator.Renderer.Direct2D
 
         public IGeometrySink Open()
         {
-            return new WritingSink(_geometry);
+            Pathify();
+
+            return new WritingSink(Path);
         }
 
         public override void Optimize()
@@ -169,7 +184,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             using (var sink = new ReadingSink())
             {
-                _geometry.Outline(sink);
+                _geom.Outline(sink);
                 geometry.Load(sink.Read());
             }
 
@@ -178,7 +193,9 @@ namespace Ibinimator.Renderer.Direct2D
 
         public IEnumerable<PathInstruction> Read()
         {
-            return Read(_geometry);
+            Pathify();
+
+            return Read(Path);
         }
 
         public void Read(IGeometrySink sink)
@@ -188,12 +205,12 @@ namespace Ibinimator.Renderer.Direct2D
 
         public bool StrokeContains(float x, float y, float width)
         {
-            return _geometry.StrokeContainsPoint(new RawVector2(x, y), width);
+            return _geom.StrokeContainsPoint(new RawVector2(x, y), width);
         }
 
         public IGeometry Transform(Matrix3x2 transform)
         {
-            return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geometry, transform.Convert()));
+            return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geom, transform.Convert()));
         }
 
         public IGeometry Union(IGeometry other)

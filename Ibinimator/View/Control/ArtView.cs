@@ -92,11 +92,14 @@ namespace Ibinimator.View.Control
 
             lock (_events)
             {
-                _events.Enqueue(
-                    new InputEvent(
-                        InputEventType.MouseUp,
-                        true, true, true,
-                        Vector2.Zero));
+                if(Mouse.LeftButton == MouseButtonState.Pressed ||
+                    Mouse.MiddleButton == MouseButtonState.Pressed ||
+                    Mouse.RightButton == MouseButtonState.Pressed)
+                    _events.Enqueue(
+                        new InputEvent(
+                            InputEventType.MouseUp,
+                            true, true, true,
+                            Vector2.Zero));
             }
         }
 
@@ -127,7 +130,9 @@ namespace Ibinimator.View.Control
                         Keyboard.Modifiers));
             }
 
-            e.Handled = true;
+            _eventFlag.Set();
+
+            // e.Handled = true;
         }
 
         protected override void OnPreviewKeyUp(KeyEventArgs e)
@@ -143,7 +148,8 @@ namespace Ibinimator.View.Control
                         Keyboard.Modifiers));
             }
 
-            e.Handled = true;
+            _eventFlag.Set();
+            // e.Handled = true;
         }
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -189,8 +195,6 @@ namespace Ibinimator.View.Control
         {
             base.OnPreviewMouseUp(e);
 
-            ReleaseMouseCapture();
-
             lock (_events)
             {
                 _events.Enqueue(
@@ -201,6 +205,8 @@ namespace Ibinimator.View.Control
                         e.RightButton == MouseButtonState.Pressed,
                         e.GetPosition(this).Convert()));
             }
+
+            ReleaseMouseCapture();
 
             _eventFlag.Set();
         }
@@ -237,9 +243,18 @@ namespace Ibinimator.View.Control
             InvalidateVisual();
         }
 
-        protected override void OnTextInput(TextCompositionEventArgs e)
+        protected override void OnPreviewTextInput(TextCompositionEventArgs e)
         {
-            base.OnTextInput(e);
+            base.OnPreviewTextInput(e);
+
+            // quickfix b/c asychronous events mean we can't use Handled
+            // which creates the problem of backspace registering as 
+            // text input for some reason
+            if (e.Text == "\b")
+            {
+                _eventFlag.Set();
+                return;
+            }
 
             lock (_events)
             {
@@ -258,43 +273,42 @@ namespace Ibinimator.View.Control
 
             if (ViewManager == null) return;
 
-            target.Transform(ViewManager.Transform, true);
+            using (CacheManager.Lock())
+            {
 
-            ViewManager.Render(target, CacheManager);
+                target.Transform(ViewManager.Transform, true);
 
-            ViewManager.Root.Render(target, CacheManager);
+                ViewManager.Render(target, CacheManager);
 
-            if (SelectionManager == null) return;
+                ViewManager.Root.Render(target, CacheManager);
 
-            SelectionManager.Render(target, CacheManager);
+                if (SelectionManager == null) return;
 
-            if (ToolManager?.Tool == null) return;
+                SelectionManager.Render(target, CacheManager);
 
-            ToolManager.Tool.Render(target, CacheManager);
+                if (ToolManager?.Tool == null) return;
 
-            if (ToolManager.Tool.Cursor == null) return;
+                ToolManager.Tool.Render(target, CacheManager);
 
-            target.Transform(
-                Matrix3x2.CreateScale(1f / 3) *
-                Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
-                Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
+                if (ToolManager.Tool.Cursor == null) return;
 
-            // target.DrawBitmap(ToolManager.Tool.Cursor, 1, BitmapInterpolationMode.Linear);
+                target.Transform(
+                    Matrix3x2.CreateScale(1f / 3) *
+                    Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
+                    Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
+
+                target.DrawBitmap(ToolManager.Tool.Cursor);
+
+            }
         }
 
         private void EventLoop()
         {
             while (_eventLoop)
             {
-                while (_eventLoop)
+                while (_events.Count > 0)
                 {
-                    InputEvent evt;
-
-                    lock (_events)
-                    {
-                        if (_events.Count == 0) break;
-                        evt = _events.Dequeue();
-                    }
+                    var evt = _events.Dequeue();
 
                     var pos = ViewManager.ToArtSpace(evt.Position);
 
@@ -336,10 +350,12 @@ namespace Ibinimator.View.Control
                     }
                 }
 
-                Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow,
-                    DispatcherPriority.Render);
+                _eventFlag.Reset();
 
-                _eventFlag.WaitOne(1000);
+                //Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow,
+                //    DispatcherPriority.Render);
+
+                _eventFlag.WaitOne(5000);
             }
         }
 
@@ -379,8 +395,8 @@ namespace Ibinimator.View.Control
     {
         public InputEvent(InputEventType type, Key key, ModifierKeys modifier) : this(Service.Time.Now)
         {
-            if (Type != InputEventType.KeyDown &&
-                Type != InputEventType.KeyUp)
+            if (type != InputEventType.KeyDown &&
+                type != InputEventType.KeyUp)
                 throw new ArgumentException(nameof(type));
 
             Type = type;
@@ -390,7 +406,7 @@ namespace Ibinimator.View.Control
 
         public InputEvent(InputEventType type, string text) : this(Service.Time.Now)
         {
-            if (Type != InputEventType.TextInput)
+            if (type != InputEventType.TextInput)
                 throw new ArgumentException(nameof(type));
 
             Type = type;
@@ -400,8 +416,8 @@ namespace Ibinimator.View.Control
         public InputEvent(InputEventType type, bool left, bool middle, bool right, Vector2 position) : this(Service.Time
             .Now)
         {
-            if (Type != InputEventType.MouseUp &&
-                Type != InputEventType.MouseDown)
+            if (type != InputEventType.MouseUp &&
+                type != InputEventType.MouseDown)
                 throw new ArgumentException(nameof(type));
 
             Type = type;
@@ -413,8 +429,8 @@ namespace Ibinimator.View.Control
 
         public InputEvent(InputEventType type, Vector2 position) : this(Service.Time.Now)
         {
-            if (Type != InputEventType.MouseMove &&
-                Type != InputEventType.Scroll)
+            if (type != InputEventType.MouseMove &&
+                type != InputEventType.Scroll)
                 throw new ArgumentException(nameof(type));
 
             Type = type;

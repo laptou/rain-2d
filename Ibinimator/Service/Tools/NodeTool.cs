@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
@@ -86,21 +87,36 @@ namespace Ibinimator.Service.Tools
                 {
                     var node = figureNodes[i];
 
+                    var prev = figureNodes[MathUtils.Wrap(i - 1, figureNodes.Length)];
+
                     var pos = Vector2.Transform(node.Position, transform);
 
                     var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
 
                     if (_selection.Any(n => Math.Abs(n.index - index) <= 2))
+                    {
                         switch (node)
                         {
                             case CubicPathInstruction cn:
-                                target.DrawEllipse(Vector2.Transform(cn.Control1, transform), 3, 3, pen);
-                                target.DrawEllipse(Vector2.Transform(cn.Control2, transform), 3, 3, pen);
+                                var control1 = Vector2.Transform(cn.Control1, transform);
+                                target.DrawLine(Vector2.Transform(prev.Position, transform), control1, pen);
+                                target.FillEllipse(control1, 3, 3, cacheManager.GetBrush("L0"));
+                                target.DrawEllipse(control1, 3, 3, pen);
+
+                                var control2 = Vector2.Transform(cn.Control2, transform);
+                                target.DrawLine(pos, control2, pen);
+                                target.FillEllipse(control2, 3, 3, cacheManager.GetBrush("L0"));
+                                target.DrawEllipse(control2, 3, 3, pen);
                                 break;
                             case QuadraticPathInstruction qn:
-                                target.DrawEllipse(Vector2.Transform(qn.Control, transform), 3, 3, pen);
+                                var control = Vector2.Transform(qn.Control, transform);
+
+                                target.DrawLine(pos, control, pen);
+                                target.FillEllipse(control, 3, 3, cacheManager.GetBrush("L0"));
+                                target.DrawEllipse(control, 3, 3, pen);
                                 break;
                         }
+                    }
 
                     var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
 
@@ -127,88 +143,6 @@ namespace Ibinimator.Service.Tools
 
                 index++;
             }
-
-            //if (CurrentShape is Path path)
-            //{
-            //    var figures = path.Nodes.Split(n => n is CloseNode);
-
-            //    foreach (var figure in figures)
-            //    {
-            //        var nodes = figure.ToArray();
-
-            //        for (var i = 0; i < nodes.Length; i++)
-            //        {
-            //            var node = nodes[i];
-
-            //            var pos = Vector2.Transform(node.Position, transform);
-
-            //            var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
-
-            //            if (_selectedNodes.Contains(node) ||
-            //                _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i - 1, 0, nodes.Length))) ||
-            //                _selectedNodes.Contains(nodes.ElementAtOrDefault(MathUtil.Wrap(i + 1, 0, nodes.Length))))
-            //                switch (node)
-            //                {
-            //                    case CubicPathNode cn:
-            //                        target.DrawEllipse(Vector2.Transform(cn.Control1, transform), 3, 3, pen);
-            //                        target.DrawEllipse(Vector2.Transform(cn.Control2, transform), 3, 3, pen);
-            //                        break;
-            //                    case QuadraticPathNode qn:
-            //                        target.DrawEllipse(Vector2.Transform(qn.Control, transform), 3, 3, pen);
-            //                        break;
-            //                }
-
-            //            var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
-
-            //            if (_selectedNodes.Contains(node))
-            //                target.FillRectangle(rect,
-            //                    rect.Contains(_lastPos) && _down
-            //                        ? cacheManager.GetBrush("A4")
-            //                        : cacheManager.GetBrush("A3"));
-            //            else if (_down)
-            //                target.FillRectangle(rect,
-            //                    rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
-            //            else
-            //                target.FillRectangle(rect,
-            //                    rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
-
-            //            using(var pen2 = target.CreatePen(1, i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
-            //            target.DrawRectangle(rect, pen2);
-            //        }
-            //    }
-            //}
-
-            //if (CurrentShape is Rectangle rectangle)
-            //{
-            //    void RenderRectHandle(Vector2 position, bool isMouseDown)
-            //    {
-            //        var p = Vector2.Transform(position, transform);
-            //        var r = new RectangleF(p.X - 4f, p.Y - 4f, 8, 8);
-
-            //        if (isMouseDown)
-            //            target.FillRectangle(r,
-            //                r.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
-            //        else
-            //            target.FillRectangle(r,
-            //                r.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
-            //    }
-
-            //    RenderRectHandle(
-            //        new Vector2(rectangle.X, rectangle.Y), 
-            //        _rectHandles.TopLeft);
-
-            //    RenderRectHandle(
-            //        new Vector2(rectangle.X + rectangle.Width, rectangle.Y), 
-            //        _rectHandles.TopRight);
-
-            //    RenderRectHandle(
-            //        new Vector2(rectangle.X, rectangle.Y + rectangle.Height), 
-            //        _rectHandles.BottomLeft);
-
-            //    RenderRectHandle(
-            //        new Vector2(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height),
-            //        _rectHandles.BottomRight);
-            //}
         }
 
         private void RenderGradientHandles(RenderContext target, ICacheManager cacheManager, Matrix3x2 transform)
@@ -368,7 +302,7 @@ namespace Ibinimator.Service.Tools
 
             if (_selection.Count > 0 && _down)
             {
-                if (!(CurrentShape is Path path))
+                if (!(CurrentShape is Path))
                     ConvertToPath();
 
                 var history = Context.HistoryManager;
@@ -396,6 +330,8 @@ namespace Ibinimator.Service.Tools
                             ModifyPathCommand.NodeOperation.Move));
                 else
                     history.Push(newCmd);
+
+                _lastPos = pos;
 
                 return true;
             }

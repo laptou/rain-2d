@@ -101,9 +101,19 @@ namespace Ibinimator.Renderer.Direct2D
             FactoryDW.Dispose();
         }
 
+        public override void DrawBitmap(IBitmap iBitmap)
+        {
+            var bitmap = iBitmap as Bitmap;
+
+            Target.DrawBitmap(
+                bitmap, 1, D2D.BitmapInterpolationMode.Linear);
+        }
+
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
         {
             var pen = iPen as Pen;
+
+            if (iPen == null) return;
 
             Target.DrawEllipse(
                 new D2D.Ellipse(
@@ -118,6 +128,8 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var pen = iPen as Pen;
 
+            if (geometry == null || iPen == null) return;
+            
             Target.DrawGeometry(
                 geometry as Geometry,
                 pen.Brush, pen.Width, pen.Style);
@@ -126,6 +138,8 @@ namespace Ibinimator.Renderer.Direct2D
         public override void DrawLine(Vector2 v1, Vector2 v2, IPen iPen)
         {
             var pen = iPen as Pen;
+
+            if (iPen == null) return;
 
             Target.DrawLine(
                 v1.Convert(),

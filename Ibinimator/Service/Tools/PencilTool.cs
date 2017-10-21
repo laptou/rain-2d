@@ -164,7 +164,7 @@ namespace Ibinimator.Service.Tools
                 }
                 else
                 {
-                    PathInstruction newNode;
+                    CoordinatePathInstruction newNode;
 
                     if (_shift)
                     {
@@ -179,6 +179,9 @@ namespace Ibinimator.Service.Tools
                     {
                         newNode = new LinePathInstruction(tpos);
                     }
+
+                    if(!CurrentPath.Instructions.Any())
+                        newNode = new MovePathInstruction(newNode.Position);
 
                     Context.HistoryManager.Do(
                         new ModifyPathCommand(

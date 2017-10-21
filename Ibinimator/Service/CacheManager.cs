@@ -4,6 +4,7 @@ using System.Collections;
 using System.ComponentModel;
 using Ibinimator.Core.Utility;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -27,6 +28,8 @@ namespace Ibinimator.Service
 
         private readonly Dictionary<IGeometricLayer, IGeometry> _geometries =
             new Dictionary<IGeometricLayer, IGeometry>();
+
+        private readonly object _renderLock = new object();
 
         private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources =
             new Dictionary<(ILayer layer, int id), IDisposable>();
@@ -54,9 +57,7 @@ namespace Ibinimator.Service
             brush.PropertyChanged += OnBrushPropertyChanged;
 
             lock (_brushBindings)
-            {
                 _brushBindings[brush] = (shape, fill);
-            }
 
             return fill;
         }
@@ -120,7 +121,7 @@ namespace Ibinimator.Service
                     UnbindLayer(subLayer);
         }
 
-        private static TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
+        private TV Get<TK, TV>(Dictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
         {
             lock (dict)
             {
@@ -129,7 +130,8 @@ namespace Ibinimator.Service
                     value != null)
                     return value;
 
-                return dict[key] = fallback(key);
+                lock(_renderLock)
+                    return dict[key] = fallback(key);
             }
         }
 
@@ -209,77 +211,73 @@ namespace Ibinimator.Service
 
         public void BindLayer(ILayer layer)
         {
-            if (layer is IFilledLayer filled && filled.Fill != null)
+            if (layer is IFilledLayer filled)
+            {
                 lock (_fills)
                 {
                     _fills.TryGet(filled)?.Dispose();
                     _fills[filled] = BindBrush(filled, filled.Fill);
-
-                    filled.FillChanged += (s, e) =>
-                    {
-                        lock (_fills)
-                        {
-                            if (s is IFilledLayer shape)
-                            {
-                                _fills.TryGet(shape)?.Dispose();
-                                _fills[shape] = BindBrush(shape, shape.Fill);
-                            }
-                        }
-                    };
                 }
 
-            if (layer is IStrokedLayer stroked && stroked.Stroke != null)
+                filled.FillChanged += (s, e) =>
+                {
+                    lock (_renderLock)
+                        if (s is IFilledLayer shape)
+                            _fills.TryGet(shape)?.Dispose();
+
+                    Context.InvalidateSurface();
+                };
+            }
+
+            if (layer is IStrokedLayer stroked)
+            {
                 lock (_strokes)
                 {
                     _strokes.TryGet(stroked)?.Dispose();
                     _strokes[stroked] = BindStroke(stroked, stroked.Stroke);
-
-                    stroked.StrokeChanged += (s, e) =>
-                    {
-                        lock (_strokes)
-                        {
-                            if (s is IStrokedLayer shape)
-                            {
-                                _strokes.TryGet(shape)?.Dispose();
-                                _strokes[shape] = BindStroke(shape, shape.Stroke);
-                            }
-                        }
-                    };
                 }
 
+                stroked.StrokeChanged += (s, e) =>
+                {
+                    lock (_renderLock)
+                        if (s is IStrokedLayer shape)
+                            _strokes.TryGet(shape)?.Dispose();
+
+                    Context.InvalidateSurface();
+                };
+            }
+
             if (layer is ITextLayer text)
+            {
                 text.LayoutChanged += (s, e) =>
                 {
-                    lock (_texts)
-                    {
+                    lock (_renderLock)
                         if (s is ITextLayer t)
-                        {
                             _texts.TryGet(t)?.Dispose();
-                            _texts[t] = t.GetLayout(Context);
-                        }
-                    }
+
+                    Context.InvalidateSurface();
                 };
+            }
 
             if (layer is IGeometricLayer geometric)
+            {
                 geometric.GeometryChanged += (s, e) =>
                 {
-                    lock (_geometries)
-                    {
+                    lock (_renderLock)
                         if (s is IGeometricLayer g)
-                        {
                             _geometries.TryGet(g)?.Dispose();
-                            _geometries[g] = g.GetGeometry(this);
-                        }
-                    }
+
+                    Context.InvalidateSurface();
                 };
+            }
 
             layer.BoundsChanged += (s, e) =>
             {
                 lock (_bounds)
-                {
                     if (s is ILayer l)
                         _bounds[l] = l.GetBounds(this);
-                }
+
+                Context.InvalidateSurface();
             };
 
             if (layer is IContainerLayer group)
@@ -382,6 +380,11 @@ namespace Ibinimator.Service
                                 color.G / 255f,
                                 color.B / 255f,
                                 color.A / 255f));
+        }
+
+        public QuickLock Lock()
+        {
+            return new QuickLock(_renderLock);
         }
 
         public void ResetAll()

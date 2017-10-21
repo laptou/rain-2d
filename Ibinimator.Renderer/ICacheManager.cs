@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;
@@ -31,8 +32,26 @@ namespace Ibinimator.Renderer
 
         void LoadBitmaps(RenderContext target);
         void LoadBrushes(RenderContext target);
+        QuickLock Lock();
         void ResetAll();
         void ResetDeviceResources();
         void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable;
+    }
+
+    public class QuickLock : IDisposable
+    {
+        private readonly object _obj;
+
+        public QuickLock(object obj)
+        {
+            _obj = obj;
+
+            Monitor.Enter(_obj);
+        }
+
+        public void Dispose()
+        {
+            Monitor.Exit(_obj);
+        }
     }
 }

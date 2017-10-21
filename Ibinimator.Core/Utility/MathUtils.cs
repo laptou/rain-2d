@@ -194,5 +194,10 @@ namespace Ibinimator.Core.Utility
         {
             return (f % r + r) % r;
         }
+
+        public static int Wrap(int f, int r)
+        {
+            return (f % r + r) % r;
+        }
     }
 }

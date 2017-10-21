@@ -36,16 +36,12 @@ namespace Ibinimator.Renderer.Model
         public override IGeometry GetGeometry(ICacheManager cache)
         {
             var pg = cache.Context.RenderContext.CreateGeometry();
-            pg.Load(Instructions);
+            // ToArray to avoid modification-during-iteration errors
+            pg.Load(Instructions.ToArray());
             return pg;
         }
 
         public void Update()
-        {
-            RaiseGeometryChanged();
-        }
-
-        private void NodeOnPropertyChanged(object o, PropertyChangedEventArgs propertyChangedEventArgs)
         {
             RaiseGeometryChanged();
         }
