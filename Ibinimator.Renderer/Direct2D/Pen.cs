@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
@@ -56,17 +55,30 @@ namespace Ibinimator.Renderer.Direct2D
 
         private void RecreateStyle()
         {
-            Style = new StrokeStyle1(_target.Factory.QueryInterface<Factory1>(), new StrokeStyleProperties1
-            {
-                TransformType = StrokeTransformType.Fixed,
-                DashCap = (CapStyle) LineCap,
-                StartCap = (CapStyle) LineCap,
-                EndCap = (CapStyle) LineCap,
-                LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
-                DashStyle = Dashes.Count > 0 ? DashStyle.Custom : DashStyle.Solid,
-                DashOffset = DashOffset,
-                MiterLimit = MiterLimit
-            });
+            if (Dashes.Count == 0)
+                Style = new StrokeStyle1(_target.Factory.QueryInterface<Factory1>(), new StrokeStyleProperties1
+                {
+                    TransformType = StrokeTransformType.Fixed,
+                    DashCap = (CapStyle) LineCap,
+                    StartCap = (CapStyle) LineCap,
+                    EndCap = (CapStyle) LineCap,
+                    LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
+                    DashStyle = DashStyle.Solid,
+                    DashOffset = DashOffset,
+                    MiterLimit = MiterLimit
+                });
+            else
+                Style = new StrokeStyle1(_target.Factory.QueryInterface<Factory1>(), new StrokeStyleProperties1
+                {
+                    TransformType = StrokeTransformType.Fixed,
+                    DashCap = (CapStyle) LineCap,
+                    StartCap = (CapStyle) LineCap,
+                    EndCap = (CapStyle) LineCap,
+                    LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
+                    DashStyle = DashStyle.Custom,
+                    DashOffset = DashOffset,
+                    MiterLimit = MiterLimit
+                }, Dashes.ToArray());
         }
 
         #region IPen Members

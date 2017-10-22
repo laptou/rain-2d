@@ -47,9 +47,9 @@ namespace Ibinimator.Svg
 
             FontFamily = LazyGet(element, "font-family", true);
             FontSize = LazyGet(element, "font-size", new Length(12, LengthUnit.Pixels), true);
-            FontStretch = LazyGet<FontStretch>(element, "font-stretch", inherit: true);
-            FontStyle = LazyGet<FontStyle>(element, "font-style", inherit: true);
-            FontWeight = LazyGet<FontWeight>(element, "font-weight", inherit: true);
+            FontStretch = LazyGet<FontStretch>(element, "font-stretch", Core.Model.FontStretch.Normal, inherit: true);
+            FontStyle = LazyGet<FontStyle>(element, "font-style", Core.Model.FontStyle.Normal, inherit: true);
+            FontWeight = LazyGet<FontWeight>(element, "font-weight", Core.Model.FontWeight.Normal, inherit: true);
             AlignmentBaseline = LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
 
             Text = element.Value;

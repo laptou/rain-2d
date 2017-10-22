@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
@@ -8,26 +7,87 @@ using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
 using Matrix3x2 = System.Numerics.Matrix3x2;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     internal class Geometry : ResourceBase, IGeometry
     {
-        private D2D1.Geometry _geom;
-        private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
         private readonly D2D1.RenderTarget _target;
+        private D2D1.Geometry _geom;
 
-        public Geometry(D2D1.RenderTarget target) 
-            : this(target, new D2D1.PathGeometry(target.Factory))
-        {
-        }
+        public Geometry(D2D1.RenderTarget target)
+            : this(target, new D2D1.PathGeometry(target.Factory)) { }
 
         public Geometry(D2D1.RenderTarget target, D2D1.Geometry source)
         {
             _target = target;
             _geom = source;
+        }
 
-            
+        public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries)
+            : this(target,
+                   new D2D1.GeometryGroup(
+                       target.Factory,
+                       D2D1.FillMode.Alternate,
+                       geometries.OfType<Geometry>().Select(g => g._geom).ToArray())) { }
+
+        private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+
+        private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
+        {
+            var geometry = new Geometry(_target);
+
+            using (var sink = new ReadingSink())
+            {
+                _geom.Combine(((Geometry) other)._geom, mode, sink);
+                geometry.Load(sink.Read());
+            }
+
+            return geometry;
+        }
+
+        private static void Load(IGeometrySink sink, IEnumerable<PathInstruction> source)
+        {
+            foreach (var instruction in source)
+                switch (instruction)
+                {
+                    case ClosePathInstruction close:
+                        sink.Close(close.Open);
+                        break;
+                    case ArcPathInstruction arc:
+                        sink.Arc(
+                            arc.X,
+                            arc.Y,
+                            arc.RadiusX,
+                            arc.RadiusY,
+                            arc.Angle,
+                            arc.Clockwise,
+                            arc.LargeArc);
+                        break;
+                    case CubicPathInstruction cubic:
+                        sink.Cubic(
+                            cubic.X,
+                            cubic.Y,
+                            cubic.Control1X,
+                            cubic.Control1Y,
+                            cubic.Control2X,
+                            cubic.Control2Y);
+                        break;
+                    case LinePathInstruction line:
+                        sink.Line(line.X, line.Y);
+                        break;
+                    case MovePathInstruction move:
+                        sink.Move(move.X, move.Y);
+                        break;
+                    case QuadraticPathInstruction quadratic:
+                        sink.Quadratic(
+                            quadratic.X,
+                            quadratic.Y,
+                            quadratic.ControlX,
+                            quadratic.ControlY);
+                        break;
+                }
         }
 
         private void Pathify()
@@ -48,70 +108,6 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries)
-            : this (target, new D2D1.GeometryGroup(
-                target.Factory, 
-                D2D1.FillMode.Alternate, 
-                geometries.OfType<Geometry>().Select(g => g._geom).ToArray()))
-        {
-            
-        }
-
-        private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
-        {
-            var geometry = new Geometry(_target);
-
-            using (var sink = new ReadingSink())
-            {
-                _geom.Combine(((Geometry) other)._geom, mode, sink);
-                geometry.Load(sink.Read());
-            }
-
-            return geometry;
-        }
-
-        private static void Load(IGeometrySink sink, IEnumerable<PathInstruction> source)
-        {
-            foreach (var instruction in source)
-            {
-                switch (instruction)
-                {
-                    case ClosePathInstruction close:
-                        sink.Close(close.Open);
-                        break;
-                    case ArcPathInstruction arc:
-                        sink.Arc(
-                            arc.X, arc.Y,
-                            arc.RadiusX, arc.RadiusY,
-                            arc.Angle, arc.Clockwise, arc.LargeArc);
-                        break;
-                    case CubicPathInstruction cubic:
-                        sink.Cubic(
-                            cubic.X, cubic.Y,
-                            cubic.Control1X, cubic.Control1Y,
-                            cubic.Control2X, cubic.Control2Y);
-                        break;
-                    case LinePathInstruction line:
-                        sink.Line(line.X, line.Y);
-                        break;
-                    case MovePathInstruction move:
-                        sink.Move(move.X, move.Y);
-                        break;
-                    case QuadraticPathInstruction quadratic:
-                        sink.Quadratic(
-                            quadratic.X, quadratic.Y,
-                            quadratic.ControlX, quadratic.ControlY);
-                        break;
-                }
-            }
-        }
-
-        public void Load(IEnumerable<PathInstruction> source)
-        {
-            using (var sink = Open())
-                Load(sink, source);
-        }
-
         private static IEnumerable<PathInstruction> Read(D2D1.PathGeometry geometry)
         {
             using (var sink = new ReadingSink())
@@ -121,10 +117,7 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        public static implicit operator D2D1.Geometry(Geometry geometry)
-        {
-            return geometry._geom;
-        }
+        public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
 
         #region IGeometry Members
 
@@ -143,26 +136,28 @@ namespace Ibinimator.Renderer.Direct2D
             return geometry;
         }
 
-        public IGeometry Difference(IGeometry other)
-        {
-            return Combine(other, D2D1.CombineMode.Exclude);
-        }
+        public IGeometry Difference(IGeometry other) { return Combine(other, D2D1.CombineMode.Exclude); }
 
         public override void Dispose()
         {
-            lock(this) _geom?.Dispose();
+            lock (this)
+            {
+                _geom?.Dispose();
+            }
 
             base.Dispose();
         }
 
-        public bool FillContains(float x, float y)
-        {
-            return _geom.FillContainsPoint(new RawVector2(x, y));
-        }
+        public bool FillContains(float x, float y) { return _geom.FillContainsPoint(new RawVector2(x, y)); }
 
-        public IGeometry Intersection(IGeometry other)
+        public IGeometry Intersection(IGeometry other) { return Combine(other, D2D1.CombineMode.Intersect); }
+
+        public void Load(IEnumerable<PathInstruction> source)
         {
-            return Combine(other, D2D1.CombineMode.Intersect);
+            using (var sink = Open())
+            {
+                Load(sink, source);
+            }
         }
 
         public IGeometrySink Open()
@@ -198,10 +193,7 @@ namespace Ibinimator.Renderer.Direct2D
             return Read(Path);
         }
 
-        public void Read(IGeometrySink sink)
-        {
-            Load(sink, Read());
-        }
+        public void Read(IGeometrySink sink) { Load(sink, Read()); }
 
         public bool StrokeContains(float x, float y, float width)
         {
@@ -213,15 +205,9 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geom, transform.Convert()));
         }
 
-        public IGeometry Union(IGeometry other)
-        {
-            return Combine(other, D2D1.CombineMode.Union);
-        }
+        public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
 
-        public IGeometry Xor(IGeometry other)
-        {
-            return Combine(other, D2D1.CombineMode.Xor);
-        }
+        public IGeometry Xor(IGeometry other) { return Combine(other, D2D1.CombineMode.Xor); }
 
         #endregion
 
@@ -233,10 +219,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             public D2D1.FillMode FillMode { get; set; }
 
-            public IEnumerable<PathInstruction> Read()
-            {
-                return _instructions;
-            }
+            public IEnumerable<PathInstruction> Read() { return _instructions; }
 
             #region GeometrySink Members
 
@@ -244,8 +227,10 @@ namespace Ibinimator.Renderer.Direct2D
             {
                 _instructions.Add(
                     new ArcPathInstruction(
-                        arc.Point.X, arc.Point.Y,
-                        arc.Size.Width, arc.Size.Height,
+                        arc.Point.X,
+                        arc.Point.Y,
+                        arc.Size.Width,
+                        arc.Size.Height,
                         arc.RotationAngle,
                         arc.SweepDirection == D2D1.SweepDirection.Clockwise,
                         arc.ArcSize == D2D1.ArcSize.Large));
@@ -255,9 +240,12 @@ namespace Ibinimator.Renderer.Direct2D
             {
                 _instructions.Add(
                     new CubicPathInstruction(
-                        bezier.Point3.X, bezier.Point3.Y,
-                        bezier.Point1.X, bezier.Point1.Y,
-                        bezier.Point2.X, bezier.Point2.Y));
+                        bezier.Point3.X,
+                        bezier.Point3.Y,
+                        bezier.Point1.X,
+                        bezier.Point1.Y,
+                        bezier.Point2.X,
+                        bezier.Point2.Y));
             }
 
             public void AddBeziers(D2D1.BezierSegment[] beziers)
@@ -268,7 +256,11 @@ namespace Ibinimator.Renderer.Direct2D
 
             public void AddLine(RawVector2 point)
             {
-                _instructions.Add(new LinePathInstruction(point.X, point.Y));
+                // eliminate zero-length lines
+                if (_instructions.LastOrDefault() is CoordinatePathInstruction coord &&
+                    Vector2.DistanceSquared(coord.Position, new Vector2(point.X, point.Y)) < 0.005f)
+
+                    _instructions.Add(new LinePathInstruction(point.X, point.Y));
             }
 
             public void AddLines(RawVector2[] points)
@@ -281,8 +273,10 @@ namespace Ibinimator.Renderer.Direct2D
             {
                 _instructions.Add(
                     new QuadraticPathInstruction(
-                        bezier.Point2.X, bezier.Point2.Y,
-                        bezier.Point1.X, bezier.Point1.Y));
+                        bezier.Point2.X,
+                        bezier.Point2.Y,
+                        bezier.Point1.X,
+                        bezier.Point1.Y));
             }
 
             public void AddQuadraticBeziers(D2D1.QuadraticBezierSegment[] beziers)
@@ -296,9 +290,7 @@ namespace Ibinimator.Renderer.Direct2D
                 _instructions.Add(new MovePathInstruction(startPoint.X, startPoint.Y));
             }
 
-            public void Close()
-            {
-            }
+            public void Close() { }
 
             public void Dispose()
             {
@@ -311,10 +303,7 @@ namespace Ibinimator.Renderer.Direct2D
                 _instructions.Add(new ClosePathInstruction(figureEnd == D2D1.FigureEnd.Open));
             }
 
-            public void SetFillMode(D2D1.FillMode fillMode)
-            {
-                FillMode = fillMode;
-            }
+            public void SetFillMode(D2D1.FillMode fillMode) { FillMode = fillMode; }
 
             public void SetSegmentFlags(D2D1.PathSegment vertexFlags)
             {
@@ -338,10 +327,7 @@ namespace Ibinimator.Renderer.Direct2D
             private float _x;
             private float _y;
 
-            public WritingSink(D2D1.PathGeometry geometry)
-            {
-                _sink = geometry.Open();
-            }
+            public WritingSink(D2D1.PathGeometry geometry) { _sink = geometry.Open(); }
 
             private void Begin()
             {
