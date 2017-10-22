@@ -14,7 +14,8 @@ namespace Ibinimator.Renderer
             Absolute = absolute;
         }
 
-        public Matrix3x2 Transform { get; }
         public bool Absolute { get; }
+
+        public Matrix3x2 Transform { get; }
     }
 }

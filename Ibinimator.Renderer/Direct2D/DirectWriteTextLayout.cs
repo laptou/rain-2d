@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.WPF;
 using DW = SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -19,10 +17,7 @@ namespace Ibinimator.Renderer.Direct2D
         private DW.TextLayout _layout;
         private TextRenderer.Context _textContext;
 
-        public DirectWriteTextLayout(Direct2DRenderContext ctx)
-        {
-            _ctx = ctx;
-        }
+        public DirectWriteTextLayout(Direct2DRenderContext ctx) { _ctx = ctx; }
 
         public float Height { get; set; }
 
@@ -45,10 +40,9 @@ namespace Ibinimator.Renderer.Direct2D
 
             if (format == null) return null;
 
-            return format.Range.Index + format.Range.Length > position
-                   && position >= format.Range.Index
-                ? format
-                : null;
+            return format.Range.Index + format.Range.Length > position && position >= format.Range.Index ?
+                format :
+                null;
         }
 
         private void Update()
@@ -56,17 +50,17 @@ namespace Ibinimator.Renderer.Direct2D
             _layout?.Dispose();
 
             _layout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
-                    _ctx.FactoryDW,
-                    Text ?? "",
-                    new DW.TextFormat(
-                        _ctx.FactoryDW,
-                        FontFamily,
-                        (DW.FontWeight) FontWeight,
-                        (DW.FontStyle) FontStyle,
-                        (DW.FontStretch) FontStretch,
-                        FontSize * 96 / 72),
-                    IsBlock ? Width : float.PositiveInfinity,
-                    IsBlock ? Height : float.PositiveInfinity))
+                                             _ctx.FactoryDW,
+                                             Text ?? "",
+                                             new DW.TextFormat(
+                                                 _ctx.FactoryDW,
+                                                 FontFamily,
+                                                 (DW.FontWeight) FontWeight,
+                                                 (DW.FontStyle) FontStyle,
+                                                 (DW.FontStretch) FontStretch,
+                                                 FontSize * 96 / 72),
+                                             IsBlock ? Width : float.PositiveInfinity,
+                                             IsBlock ? Height : float.PositiveInfinity))
                 // ReSharper disable once RedundantEmptyObjectOrCollectionInitializer
                 {
                     //TextAlignment = TextAlignment,
@@ -148,10 +142,7 @@ namespace Ibinimator.Renderer.Direct2D
             return null;
         }
 
-        public Format GetFormat(int index)
-        {
-            return GetFormat(index, out var _);
-        }
+        public Format GetFormat(int index) { return GetFormat(index, out var _); }
 
         public IGeometry GetGeometryForGlyph(int index)
         {
@@ -166,10 +157,7 @@ namespace Ibinimator.Renderer.Direct2D
             return null;
         }
 
-        public int GetGlyphCount()
-        {
-            return _textContext.GlyphCount;
-        }
+        public int GetGlyphCount() { return _textContext.GlyphCount; }
 
         public int GetGlyphCountForGeometry(int index)
         {
@@ -184,18 +172,6 @@ namespace Ibinimator.Renderer.Direct2D
             return -1;
         }
 
-        public bool Hit(Vector2 point)
-        {
-            _layout.HitTestPoint(point.X, point.Y, out var _, out var hit);
-            return hit;
-        }
-
-        public RectangleF Measure()
-        {
-            return new RectangleF(_layout.Metrics.Top,
-                _layout.Metrics.Left, _layout.Metrics.Width, _layout.Metrics.Height);
-        }
-
         public IPen GetPenForGlyph(int index)
         {
             var j = 0;
@@ -207,6 +183,19 @@ namespace Ibinimator.Renderer.Direct2D
             }
 
             return null;
+        }
+
+        public int GetPosition(Vector2 point, out bool trailing)
+        {
+            var metrics = _layout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
+            trailing = isTrailingHit;
+            return metrics.TextPosition;
+        }
+
+        public bool Hit(Vector2 point)
+        {
+            _layout.HitTestPoint(point.X, point.Y, out var _, out var hit);
+            return hit;
         }
 
         public void InsertText(int position, string text)
@@ -239,10 +228,29 @@ namespace Ibinimator.Renderer.Direct2D
             Update();
         }
 
-        public override void Optimize()
+        public RectangleF Measure()
         {
-            throw new NotImplementedException();
+            return new RectangleF(_layout.Metrics.Top,
+                                  _layout.Metrics.Left,
+                                  _layout.Metrics.Width,
+                                  _layout.Metrics.Height);
         }
+
+        public RectangleF MeasurePosition(int index)
+        {
+            var m = _layout.HitTestTextPosition(index, false, out var _, out var _);
+            return new RectangleF(m.Left, m.Top, m.Width, m.Height);
+        }
+
+        public RectangleF[] MeasureRange(int index, int length)
+        {
+            return _layout
+                .HitTestTextRange(index, length, 0, 0)
+                .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
+                .ToArray();
+        }
+
+        public override void Optimize() { throw new NotImplementedException(); }
 
         public void RemoveText(int position, int range)
         {
@@ -374,26 +382,6 @@ namespace Ibinimator.Renderer.Direct2D
         public string FontFamily { get; set; } = "Arial";
         public float FontSize { get; set; }
         public FontStretch FontStretch { get; set; }
-        public int GetPosition(Vector2 point, out bool trailing)
-        {
-            var metrics = _layout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
-            trailing = isTrailingHit;
-            return metrics.TextPosition;
-        }
-
-        public RectangleF[] MeasureRange(int index, int length)
-        {
-            return _layout
-                .HitTestTextRange(index, length, 0, 0)
-                .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
-                .ToArray();
-        }
-
-        public RectangleF MeasurePosition(int index)
-        {
-            var m = _layout.HitTestTextPosition(index, false, out var _, out var _);
-            return new RectangleF(m.Left, m.Top, m.Width, m.Height);
-        }
 
         public FontStyle FontStyle { get; set; }
         public FontWeight FontWeight { get; set; }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Matrix3x2 = System.Numerics.Matrix3x2;
 
 namespace Ibinimator.Renderer.Model
 {

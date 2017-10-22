@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
 
@@ -14,6 +13,12 @@ namespace Ibinimator.Renderer.Model
         {
             Dashes = new ObservableList<float>();
             Style = new StrokeStyleProperties1();
+        }
+
+        public BrushInfo Brush
+        {
+            get => Get<BrushInfo>();
+            set => Set(value);
         }
 
         public ObservableList<float> Dashes
@@ -31,12 +36,6 @@ namespace Ibinimator.Renderer.Model
         public float Width
         {
             get => Get<float>();
-            set => Set(value);
-        }
-
-        public BrushInfo Brush
-        {
-            get => Get<BrushInfo>();
             set => Set(value);
         }
 

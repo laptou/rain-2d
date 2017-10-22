@@ -5,44 +5,41 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.Renderer.WPF
 {
     public static class WpfConverter
     {
-        public static Core.Model.Color Convert(this Color c)
+        public static Color Convert(this System.Windows.Media.Color c)
         {
-            return new Core.Model.Color(
-                c.R / 255f, 
-                c.G / 255f, 
-                c.B / 255f, 
+            return new Color(
+                c.R / 255f,
+                c.G / 255f,
+                c.B / 255f,
                 c.A / 255f);
         }
 
-        public static Color Convert(this Core.Model.Color c)
+        public static System.Windows.Media.Color Convert(this Color c)
         {
-            return Color.FromArgb(
+            return System.Windows.Media.Color.FromArgb(
                 (byte) (c.A * 255),
-                (byte) (c.R * 255), 
-                (byte) (c.G * 255), 
+                (byte) (c.R * 255),
+                (byte) (c.G * 255),
                 (byte) (c.B * 255));
         }
 
-        public static Point Convert(this Vector2 vec)
-        {
-            return new Point(vec.X, vec.Y);
-        }
+        public static Point Convert(this Vector2 vec) { return new Point(vec.X, vec.Y); }
 
-        public static Vector2 Convert(this Point vec)
-        {
-            return new Vector2((float) vec.X, (float) vec.Y);
-        }
+        public static Vector2 Convert(this Point vec) { return new Vector2((float) vec.X, (float) vec.Y); }
 
         public static RectangleF Convert(this Rect rect)
         {
             return new RectangleF(
-                (float)rect.Left, (float)rect.Top, 
-                (float)rect.Width, (float)rect.Height);
+                (float) rect.Left,
+                (float) rect.Top,
+                (float) rect.Width,
+                (float) rect.Height);
         }
 
         public static Matrix Convert(this Matrix3x2 mat)
@@ -53,9 +50,12 @@ namespace Ibinimator.Renderer.WPF
         public static Matrix3x2 Convert(this Matrix mat)
         {
             return new Matrix3x2(
-                (float) mat.M11, (float) mat.M12, 
-                (float) mat.M21, (float) mat.M22, 
-                (float) mat.OffsetX, (float) mat.OffsetY);
+                (float) mat.M11,
+                (float) mat.M12,
+                (float) mat.M21,
+                (float) mat.M22,
+                (float) mat.OffsetX,
+                (float) mat.OffsetY);
         }
     }
 }

@@ -56,10 +56,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public override RectangleF GetBounds(ICacheManager cache)
-        {
-            return new RectangleF(X, Y, Width, Height);
-        }
+        public override RectangleF GetBounds(ICacheManager cache) { return new RectangleF(X, Y, Width, Height); }
 
         public override IGeometry GetGeometry(ICacheManager cache)
         {

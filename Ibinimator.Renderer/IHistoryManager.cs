@@ -7,10 +7,10 @@ using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Renderer
 {
-    public interface IHistoryManager :
-        IArtContextManager,
-        INotifyCollectionChanged,
-        IEnumerable<IOperationCommand<ILayer>>
+    public interface IHistoryManager
+        : IArtContextManager,
+          INotifyCollectionChanged,
+          IEnumerable<IOperationCommand<ILayer>>
     {
         /// <summary>
         ///     Returns the last operation that was performed.

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Matrix3x2 = System.Numerics.Matrix3x2;
-using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Renderer.Model
 {
@@ -28,6 +27,8 @@ namespace Ibinimator.Renderer.Model
         float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
 
+        event EventHandler BoundsChanged;
+
         void ApplyTransform(Matrix3x2 transform);
         Layer Find(Guid id);
         RectangleF GetBounds(ICacheManager cache);
@@ -35,7 +36,5 @@ namespace Ibinimator.Renderer.Model
         Layer Hit(ICacheManager cache, Vector2 point, bool includeMe);
         T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
         void Render(RenderContext target, ICacheManager cache);
-
-        event EventHandler BoundsChanged;
     }
 }

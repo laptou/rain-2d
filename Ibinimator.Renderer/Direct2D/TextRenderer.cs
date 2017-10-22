@@ -4,21 +4,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
 using SharpDX;
+using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     internal class TextRenderer : TextRendererBase
     {
-        public override Result DrawGlyphRun(object clientDrawingContext, float baselineOriginX,
-            float baselineOriginY, SharpDX.Direct2D1.MeasuringMode measuringMode, GlyphRun glyphRun,
+        public override Result DrawGlyphRun(
+            object clientDrawingContext,
+            float baselineOriginX,
+            float baselineOriginY,
+            MeasuringMode measuringMode,
+            GlyphRun glyphRun,
             GlyphRunDescription glyphRunDescription,
             ComObject clientDrawingEffect)
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
 
-            var path = new SharpDX.Direct2D1.PathGeometry(context.RenderContext.Factory2D);
+            var path = new PathGeometry(context.RenderContext.Factory2D);
             var sink = path.Open();
 
             glyphRun.FontFace.GetGlyphRunOutline(
@@ -32,8 +37,9 @@ namespace Ibinimator.Renderer.Direct2D
 
             sink.Close();
 
-            var geometry = new SharpDX.Direct2D1.TransformedGeometry(
-                context.RenderContext.Factory2D, path,
+            var geometry = new TransformedGeometry(
+                context.RenderContext.Factory2D,
+                path,
                 Matrix3x2.Translation(baselineOriginX, baselineOriginY));
 
             context.Geometries.Add(new Geometry(context.RenderContext.Target, geometry));
@@ -51,10 +57,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public class Context
         {
-            public Context(Direct2DRenderContext ctx)
-            {
-                RenderContext = ctx;
-            }
+            public Context(Direct2DRenderContext ctx) { RenderContext = ctx; }
 
             public List<IBrush> Brushes { get; } = new List<IBrush>();
             public Dictionary<int, int> CharactersForGeometry { get; } = new Dictionary<int, int>();

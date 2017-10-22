@@ -7,8 +7,14 @@ namespace Ibinimator.Renderer
 {
     internal class EllipseRenderCommand : GeometricRenderCommand
     {
-        public EllipseRenderCommand(float cx, float cy, float rx, float ry,
-            bool fill, IBrush brush, IPen pen) : base(fill, brush, pen)
+        public EllipseRenderCommand(
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            bool fill,
+            IBrush brush,
+            IPen pen) : base(fill, brush, pen)
         {
             CenterX = cx;
             CenterY = cy;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
@@ -15,7 +14,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             Direct2DBrush =
                 new D2D1.SolidColorBrush(target,
-                    new RawColor4(color.R, color.G, color.B, color.A));
+                                         new RawColor4(color.R, color.G, color.B, color.A));
         }
 
         #region ISolidColorBrush Members

@@ -3,19 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
-using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Renderer.Model
 {
     public abstract class Shape : Layer, IGeometricLayer
     {
-        protected Shape()
-        {
-            Stroke = new PenInfo();
-        }
+        protected Shape() { Stroke = new PenInfo(); }
 
         public FillMode FillMode
         {
@@ -28,10 +23,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        protected void RaiseFillBrushChanged()
-        {
-            FillChanged?.Invoke(this, null);
-        }
+        protected void RaiseFillBrushChanged() { FillChanged?.Invoke(this, null); }
 
         protected void RaiseGeometryChanged()
         {
@@ -39,10 +31,7 @@ namespace Ibinimator.Renderer.Model
             RaiseBoundsChanged();
         }
 
-        protected void RaiseStrokeChanged()
-        {
-            StrokeChanged?.Invoke(this, null);
-        }
+        protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
 
         #region IGeometricLayer Members
 

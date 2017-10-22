@@ -5,13 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
     public class Document : Model
     {
+        public RectangleF Bounds
+        {
+            get => Get<RectangleF>();
+            set => Set(value);
+        }
+
         public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
 
         [XmlIgnore]
@@ -44,17 +49,8 @@ namespace Ibinimator.Renderer.Model
 
         public string Type => System.IO.Path.GetExtension(Path);
 
-        public RectangleF Bounds
-        {
-            get => Get<RectangleF>();
-            set => Set(value);
-        }
-
         public event PropertyChangedEventHandler Updated;
 
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Updated?.Invoke(sender, e);
-        }
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e) { Updated?.Invoke(sender, e); }
     }
 }

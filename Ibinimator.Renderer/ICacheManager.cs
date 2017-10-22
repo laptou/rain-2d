@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Ibinimator.Renderer.Model;
-using SharpDX.Direct2D1;
-using SharpDX.DirectWrite;
-using SharpDX.Mathematics.Interop;
 
 namespace Ibinimator.Renderer
 {
@@ -49,9 +45,10 @@ namespace Ibinimator.Renderer
             Monitor.Enter(_obj);
         }
 
-        public void Dispose()
-        {
-            Monitor.Exit(_obj);
-        }
+        #region IDisposable Members
+
+        public void Dispose() { Monitor.Exit(_obj); }
+
+        #endregion
     }
 }

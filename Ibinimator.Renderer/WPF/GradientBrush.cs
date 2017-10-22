@@ -4,9 +4,9 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
+using Color = System.Windows.Media.Color;
 
 namespace Ibinimator.Renderer.WPF
 {
@@ -21,14 +21,15 @@ namespace Ibinimator.Renderer.WPF
 
         public abstract SpreadMethod SpreadMethod { get; set; }
 
-        protected abstract void OnStopsChanged(object sender,
+        protected abstract void OnStopsChanged(
+            object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
 
         protected GradientStopCollection ConvertStops()
         {
             return new GradientStopCollection(Stops.Select(s => new System.Windows.Media.GradientStop
             {
-                Color = System.Windows.Media.Color.FromArgb(
+                Color = Color.FromArgb(
                     (byte) (s.Color.R * 255),
                     (byte) (s.Color.G * 255),
                     (byte) (s.Color.B * 255),

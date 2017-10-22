@@ -13,14 +13,19 @@ namespace Ibinimator.Renderer.Direct2D
     {
         private SpreadMethod _spreadMethod;
 
-        public LinearGradientBrush(RenderTarget target, IEnumerable<GradientStop> stops,
-            RawVector2 start, RawVector2 end) : base(target, stops)
+        public LinearGradientBrush(
+            RenderTarget target,
+            IEnumerable<GradientStop> stops,
+            RawVector2 start,
+            RawVector2 end) : base(target, stops)
         {
-            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(target, new LinearGradientBrushProperties
-            {
-                StartPoint = start,
-                EndPoint = end
-            }, ConvertStops());
+            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(target,
+                                                                      new LinearGradientBrushProperties
+                                                                      {
+                                                                          StartPoint = start,
+                                                                          EndPoint = end
+                                                                      },
+                                                                      ConvertStops());
         }
 
         public override SpreadMethod SpreadMethod
@@ -34,7 +39,8 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        protected override void OnStopsChanged(object sender,
+        protected override void OnStopsChanged(
+            object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             RecreateBrush();
@@ -42,11 +48,13 @@ namespace Ibinimator.Renderer.Direct2D
 
         private void RecreateBrush()
         {
-            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target, new LinearGradientBrushProperties
-            {
-                StartPoint = new RawVector2(StartX, StartY),
-                EndPoint = new RawVector2(EndX, EndY)
-            }, ConvertStops());
+            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
+                                                                      new LinearGradientBrushProperties
+                                                                      {
+                                                                          StartPoint = new RawVector2(StartX, StartY),
+                                                                          EndPoint = new RawVector2(EndX, EndY)
+                                                                      },
+                                                                      ConvertStops());
         }
 
         #region ILinearGradientBrush Members

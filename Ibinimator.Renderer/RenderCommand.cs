@@ -5,7 +5,5 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer
 {
-    public abstract class RenderCommand
-    {
-    }
+    public abstract class RenderCommand { }
 }

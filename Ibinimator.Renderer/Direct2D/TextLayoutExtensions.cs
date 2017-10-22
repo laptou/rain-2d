@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     internal static class TextLayoutExtensions
     {
         public static void SetFormat(
-            this SharpDX.DirectWrite.TextLayout layout,
-            SharpDX.DirectWrite.TextRange range,
+            this TextLayout layout,
+            TextRange range,
             Action<TextRenderer.Format> callback)
         {
             var current = range.StartPosition;
@@ -25,7 +26,7 @@ namespace Ibinimator.Renderer.Direct2D
 
                 if (currentRange.Length < 0)
                 {
-                    layout.SetDrawingEffect(specifier, new SharpDX.DirectWrite.TextRange(current, 1));
+                    layout.SetDrawingEffect(specifier, new TextRange(current, 1));
                     current++;
                     continue;
                 }
@@ -33,7 +34,7 @@ namespace Ibinimator.Renderer.Direct2D
                 var currentEnd = currentRange.StartPosition + currentRange.Length;
                 var currentLength = Math.Min(currentEnd, end) - current;
 
-                layout.SetDrawingEffect(specifier, new SharpDX.DirectWrite.TextRange(current, currentLength));
+                layout.SetDrawingEffect(specifier, new TextRange(current, currentLength));
 
                 current += currentLength;
             }
