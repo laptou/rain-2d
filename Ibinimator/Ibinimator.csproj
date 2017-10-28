@@ -146,6 +146,7 @@
     <Compile Include="Service\Commands\GroupCommand.cs" />
     <Compile Include="Service\Commands\InsertTextCommand.cs" />
     <Compile Include="Service\Commands\LayerCommandBase.cs" />
+    <Compile Include="Service\Commands\ModifyGradientCommand.cs" />
     <Compile Include="Service\Commands\ModifyPathCommand.cs" />
     <Compile Include="Service\Commands\RemoveLayerCommand.cs" />
     <Compile Include="Service\Commands\RemoveTextCommand.cs" />

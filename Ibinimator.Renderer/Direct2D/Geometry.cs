@@ -259,8 +259,9 @@ namespace Ibinimator.Renderer.Direct2D
                 // eliminate zero-length lines
                 if (_instructions.LastOrDefault() is CoordinatePathInstruction coord &&
                     Vector2.DistanceSquared(coord.Position, new Vector2(point.X, point.Y)) < 0.005f)
+                    return;
 
-                    _instructions.Add(new LinePathInstruction(point.X, point.Y));
+                _instructions.Add(new LinePathInstruction(point.X, point.Y));
             }
 
             public void AddLines(RawVector2[] points)
