@@ -2,21 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Renderer.Model
 {
     public class SolidColorBrushInfo : BrushInfo
     {
-        public SolidColorBrushInfo()
-        {
-        }
+        public SolidColorBrushInfo() { }
 
-        public SolidColorBrushInfo(Color color)
-        {
-            Color = color;
-        }
+        public SolidColorBrushInfo(Color color) { Color = color; }
 
         public Color Color
         {
@@ -24,15 +18,9 @@ namespace Ibinimator.Renderer.Model
             set => Set(value);
         }
 
-        public override string ToString()
-        {
-            return $"Color: {Color}, Opacity: {Opacity}";
-        }
 
+        public override IBrush CreateBrush(RenderContext target) { return target.CreateBrush(Color); }
 
-        public override IBrush CreateBrush(RenderContext target)
-        {
-            return target.CreateBrush(Color);
-        }
+        public override string ToString() { return $"Color: {Color}, Opacity: {Opacity}"; }
     }
 }

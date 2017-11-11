@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Renderer.Model;
-using SharpDX.Direct2D1;
 
 namespace Ibinimator.Renderer
 {
@@ -14,9 +13,12 @@ namespace Ibinimator.Renderer
     {
         IBitmap Cursor { get; }
         float CursorRotate { get; }
+
         IToolManager Manager { get; }
+
         // ToolOption[] Options { get; }
         string Status { get; }
+
         ToolType Type { get; }
 
         void ApplyFill(BrushInfo brush);

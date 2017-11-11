@@ -12,15 +12,6 @@ namespace Ibinimator.Renderer
     [DebuggerDisplay("Start = {Range.Index}, Length = {Range.Length}")]
     public sealed class Format
     {
-        public override string ToString()
-        {
-            var f = this;
-
-            return $"{f.Range.Index} + {f.Range.Length}" +
-                   $" -> {f.Range.Index + f.Range.Length}: " +
-                   $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
-        }
-
         private bool _subscript;
         private bool _superscript;
 
@@ -81,6 +72,15 @@ namespace Ibinimator.Renderer
                 Kerning = Kerning,
                 Range = Range
             };
+        }
+
+        public override string ToString()
+        {
+            var f = this;
+
+            return $"{f.Range.Index} + {f.Range.Length}" +
+                   $" -> {f.Range.Index + f.Range.Length}: " +
+                   $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
         }
 
         public Format Union(Format f)

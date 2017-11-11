@@ -14,11 +14,11 @@ namespace Ibinimator.Renderer
         IGeometry Difference(IGeometry other);
         bool FillContains(float x, float y);
         IGeometry Intersection(IGeometry other);
+        void Load(IEnumerable<PathInstruction> source);
         IGeometrySink Open();
         IGeometry Outline(float width);
         IEnumerable<PathInstruction> Read();
         void Read(IGeometrySink sink);
-        void Load(IEnumerable<PathInstruction> source);
         bool StrokeContains(float x, float y, float width);
         IGeometry Transform(Matrix3x2 transform);
         IGeometry Union(IGeometry other);

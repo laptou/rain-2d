@@ -21,9 +21,9 @@ namespace Ibinimator.Renderer
         Vector2 FromArtSpace(Vector2 v);
         RectangleF FromArtSpace(RectangleF v);
 
+        void Render(RenderContext target, ICacheManager cache);
+
         Vector2 ToArtSpace(Vector2 v);
         RectangleF ToArtSpace(RectangleF v);
-
-        void Render(RenderContext target, ICacheManager cache);
     }
 }

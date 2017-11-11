@@ -73,6 +73,8 @@ namespace Ibinimator.Svg
 
         public override void FromXml(XElement element, SvgContext context)
         {
+            context.Root = element;
+
             base.FromXml(element, context);
 
             if ((string) element.Attribute("viewBox") != null)

@@ -13,18 +13,24 @@ namespace Ibinimator.Renderer.Direct2D
     {
         private SpreadMethod _spreadMethod;
 
-        public RadialGradientBrush(RenderTarget target, IEnumerable<GradientStop> stops,
-            RawVector2 center, RawVector2 radii, RawVector2 focus) : base(target, stops)
+        public RadialGradientBrush(
+            RenderTarget target,
+            IEnumerable<GradientStop> stops,
+            RawVector2 center,
+            RawVector2 radii,
+            RawVector2 focus) : base(target, stops)
         {
-            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(target, new RadialGradientBrushProperties
-            {
-                Center = center,
-                GradientOriginOffset = new RawVector2(
-                    focus.X - center.X,
-                    focus.Y - center.Y),
-                RadiusX = radii.X,
-                RadiusY = radii.Y
-            }, ConvertStops());
+            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(target,
+                                                                      new RadialGradientBrushProperties
+                                                                      {
+                                                                          Center = center,
+                                                                          GradientOriginOffset = new RawVector2(
+                                                                              focus.X - center.X,
+                                                                              focus.Y - center.Y),
+                                                                          RadiusX = radii.X,
+                                                                          RadiusY = radii.Y
+                                                                      },
+                                                                      ConvertStops());
         }
 
         public override SpreadMethod SpreadMethod
@@ -38,7 +44,8 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        protected override void OnStopsChanged(object sender,
+        protected override void OnStopsChanged(
+            object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             RecreateBrush();
@@ -46,15 +53,17 @@ namespace Ibinimator.Renderer.Direct2D
 
         private void RecreateBrush()
         {
-            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(Target, new RadialGradientBrushProperties
-            {
-                Center = new RawVector2(CenterX, CenterY),
-                GradientOriginOffset = new RawVector2(
-                    FocusX - CenterX,
-                    FocusY - CenterY),
-                RadiusX = RadiusX,
-                RadiusY = RadiusY
-            }, ConvertStops());
+            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(Target,
+                                                                      new RadialGradientBrushProperties
+                                                                      {
+                                                                          Center = new RawVector2(CenterX, CenterY),
+                                                                          GradientOriginOffset = new RawVector2(
+                                                                              FocusX - CenterX,
+                                                                              FocusY - CenterY),
+                                                                          RadiusX = RadiusX,
+                                                                          RadiusY = RadiusY
+                                                                      },
+                                                                      ConvertStops());
         }
 
         #region IRadialGradientBrush Members

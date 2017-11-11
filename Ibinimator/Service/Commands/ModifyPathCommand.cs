@@ -123,10 +123,18 @@ namespace Ibinimator.Service.Commands
                         switch (target.Instructions[i])
                         {
                             case CubicPathInstruction cubic:
+                                if (target.Instructions[i + 1] is CubicPathInstruction prevCubic)
+                                    target.Instructions[i + 1] =
+                                        new CubicPathInstruction(
+                                            prevCubic.Position,
+                                            prevCubic.Control1 + Delta,
+                                            prevCubic.Control2
+                                        );
+
                                 target.Instructions[i] =
                                     new CubicPathInstruction(
                                         cubic.Position + Delta,
-                                        cubic.Control1 + Delta,
+                                        cubic.Control1,
                                         cubic.Control2 + Delta
                                     );
                                 break;
@@ -206,10 +214,18 @@ namespace Ibinimator.Service.Commands
                         switch (target.Instructions[i])
                         {
                             case CubicPathInstruction cubic:
+                                if (target.Instructions[i - 1] is CubicPathInstruction prevCubic)
+                                    target.Instructions[i - 1] =
+                                        new CubicPathInstruction(
+                                            prevCubic.Position,
+                                            prevCubic.Control1 - Delta,
+                                            prevCubic.Control2
+                                        );
+
                                 target.Instructions[i] =
                                     new CubicPathInstruction(
                                         cubic.Position - Delta,
-                                        cubic.Control1 - Delta,
+                                        cubic.Control1,
                                         cubic.Control2 - Delta
                                     );
                                 break;

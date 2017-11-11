@@ -12,17 +12,9 @@ namespace Ibinimator.Renderer.WPF
 
     internal class Geometry : IGeometry
     {
-        public static implicit operator WPF.Geometry(Geometry geometry)
-        {
-            return geometry._geometry;
-        }
-
         private WPF.PathGeometry _geometry;
 
-        public Geometry()
-        {
-            _geometry = new WPF.PathGeometry();
-        }
+        public Geometry() { _geometry = new WPF.PathGeometry(); }
 
         public Geometry(WPF.Geometry geometry)
         {
@@ -34,27 +26,17 @@ namespace Ibinimator.Renderer.WPF
             return new Geometry(new WPF.CombinedGeometry(mode, _geometry, (other as Geometry)?._geometry));
         }
 
+        public static implicit operator WPF.Geometry(Geometry geometry) { return geometry._geometry; }
+
         #region IGeometry Members
 
-        public RectangleF Bounds()
-        {
-            return _geometry.Bounds.Convert();
-        }
+        public RectangleF Bounds() { return _geometry.Bounds.Convert(); }
 
-        public IGeometry Copy()
-        {
-            return new Geometry(_geometry.Clone());
-        }
+        public IGeometry Copy() { return new Geometry(_geometry.Clone()); }
 
-        public IGeometry Difference(IGeometry other)
-        {
-            return Combine(other, WPF.GeometryCombineMode.Exclude);
-        }
+        public IGeometry Difference(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Exclude); }
 
-        public void Dispose()
-        {
-            _geometry = null;
-        }
+        public void Dispose() { _geometry = null; }
 
         public bool FillContains(float x, float y)
         {
@@ -64,20 +46,74 @@ namespace Ibinimator.Renderer.WPF
                 WPF.ToleranceType.Relative);
         }
 
-        public IGeometry Intersection(IGeometry other)
+        public IGeometry Intersection(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Intersect); }
+
+        public void Load(IEnumerable<PathInstruction> source)
         {
-            return Combine(other, WPF.GeometryCombineMode.Intersect);
+            _geometry = new WPF.PathGeometry();
+
+            var figure = new WPF.PathFigure();
+            foreach (var instruction in source)
+                switch (instruction)
+                {
+                    case ClosePathInstruction close:
+                        figure.IsClosed = !close.Open;
+
+                        if (figure.Segments.Count > 0)
+                            _geometry.Figures.Add(figure);
+
+                        figure = new WPF.PathFigure {IsFilled = true};
+                        break;
+                    case ArcPathInstruction arc:
+                        figure.Segments.Add(
+                            new WPF.ArcSegment(
+                                arc.Position.Convert(),
+                                new Size(arc.RadiusX, arc.RadiusY),
+                                arc.Angle,
+                                arc.LargeArc,
+                                arc.Clockwise ?
+                                    WPF.SweepDirection.Clockwise :
+                                    WPF.SweepDirection.Counterclockwise,
+                                true));
+                        break;
+                    case CubicPathInstruction cubic:
+                        figure.Segments.Add(
+                            new WPF.BezierSegment(
+                                cubic.Control1.Convert(),
+                                cubic.Control2.Convert(),
+                                cubic.Position.Convert(),
+                                true));
+                        break;
+                    case LinePathInstruction line:
+                        figure.Segments.Add(new WPF.LineSegment(line.Position.Convert(), true));
+                        break;
+                    case MovePathInstruction move:
+                        if (figure.Segments.Count > 0)
+                            _geometry.Figures.Add(figure);
+
+                        figure = new WPF.PathFigure
+                        {
+                            StartPoint = move.Position.Convert(),
+                            IsFilled = true
+                        };
+
+                        break;
+                    case QuadraticPathInstruction quadratic:
+                        figure.Segments.Add(
+                            new WPF.QuadraticBezierSegment(
+                                quadratic.Control.Convert(),
+                                quadratic.Position.Convert(),
+                                true));
+                        break;
+                }
+
+            if (figure.Segments.Count > 0)
+                _geometry.Figures.Add(figure);
         }
 
-        public IGeometrySink Open()
-        {
-            return new Sink(_geometry);
-        }
+        public IGeometrySink Open() { return new Sink(_geometry); }
 
-        public void Optimize()
-        {
-            _geometry.Freeze();
-        }
+        public void Optimize() { _geometry.Freeze(); }
 
         public IGeometry Outline(float width)
         {
@@ -132,68 +168,7 @@ namespace Ibinimator.Renderer.WPF
             }
         }
 
-        public void Read(IGeometrySink sink)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Load(IEnumerable<PathInstruction> source)
-        {
-            _geometry = new WPF.PathGeometry();
-
-            var figure = new WPF.PathFigure();
-            foreach (var instruction in source)
-            {
-                switch (instruction)
-                {
-                    case ClosePathInstruction close:
-                        figure.IsClosed = !close.Open;
-
-                        if (figure.Segments.Count > 0)
-                            _geometry.Figures.Add(figure);
-
-                        figure = new WPF.PathFigure { IsFilled = true };
-                        break;
-                    case ArcPathInstruction arc:
-                        figure.Segments.Add(
-                            new WPF.ArcSegment(
-                                arc.Position.Convert(), new Size(arc.RadiusX, arc.RadiusY), 
-                                arc.Angle, arc.LargeArc,
-                                arc.Clockwise ? WPF.SweepDirection.Clockwise : WPF.SweepDirection.Counterclockwise, true));
-                        break;
-                    case CubicPathInstruction cubic:
-                        figure.Segments.Add(
-                            new WPF.BezierSegment(
-                                cubic.Control1.Convert(),
-                                cubic.Control2.Convert(),
-                                cubic.Position.Convert(), true));
-                        break;
-                    case LinePathInstruction line:
-                        figure.Segments.Add(new WPF.LineSegment(line.Position.Convert(), true));
-                        break;
-                    case MovePathInstruction move:
-                        if(figure.Segments.Count > 0)
-                            _geometry.Figures.Add(figure);
-
-                        figure = new WPF.PathFigure
-                        {
-                            StartPoint = move.Position.Convert(),
-                            IsFilled = true
-                        };
-
-                        break;
-                    case QuadraticPathInstruction quadratic:
-                        figure.Segments.Add(
-                            new WPF.QuadraticBezierSegment(
-                                quadratic.Control.Convert(),
-                                quadratic.Position.Convert(), true));
-                        break;
-                }
-            }
-
-            if (figure.Segments.Count > 0)
-                _geometry.Figures.Add(figure);
-        }
+        public void Read(IGeometrySink sink) { throw new NotImplementedException(); }
 
         public bool StrokeContains(float x, float y, float width)
         {
@@ -204,20 +179,11 @@ namespace Ibinimator.Renderer.WPF
                 WPF.ToleranceType.Relative);
         }
 
-        public IGeometry Transform(Matrix3x2 transform)
-        {
-            throw new NotImplementedException();
-        }
+        public IGeometry Transform(Matrix3x2 transform) { throw new NotImplementedException(); }
 
-        public IGeometry Union(IGeometry other)
-        {
-            return Combine(other, WPF.GeometryCombineMode.Union);
-        }
+        public IGeometry Union(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Union); }
 
-        public IGeometry Xor(IGeometry other)
-        {
-            return Combine(other, WPF.GeometryCombineMode.Xor);
-        }
+        public IGeometry Xor(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Xor); }
 
         #endregion
 
@@ -230,10 +196,7 @@ namespace Ibinimator.Renderer.WPF
             private float _x;
             private float _y;
 
-            public Sink(WPF.PathGeometry geometry)
-            {
-                _geometry = geometry;
-            }
+            public Sink(WPF.PathGeometry geometry) { _geometry = geometry; }
 
             private void Begin()
             {
@@ -293,10 +256,7 @@ namespace Ibinimator.Renderer.WPF
                 (_x, _y) = (x, y);
             }
 
-            public void Dispose()
-            {
-                _geometry = null;
-            }
+            public void Dispose() { _geometry = null; }
 
             public void Line(float x, float y)
             {
@@ -315,17 +275,16 @@ namespace Ibinimator.Renderer.WPF
             public void Move(float x, float y)
             {
                 if (_b)
-                    _geometry.Figures.Last().Segments.Add(new WPF.LineSegment
-                    {
-                        Point = new Point(x, y)
-                    });
+                    _geometry.Figures.Last()
+                             .Segments.Add(new WPF.LineSegment
+                             {
+                                 Point = new Point(x, y)
+                             });
 
                 (_x, _y) = (x, y);
             }
 
-            public void Optimize()
-            {
-            }
+            public void Optimize() { }
 
             public void Quadratic(float x, float y, float cx1, float cy1)
             {

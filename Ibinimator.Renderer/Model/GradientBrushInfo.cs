@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
 
@@ -11,10 +10,7 @@ namespace Ibinimator.Renderer.Model
 {
     public class GradientBrushInfo : BrushInfo
     {
-        public GradientBrushInfo()
-        {
-            Stops = new ObservableList<GradientStop>();
-        }
+        public GradientBrushInfo() { Stops = new ObservableList<GradientStop>(); }
 
         public Vector2 EndPoint
         {
@@ -62,16 +58,21 @@ namespace Ibinimator.Renderer.Model
             {
                 case GradientBrushType.Linear:
                     brush = ctx.CreateBrush(
-                        Stops, 
-                        StartPoint.X, StartPoint.Y, 
-                        EndPoint.X, EndPoint.Y);
+                        Stops,
+                        StartPoint.X,
+                        StartPoint.Y,
+                        EndPoint.X,
+                        EndPoint.Y);
                     break;
                 case GradientBrushType.Radial:
                     brush = ctx.CreateBrush(
-                        Stops, 
-                        StartPoint.X, StartPoint.Y, 
-                        EndPoint.X - StartPoint.X, EndPoint.Y - StartPoint.Y,
-                        Focus.X, Focus.Y);
+                        Stops,
+                        StartPoint.X,
+                        StartPoint.Y,
+                        EndPoint.X - StartPoint.X,
+                        EndPoint.Y - StartPoint.Y,
+                        Focus.X,
+                        Focus.Y);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -4,17 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
     public class Group : Layer, IContainerLayer
     {
-        private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
-        {
-            RaisePropertyChanged(sender, e);
-        }
+        private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e) { RaisePropertyChanged(sender, e); }
 
         private void OnSubLayerChanging(object sender, PropertyChangingEventArgs e)
         {
@@ -74,9 +70,9 @@ namespace Ibinimator.Renderer.Model
 
         public override RectangleF GetBounds(ICacheManager cache)
         {
-            if(SubLayers.Count == 0) return RectangleF.Empty;
+            if (SubLayers.Count == 0) return RectangleF.Empty;
 
-            if(cache != null)
+            if (cache != null)
                 return SubLayers
                     .Select(cache.GetRelativeBounds)
                     .Aggregate(RectangleF.Union);

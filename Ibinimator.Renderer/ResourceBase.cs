@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer
 {
     public abstract class ResourceBase : PropertyChangedBase, IResource
     {
-        public virtual void Dispose()
-        {
-            Disposed = true;
-        }
+        public bool Disposed { get; private set; }
+
+        #region IResource Members
+
+        public virtual void Dispose() { Disposed = true; }
 
         public abstract void Optimize();
 
-        public bool Disposed { get; private set; }
+        #endregion
     }
 }

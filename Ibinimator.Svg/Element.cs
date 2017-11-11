@@ -29,7 +29,7 @@ namespace Ibinimator.Svg
 
             if (typeof(T).IsEnum)
             {
-                if (string.IsNullOrWhiteSpace(value)) return default;
+                if (string.IsNullOrWhiteSpace(value)) return @default;
 
                 var pascalCase = string.Join("", value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1)));
 

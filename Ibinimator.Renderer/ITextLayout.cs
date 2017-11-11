@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
 
@@ -10,30 +9,29 @@ namespace Ibinimator.Renderer
 {
     public interface ITextLayout : IResource
     {
-        IGeometry GetGeometryForGlyph(int index);
-        IBrush GetBrushForGlyph(int index);
-        IPen GetPenForGlyph(int index);
-        int GetGlyphCount();
-        int GetGlyphCountForGeometry(int index);
-
-        bool Hit(Vector2 point);
-        RectangleF Measure();
-
-        void SetFormat(Format format);
-        Format GetFormat(int index);
-
-        string Text { get; }
-
-        void InsertText(int index, string text);
-        void RemoveText(int index, int range);
-
         string FontFamily { get; set; }
         float FontSize { get; set; }
+        FontStretch FontStretch { get; set; }
         FontStyle FontStyle { get; set; }
         FontWeight FontWeight { get; set; }
-        FontStretch FontStretch { get; set; }
+
+        string Text { get; }
+        IBrush GetBrushForGlyph(int index);
+        Format GetFormat(int index);
+        IGeometry GetGeometryForGlyph(int index);
+        int GetGlyphCount();
+        int GetGlyphCountForGeometry(int index);
+        IPen GetPenForGlyph(int index);
         int GetPosition(Vector2 point, out bool trailing);
-        RectangleF[] MeasureRange(int index, int length);
+
+        bool Hit(Vector2 point);
+
+        void InsertText(int index, string text);
+        RectangleF Measure();
         RectangleF MeasurePosition(int index);
+        RectangleF[] MeasureRange(int index, int length);
+        void RemoveText(int index, int range);
+
+        void SetFormat(Format format);
     }
 }

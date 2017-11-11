@@ -3,20 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Direct2D;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using Geometry = Ibinimator.Renderer.WPF.Geometry;
 
 namespace Ibinimator.Renderer.Model
 {
     public class Text : Layer, ITextLayer
     {
-        private readonly ObservableList<Format> _formats = new ObservableList<Format>();
-
         public Text()
         {
             FontWeight = FontWeight.Normal;
@@ -27,7 +22,7 @@ namespace Ibinimator.Renderer.Model
             Value = "";
             Stroke = new PenInfo();
 
-            _formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
+            Formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
         }
 
         public bool IsBlock
@@ -60,42 +55,9 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public void InsertText(int position, string text)
-        {
-            // Inserting inside of the lock leads to RaiseGeometryChanged()
-            // which triggers a re-render, which then asks for the layout
-            // which locks the _formats
-            Value = Value.Insert(position, text);
-
-            lock (_formats)
-            {
-                // expand the length of the format
-                var format = GetFormat(position, out var index);
-
-                if (format != null)
-                    format.Range = (
-                        format.Range.Index,
-                        format.Range.Length + text.Length);
-
-                index++;
-
-                // offset all of the formats that come after this
-                while (index < _formats.Count)
-                {
-                    format = _formats[index];
-                    format.Range = (
-                        format.Range.Index + text.Length,
-                        format.Range.Length);
-                    index++;
-                }
-            }
-
-            RaiseLayoutChanged();
-        }
-
         public Format GetFormat(int position, out int index)
         {
-            var sorted = _formats.OrderBy(f => f.Range.Index).ToArray();
+            var sorted = Formats.OrderBy(f => f.Range.Index).ToArray();
 
             index = 0;
 
@@ -108,87 +70,12 @@ namespace Ibinimator.Renderer.Model
 
             if (format == null) return null;
 
-            return format.Range.Index + format.Range.Length > position
-                   && position >= format.Range.Index
-                ? format
-                : null;
+            return format.Range.Index + format.Range.Length > position && position >= format.Range.Index ?
+                format :
+                null;
         }
 
-        public void RemoveText(int position, int range)
-        {
-            Value = Value.Remove(position, range);
-
-            lock (_formats)
-            {
-                var current = position;
-                var end = position + range;
-                var index = 0;
-
-                while (current < end)
-                {
-                    // expand the length of the format
-                    var format = GetFormat(current, out var idx);
-
-                    if (format == null)
-                    {
-                        current++;
-                        continue;
-                    }
-
-                    index = idx;
-
-                    var fstart = format.Range.Index;
-                    var len = fstart - position;
-                    var fend = fstart + format.Range.Length;
-
-                    if (len <= 0 && fend <= end) _formats.Remove(format);
-                    else if (len <= 0 && fend > end) format.Range = (fstart, fend - fstart - range);
-                    else format.Range = (fstart, len);
-
-                    current++;
-                }
-
-                index++;
-
-                // offset all of the formats that come after this
-                while (index < _formats.Count)
-                {
-                    var format = _formats[index];
-                    format.Range = (format.Range.Index - range, format.Range.Length);
-                    index++;
-                }
-            }
-
-        }
-
-        public override void Render(RenderContext target, ICacheManager cache)
-        {
-                target.Transform(Transform);
-
-            var layout = cache.GetTextLayout(this);
-
-            for (var i = 0; i < layout.GetGlyphCount();)
-            {
-                var geom = layout.GetGeometryForGlyph(i);
-                var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
-                var pen = layout.GetPenForGlyph(i) ?? cache.GetStroke(this);
-
-                if (fill != null)
-                    target.FillGeometry(geom, fill);
-
-                if (pen?.Brush != null)
-                    target.DrawGeometry(geom, pen);
-
-                i += layout.GetGlyphCountForGeometry(i);
-            }
-
-            target.Transform(MathUtils.Invert(Transform));
-        }
-
-        protected void RaiseFillBrushChanged()
-        {
-            FillChanged?.Invoke(this, null);
-        }
+        protected void RaiseFillBrushChanged() { FillChanged?.Invoke(this, null); }
 
         protected void RaiseGeometryChanged()
         {
@@ -202,10 +89,7 @@ namespace Ibinimator.Renderer.Model
             RaiseGeometryChanged();
         }
 
-        protected void RaiseStrokeChanged()
-        {
-            StrokeChanged?.Invoke(this, null);
-        }
+        protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
 
         protected override void UpdateTransform()
         {
@@ -251,15 +135,12 @@ namespace Ibinimator.Renderer.Model
             return cache.GetTextLayout(this).Measure();
         }
 
-        public Format GetFormat(int position)
-        {
-            return GetFormat(position, out var _);
-        }
+        public Format GetFormat(int position) { return GetFormat(position, out var _); }
 
         public IGeometry GetGeometry(ICacheManager cache)
         {
             var layout = cache.GetTextLayout(this);
-            
+
             var geometries =
                 Enumerable
                     .Range(0, layout.GetGlyphCount())
@@ -280,9 +161,11 @@ namespace Ibinimator.Renderer.Model
             layout.FontFamily = FontFamilyName;
             layout.InsertText(0, Value);
 
-            lock (_formats)
-                foreach (var format in _formats)
+            lock (Formats)
+            {
+                foreach (var format in Formats)
                     layout.SetFormat(format);
+            }
 
             return layout;
         }
@@ -294,8 +177,111 @@ namespace Ibinimator.Renderer.Model
             point = Vector2.Transform(point, MathUtils.Invert(Transform));
 
             var layout = cache.GetTextLayout(this);
-            
+
             return layout.Hit(point) ? this as T : null;
+        }
+
+        public void InsertText(int position, string text)
+        {
+            // Inserting inside of the lock leads to RaiseGeometryChanged()
+            // which triggers a re-render, which then asks for the layout
+            // which locks the _formats
+            Value = Value.Insert(position, text);
+
+            lock (Formats)
+            {
+                // expand the length of the format
+                var format = GetFormat(position, out var index);
+
+                if (format != null)
+                    format.Range = (
+                        format.Range.Index,
+                        format.Range.Length + text.Length);
+
+                index++;
+
+                // offset all of the formats that come after this
+                while (index < Formats.Count)
+                {
+                    format = Formats[index];
+                    format.Range = (
+                        format.Range.Index + text.Length,
+                        format.Range.Length);
+                    index++;
+                }
+            }
+
+            RaiseLayoutChanged();
+        }
+
+        public void RemoveText(int position, int range)
+        {
+            Value = Value.Remove(position, range);
+
+            lock (Formats)
+            {
+                var current = position;
+                var end = position + range;
+                var index = 0;
+
+                while (current < end)
+                {
+                    // expand the length of the format
+                    var format = GetFormat(current, out var idx);
+
+                    if (format == null)
+                    {
+                        current++;
+                        continue;
+                    }
+
+                    index = idx;
+
+                    var fstart = format.Range.Index;
+                    var len = fstart - position;
+                    var fend = fstart + format.Range.Length;
+
+                    if (len <= 0 && fend <= end) Formats.Remove(format);
+                    else if (len <= 0 && fend > end) format.Range = (fstart, fend - fstart - range);
+                    else format.Range = (fstart, len);
+
+                    current++;
+                }
+
+                index++;
+
+                // offset all of the formats that come after this
+                while (index < Formats.Count)
+                {
+                    var format = Formats[index];
+                    format.Range = (format.Range.Index - range, format.Range.Length);
+                    index++;
+                }
+            }
+        }
+
+        public override void Render(RenderContext target, ICacheManager cache)
+        {
+            target.Transform(Transform);
+
+            var layout = cache.GetTextLayout(this);
+
+            for (var i = 0; i < layout.GetGlyphCount();)
+            {
+                var geom = layout.GetGeometryForGlyph(i);
+                var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
+                var pen = layout.GetPenForGlyph(i) ?? cache.GetStroke(this);
+
+                if (fill != null)
+                    target.FillGeometry(geom, fill);
+
+                if (pen?.Brush != null)
+                    target.DrawGeometry(geom, pen);
+
+                i += layout.GetGlyphCountForGeometry(i);
+            }
+
+            target.Transform(MathUtils.Invert(Transform));
         }
 
         public void SetFormat(Format format)
@@ -307,7 +293,7 @@ namespace Ibinimator.Renderer.Model
 
             if (start == end) return;
 
-            lock (_formats)
+            lock (Formats)
             {
                 while (current < end)
                 {
@@ -339,27 +325,27 @@ namespace Ibinimator.Renderer.Model
                         {
                             var iFormat = oldFormat.Clone();
                             iFormat.Range = (oStart, start - oStart);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         if (nEnd < oEnd)
                         {
                             var iFormat = oldFormat.Clone();
                             iFormat.Range = (nEnd, oEnd - nEnd);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         if (nStart > start)
                         {
                             var iFormat = newFormat.Clone();
                             iFormat.Range = (start, nStart - start);
-                            _formats.Add(iFormat);
+                            Formats.Add(iFormat);
                         }
 
                         current = start = Math.Max(nEnd, oEnd);
 
-                        _formats.Remove(oldFormat);
-                        _formats.Add(newFormat);
+                        Formats.Remove(oldFormat);
+                        Formats.Add(newFormat);
                     }
                     else
                     {
@@ -370,10 +356,9 @@ namespace Ibinimator.Renderer.Model
                 if (start < end)
                 {
                     format.Range = (start, end - start);
-                    _formats.Add(format);
+                    Formats.Add(format);
                 }
             }
-
         }
 
 
@@ -437,7 +422,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public ObservableList<Format> Formats => _formats;
+        public ObservableList<Format> Formats { get; } = new ObservableList<Format>();
 
         public override float Height
         {
@@ -449,10 +434,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public ObservableList<float> Offsets
-        {
-            get => Get<ObservableList<float>>();
-        }
+        public ObservableList<float> Offsets => Get<ObservableList<float>>();
 
         public override Vector2 Scale
         {

@@ -10,16 +10,15 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer.Model
 {
-    public abstract class Model : INotifyPropertyChanged,
-        INotifyPropertyChanging, ICloneable
+    public abstract class Model
+        : INotifyPropertyChanged,
+          INotifyPropertyChanging,
+          ICloneable
     {
         private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
 
-        public T Clone<T>() where T : Model
-        {
-            return Clone(GetType()) as T;
-        }
+        public T Clone<T>() where T : Model { return Clone(GetType()) as T; }
 
         public object Clone(Type type)
         {
@@ -32,7 +31,7 @@ namespace Ibinimator.Renderer.Model
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
-            return _properties.TryGetValue(propertyName, out var o) && o is T ? (T) o : default(T);
+            return _properties.TryGetValue(propertyName, out var o) && o is T ? (T) o : default;
         }
 
         protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
@@ -134,10 +133,7 @@ namespace Ibinimator.Renderer.Model
 
         #region ICloneable Members
 
-        public object Clone()
-        {
-            return Clone(GetType());
-        }
+        public object Clone() { return Clone(GetType()); }
 
         #endregion
 

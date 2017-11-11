@@ -8,6 +8,17 @@ namespace Ibinimator.Core.Utility
 {
     public static class ColorUtils
     {
+        public static (double hue, double saturation, double lightness, double alpha) ColorToHsla(Color color)
+        {
+            var (r, g, b, a) = ColorToRgba(color);
+            return RgbaToHsla(r, g, b, a);
+        }
+
+        public static (double r, double g, double b, double a) ColorToRgba(Color color)
+        {
+            return (color.R, color.G, color.B, color.A);
+        }
+
         public static Color HslaToColor(double h, double s, double l, double alpha)
         {
             (double r, double g, double b) = HslToRgb(h, s, l);
@@ -72,10 +83,7 @@ namespace Ibinimator.Core.Utility
             return (h * 360f, s, l, a);
         }
 
-        public static Color RgbToColor(double r, double g, double b)
-        {
-            return RgbaToColor(r, g, b, 1);
-        }
+        public static Color RgbToColor(double r, double g, double b) { return RgbaToColor(r, g, b, 1); }
 
         public static (double h, double s, double l) RgbToHsl(double r, double g, double b)
         {
@@ -98,17 +106,6 @@ namespace Ibinimator.Core.Utility
             }
 
             return (h * 360f, s, l);
-        }
-
-        public static (double r, double g, double b, double a) ColorToRgba(Color color)
-        {
-            return (color.R, color.G, color.B, color.A);
-        }
-
-        public static (double hue, double saturation, double lightness, double alpha) ColorToHsla(Color color)
-        {
-            var (r, g, b, a) = ColorToRgba(color);
-            return RgbaToHsla(r, g, b, a);
         }
     }
 }

@@ -12,8 +12,9 @@ namespace Ibinimator.Renderer
         Pencil,
         Pen,
         Eyedropper,
-        Bucket,
-        Timeline,
+        Gradient,
+        Flood,
+        Keyframe,
         Text,
         Mask,
         Zoom

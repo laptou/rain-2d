@@ -11,8 +11,10 @@ namespace Ibinimator.Renderer.WPF
 {
     internal class LinearGradientBrush : GradientBrush, ILinearGradientBrush
     {
-        public LinearGradientBrush(IEnumerable<GradientStop> stops,
-            Point start, Point end) : base(stops)
+        public LinearGradientBrush(
+            IEnumerable<GradientStop> stops,
+            Point start,
+            Point end) : base(stops)
         {
             WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end);
         }
@@ -23,7 +25,8 @@ namespace Ibinimator.Renderer.WPF
             set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod = (GradientSpreadMethod) value;
         }
 
-        protected override void OnStopsChanged(object sender,
+        protected override void OnStopsChanged(
+            object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             ((System.Windows.Media.LinearGradientBrush) WpfBrush).GradientStops = ConvertStops();

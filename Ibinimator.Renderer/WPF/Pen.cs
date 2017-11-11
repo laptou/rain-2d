@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 
@@ -19,13 +18,9 @@ namespace Ibinimator.Renderer.WPF
         private float _miterLimit;
         private float _width;
 
-        public Pen(Brush brush) : this(1, brush)
-        {
-        }
+        public Pen(Brush brush) : this(1, brush) { }
 
-        public Pen(float width, Brush brush) : this(width, brush, Enumerable.Empty<float>())
-        {
-        }
+        public Pen(float width, Brush brush) : this(width, brush, Enumerable.Empty<float>()) { }
 
         public Pen(float width, Brush brush, IEnumerable<float> dashes)
         {
@@ -62,10 +57,7 @@ namespace Ibinimator.Renderer.WPF
 
         #region IPen Members
 
-        public void Dispose()
-        {
-            Brush.Dispose();
-        }
+        public void Dispose() { Brush.Dispose(); }
 
         public IList<float> Dashes { get; }
 

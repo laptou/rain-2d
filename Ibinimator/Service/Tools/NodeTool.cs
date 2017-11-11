@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
@@ -15,23 +14,23 @@ namespace Ibinimator.Service.Tools
 {
     public class NodeTool : Model, ITool
     {
-        private readonly List<(int index, bool c1, bool c2)> _selection = new List<(int, bool, bool)>();
+        private readonly List<int> _selection = new List<int>();
+
         private bool _alt;
         private bool _down;
 
         private Vector2 _lastPos;
         private bool _moved;
-
         private bool _shift;
+        private Node _targetNode;
 
-        public NodeTool(IToolManager toolManager)
-        {
-            Manager = toolManager;
-        }
+        public NodeTool(IToolManager toolManager) { Manager = toolManager; }
 
-        public Shape CurrentShape => Context.SelectionManager.Selection.LastOrDefault() as Shape;
+        public Shape CurrentShape =>
+            Context.SelectionManager.Selection.LastOrDefault() as Shape;
 
-        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
+        public ToolOption[] Options =>
+            new ToolOption[0]; // TODO: add actual tool options
 
         private IArtContext Context => Manager.Context;
 
@@ -57,86 +56,51 @@ namespace Ibinimator.Service.Tools
 
         private void ConvertToPath()
         {
-            if (!(CurrentShape is Path))
-            {
-                var shape = CurrentShape;
-                shape.Selected = false;
+            if (CurrentShape is Path) return;
 
-                var ctp = new ConvertToPathCommand(
-                    Context.HistoryManager.Position + 1,
-                    new IGeometricLayer[] {shape});
-                Context.HistoryManager.Do(ctp);
+            var shape = CurrentShape;
+            shape.Selected = false;
 
-                ctp.Products[0].Selected = true;
-            }
+            var ctp = new ConvertToPathCommand(
+                Context.HistoryManager.Position + 1,
+                new IGeometricLayer[] {shape});
+            Context.HistoryManager.Do(ctp);
+
+            ctp.Products[0].Selected = true;
         }
 
-        private void RenderGeometryHandles(RenderContext target, ICacheManager cacheManager,
-            Matrix3x2 transform)
+        private IEnumerable<Node> GetGeometricNodes()
         {
-            var geom = cacheManager.GetGeometry(CurrentShape);
+            var geom = Context.CacheManager.GetGeometry(CurrentShape);
             var nodes = geom.Read();
             var figures = nodes.Split(n => n is ClosePathInstruction);
             var index = 0;
 
             foreach (var figure in figures)
             {
-                var figureNodes = figure.OfType<CoordinatePathInstruction>().ToArray();
+                var figureNodes = figure
+                    .OfType<CoordinatePathInstruction>()
+                    .ToArray();
 
                 for (var i = 0; i < figureNodes.Length; i++)
                 {
-                    var node = figureNodes[i];
+                    var node = new Node(index, i, figureNodes[i].Position);
 
-                    var prev = figureNodes[MathUtils.Wrap(i - 1, figureNodes.Length)];
-
-                    var pos = Vector2.Transform(node.Position, transform);
-
-                    var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
-
-                    if (_selection.Any(n => Math.Abs(n.index - index) <= 2))
+                    if (figureNodes[i] is CubicPathInstruction ci)
                     {
-                        switch (node)
-                        {
-                            case CubicPathInstruction cn:
-                                var control1 = Vector2.Transform(cn.Control1, transform);
-                                target.DrawLine(Vector2.Transform(prev.Position, transform), control1, pen);
-                                target.FillEllipse(control1, 3, 3, cacheManager.GetBrush("L0"));
-                                target.DrawEllipse(control1, 3, 3, pen);
+                        var prev = new Node(index - 1,
+                                            i - 1,
+                                            figureNodes[i - 1].Position);
 
-                                var control2 = Vector2.Transform(cn.Control2, transform);
-                                target.DrawLine(pos, control2, pen);
-                                target.FillEllipse(control2, 3, 3, cacheManager.GetBrush("L0"));
-                                target.DrawEllipse(control2, 3, 3, pen);
-                                break;
-                            case QuadraticPathInstruction qn:
-                                var control = Vector2.Transform(qn.Control, transform);
+                        yield return new Node(1, i - 1, prev, ci.Control1);
 
-                                target.DrawLine(pos, control, pen);
-                                target.FillEllipse(control, 3, 3, cacheManager.GetBrush("L0"));
-                                target.DrawEllipse(control, 3, 3, pen);
-                                break;
-                        }
+                        yield return new Node(0, i, node, ci.Control2);
                     }
 
-                    var rect = new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
+                    if (figureNodes[i] is QuadraticPathInstruction qi)
+                        yield return new Node(0, i, node, qi.Control);
 
-                    if (_selection.Any(n => n.index == index))
-                        target.FillRectangle(rect,
-                            rect.Contains(_lastPos) && _down
-                                ? cacheManager.GetBrush("A4")
-                                : cacheManager.GetBrush("A3"));
-                    else if (_down)
-                        target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
-                    else
-                        target.FillRectangle(rect,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
-
-                    using (var pen2 = target.CreatePen(1,
-                        i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
-                    {
-                        target.DrawRectangle(rect, pen2);
-                    }
+                    yield return node;
 
                     index++;
                 }
@@ -145,34 +109,168 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        private void RenderGradientHandles(RenderContext target, ICacheManager cacheManager, Matrix3x2 transform)
+        private void MergeCommands(ModifyPathCommand newCmd)
         {
-            if (CurrentShape.Fill is GradientBrushInfo fill)
-                foreach (var stop in fill.Stops)
+            var history = Context.HistoryManager;
+
+            if (history.Current is ModifyPathCommand cmd &&
+                cmd.Operation == newCmd.Operation &&
+                newCmd.Time - cmd.Time < 500 &&
+                cmd.Indices.SequenceEqual(newCmd.Indices))
+                history.Replace(
+                    new ModifyPathCommand(
+                        history.Position + 1,
+                        cmd.Targets[0],
+                        newCmd.Indices,
+                        cmd.Delta + newCmd.Delta,
+                        cmd.Operation));
+            else
+                history.Push(newCmd);
+        }
+
+        private void Move(int[] indices, Vector2 delta)
+        {
+            ConvertToPath();
+
+            var history = Context.HistoryManager;
+
+            var newCmd =
+                new ModifyPathCommand(
+                    history.Position + 1,
+                    CurrentShape as Path,
+                    indices,
+                    delta,
+                    ModifyPathCommand.NodeOperation.Move);
+
+            newCmd.Do(Context);
+
+            MergeCommands(newCmd);
+        }
+
+        private void Move(Node node, Vector2 delta)
+        {
+            ConvertToPath();
+
+            if (node.Type == Node.NodeType.Point)
+            {
+                Move(new[] { node.Index }, delta);
+            }
+            else
+            {
+                var history = Context.HistoryManager;
+
+                var operation = node.Index == 1 ?
+                    ModifyPathCommand.NodeOperation.MoveHandle1 :
+                    ModifyPathCommand.NodeOperation.MoveHandle2;
+
+                var newCmd =
+                    new ModifyPathCommand(
+                        history.Position + 1,
+                        CurrentShape as Path,
+                        new[] { node.Parent.Index + node.Index },
+                        delta,
+                        operation);
+
+                newCmd.Do(Context);
+
+                MergeCommands(newCmd);
+            }
+        }
+
+        private void Remove(int index)
+        {
+            ConvertToPath();
+            Context.HistoryManager.Do(
+                new ModifyPathCommand(
+                    Context.HistoryManager.Position + 1,
+                    CurrentShape as Path,
+                    new[] {index},
+                    ModifyPathCommand.NodeOperation.Remove));
+
+            _selection.Remove(index);
+        }
+
+        private void RenderGeometryHandles(
+            RenderContext target,
+            ICacheManager cacheManager,
+            Matrix3x2 transform)
+        {
+            foreach (var node in GetGeometricNodes())
+            {
+                var pos = Vector2.Transform(node.Position, transform);
+
+                var pen = target.CreatePen(1, cacheManager.GetBrush("A2"));
+
+                if (node.Type == Node.NodeType.Handle)
                 {
-                    var pos =
-                        Vector2.Transform(
-                            Vector2.Lerp(
-                                fill.StartPoint,
-                                fill.EndPoint,
-                                stop.Offset),
-                            transform);
+                    target.DrawLine(
+                        Vector2.Transform(node.Parent.Position,
+                                          transform),
+                        pos,
+                        pen);
 
-                    using (var brush = target.CreateBrush(stop.Color))
-                    {
-                        target.FillEllipse(pos, 4, 4, brush);
-                    }
+                    if (_down)
+                        target.FillEllipse(
+                            pos,
+                            3,
+                            3,
+                            Vector2.Distance(pos, _lastPos) <= 3 ?
+                                cacheManager.GetBrush("A2") :
+                                cacheManager.GetBrush("L0"));
+                    else
+                        target.FillEllipse(
+                            pos,
+                            3,
+                            3,
+                            Vector2.Distance(pos, _lastPos) <= 3 ?
+                                cacheManager.GetBrush("A1") :
+                                cacheManager.GetBrush("L0"));
 
-                    using (var pen0 = target.CreatePen(2, cacheManager.GetBrush("L0")))
-                    {
-                        target.DrawEllipse(pos, 5, 5, pen0);
-                    }
+                    target.DrawEllipse(pos, 3, 3, pen);
+                }
+                else
+                {
+                    var rect =
+                        new RectangleF(pos.X - 4f, pos.Y - 4f, 8, 8);
 
-                    using (var pen2 = target.CreatePen(1, cacheManager.GetBrush("L2")))
+                    if (_selection.Contains(node.Index))
+                        target.FillRectangle(
+                            rect,
+                            rect.Contains(_lastPos) && _down ?
+                                cacheManager.GetBrush("A4") :
+                                cacheManager.GetBrush("A3"));
+                    else if (_down)
+                        target.FillRectangle(
+                            rect,
+                            rect.Contains(_lastPos) ?
+                                cacheManager.GetBrush("A4") :
+                                cacheManager.GetBrush("L1"));
+                    else
+                        target.FillRectangle(
+                            rect,
+                            rect.Contains(_lastPos) ?
+                                cacheManager.GetBrush("A3") :
+                                cacheManager.GetBrush("L1"));
+
+                    using (var pen2 = target.CreatePen(
+                        1,
+                        node.FigureIndex == 0 ?
+                            cacheManager.GetBrush("A4") :
+                            cacheManager.GetBrush("A2")))
                     {
-                        target.DrawEllipse(pos, 5.5f, 5.5f, pen2);
+                        target.DrawRectangle(rect, pen2);
                     }
                 }
+            }
+        }
+
+
+        private void Select(int index, bool additive)
+        {
+            if (!additive)
+                _selection.Clear();
+
+            _selection.Add(index);
         }
 
         #region ITool Members
@@ -182,15 +280,9 @@ namespace Ibinimator.Service.Tools
             throw new NotImplementedException();
         }
 
-        public void ApplyStroke(PenInfo pen)
-        {
-            throw new NotImplementedException();
-        }
+        public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
 
-        public void Dispose()
-        {
-            _selection.Clear();
-        }
+        public void Dispose() { _selection.Clear(); }
 
         public bool KeyDown(Key key, ModifierKeys modifiers)
         {
@@ -205,17 +297,12 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 case Key.Delete:
-                    if (CurrentShape is Path path)
-                        Context.HistoryManager.Do(
-                            new ModifyPathCommand(
-                                Context.HistoryManager.Position + 1,
-                                path,
-                                _selection.Select(n => n.index).ToArray(),
-                                ModifyPathCommand.NodeOperation.Remove));
-
-                    _selection.Clear();
-
+                    _selection.ToList().ForEach(Remove);
                     Context.InvalidateSurface();
+                    break;
+
+                case Key.K:
+                    Move(_selection.ToArray(), Vector2.UnitX * 10);
                     break;
 
                 default:
@@ -253,36 +340,17 @@ namespace Ibinimator.Service.Tools
                 return false;
             }
 
-            var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
+            var tpos = Vector2.Transform(pos,
+                                         MathUtils.Invert(
+                                             CurrentShape
+                                                 .AbsoluteTransform));
 
-            var geometry = Context.CacheManager.GetGeometry(CurrentShape);
-            var instructions = geometry.Read();
+            _targetNode = GetGeometricNodes()
+                .FirstOrDefault(
+                    c => Vector2.Distance(c.Position, tpos) <= 5);
 
-            var node = instructions
-                .OfType<CoordinatePathInstruction>()
-                .Select((c, i) => (instruction: c, index: i))
-                .FirstOrDefault(n => (n.instruction.Position - tpos).Length() < 5);
-
-            if (node.instruction != null)
-                if (_alt)
-                {
-                    ConvertToPath();
-
-                    Context.HistoryManager.Do(
-                        new ModifyPathCommand(
-                            Context.HistoryManager.Position + 1,
-                            (Path) CurrentShape,
-                            new[] {node.index},
-                            ModifyPathCommand.NodeOperation.Remove));
-
-                    _selection.RemoveAll(n => n.index == node.index);
-                }
-                else
-                {
-                    if (!_shift) _selection.Clear();
-
-                    _selection.Add((node.index, false, false));
-                }
+            if (_targetNode?.Type == Node.NodeType.Point)
+                Select(_targetNode.Index, _shift);
 
             Context.SelectionManager.Update(true);
 
@@ -294,53 +362,33 @@ namespace Ibinimator.Service.Tools
             if (CurrentShape == null)
                 return false;
 
-            var tlpos = Vector2.Transform(_lastPos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
+            var tlpos = Vector2.Transform(_lastPos,
+                                          MathUtils.Invert(
+                                              CurrentShape
+                                                  .AbsoluteTransform));
 
-            var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentShape.AbsoluteTransform));
+            var tpos = Vector2.Transform(pos,
+                                         MathUtils.Invert(
+                                             CurrentShape
+                                                 .AbsoluteTransform));
 
             var delta = tpos - tlpos;
 
-            if (_selection.Count > 0 && _down)
-            {
-                if (!(CurrentShape is Path))
-                    ConvertToPath();
-
-                var history = Context.HistoryManager;
-
-                var newCmd =
-                    new ModifyPathCommand(
-                        history.Position + 1,
-                        CurrentShape as Path,
-                        _selection.Select(s => s.index).ToArray(),
-                        delta,
-                        ModifyPathCommand.NodeOperation.Move);
-
-                newCmd.Do(Context);
-
-                if (history.Current is ModifyPathCommand cmd &&
-                    cmd.Operation == ModifyPathCommand.NodeOperation.Move &&
-                    newCmd.Time - cmd.Time < 500 &&
-                    cmd.Indices.SequenceEqual(newCmd.Indices))
-                    history.Replace(
-                        new ModifyPathCommand(
-                            history.Position + 1,
-                            cmd.Targets[0],
-                            newCmd.Indices,
-                            cmd.Delta + newCmd.Delta,
-                            ModifyPathCommand.NodeOperation.Move));
-                else
-                    history.Push(newCmd);
-
-                _lastPos = pos;
-
-                return true;
-            }
+            _moved = true;
 
             _lastPos = pos;
 
-            _moved = true;
+            if (_targetNode != null)
+            {
+                if (_targetNode?.Type == Node.NodeType.Handle)
+                    Move(_targetNode, delta);
+                else
+                    Move(_selection.ToArray(), delta);
 
-            Context.InvalidateSurface();
+                Context.InvalidateSurface();
+
+                return true;
+            }
 
             return false;
         }
@@ -350,16 +398,27 @@ namespace Ibinimator.Service.Tools
             if (CurrentShape == null)
                 return false;
 
+            if (!_moved && _alt && _targetNode?.Type == Node.NodeType.Point)
+                Remove(_targetNode.Index);
+
+            _targetNode = null;
+
             if (!_moved && CurrentShape is Path path)
             {
-                var tpos = Vector2.Transform(pos, MathUtils.Invert(path.AbsoluteTransform));
+                var tpos =
+                    Vector2.Transform(pos,
+                                      MathUtils.Invert(path.AbsoluteTransform));
 
-                var node = path.Instructions.OfType<CoordinatePathInstruction>().FirstOrDefault(
-                    n => (n.Position - tpos).Length() < 5);
+                var node = path.Instructions
+                               .OfType<CoordinatePathInstruction>()
+                               .FirstOrDefault(
+                                   n => (n.Position - tpos).Length() < 5);
 
                 if (node != null)
                 {
-                    var figures = path.Instructions.Split(n => n is ClosePathInstruction).ToList();
+                    var figures = path
+                        .Instructions.Split(n => n is ClosePathInstruction)
+                        .ToList();
                     var index = 0;
 
                     foreach (var figure in figures.Select(Enumerable.ToArray))
@@ -372,14 +431,19 @@ namespace Ibinimator.Service.Tools
 
                         if (start != node) continue;
 
-                        if (path.Instructions.ElementAtOrDefault(index) is ClosePathInstruction close)
-                            path.Instructions[index] = new ClosePathInstruction(!close.Open);
+                        if (path.Instructions.ElementAtOrDefault(index) is
+                            ClosePathInstruction close)
+                            path.Instructions[index] =
+                                new ClosePathInstruction(!close.Open);
                         else
                             Context.HistoryManager.Do(
                                 new ModifyPathCommand(
                                     Context.HistoryManager.Position + 1,
                                     path,
-                                    new PathInstruction[] {new ClosePathInstruction(false)},
+                                    new PathInstruction[]
+                                    {
+                                        new ClosePathInstruction(false)
+                                    },
                                     index,
                                     ModifyPathCommand.NodeOperation.Add));
                     }
@@ -392,12 +456,15 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public void Render(RenderContext target, ICacheManager cacheManager)
+        public void Render(
+            RenderContext target,
+            ICacheManager cacheManager)
         {
             if (CurrentShape == null)
                 return;
 
-            using (var pen = target.CreatePen(1, cacheManager.GetBrush("A2")))
+            using (var pen =
+                target.CreatePen(1, cacheManager.GetBrush("A2")))
             {
                 var transform = CurrentShape.AbsoluteTransform;
 
@@ -409,15 +476,10 @@ namespace Ibinimator.Service.Tools
                 }
 
                 RenderGeometryHandles(target, cacheManager, transform);
-
-                RenderGradientHandles(target, cacheManager, transform);
             }
         }
 
-        public bool TextInput(string text)
-        {
-            return false;
-        }
+        public bool TextInput(string text) { return false; }
 
         public IBitmap Cursor => null;
 
@@ -426,9 +488,64 @@ namespace Ibinimator.Service.Tools
         public IToolManager Manager { get; }
 
         public string Status =>
-            "<b>Click</b> to select, <b>Alt Click</b> to delete, <b>Shift Click</b> to multi-select.";
+            "<b>Click</b> to select, " +
+            "<b>Alt Click</b> to delete, " +
+            "<b>Shift Click</b> to multi-select.";
 
         public ToolType Type => ToolType.Node;
+
+        #endregion
+
+        #region Nested type: Node
+
+        private class Node
+        {
+            #region NodeType enum
+
+            public enum NodeType
+            {
+                Point,
+                Handle
+            }
+
+            #endregion
+
+            public Node(
+                int index,
+                int figureIndex,
+                Vector2 position)
+            {
+                Index = index;
+                FigureIndex = figureIndex;
+                Type = NodeType.Point;
+                Position = position; 
+            }
+
+            public Node(
+                int index,
+                int figureIndex,
+                Node parentNode,
+                Vector2 position)
+            {
+                Index = index;
+                FigureIndex = figureIndex;
+                Type = NodeType.Handle;
+                Position = position;
+                Parent = parentNode;
+            }
+
+            public IReadOnlyList<Node> Children { get; }
+
+            public int FigureIndex { get; }
+
+            public int Index { get; }
+
+            public Node Parent { get; }
+
+            public Vector2 Position { get; }
+
+            public NodeType Type { get; }
+        }
 
         #endregion
     }

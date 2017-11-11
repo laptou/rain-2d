@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Regex = System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
     public struct Color
     {
-        private static readonly Regex Hex = new Regex("(?:#(?:([0-9A-F]){3}){1,2})",
+        private static readonly Regex.Regex Hex = new Regex.Regex("(?:#(?:([0-9A-F]){3}){1,2})",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex Rgb = new Regex(
+        private static readonly Regex.Regex Rgb = new Regex.Regex(
             @"(?:rgb\(([+-]?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex Percent = new Regex(
+        private static readonly Regex.Regex Percent = new Regex.Regex(
             @"(?:rgb\(([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%\))",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -66,7 +67,7 @@ namespace Ibinimator.Svg
 
             if (rgbMatch.Success)
             {
-                var values = rgbMatch.Groups[1].Captures.OfType<Capture>()
+                var values = rgbMatch.Groups.OfType<Regex.Group>().Skip(1)
                     .Select(c => c.Value)
                     .ToArray();
 
@@ -282,7 +283,7 @@ namespace Ibinimator.Svg
 
             if (rgbMatch.Success)
             {
-                var values = rgbMatch.Groups[1].Captures.OfType<Capture>()
+                var values = rgbMatch.Groups.OfType<Regex.Group>().Skip(1)
                     .Select(c => c.Value)
                     .ToArray();
 

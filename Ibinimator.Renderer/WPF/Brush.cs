@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -6,15 +7,11 @@ using System.Windows.Media;
 
 namespace Ibinimator.Renderer.WPF
 {
-
     internal class Brush : ResourceBase, IBrush
     {
         protected System.Windows.Media.Brush WpfBrush { get; set; }
 
-        public static implicit operator System.Windows.Media.Brush(Brush brush)
-        {
-            return brush?.WpfBrush;
-        }
+        public static implicit operator System.Windows.Media.Brush(Brush brush) { return brush?.WpfBrush; }
 
         #region IBrush Members
 
@@ -25,10 +22,7 @@ namespace Ibinimator.Renderer.WPF
             base.Dispose();
         }
 
-        public override void Optimize()
-        {
-            WpfBrush.Freeze();
-        }
+        public override void Optimize() { WpfBrush.Freeze(); }
 
         public float Opacity
         {

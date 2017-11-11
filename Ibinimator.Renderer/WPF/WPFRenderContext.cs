@@ -12,15 +12,27 @@ namespace Ibinimator.Renderer.WPF
 {
     public class WpfRenderContext : RenderContext
     {
+        private readonly Queue<RenderCommand> _commandQueue = new Queue<RenderCommand>();
         private DrawingContext _ctx;
 
-        public override ISolidColorBrush CreateBrush(Color color)
+        public override void Begin(object ctx)
         {
-            return new SolidColorBrush(color);
+            if (ctx is DrawingContext dc)
+                _ctx = dc;
         }
 
-        public override ILinearGradientBrush CreateBrush(IEnumerable<GradientStop> stops, float startX, float startY,
-            float endX, float endY)
+        public override void Clear(Color color) { _commandQueue.Enqueue(new ClearRenderCommand(color)); }
+
+        public override IBitmap CreateBitmap(Stream stream) { throw new NotImplementedException(); }
+
+        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(color); }
+
+        public override ILinearGradientBrush CreateBrush(
+            IEnumerable<GradientStop> stops,
+            float startX,
+            float startY,
+            float endX,
+            float endY)
         {
             return new LinearGradientBrush(
                 stops,
@@ -28,9 +40,14 @@ namespace Ibinimator.Renderer.WPF
                 new Point(endX, endY));
         }
 
-        public override IRadialGradientBrush CreateBrush(IEnumerable<GradientStop> stops, float centerX, float centerY,
-            float radiusX, float radiusY,
-            float focusX, float focusY)
+        public override IRadialGradientBrush CreateBrush(
+            IEnumerable<GradientStop> stops,
+            float centerX,
+            float centerY,
+            float radiusX,
+            float radiusY,
+            float focusX,
+            float focusY)
         {
             return new RadialGradientBrush(
                 stops,
@@ -39,24 +56,25 @@ namespace Ibinimator.Renderer.WPF
                 new Point(focusX, focusY));
         }
 
-        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
-        {
-            return new Pen(width, brush as Brush, dashes);
-        }
-
-        public override ITextLayout CreateTextLayout()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IGeometry CreateGeometry()
-        {
-            return new Geometry();
-        }
-
         public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
             return new Geometry(new EllipseGeometry(new Point(cx, cy), rx, ry));
+        }
+
+        public override IGeometry CreateGeometry() { return new Geometry(); }
+
+        public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
+        {
+            return new Geometry(new GeometryGroup
+            {
+                Children = new GeometryCollection(
+                    geometries.Select(g => (System.Windows.Media.Geometry) g))
+            });
+        }
+
+        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
+        {
+            return new Pen(width, brush as Brush, dashes);
         }
 
         public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
@@ -64,41 +82,24 @@ namespace Ibinimator.Renderer.WPF
             return new Geometry(new RectangleGeometry(new Rect(new Point(x, y), new Size(w, h))));
         }
 
-        public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
-        {
-            return new Geometry(new GeometryGroup
-            {
-                Children = new GeometryCollection(
-                    geometries.Select(g => (System.Windows.Media.Geometry)g))
-            });
-        }
+        public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
-        public override void Dispose()
-        {
-            _ctx = null;
-        }
+        public override void Dispose() { _ctx = null; }
+        public override float GetDpi() { return 0; }
 
-        public override void DrawBitmap(IBitmap bitmap)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IBitmap CreateBitmap(Stream stream)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Clear(Color color)
-        {
-            _commandQueue.Enqueue(new ClearRenderCommand(color));
-        }
+        public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {
             _commandQueue.Enqueue(
                 new EllipseRenderCommand(
-                    cx, cy, rx, ry,
-                    false, null, pen));
+                    cx,
+                    cy,
+                    rx,
+                    ry,
+                    false,
+                    null,
+                    pen));
         }
 
         public override void DrawGeometry(IGeometry geometry, IPen pen)
@@ -114,16 +115,34 @@ namespace Ibinimator.Renderer.WPF
         public override void DrawRectangle(float left, float top, float width, float height, IPen pen)
         {
             _commandQueue.Enqueue(
-                new RectangleRenderCommand(left, top,
-                    top + height, left + width, false, null, pen));
+                new RectangleRenderCommand(left,
+                                           top,
+                                           top + height,
+                                           left + width,
+                                           false,
+                                           null,
+                                           pen));
+        }
+
+        public override void End()
+        {
+            while (_commandQueue.Count > 0)
+                Apply(_commandQueue.Dequeue());
+
+            _ctx = null;
         }
 
         public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
         {
             _commandQueue.Enqueue(
                 new EllipseRenderCommand(
-                    cx, cy, rx, ry,
-                    true, brush, null));
+                    cx,
+                    cy,
+                    rx,
+                    ry,
+                    true,
+                    brush,
+                    null));
         }
 
         public override void FillGeometry(IGeometry geometry, IBrush brush)
@@ -147,8 +166,6 @@ namespace Ibinimator.Renderer.WPF
             _commandQueue.Enqueue(new TransformRenderCommand(transform, absolute));
         }
 
-        private readonly Queue<RenderCommand> _commandQueue = new Queue<RenderCommand>();
-
 
         protected void Apply(RenderCommand command)
         {
@@ -156,10 +173,11 @@ namespace Ibinimator.Renderer.WPF
             {
                 case EllipseRenderCommand ellipse:
                     _ctx?.DrawEllipse(
-                        ellipse.Brush as Brush, 
+                        ellipse.Brush as Brush,
                         ellipse.Pen as Pen,
                         new Point(ellipse.CenterX, ellipse.CenterY),
-                        ellipse.RadiusX, ellipse.RadiusY);
+                        ellipse.RadiusX,
+                        ellipse.RadiusY);
                     break;
                 case GeometryRenderCommand geometry:
                     _ctx?.DrawGeometry(
@@ -184,20 +202,6 @@ namespace Ibinimator.Renderer.WPF
                             transform.Transform.M32));
                     break;
             }
-        }
-
-        public override void Begin(object ctx)
-        {
-            if (ctx is DrawingContext dc)
-                _ctx = dc;
-        }
-
-        public override void End()
-        {
-            while (_commandQueue.Count > 0)
-                Apply(_commandQueue.Dequeue());
-
-            _ctx = null;
         }
     }
 }
