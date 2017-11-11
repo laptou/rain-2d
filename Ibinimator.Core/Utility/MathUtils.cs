@@ -19,6 +19,7 @@ namespace Ibinimator.Core.Utility
         public static readonly float InverseSqrt3 = 1 / (float) Math.Sqrt(3);
         public static readonly float InverseSqrt2 = 1 / (float) Math.Sqrt(2);
         public const float PiOverFour = PiOverTwo / 2;
+        public const float Epsilon = 0.0001f;
 
         public static Vector2 Abs(Vector2 v)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Xml.Linq;
@@ -25,10 +26,19 @@ namespace Ibinimator.View.Control
     public class SvgImage : WPF.FrameworkElement, IArtContext
     {
         public static readonly WPF.DependencyProperty SourceProperty =
-            WPF.DependencyProperty.Register("Source", typeof(Uri), typeof(SvgImage),
-                new WPF.FrameworkPropertyMetadata(null,
-                    WPF.FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    WPF.FrameworkPropertyMetadataOptions.AffectsRender, SourceChanged));
+                WPF.DependencyProperty.Register("Source",
+                                                typeof(Uri),
+                                                typeof(SvgImage),
+                                                new WPF.FrameworkPropertyMetadata(
+                                                    null,
+                                                    WPF
+                                                        .FrameworkPropertyMetadataOptions
+                                                        .AffectsMeasure |
+                                                    WPF
+                                                        .FrameworkPropertyMetadataOptions
+                                                        .AffectsRender,
+                                                    SourceChanged))
+            ;
 
         private readonly CacheManager _cache;
         private Document _document;
@@ -56,7 +66,7 @@ namespace Ibinimator.View.Control
         protected override WPF.Size MeasureOverride(WPF.Size availableSize)
         {
             if (_document == null)
-                return WPF.Size.Empty;
+                return new WPF.Size();
 
             var width = availableSize.Width;
             var height = availableSize.Height;
@@ -66,15 +76,24 @@ namespace Ibinimator.View.Control
             var docHeight = _document.Bounds.Height;
             var docAspect = docWidth / docHeight;
 
-            return aspect > docAspect
-                ? new WPF.Size(docWidth * height / docHeight, height)
-                : new WPF.Size(width, docHeight * width / docWidth);
+            return aspect > docAspect ?
+                new WPF.Size(docWidth * height / docHeight, height) :
+                new WPF.Size(width, docHeight * width / docWidth);
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+
+            if (!_prepared) return;
+
+            var scale = (float) Math.Min(ActualWidth / _document.Bounds.Width,
+                                         ActualHeight / _document.Bounds.Height);
+            var center = new Vector2((float) ActualWidth / 2,
+                                     (float) ActualHeight / 2);
+
             RenderContext.Begin(drawingContext);
+            RenderContext.Transform(Matrix3x2.CreateScale(scale, center));
             _document.Root.Render(RenderContext, CacheManager);
             RenderContext.End();
         }
@@ -87,11 +106,13 @@ namespace Ibinimator.View.Control
             }
             catch
             {
-                return File.OpenRead(Source.AbsolutePath);
+                return null;
             }
         }
 
-        private static void SourceChanged(WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
+        private static void SourceChanged(
+            WPF.DependencyObject d,
+            WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
                 svgImage.Update();
@@ -101,28 +122,32 @@ namespace Ibinimator.View.Control
         {
             if (Source == null) return;
 
-            _prepared = false;
-
-            XDocument xdoc;
-
-            using (var stream = GetStream())
+            try
             {
-                xdoc = XDocument.Load(stream);
+                _prepared = false;
+
+                XDocument xdoc;
+
+                using (var stream = GetStream())
+                {
+                    xdoc = XDocument.Load(stream);
+                }
+
+                var document = new Svg.Document();
+                document.FromXml(xdoc.Root, new SvgContext());
+
+                _document = SvgConverter.FromSvg(document);
+                _prepared = true;
             }
-
-            var document = new Svg.Document();
-            document.FromXml(xdoc.Root, new SvgContext());
-
-            _document = SvgConverter.FromSvg(document);
-            _prepared = true;
+            catch
+            {
+                // swallow the exception
+            }
         }
 
         #region IArtContext Members
 
-        public void InvalidateSurface()
-        {
-            InvalidateVisual();
-        }
+        public void InvalidateSurface() { InvalidateVisual(); }
 
         public IBrushManager BrushManager { get; }
         public ICacheManager CacheManager => _cache;

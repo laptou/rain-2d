@@ -41,9 +41,9 @@ namespace Ibinimator.Service.Tools
                         break;
                     case ToolType.Eyedropper:
                         break;
-                    case ToolType.Bucket:
+                    case ToolType.Flood:
                         break;
-                    case ToolType.Timeline:
+                    case ToolType.Keyframe:
                         break;
                     case ToolType.Text:
                         Tool = new TextTool(this);
@@ -51,6 +51,9 @@ namespace Ibinimator.Service.Tools
                     case ToolType.Mask:
                         break;
                     case ToolType.Zoom:
+                        break;
+                    case ToolType.Gradient:
+                        Tool = new GradientTool(this);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -255,7 +258,7 @@ namespace Ibinimator.Service.Tools
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
-                    var comparable = (IComparable<T>) value;
+                    var comparable = (IComparable<T>)value;
 
                     if (comparable.CompareTo(Minimum) < 0)
                         return Minimum;

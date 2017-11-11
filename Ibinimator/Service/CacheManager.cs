@@ -137,15 +137,14 @@ namespace Ibinimator.Service
 
         private IBitmap LoadBitmap(RenderContext target, string name)
         {
-            var streamResourceInfo = Application
-                .GetResourceStream(new Uri($"./Resources/Icon/{name}.png", UriKind.Relative));
+            var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
 
-            if (streamResourceInfo == null) return null;
 
-            using (var stream = streamResourceInfo.Stream)
-            {
+            if (target.GetDpi() > 96)
+                uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
+
+            using (var stream = Application.GetResourceStream(uri)?.Stream)
                 return target.CreateBitmap(stream);
-            }
         }
 
         private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -362,11 +361,11 @@ namespace Ibinimator.Service
 
         public void LoadBitmaps(RenderContext target)
         {
-            _bitmaps["cursor-ns"] = LoadBitmap(target, "resize-ns");
-            _bitmaps["cursor-ew"] = LoadBitmap(target, "resize-ew");
-            _bitmaps["cursor-nwse"] = LoadBitmap(target, "resize-nwse");
-            _bitmaps["cursor-nesw"] = LoadBitmap(target, "resize-nesw");
-            _bitmaps["cursor-rot"] = LoadBitmap(target, "rotate");
+            _bitmaps["cursor-ns"] = LoadBitmap(target, "cursor-resize-ns");
+            _bitmaps["cursor-ew"] = LoadBitmap(target, "cursor-resize-ew");
+            _bitmaps["cursor-nwse"] = LoadBitmap(target, "cursor-resize-nwse");
+            _bitmaps["cursor-nesw"] = LoadBitmap(target, "cursor-resize-nesw");
+            _bitmaps["cursor-rot"] = LoadBitmap(target, "cursor-rotate");
         }
 
         public void LoadBrushes(RenderContext target)

@@ -77,10 +77,7 @@ namespace Ibinimator.Service
                 }
             };
 
-            historyManager.Traversed += (sender, args) =>
-            {
-                Update(true);
-            };
+            historyManager.Traversed += (sender, args) => { Update(true); };
         }
 
         public ObservableList<Layer> Selection { get; }
@@ -228,15 +225,14 @@ namespace Ibinimator.Service
 
             if (axis != Vector2.Zero)
             {
-                axis.Y *=
-                    Math.Abs(
-                        SelectionBounds.Height / SelectionBounds.Width);
+                axis.Y *= Math.Abs(SelectionBounds.Height / SelectionBounds.Width);
 
-                var crossSection =
-                    MathUtils.CrossSection(axis, origin, SelectionBounds);
-                var axisLength = MathUtils.AbsMax(
-                    0.001f,
-                    (crossSection.Item2 - crossSection.Item1).Length());
+                var crossSection = MathUtils.CrossSection(axis, origin, SelectionBounds);
+
+                var axisLength = MathUtils.AbsMax(MathUtils.Epsilon,
+                                                  Vector2.Distance(
+                                                      crossSection.Item2,
+                                                      crossSection.Item1));
 
                 //origin = ToSelectionSpace(origin);
                 //axis = Vector2.Normalize(MathUtils.Rotate(MathUtils.ShearX(axis, selectionShear), selectionRotation));
@@ -357,8 +353,9 @@ namespace Ibinimator.Service
             var wlock = new WeakLock(_render);
 
             var size = new Vector2(
-                Math.Abs(SelectionBounds.Width),
-                Math.Abs(SelectionBounds.Height));
+                Math.Max(MathUtils.Epsilon, Math.Abs(SelectionBounds.Width)),
+                Math.Max(MathUtils.Epsilon, Math.Abs(SelectionBounds.Height)));
+
             origin *= size;
             origin += SelectionBounds.TopLeft;
             var so = ToSelectionSpace(origin);

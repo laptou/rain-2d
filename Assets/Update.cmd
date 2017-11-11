@@ -1,2 +1,0 @@
-C:\Users\ibiyemi.CENTRAL\Downloads\SvgToXaml-master\SvgToXaml\bin\Release\SvgToXaml.exe BuildDict /inputdir "." /outputdir "xaml" /outputname Assets /useComponentResKeys=true /compResKeyNSName=Ibinimator.Icon /compResKeyNS=Ibinimator.Icon
-pause

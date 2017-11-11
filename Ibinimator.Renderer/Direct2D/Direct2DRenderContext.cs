@@ -100,6 +100,8 @@ namespace Ibinimator.Renderer.Direct2D
             FactoryDW.Dispose();
         }
 
+        public override float GetDpi() { return Target.DotsPerInch.Width; }
+
         public override void DrawBitmap(IBitmap iBitmap)
         {
             var bitmap = iBitmap as Bitmap;

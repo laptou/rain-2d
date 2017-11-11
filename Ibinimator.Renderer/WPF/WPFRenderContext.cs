@@ -85,6 +85,7 @@ namespace Ibinimator.Renderer.WPF
         public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
         public override void Dispose() { _ctx = null; }
+        public override float GetDpi() { return 0; }
 
         public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
 

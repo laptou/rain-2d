@@ -92,6 +92,8 @@ namespace Ibinimator.Renderer
         public abstract void Dispose();
 
         #endregion
+
+        public abstract float GetDpi();
     }
 
     internal class LineRenderCommand : GeometricRenderCommand
