@@ -650,7 +650,7 @@ namespace Ibinimator.Service.Tools
                     };
 
                     var root = Context.SelectionManager.Selection.OfType<Group>().LastOrDefault() ??
-                               Context.SelectionManager.Root;
+                               Context.ViewManager.Root;
 
                     Manager.Context.HistoryManager.Do(
                         new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,

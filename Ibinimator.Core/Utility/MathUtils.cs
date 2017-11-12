@@ -123,6 +123,11 @@ namespace Ibinimator.Core.Utility
             return (float) Math.Atan2(m.M12, m.M11);
         }
 
+        public static float GetShear(this Matrix3x2 m)
+        {
+            return (float)Math.Atan2(m.M22, m.M21) - PiOverTwo - GetRotation(m);
+        }
+
         public static Vector2 GetScale(this Matrix3x2 m)
         {
             return new Vector2(
@@ -199,6 +204,11 @@ namespace Ibinimator.Core.Utility
         public static int Wrap(int f, int r)
         {
             return (f % r + r) % r;
+        }
+
+        public static float Angle(Vector2 pos)
+        {
+            return (float) Math.Atan2(pos.Y, pos.X);
         }
     }
 }

@@ -121,7 +121,7 @@ namespace Ibinimator.View.Command
         {
             selectionManager.ClearSelection();
 
-            foreach (var layer in selectionManager.Root.Flatten().Skip(1))
+            foreach (var layer in selectionManager.Context.ViewManager.Root.Flatten().Skip(1))
                 layer.Selected = true;
         }
     }

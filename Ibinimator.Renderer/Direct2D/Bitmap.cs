@@ -24,8 +24,8 @@ namespace Ibinimator.Renderer.Direct2D
                     new D2D1.PixelFormat(
                         SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                         D2D1.AlphaMode.Premultiplied),
-                    ctx.Target.DotsPerInch.Width,
-                    ctx.Target.DotsPerInch.Height);
+                    bitmap.HorizontalResolution,
+                    bitmap.VerticalResolution);
 
                 var data = bitmap.LockBits(sourceArea,
                                            ImageLockMode.ReadOnly,

@@ -15,13 +15,18 @@ namespace Ibinimator.Service
 {
     public class CacheManager : Model, ICacheManager
     {
-        private readonly Dictionary<string, IBitmap> _bitmaps = new Dictionary<string, IBitmap>();
-        private readonly Dictionary<ILayer, RectangleF> _bounds = new Dictionary<ILayer, RectangleF>();
+        private readonly Dictionary<string, IBitmap> _bitmaps =
+            new Dictionary<string, IBitmap>();
 
-        private readonly Dictionary<BrushInfo, (ILayer layer, IBrush brush)> _brushBindings =
-            new Dictionary<BrushInfo, (ILayer, IBrush)>();
+        private readonly Dictionary<ILayer, RectangleF> _bounds =
+            new Dictionary<ILayer, RectangleF>();
 
-        private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
+        private readonly Dictionary<BrushInfo, (ILayer layer, IBrush brush)>
+            _brushBindings =
+                new Dictionary<BrushInfo, (ILayer, IBrush)>();
+
+        private readonly Dictionary<string, IBrush> _brushes =
+            new Dictionary<string, IBrush>();
 
         private readonly Dictionary<IFilledLayer, IBrush> _fills =
             new Dictionary<IFilledLayer, IBrush>();
@@ -34,8 +39,9 @@ namespace Ibinimator.Service
         private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources =
             new Dictionary<(ILayer layer, int id), IDisposable>();
 
-        private readonly Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)> _strokeBindings =
-            new Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>();
+        private readonly Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>
+            _strokeBindings =
+                new Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>();
 
         private readonly Dictionary<IStrokedLayer, IPen> _strokes =
             new Dictionary<IStrokedLayer, IPen>();
@@ -43,10 +49,7 @@ namespace Ibinimator.Service
         private readonly Dictionary<ITextLayer, ITextLayout> _texts =
             new Dictionary<ITextLayer, ITextLayout>();
 
-        public CacheManager(IArtContext context)
-        {
-            Context = context;
-        }
+        public CacheManager(IArtContext context) { Context = context; }
 
         public IBrush BindBrush(ILayer shape, BrushInfo brush)
         {
@@ -81,6 +84,7 @@ namespace Ibinimator.Service
         public void UnbindLayer(Layer layer)
         {
             if (layer is IFilledLayer filled)
+            {
                 if (filled.Fill != null)
                     lock (_fills)
                     {
@@ -90,8 +94,10 @@ namespace Ibinimator.Service
                             _fills.Remove(filled);
                         }
                     }
+            }
 
             if (layer is IStrokedLayer stroked)
+            {
                 lock (_strokes)
                 {
                     if (_strokes.TryGetValue(stroked, out var stroke))
@@ -100,8 +106,10 @@ namespace Ibinimator.Service
                         _strokes.Remove(stroked);
                     }
                 }
+            }
 
             if (layer is IGeometricLayer geometric)
+            {
                 lock (_geometries)
                 {
                     if (_geometries.TryGetValue(geometric, out var geometry))
@@ -110,6 +118,7 @@ namespace Ibinimator.Service
                         _geometries.Remove(geometric);
                     }
                 }
+            }
 
             lock (_bounds)
             {
@@ -130,7 +139,7 @@ namespace Ibinimator.Service
                     value != null)
                     return value;
 
-                lock(_renderLock)
+                lock (_renderLock)
                     return dict[key] = fallback(key);
             }
         }
@@ -203,10 +212,7 @@ namespace Ibinimator.Service
 
         #region ICacheManager Members
 
-        public void Bind(Document doc)
-        {
-            BindLayer(doc.Root);
-        }
+        public void Bind(Document doc) { BindLayer(doc.Root); }
 
         public void BindLayer(ILayer layer)
         {
@@ -272,9 +278,12 @@ namespace Ibinimator.Service
 
             layer.BoundsChanged += (s, e) =>
             {
-                lock (_bounds)
-                    if (s is ILayer l)
+                if (s is ILayer l)
+                {
+                    lock (_bounds)
                         _bounds[l] = l.GetBounds(this);
+                    RaiseBoundsChanged(l);
+                }
 
                 Context.InvalidateSurface();
             };
@@ -290,6 +299,13 @@ namespace Ibinimator.Service
             }
         }
 
+        private void RaiseBoundsChanged(ILayer layer)
+        {
+            BoundsChanged?.Invoke(this, layer);
+        }
+
+        public event EventHandler<ILayer> BoundsChanged;
+
         public bool ClearResource(ILayer layer, int id)
         {
             lock (_resources)
@@ -304,20 +320,14 @@ namespace Ibinimator.Service
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
         }
 
-        public IBitmap GetBitmap(string key)
-        {
-            return _bitmaps[key];
-        }
+        public IBitmap GetBitmap(string key) { return _bitmaps[key]; }
 
         public RectangleF GetBounds(ILayer layer)
         {
             return Get(_bounds, layer, l => l.GetBounds(this));
         }
 
-        public IBrush GetBrush(string key)
-        {
-            return _brushes[key];
-        }
+        public IBrush GetBrush(string key) { return _brushes[key]; }
 
         public IBrush GetFill(IFilledLayer layer)
         {
@@ -339,13 +349,14 @@ namespace Ibinimator.Service
             return (T) Get(_resources, (layer, id), l => l.Item1.GetResource(this, id));
         }
 
-        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer) where T : IDisposable
+        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)
+            where T : IDisposable
         {
             lock (_resources)
             {
                 return _resources.Where(kv => kv.Key.layer == layer)
-                    .Select(kv => (kv.Key.id, (T) kv.Value))
-                    .ToArray();
+                                 .Select(kv => (kv.Key.id, (T) kv.Value))
+                                 .ToArray();
             }
         }
 
@@ -361,11 +372,11 @@ namespace Ibinimator.Service
 
         public void LoadBitmaps(RenderContext target)
         {
-            _bitmaps["cursor-ns"] = LoadBitmap(target, "cursor-resize-ns");
-            _bitmaps["cursor-ew"] = LoadBitmap(target, "cursor-resize-ew");
-            _bitmaps["cursor-nwse"] = LoadBitmap(target, "cursor-resize-nwse");
-            _bitmaps["cursor-nesw"] = LoadBitmap(target, "cursor-resize-nesw");
-            _bitmaps["cursor-rot"] = LoadBitmap(target, "cursor-rotate");
+            _bitmaps["cursor-resize-ns"] = LoadBitmap(target, "cursor-resize-ns");
+            _bitmaps["cursor-resize-ew"] = LoadBitmap(target, "cursor-resize-ew");
+            _bitmaps["cursor-resize-nwse"] = LoadBitmap(target, "cursor-resize-nwse");
+            _bitmaps["cursor-resize-nesw"] = LoadBitmap(target, "cursor-resize-nesw");
+            _bitmaps["cursor-rotate"] = LoadBitmap(target, "cursor-rotate");
         }
 
         public void LoadBrushes(RenderContext target)
@@ -381,10 +392,7 @@ namespace Ibinimator.Service
                                 color.A / 255f));
         }
 
-        public QuickLock Lock()
-        {
-            return new QuickLock(_renderLock);
-        }
+        public QuickLock Lock() { return new QuickLock(_renderLock); }
 
         public void ResetAll()
         {

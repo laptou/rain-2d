@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core.Utility;
 using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel
@@ -45,15 +46,15 @@ namespace Ibinimator.ViewModel
                     Vector2.Zero);
             }
 
-            public SelectionResizeHandle Origin
+            public SelectionHandle Origin
             {
-                get => Get<SelectionResizeHandle>();
+                get => Get<SelectionHandle>();
                 set => Set(value);
             }
 
             public float Rotation
             {
-                get => _parent.SelectionManager?.SelectionRotation ?? 0;
+                get => _parent.SelectionManager?.SelectionTransform.GetRotation() ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,
@@ -64,7 +65,7 @@ namespace Ibinimator.ViewModel
 
             public float Shear
             {
-                get => _parent.SelectionManager?.SelectionShear ?? 0;
+                get => _parent.SelectionManager?.SelectionTransform.GetShear() ?? 0;
                 set => _parent.SelectionManager?.Transform(
                     Vector2.One,
                     Vector2.Zero,

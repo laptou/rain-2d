@@ -23,12 +23,12 @@ namespace Ibinimator.ViewModel
             FillPicker = new FillPickerViewModel(this);
             TransformPicker = new TransformViewModel(this);
 
+            var cache = new CacheManager(artView);
             ViewManager = new ViewManager(artView);
             HistoryManager = new HistoryManager(artView);
-            SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager);
+            SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager, cache);
             BrushManager = new BrushManager(artView, SelectionManager, HistoryManager);
             ToolManager = new ToolManager(artView, SelectionManager);
-            var cache = new CacheManager(artView);
 
             Load();
 

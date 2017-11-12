@@ -9,20 +9,23 @@ namespace Ibinimator.Renderer
 {
     public interface ICacheManager : IArtContextManager
     {
+        event EventHandler<ILayer> BoundsChanged;
+
         void Bind(Document root);
         void BindLayer(ILayer layer);
         bool ClearResource(ILayer layer, int id);
 
         RectangleF GetAbsoluteBounds(ILayer layer);
-
         IBitmap GetBitmap(string key);
         RectangleF GetBounds(ILayer layer);
         IBrush GetBrush(string key);
         IBrush GetFill(IFilledLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);
         RectangleF GetRelativeBounds(ILayer layer);
-        T GetResource<T>(ILayer layer, int id) where T : IDisposable;
-        IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer) where T : IDisposable;
+
+        IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)
+            where T : IDisposable;
+
         IPen GetStroke(IStrokedLayer layer);
         ITextLayout GetTextLayout(ITextLayer text);
 

@@ -293,12 +293,10 @@ namespace Ibinimator.View.Control
                 if (ToolManager.Tool.Cursor == null) return;
 
                 target.Transform(
-                    Matrix3x2.CreateScale(1f / 3) *
                     Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
                     Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
 
                 target.DrawBitmap(ToolManager.Tool.Cursor);
-
             }
         }
 

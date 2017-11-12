@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
@@ -168,7 +169,7 @@ namespace Ibinimator.Service.Tools
 
             using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
-                foreach (var v in handles.Select(Manager.Context.SelectionManager.ToSelectionSpace))
+                foreach (var v in handles.Select(Manager.Context.SelectionManager.FromSelectionSpace))
                 {
                     target.FillEllipse(v, 5f / zoom.Y, 5f / zoom.X, cache.GetBrush("A1"));
                     target.DrawEllipse(v, 5f / zoom.Y, 5f / zoom.X, pen);
@@ -183,8 +184,7 @@ namespace Ibinimator.Service.Tools
 
         public IBitmap Cursor => Manager.Context.SelectionManager.Cursor;
 
-        public float CursorRotate => Manager.Context.SelectionManager.SelectionRotation -
-                                     Manager.Context.SelectionManager.SelectionShear;
+        public float CursorRotate => Manager.Context.SelectionManager.SelectionTransform.GetRotation();
 
         public IToolManager Manager { get; }
 

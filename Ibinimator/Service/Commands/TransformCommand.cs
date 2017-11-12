@@ -24,9 +24,7 @@ namespace Ibinimator.Service.Commands
                 Math.Abs(matrix.M11) > 1000 ||
                 Math.Abs(matrix.M12) > 1000 ||
                 Math.Abs(matrix.M21) > 1000 ||
-                Math.Abs(matrix.M22) > 1000 ||
-                Math.Abs(matrix.M31) > 1000 ||
-                Math.Abs(matrix.M32) > 1000)
+                Math.Abs(matrix.M22) > 1000)
                 Debugger.Break();
         }
 
@@ -51,9 +49,7 @@ namespace Ibinimator.Service.Commands
                         Math.Abs(layer.Transform.M11) > 1000000 ||
                         Math.Abs(layer.Transform.M12) > 1000000 ||
                         Math.Abs(layer.Transform.M21) > 1000000 ||
-                        Math.Abs(layer.Transform.M22) > 1000000 ||
-                        Math.Abs(layer.Transform.M31) > 1000000 ||
-                        Math.Abs(layer.Transform.M32) > 1000000)
+                        Math.Abs(layer.Transform.M22) > 1000000)
                         Debugger.Break();
                 }
             }
