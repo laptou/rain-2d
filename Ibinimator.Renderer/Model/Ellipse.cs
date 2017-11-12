@@ -30,12 +30,6 @@ namespace Ibinimator.Renderer.Model
 
         public override string DefaultName => "Ellipse";
 
-        public override Vector2 Origin
-        {
-            get => new Vector2(CenterX - RadiusX, CenterY - RadiusY);
-            set => (CenterX, CenterY) = (value.X + RadiusX, value.Y + RadiusY);
-        }
-
         public float RadiusX
         {
             get => Width / 2;

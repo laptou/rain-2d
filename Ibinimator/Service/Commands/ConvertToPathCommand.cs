@@ -32,9 +32,7 @@ namespace Ibinimator.Service.Commands
                 path.Instructions.AddItems(geometry.Read());
                 path.Fill = t.Fill;
                 path.Stroke = t.Stroke;
-
-                (path.Scale, path.Rotation, path.Shear, path.Position, path.Origin) =
-                    (t.Scale, t.Rotation, t.Shear, t.Position, t.Origin);
+                path.ApplyTransform(t.Transform);
 
                 return path;
             }).ToArray();

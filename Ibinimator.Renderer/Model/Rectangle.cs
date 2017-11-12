@@ -20,12 +20,6 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public override Vector2 Origin
-        {
-            get => new Vector2(X, Y);
-            set => (X, Y) = (value.X, value.Y);
-        }
-
         public override float Width
         {
             get => base.Width;

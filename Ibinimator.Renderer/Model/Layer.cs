@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
@@ -12,8 +13,7 @@ namespace Ibinimator.Renderer.Model
         protected Layer()
         {
             Opacity = 1;
-            Scale = Vector2.One;
-            UpdateTransform();
+            Transform = Matrix3x2.Identity;
         }
 
         /// <summary>
@@ -29,17 +29,6 @@ namespace Ibinimator.Renderer.Model
             yield return this;
         }
 
-        protected virtual void UpdateTransform()
-        {
-            Transform =
-                Matrix3x2.CreateTranslation(-Origin) *
-                Matrix3x2.CreateScale(Scale) *
-                Matrix3x2.CreateSkew(0, Shear) *
-                Matrix3x2.CreateRotation(Rotation) *
-                Matrix3x2.CreateTranslation(Origin) *
-                Matrix3x2.CreateTranslation(Position);
-        }
-
         public override int GetHashCode() { return Id.GetHashCode(); }
 
         protected void RaiseBoundsChanged() { BoundsChanged?.Invoke(this, null); }
@@ -48,25 +37,31 @@ namespace Ibinimator.Renderer.Model
 
         public event EventHandler BoundsChanged;
 
-        public virtual void ApplyTransform(Matrix3x2 transform)
+        public virtual void ApplyTransform(
+            Matrix3x2? local = null,
+            Matrix3x2? global = null)
         {
-            var layerTransform =
-                AbsoluteTransform * transform * MathUtils.Invert(WorldTransform);
-            var delta = layerTransform.Decompose();
-
-            Scale = delta.scale;
-            Rotation = delta.rotation;
-            Position = Vector2.Transform(Origin, layerTransform) - Origin;
-            Shear = delta.skew;
+            Transform = (local ?? Matrix3x2.Identity) *
+                        Transform *
+                        WorldTransform *
+                        (global ?? Matrix3x2.Identity) *
+                        MathUtils.Invert(WorldTransform);
         }
 
         public virtual Layer Find(Guid id) { return id == Id ? this : null; }
 
-        public virtual RectangleF GetBounds(ICacheManager cache) { return new RectangleF(0, 0, Width, Height); }
+        public virtual RectangleF GetBounds(ICacheManager cache)
+        {
+            return new RectangleF(0, 0, Width, Height);
+        }
 
-        public virtual IDisposable GetResource(ICacheManager cache, int id) { return null; }
+        public virtual IDisposable GetResource(ICacheManager cache, int id)
+        {
+            return null;
+        }
 
-        public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
+        public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+            where T : Layer;
 
         public Layer Hit(ICacheManager cache, Vector2 point, bool includeMe)
         {
@@ -81,26 +76,6 @@ namespace Ibinimator.Renderer.Model
         {
             get => Get<float>();
             set => Set(value);
-        }
-
-        public virtual Vector2 Origin
-        {
-            get => Get<Vector2>();
-            set
-            {
-                Set(value);
-                UpdateTransform();
-            }
-        }
-
-        public virtual Vector2 Scale
-        {
-            get => Get<Vector2>();
-            set
-            {
-                Set(value);
-                UpdateTransform();
-            }
         }
 
         public virtual float Width
@@ -143,40 +118,10 @@ namespace Ibinimator.Renderer.Model
             protected internal set => Set(value);
         }
 
-        public Vector2 Position
-        {
-            get => Get<Vector2>();
-            set
-            {
-                Set(value);
-                UpdateTransform();
-            }
-        }
-
-        public float Rotation
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
-                UpdateTransform();
-            }
-        }
-
         public bool Selected
         {
             get => Get<bool>();
             set => Set(value);
-        }
-
-        public float Shear
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
-                UpdateTransform();
-            }
         }
 
         public Matrix3x2 Transform
@@ -185,7 +130,8 @@ namespace Ibinimator.Renderer.Model
             protected set => Set(value);
         }
 
-        public Matrix3x2 WorldTransform => Parent?.AbsoluteTransform ?? Matrix3x2.Identity;
+        public Matrix3x2 WorldTransform =>
+            Parent?.AbsoluteTransform ?? Matrix3x2.Identity;
 
         #endregion
     }

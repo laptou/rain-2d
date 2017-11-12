@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Ibinimator.Core.Utility;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
@@ -74,8 +75,7 @@ namespace Ibinimator.Service.Commands
                     }
                 }
 
-                (z.Scale, z.Rotation, z.Position, z.Shear) =
-                    MathUtils.Invert(_operand1.WorldTransform).Decompose();
+                z.ApplyTransform(MathUtils.Invert(_operand1.WorldTransform), Matrix3x2.Identity);
 
                 Product = z;
                 _parent1 = _operand1.Parent;

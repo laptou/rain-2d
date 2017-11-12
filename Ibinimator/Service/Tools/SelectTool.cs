@@ -17,15 +17,18 @@ namespace Ibinimator.Service.Tools
         {
             Manager = toolManager;
 
-            Status = "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
+            Status =
+                "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
 
             selectionManager.Updated += (sender, args) =>
             {
-                var names = selectionManager.Selection.Select(l => l.Name ?? l.DefaultName)
+                var names = selectionManager
+                    .Selection.Select(l => l.Name ?? l.DefaultName)
                     .ToArray();
 
                 if (names.Length == 0)
-                    Status = "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
+                    Status =
+                        "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
                 else
                     Status = $"<b>{names.Length}</b> layer(s) selected " +
                              $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
@@ -45,12 +48,13 @@ namespace Ibinimator.Service.Tools
 
             var targets =
                 Selection.SelectMany(l => l.Flatten())
-                    .OfType<IFilledLayer>()
-                    .ToArray();
+                         .OfType<IFilledLayer>()
+                         .ToArray();
 
             var command = new ApplyFillCommand(
                 Manager.Context.HistoryManager.Position + 1,
-                targets, brush,
+                targets,
+                brush,
                 targets.Select(t => t.Fill).ToArray());
 
             var old = Manager.Context.HistoryManager.Current;
@@ -61,7 +65,8 @@ namespace Ibinimator.Service.Tools
 
                 command = new ApplyFillCommand(
                     command.Id,
-                    command.Targets, command.NewFill,
+                    command.Targets,
+                    command.NewFill,
                     oldFillCommand.OldFills);
             }
 
@@ -75,16 +80,19 @@ namespace Ibinimator.Service.Tools
 
             var targets =
                 Selection.SelectMany(l => l.Flatten())
-                    .OfType<IStrokedLayer>()
-                    .ToArray();
+                         .OfType<IStrokedLayer>()
+                         .ToArray();
 
             var command = new ApplyStrokeCommand(
                 Manager.Context.HistoryManager.Position + 1,
-                targets, pen, targets.Select(t => t.Stroke).ToArray());
+                targets,
+                pen,
+                targets.Select(t => t.Stroke).ToArray());
 
             var old = Manager.Context.HistoryManager.Current;
 
-            if (old is ApplyStrokeCommand oldStrokeCommand && command.Time - old.Time <= 500)
+            if (old is ApplyStrokeCommand oldStrokeCommand &&
+                command.Time - old.Time <= 500)
             {
                 Manager.Context.HistoryManager.Pop();
 
@@ -98,9 +106,7 @@ namespace Ibinimator.Service.Tools
             Manager.Context.HistoryManager.Do(command);
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
         public bool KeyDown(Key key, ModifierKeys modifier)
         {
@@ -111,7 +117,8 @@ namespace Ibinimator.Service.Tools
 
                 foreach (var layer in delete)
                     Manager.Context.HistoryManager.Do(
-                        new RemoveLayerCommand(Manager.Context.HistoryManager.Position + 1,
+                        new RemoveLayerCommand(
+                            Manager.Context.HistoryManager.Position + 1,
                             layer.Parent,
                             layer));
 
@@ -121,25 +128,13 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifier)
-        {
-            return false;
-        }
+        public bool KeyUp(Key key, ModifierKeys modifier) { return false; }
 
-        public bool MouseDown(Vector2 pos)
-        {
-            return false;
-        }
+        public bool MouseDown(Vector2 pos) { return false; }
 
-        public bool MouseMove(Vector2 pos)
-        {
-            return false;
-        }
+        public bool MouseMove(Vector2 pos) { return false; }
 
-        public bool MouseUp(Vector2 pos)
-        {
-            return false;
-        }
+        public bool MouseUp(Vector2 pos) { return false; }
 
         public void Render(RenderContext target, ICacheManager cache)
         {
@@ -151,25 +146,33 @@ namespace Ibinimator.Service.Tools
             var handles = new List<Vector2>();
 
             float x1 = rect.Left,
-                y1 = rect.Top,
-                x2 = rect.Right,
-                y2 = rect.Bottom;
+                  y1 = rect.Top,
+                  x2 = rect.Right,
+                  y2 = rect.Bottom;
 
-            handles.Add(new Vector2(x1, y1));
-            handles.Add(new Vector2(x2, y1));
-            handles.Add(new Vector2(x2, y2));
-            handles.Add(new Vector2(x1, y2));
-            handles.Add(new Vector2((x1 + x2) / 2, y1));
-            handles.Add(new Vector2(x1, (y1 + y2) / 2));
-            handles.Add(new Vector2(x2, (y1 + y2) / 2));
-            handles.Add(new Vector2((x1 + x2) / 2, y2));
-            handles.Add(new Vector2((x1 + x2) / 2, y1 - 10));
+            Vector2 Transform(float x, float y) =>
+                Manager.Context.SelectionManager.FromSelectionSpace(new Vector2(x, y));
+
+            handles.Add(Transform(x1, y1));
+            handles.Add(Transform(x2, y1));
+            handles.Add(Transform(x2, y2));
+            handles.Add(Transform(x1, y2));
+
+            var top = Transform((x1 + x2) / 2, y1);
+            handles.Add(top);
+
+            handles.Add(Transform(x1, (y1 + y2) / 2));
+            handles.Add(Transform(x2, (y1 + y2) / 2));
+
+            var bottom = Transform((x1 + x2) / 2, y2);
+            handles.Add(bottom);
+            handles.Add(top - Vector2.Normalize(bottom - top) * 15);
 
             var zoom = Vector2.One; // MathUtils.GetScale(target.Transform);
-
+            
             using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
-                foreach (var v in handles.Select(Manager.Context.SelectionManager.FromSelectionSpace))
+                foreach (var v in handles)
                 {
                     target.FillEllipse(v, 5f / zoom.Y, 5f / zoom.X, cache.GetBrush("A1"));
                     target.DrawEllipse(v, 5f / zoom.Y, 5f / zoom.X, pen);
@@ -177,14 +180,12 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        public bool TextInput(string text)
-        {
-            return false;
-        }
+        public bool TextInput(string text) { return false; }
 
         public IBitmap Cursor => Manager.Context.SelectionManager.Cursor;
 
-        public float CursorRotate => Manager.Context.SelectionManager.SelectionTransform.GetRotation();
+        public float CursorRotate =>
+            Manager.Context.SelectionManager.SelectionTransform.GetRotation();
 
         public IToolManager Manager { get; }
 

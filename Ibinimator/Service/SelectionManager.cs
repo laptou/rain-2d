@@ -9,9 +9,6 @@ using System.Windows.Input;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
-using Ibinimator.View.Control;
-using SharpDX.Direct2D1;
-using Layer = Ibinimator.Renderer.Model.Layer;
 
 namespace Ibinimator.Service
 {
@@ -31,9 +28,13 @@ namespace Ibinimator.Service
 
     public sealed class SelectionManager : Model, ISelectionManager
     {
+        private IBitmap _cursor;
+        private SelectionHandle _handle = 0;
         private (bool alt, bool shift, bool ctrl) _modifiers = (false, false, false);
         private (Vector2 position, bool down) _mouse = (Vector2.Zero, false);
-        private SelectionHandle _handle = 0;
+
+        private RectangleF _selectionBounds;
+        private Matrix3x2 _selectionTransform = Matrix3x2.Identity;
 
         public SelectionManager(
             IArtContext artView,
@@ -69,22 +70,12 @@ namespace Ibinimator.Service
             cacheManager.BoundsChanged += (sender, args) => { Update(true); };
         }
 
-        private IBitmap _cursor;
+        public ObservableList<Layer> Selection { get; }
 
-        public IBitmap Cursor
-        {
-            get => _cursor;
-            set
-            {
-                _cursor = value;
-                Context.InvalidateSurface();
-            }
-        }
+        public void SetHandle(SelectionHandle value) { _handle = value; }
 
-        IList<Layer> ISelectionManager.Selection => Selection;
+        #region ISelectionManager Members
 
-        public RectangleF SelectionBounds { get; private set; }
-        public Matrix3x2 SelectionTransform { get; private set; }
         public event EventHandler Updated;
 
         public void ClearSelection()
@@ -92,212 +83,10 @@ namespace Ibinimator.Service
             while (Selection.Count > 0) Selection[0].Selected = false;
         }
 
-        public void MouseDown(Vector2 pos)
+        public Vector2 FromSelectionSpace(Vector2 v)
         {
-            _mouse = (pos, true);
-
-            #region hit testing
-
-            // for every element in the scene, perform a hit-test
-            var root = Context.ViewManager.Root;
-
-            // start by hit-testing in the existing selection, and if we find nothing,
-            // then hit-test in the root
-            ILayer hit = null;
-
-            foreach (var layer in Selection)
-            {
-                var test = layer;
-
-                if (_modifiers.alt)
-                {
-                    // alt: x-ray-select
-                    // we select behind layers in the selection
-                    // bubble up the selection tree
-                    while (test.Parent != null)
-                    {
-                        var index = test.Parent.SubLayers.IndexOf(test);
-
-                        // for every layer that is below this layer (higher index means
-                        // lower z-index)
-                        foreach (var sibling in test.Parent.SubLayers.Skip(index + 1))
-                        {
-                            hit = sibling.Hit(Context.CacheManager, pos, true);
-                            if (hit != null) break;
-                        }
-
-                        test = test.Parent;
-                    }
-                }
-
-                hit = test.Hit(Context.CacheManager, pos, true);
-                if (hit != null) break;
-            }
-
-            if (hit == null)
-                hit = root.Hit(Context.CacheManager, pos, false);
-
-            if (hit != null)
-            {
-                if (!_modifiers.shift)
-                {
-                    // shift: multi-select
-                    ClearSelection();
-                }
-
-                hit.Selected = true;
-            }
-
-            #endregion
-
-            #region handle testing
-
-            SetHandle(0);
-
-            var localPos = ToSelectionSpace(pos);
-
-            if (Math.Abs(localPos.X - SelectionBounds.Left) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10)
-                    SetHandle(SelectionHandle.TopLeft);
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 10)
-                    SetHandle(SelectionHandle.Left);
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    SetHandle(SelectionHandle.BottomLeft);
-            }
-
-            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10)
-                    SetHandle(SelectionHandle.Top);
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    SetHandle(SelectionHandle.Bottom);
-            }
-
-            if (Math.Abs(localPos.X - SelectionBounds.Right) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10)
-                    SetHandle(SelectionHandle.TopRight);
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 10)
-                    SetHandle(SelectionHandle.Right);
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    SetHandle(SelectionHandle.BottomRight);
-            }
-
-            if (hit != null)
-                SetHandle(SelectionHandle.Translation);
-
-            #endregion
+            return Vector2.Transform(v, SelectionTransform);
         }
-
-        public void MouseMove(Vector2 pos)
-        {
-            var localPos = ToSelectionSpace(pos);
-            var localPosOld = ToSelectionSpace(_mouse.position);
-
-            #region cursor
-
-            Cursor = null;
-
-            if (Math.Abs(localPos.X - SelectionBounds.Left) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
-            }
-
-            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10 ||
-                    Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ns");
-            }
-
-            if (Math.Abs(localPos.X - SelectionBounds.Right) < 10)
-            {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
-
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 10)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
-            }
-
-            #endregion
-
-            #region transformation
-
-            if (!_mouse.down) return;
-
-            var origin = new Vector2(0.5f);
-            var scale = new Vector2(1);
-            var translate = new Vector2(0);
-            var rotate = 0f;
-            var shear = 0f;
-
-            if (_handle == SelectionHandle.Rotation)
-                rotate = MathUtils.Angle(pos) - MathUtils.Angle(_mouse.position);
-
-            if (_handle == SelectionHandle.Translation)
-                translate = pos - _mouse.position;
-
-            if (_handle.HasFlag(SelectionHandle.Top))
-            {
-                origin.Y = 1.0f;
-                scale.Y = (SelectionBounds.Bottom - localPos.Y) /
-                          MathUtils.AbsMax(1, SelectionBounds.Bottom - localPosOld.Y);
-            }
-
-            if (_handle.HasFlag(SelectionHandle.Left))
-            {
-                origin.X = 1.0f;
-                scale.X = (SelectionBounds.Right - localPos.X) /
-                          MathUtils.AbsMax(1, SelectionBounds.Right - localPosOld.X);
-            }
-
-            if (_handle.HasFlag(SelectionHandle.Right))
-            {
-                origin.X = 0.0f;
-                scale.X = (localPos.X - SelectionBounds.Left) /
-                          MathUtils.AbsMax(1, localPosOld.X - SelectionBounds.Left);
-            }
-
-            if (_handle.HasFlag(SelectionHandle.Bottom))
-            {
-                origin.Y = 0.0f;
-                scale.Y = (localPos.Y - SelectionBounds.Top) /
-                          MathUtils.AbsMax(1, localPosOld.Y - SelectionBounds.Top);
-            }
-
-            // filter out problematic scaling values
-            if (float.IsNaN(scale.X) || float.IsInfinity(scale.X)) scale.X = 1;
-            if (Math.Abs(scale.X) < MathUtils.Epsilon)
-                scale.X = MathUtils.Epsilon * Math.Sign(scale.X);
-
-            if (float.IsNaN(scale.Y) || float.IsInfinity(scale.Y)) scale.Y = 1;
-            if (Math.Abs(scale.Y) < MathUtils.Epsilon)
-                scale.Y = MathUtils.Epsilon * Math.Sign(scale.Y);
-
-            Transform(scale, translate, rotate, shear, origin);
-
-            _mouse = (pos, _mouse.down);
-
-            #endregion
-        }
-
-        public void MouseUp(Vector2 pos) { _mouse = (pos, false); }
 
         public void KeyDown(Key key, ModifierKeys modifiers)
         {
@@ -323,10 +112,238 @@ namespace Ibinimator.Service
                 _modifiers = (_modifiers.alt, _modifiers.shift, false);
         }
 
+        public void MouseDown(Vector2 pos)
+        {
+            _mouse = (pos, true);
+
+            #region handle testing
+
+            SetHandle(0);
+
+            var localPos = ToSelectionSpace(pos);
+
+            if (Math.Abs(localPos.X - SelectionBounds.Left) < 7.5)
+            {
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    SetHandle(SelectionHandle.TopLeft);
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    SetHandle(SelectionHandle.Left);
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    SetHandle(SelectionHandle.BottomLeft);
+            }
+
+            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 7.5)
+            {
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    SetHandle(SelectionHandle.Top);
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    SetHandle(SelectionHandle.Bottom);
+            }
+
+            if (Math.Abs(localPos.X - SelectionBounds.Right) < 7.5)
+            {
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    SetHandle(SelectionHandle.TopRight);
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    SetHandle(SelectionHandle.Right);
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    SetHandle(SelectionHandle.BottomRight);
+            }
+
+            var vertical = FromSelectionSpace(SelectionBounds.BottomCenter) -
+                           FromSelectionSpace(SelectionBounds.TopCenter);
+
+            var rotationHandle = FromSelectionSpace(SelectionBounds.TopCenter) -
+                                 Vector2.Normalize(vertical) * 15;
+
+            if (Vector2.Distance(rotationHandle, pos) < 7.5)
+                SetHandle(SelectionHandle.Rotation);
+
+            if (_handle != 0)
+                return;
+
+            #endregion
+
+            #region hit testing
+
+            // for every element in the scene, perform a hit-test
+            var root = Context.ViewManager.Root;
+
+            // start by hit-testing in the existing selection, and if we find nothing,
+            // then hit-test in the root
+            ILayer hit = null;
+
+            foreach (var layer in Selection)
+            {
+                var test = layer;
+
+                if (_modifiers.alt)
+                    while (test.Parent != null)
+                    {
+                        var index = test.Parent.SubLayers.IndexOf(test);
+
+                        // for every layer that is below this layer (higher index means
+                        // lower z-index)
+                        foreach (var sibling in test.Parent.SubLayers.Skip(index + 1))
+                        {
+                            hit = sibling.Hit(Context.CacheManager, pos, true);
+                            if (hit != null) break;
+                        }
+
+                        test = test.Parent;
+                    }
+
+                hit = test.Hit(Context.CacheManager, pos, true);
+                if (hit != null) break;
+            }
+
+            if (hit == null)
+                hit = root.Hit(Context.CacheManager, pos, false);
+
+            if (!_modifiers.shift && _handle == 0)
+                ClearSelection();
+
+            if (hit != null)
+                hit.Selected = true;
+
+            #endregion
+
+            if (hit != null && _handle != 0)
+                SetHandle(SelectionHandle.Translation);
+        }
+
+        public void MouseMove(Vector2 pos)
+        {
+            var localPos = ToSelectionSpace(pos);
+            var localPosOld = ToSelectionSpace(_mouse.position);
+
+            #region cursor
+
+            Cursor = null;
+
+            if (Math.Abs(localPos.X - SelectionBounds.Left) < 7.5)
+            {
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
+            }
+
+            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5 ||
+                    Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ns");
+
+            if (Math.Abs(localPos.X - SelectionBounds.Right) < 7.5)
+            {
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
+
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
+            }
+
+            var vertical = FromSelectionSpace(SelectionBounds.BottomCenter) -
+                           FromSelectionSpace(SelectionBounds.TopCenter);
+
+            var rotationHandle = FromSelectionSpace(SelectionBounds.TopCenter) -
+                                 Vector2.Normalize(vertical) * 15;
+
+            if (Vector2.Distance(rotationHandle, pos) < 7.5)
+                Cursor = Context.CacheManager.GetBitmap("cursor-rotate");
+
+            #endregion
+
+            #region transformation
+
+            if (!_mouse.down) return;
+
+            var relativeOrigin = new Vector2(0.5f);
+            
+            var scale = new Vector2(1);
+            var translate = new Vector2(0);
+            var rotate = 0f;
+            var shear = 0f;
+
+            if (_handle == SelectionHandle.Rotation)
+            {
+                var origin = FromSelectionSpace(
+                    SelectionBounds.TopLeft +
+                    SelectionBounds.Size * relativeOrigin);
+                rotate = MathUtils.Angle(origin - pos) - MathUtils.Angle(origin - _mouse.position);
+            }
+
+            if (_handle == SelectionHandle.Translation)
+                translate = pos - _mouse.position;
+
+            if (_handle.HasFlag(SelectionHandle.Top))
+            {
+                relativeOrigin.Y = 1.0f;
+                scale.Y = (SelectionBounds.Bottom - localPos.Y) /
+                          MathUtils.AbsMax(1, SelectionBounds.Bottom - localPosOld.Y);
+            }
+
+            if (_handle.HasFlag(SelectionHandle.Left))
+            {
+                relativeOrigin.X = 1.0f;
+                scale.X = (SelectionBounds.Right - localPos.X) /
+                          MathUtils.AbsMax(1, SelectionBounds.Right - localPosOld.X);
+            }
+
+            if (_handle.HasFlag(SelectionHandle.Right))
+            {
+                relativeOrigin.X = 0.0f;
+                scale.X = (localPos.X - SelectionBounds.Left) /
+                          MathUtils.AbsMax(1, localPosOld.X - SelectionBounds.Left);
+            }
+
+            if (_handle.HasFlag(SelectionHandle.Bottom))
+            {
+                relativeOrigin.Y = 0.0f;
+                scale.Y = (localPos.Y - SelectionBounds.Top) /
+                          MathUtils.AbsMax(1, localPosOld.Y - SelectionBounds.Top);
+            }
+
+            //if (scale.Y < 0)
+            //    Debugger.Break();
+
+            var size = (SelectionBounds.Size + Vector2.One) *
+                       SelectionTransform.GetScale();
+            var min = Vector2.One / size;
+
+            // filter out problematic scaling values
+            if (float.IsNaN(scale.X) || float.IsInfinity(scale.X)) scale.X = 1;
+            if (Math.Abs(scale.X) < Math.Abs(min.X))
+                scale.X = min.X * MathUtils.NonZeroSign(scale.X);
+
+            if (float.IsNaN(scale.Y) || float.IsInfinity(scale.Y)) scale.Y = 1;
+            if (Math.Abs(scale.Y) < Math.Abs(min.Y))
+                scale.Y = min.Y * MathUtils.NonZeroSign(scale.Y);
+
+            Transform(scale, translate, rotate, shear, relativeOrigin);
+
+            _mouse = (pos, _mouse.down);
+
+            #endregion
+        }
+
+        public void MouseUp(Vector2 pos) { _mouse = (pos, false); }
+
         public void Render(RenderContext target, ICacheManager cache)
         {
             foreach (var layer in Selection)
-            {
                 if (layer is IGeometricLayer shape)
                 {
                     target.Transform(shape.AbsoluteTransform);
@@ -343,7 +360,6 @@ namespace Ibinimator.Service
                     target.Transform(
                         MathUtils.Invert(shape.AbsoluteTransform));
                 }
-            }
 
             target.Transform(SelectionTransform);
 
@@ -355,47 +371,47 @@ namespace Ibinimator.Service
             target.Transform(MathUtils.Invert(SelectionTransform));
         }
 
-        public Vector2 FromSelectionSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectionTransform);
-        }
-
         public Vector2 ToSelectionSpace(Vector2 v)
         {
             return Vector2.Transform(v, MathUtils.Invert(SelectionTransform));
         }
 
         public void Transform(
-            Vector2 scale,
-            Vector2 translate,
-            float rotate,
-            float shear,
+            Vector2 localScale,
+            Vector2 localTranslate,
+            float localRotate,
+            float localShear,
             Vector2 relativeOrigin)
         {
             var localOrigin = SelectionBounds.TopLeft +
-                              new Vector2(
-                                  SelectionBounds.Width * relativeOrigin.X,
-                                  SelectionBounds.Height * relativeOrigin.Y);
+                              SelectionBounds.Size * relativeOrigin;
             var origin = FromSelectionSpace(localOrigin);
 
             // order doesn't really matter since only one of 
             // these will be non-default at a time
-            var transform =
+            var local =
+                Matrix3x2.CreateTranslation(-localOrigin) *
+                Matrix3x2.CreateScale(localScale) *
+                Matrix3x2.CreateSkew(localShear, 0) *
+                Matrix3x2.CreateTranslation(localOrigin);
+
+            var global =
                 Matrix3x2.CreateTranslation(-origin) *
-                Matrix3x2.CreateScale(scale) *
-                Matrix3x2.CreateTranslation(translate) *
-                Matrix3x2.CreateRotation(rotate) *
-                Matrix3x2.CreateSkew(shear, 0) *
+                Matrix3x2.CreateRotation(localRotate) *
+                Matrix3x2.CreateTranslation(localTranslate) *
                 Matrix3x2.CreateTranslation(origin);
 
-            SelectionTransform = SelectionTransform * transform;
+            SelectionTransform = local *
+                                 SelectionTransform *
+                                 global;
 
-            if (transform.IsIdentity) return;
+            if (local.IsIdentity && global.IsIdentity) return;
 
             var command = new TransformCommand(
                 Context.HistoryManager.Position + 1,
                 Selection.ToArray<ILayer>(),
-                transform);
+                local,
+                global);
 
             // perform the operation
             command.Do(Context);
@@ -403,18 +419,15 @@ namespace Ibinimator.Service
             // if there's already a transform command on the stack,
             // merge it with the previous one
             if (Context.HistoryManager.Current is TransformCommand current &&
-                current.Time - command.Time < 500 &&
-                Enumerable.SequenceEqual(current.Targets, command.Targets))
-            {
+                command.Time - current.Time < 500 &&
+                current.Targets.SequenceEqual(command.Targets))
                 Context.HistoryManager.Replace(new TransformCommand(
                                                    Context.HistoryManager.Position + 1,
                                                    Selection.ToArray<ILayer>(),
-                                                   transform * current.Transform));
-            }
+                                                   current.Local * local,
+                                                   current.Global * global));
             else
-            {
                 Context.HistoryManager.Push(command);
-            }
 
             Context.InvalidateSurface();
         }
@@ -445,10 +458,40 @@ namespace Ibinimator.Service
             Context.InvalidateSurface();
         }
 
-        public ObservableList<Layer> Selection { get; }
-
         public IArtContext Context { get; }
 
-        public void SetHandle(SelectionHandle value) { _handle = value; }
+        public IBitmap Cursor
+        {
+            get => _cursor;
+            set
+            {
+                _cursor = value;
+                Context.InvalidateSurface();
+            }
+        }
+
+        public RectangleF SelectionBounds
+        {
+            get => _selectionBounds;
+            private set
+            {
+                _selectionBounds = value;
+                RaisePropertyChanged(nameof(SelectionBounds));
+            }
+        }
+
+        public Matrix3x2 SelectionTransform
+        {
+            get => _selectionTransform;
+            private set
+            {
+                _selectionTransform = value;
+                RaisePropertyChanged(nameof(SelectionTransform));
+            }
+        }
+
+        IList<Layer> ISelectionManager.Selection => Selection;
+
+        #endregion
     }
 }

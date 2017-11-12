@@ -20,15 +20,15 @@ namespace Ibinimator.ViewModel
     {
         public MainViewModel(ArtView artView)
         {
-            FillPicker = new FillPickerViewModel(this);
-            TransformPicker = new TransformViewModel(this);
-
             var cache = new CacheManager(artView);
             ViewManager = new ViewManager(artView);
             HistoryManager = new HistoryManager(artView);
             SelectionManager = new SelectionManager(artView, ViewManager, HistoryManager, cache);
             BrushManager = new BrushManager(artView, SelectionManager, HistoryManager);
             ToolManager = new ToolManager(artView, SelectionManager);
+
+            FillPicker = new FillPickerViewModel(this);
+            TransformPicker = new TransformViewModel(this, SelectionManager);
 
             Load();
 
@@ -154,9 +154,9 @@ namespace Ibinimator.ViewModel
                 {
                     Width = 5,
                     Brush = new SolidColorBrushInfo {Color = new Color(1f, 0, 0, 1f)}
-                },
-                Rotation = MathUtils.Pi
+                }
             };
+            e.ApplyTransform(Matrix3x2.CreateRotation(MathUtils.Pi));
 
             var r = new Rectangle
             {
@@ -179,12 +179,11 @@ namespace Ibinimator.ViewModel
                 Width = 100,
                 Height = 100,
                 Fill = new SolidColorBrushInfo {Color = new Color(0, 0.5f, 1f, 1f)},
-                Rotation = MathUtils.Pi / 4
             };
+            r2.ApplyTransform(Matrix3x2.CreateRotation(MathUtils.Pi / 4));
 
             var p = new Path
             {
-                Position = new Vector2(300, 300),
                 Fill = new SolidColorBrushInfo {Color = new Color(0, 0.5f, 1f, 1f)},
                 Stroke = new PenInfo
                 {
@@ -200,6 +199,7 @@ namespace Ibinimator.ViewModel
                     new LinePathInstruction(200, 200)
                 }
             };
+            p.ApplyTransform(Matrix3x2.CreateTranslation(300, 300));
 
             var t = new Text
             {
@@ -209,12 +209,12 @@ namespace Ibinimator.ViewModel
                 FontSize = 32,
                 Width = 100,
                 Height = 100,
-                Position = new Vector2(200, 200)
             };
+            t.ApplyTransform(Matrix3x2.CreateTranslation(200, 200));
 
             ViewManager.Document.Bounds = new RectangleF(0, 0, 600, 600);
 
-            l.Position = new Vector2(100, 100);
+            l.ApplyTransform(Matrix3x2.CreateTranslation(100, 100));
 
             ViewManager.Root.Add(t);
             ViewManager.Root.Add(l);

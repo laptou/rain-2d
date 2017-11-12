@@ -104,11 +104,11 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void DrawBitmap(IBitmap iBitmap)
         {
-            var bitmap = iBitmap as Bitmap;
+            if (!(iBitmap is Bitmap bitmap)) return;
 
             Target.DrawBitmap(
                 bitmap,
-                1,
+                new RawRectangleF(0, 0, bitmap.Width, bitmap.Height), 1,
                 D2D.BitmapInterpolationMode.Linear);
         }
 

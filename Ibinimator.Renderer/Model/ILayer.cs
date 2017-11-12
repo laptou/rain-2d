@@ -16,20 +16,15 @@ namespace Ibinimator.Renderer.Model
         ILayer Mask { get; set; }
         string Name { get; set; }
         float Opacity { get; set; }
-        Vector2 Origin { get; set; }
         Group Parent { get; }
-        Vector2 Position { get; set; }
-        float Rotation { get; set; }
-        Vector2 Scale { get; set; }
         bool Selected { get; set; }
-        float Shear { get; set; }
         Matrix3x2 Transform { get; }
         float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
 
         event EventHandler BoundsChanged;
 
-        void ApplyTransform(Matrix3x2 transform);
+        void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null);
         Layer Find(Guid id);
         RectangleF GetBounds(ICacheManager cache);
         IDisposable GetResource(ICacheManager cache, int id);

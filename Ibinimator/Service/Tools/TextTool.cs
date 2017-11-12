@@ -639,7 +639,6 @@ namespace Ibinimator.Service.Tools
 
                     var text = new Text
                     {
-                        Position = pos,
                         FontFamilyName = _fontFamilyOption.Value,
                         FontSize = _fontSizeOption.Value,
                         FontStyle = style,
@@ -648,6 +647,7 @@ namespace Ibinimator.Service.Tools
                         Fill = Context.BrushManager.Fill,
                         Stroke = Context.BrushManager.Stroke
                     };
+                    text.ApplyTransform(Matrix3x2.CreateTranslation(pos));
 
                     var root = Context.SelectionManager.Selection.OfType<Group>().LastOrDefault() ??
                                Context.ViewManager.Root;

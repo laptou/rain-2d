@@ -28,8 +28,7 @@ namespace Ibinimator.Service.Commands
                     target.Remove(layer);
                     target.Parent.Add(layer);
 
-                    (layer.Scale, layer.Rotation, layer.Position, layer.Shear)
-                        = (layer.Transform * target.Transform).Decompose();
+                    layer.ApplyTransform(target.Transform);
 
                     _layers.Add(layer, target);
                 }
@@ -46,8 +45,7 @@ namespace Ibinimator.Service.Commands
             {
                 layer.Parent.Remove(layer);
 
-                (layer.Scale, layer.Rotation, layer.Position, layer.Shear)
-                    = (layer.Transform * MathUtils.Invert(target.Transform)).Decompose();
+                layer.ApplyTransform(MathUtils.Invert(target.Transform));
 
                 target.Add(layer);
             }

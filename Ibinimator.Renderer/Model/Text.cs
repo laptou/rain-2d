@@ -91,17 +91,6 @@ namespace Ibinimator.Renderer.Model
 
         protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
 
-        protected override void UpdateTransform()
-        {
-            Transform =
-                Matrix3x2.CreateTranslation(-Origin) *
-                Matrix3x2.CreateScale(Scale) *
-                Matrix3x2.CreateSkew(0, Shear) *
-                Matrix3x2.CreateRotation(Rotation) *
-                Matrix3x2.CreateTranslation(Origin) *
-                Matrix3x2.CreateTranslation(0, -Baseline) *
-                Matrix3x2.CreateTranslation(Position);
-        }
 
         #region ITextLayer Members
 
@@ -109,13 +98,6 @@ namespace Ibinimator.Renderer.Model
         public event EventHandler GeometryChanged;
         public event EventHandler LayoutChanged;
         public event EventHandler StrokeChanged;
-
-        public override void ApplyTransform(Matrix3x2 transform)
-        {
-            base.ApplyTransform(transform);
-
-            Position += new Vector2(0, Baseline);
-        }
 
         public void ClearFormat()
         {
@@ -435,23 +417,6 @@ namespace Ibinimator.Renderer.Model
         }
 
         public ObservableList<float> Offsets => Get<ObservableList<float>>();
-
-        public override Vector2 Scale
-        {
-            get => IsBlock ? Vector2.One : base.Scale;
-            set
-            {
-                if (!IsBlock)
-                {
-                    base.Scale = value;
-                }
-                else
-                {
-                    Width *= value.X;
-                    Height *= value.Y;
-                }
-            }
-        }
 
         public PenInfo Stroke
         {

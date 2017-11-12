@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
@@ -40,8 +41,10 @@ namespace Ibinimator.View.Control
 
             var managerInterfaces =
                 typeof(T).FindInterfaces((type, criteria) =>
-                        typeof(IArtContextManager).IsAssignableFrom(type), null)
-                    .Concat(new[] {typeof(T)});
+                                             typeof(IArtContextManager).IsAssignableFrom(
+                                                 type),
+                                         null)
+                         .Concat(new[] {typeof(T)});
 
             var interfaces = managerInterfaces.ToList();
 
@@ -76,7 +79,8 @@ namespace Ibinimator.View.Control
             if (interfaces.Contains(typeof(IViewManager)))
             {
                 ViewManager = (IViewManager) manager;
-                ViewManager.DocumentUpdated += (s, e) => CacheManager?.Bind(ViewManager.Document);
+                ViewManager.DocumentUpdated +=
+                    (s, e) => CacheManager?.Bind(ViewManager.Document);
 
                 CacheManager?.ResetDeviceResources();
                 if (ViewManager?.Root != null)
@@ -92,13 +96,15 @@ namespace Ibinimator.View.Control
 
             lock (_events)
             {
-                if(Mouse.LeftButton == MouseButtonState.Pressed ||
+                if (Mouse.LeftButton == MouseButtonState.Pressed ||
                     Mouse.MiddleButton == MouseButtonState.Pressed ||
                     Mouse.RightButton == MouseButtonState.Pressed)
                     _events.Enqueue(
                         new InputEvent(
                             InputEventType.MouseUp,
-                            true, true, true,
+                            true,
+                            true,
+                            true,
                             Vector2.Zero));
             }
         }
@@ -321,10 +327,12 @@ namespace Ibinimator.View.Control
                                 SelectionManager.MouseUp(pos);
                             break;
                         case InputEventType.MouseMove:
-                            if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
+                            if (Time.Now - evt.Time > 16
+                            ) // at 16ms, begin skipping mouse moves
                                 lock (_events)
                                 {
-                                    if (_events.Any() && _events.Peek().Type == InputEventType.MouseMove)
+                                    if (_events.Any() &&
+                                        _events.Peek().Type == InputEventType.MouseMove)
                                         continue;
                                 }
 
@@ -373,10 +381,7 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
-        public void InvalidateSurface()
-        {
-            base.InvalidateSurface(null);
-        }
+        public void InvalidateSurface() { base.InvalidateSurface(null); }
 
         public IBrushManager BrushManager { get; private set; }
         public ICacheManager CacheManager { get; private set; }
@@ -391,7 +396,8 @@ namespace Ibinimator.View.Control
 
     public struct InputEvent
     {
-        public InputEvent(InputEventType type, Key key, ModifierKeys modifier) : this(Service.Time.Now)
+        public InputEvent(InputEventType type, Key key, ModifierKeys modifier) : this(
+            Service.Time.Now)
         {
             if (type != InputEventType.KeyDown &&
                 type != InputEventType.KeyUp)
@@ -411,8 +417,13 @@ namespace Ibinimator.View.Control
             Text = text;
         }
 
-        public InputEvent(InputEventType type, bool left, bool middle, bool right, Vector2 position) : this(Service.Time
-            .Now)
+        public InputEvent(
+            InputEventType type,
+            bool left,
+            bool middle,
+            bool right,
+            Vector2 position) : this(Service.Time
+                                            .Now)
         {
             if (type != InputEventType.MouseUp &&
                 type != InputEventType.MouseDown)
@@ -435,10 +446,7 @@ namespace Ibinimator.View.Control
             Position = position;
         }
 
-        private InputEvent(long time) : this()
-        {
-            Time = time;
-        }
+        private InputEvent(long time) : this() { Time = time; }
 
         public Key Key { get; }
         public bool LeftMouse { get; }

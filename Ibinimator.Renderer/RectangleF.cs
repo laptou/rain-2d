@@ -51,6 +51,9 @@ namespace Ibinimator.Renderer
 
         public Vector2 TopLeft => new Vector2(Left, Top);
         public Vector2 TopRight => new Vector2(Right, Top);
+        public Vector2 TopCenter => new Vector2((Right + Left) / 2, Top);
+
+        public Vector2 BottomCenter => new Vector2((Right + Left) / 2, Bottom);
 
         public bool Contains(Vector2 v)
         {

@@ -159,8 +159,7 @@ namespace Ibinimator.Utility
 
             if (layer != null)
             {
-                (layer.Scale, layer.Rotation, layer.Position, layer.Shear) =
-                    element.Transform.Decompose();
+                layer.ApplyTransform(element.Transform);
 
                 layer.Name = element.Id;
             }
