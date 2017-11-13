@@ -11,7 +11,7 @@ namespace Ibinimator.Renderer
     public interface ISelectionManager : IArtContextManager
     {
         IBitmap Cursor { get; set; }
-        IList<Layer> Selection { get; }
+        IList<ILayer> Selection { get; }
         RectangleF SelectionBounds { get; }
         Matrix3x2 SelectionTransform { get; }
 

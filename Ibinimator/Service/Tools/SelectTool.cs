@@ -37,7 +37,7 @@ namespace Ibinimator.Service.Tools
 
         public ToolOption[] Options => new ToolOption[0];
 
-        private IList<Layer> Selection => Manager.Context.SelectionManager.Selection;
+        private IList<ILayer> Selection => Manager.Context.SelectionManager.Selection;
 
         #region ITool Members
 
@@ -47,7 +47,7 @@ namespace Ibinimator.Service.Tools
                 return;
 
             var targets =
-                Selection.SelectMany(l => l.Flatten())
+                Selection.SelectMany(l => (l as Layer).Flatten())
                          .OfType<IFilledLayer>()
                          .ToArray();
 
@@ -79,7 +79,7 @@ namespace Ibinimator.Service.Tools
                 return;
 
             var targets =
-                Selection.SelectMany(l => l.Flatten())
+                Selection.SelectMany(l => (l as Layer).Flatten())
                          .OfType<IStrokedLayer>()
                          .ToArray();
 

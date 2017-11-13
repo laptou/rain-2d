@@ -86,6 +86,10 @@ namespace Ibinimator.Renderer.WPF
 
         public override void Dispose() { _ctx = null; }
         public override float GetDpi() { return 0; }
+        public override void PopEffect() { throw new NotImplementedException(); }
+        public override void PushEffect(object effect) { throw new NotImplementedException(); }
+        public override float Height { get; }
+        public override float Width { get; }
 
         public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
 

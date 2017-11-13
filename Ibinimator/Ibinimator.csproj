@@ -152,6 +152,7 @@
     <Compile Include="Service\Commands\RemoveTextCommand.cs" />
     <Compile Include="Service\Commands\TransformCommand.cs" />
     <Compile Include="Service\Commands\UngroupCommand.cs" />
+    <Compile Include="Service\Guide.cs" />
     <Compile Include="Service\SvgConverter.cs" />
     <Compile Include="Service\Tools\GradientTool.cs" />
     <Compile Include="Service\Tools\NodeTool.cs" />

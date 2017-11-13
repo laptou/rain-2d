@@ -92,7 +92,10 @@ namespace Ibinimator.Renderer.Model
             foreach (var layer in SubLayers)
             {
                 var result = layer.Hit<T>(cache, point, includeMe);
-                if (result != null) hit = result;
+                if (result == null) continue;
+
+                hit = result;
+                break;
             }
 
             if (includeMe && hit != null)

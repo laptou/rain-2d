@@ -296,7 +296,13 @@ namespace Ibinimator.View.Control
 
                 ToolManager.Tool.Render(target, CacheManager);
 
-                if (ToolManager.Tool.Cursor == null) return;
+                if (ToolManager.Tool.Cursor == null)
+                {
+                    Cursor = Cursors.Arrow;
+                    return;
+                }
+
+                Cursor = Cursors.None;
 
                 target.Transform(
                     Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
@@ -327,14 +333,15 @@ namespace Ibinimator.View.Control
                                 SelectionManager.MouseUp(pos);
                             break;
                         case InputEventType.MouseMove:
-                            if (Time.Now - evt.Time > 16
-                            ) // at 16ms, begin skipping mouse moves
+                            if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
+                            {
                                 lock (_events)
                                 {
                                     if (_events.Any() &&
                                         _events.Peek().Type == InputEventType.MouseMove)
                                         continue;
                                 }
+                            }
 
                             if (!ToolManager.MouseMove(pos))
                                 SelectionManager.MouseMove(pos);
@@ -344,10 +351,12 @@ namespace Ibinimator.View.Control
                             ToolManager.TextInput(evt.Text);
                             break;
                         case InputEventType.KeyUp:
-                            ToolManager.KeyUp(evt.Key, evt.Modifier);
+                            if(!ToolManager.KeyUp(evt.Key, evt.Modifier))
+                                SelectionManager.KeyUp(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.KeyDown:
-                            ToolManager.KeyDown(evt.Key, evt.Modifier);
+                            if (!ToolManager.KeyDown(evt.Key, evt.Modifier))
+                                SelectionManager.KeyDown(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.Scroll:
                             break;

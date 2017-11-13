@@ -8,14 +8,21 @@ using Ibinimator.Core.Model;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
+// ReSharper disable InconsistentNaming
 
 namespace Ibinimator.Renderer.Direct2D
 {
     public class Direct2DRenderContext : RenderContext
     {
+        private readonly Stack<D2D.Effect> _effects = new Stack<D2D.Effect>();
+        private readonly D2D.BitmapRenderTarget _virtualTarget;
+
         public Direct2DRenderContext(D2D.RenderTarget target)
         {
-            Target = target;
+            _target = target;
+            _virtualTarget =
+                new D2D.BitmapRenderTarget(target,
+                                           D2D.CompatibleRenderTargetOptions.None);
             FactoryDW = new DW.Factory(DW.FactoryType.Shared);
         }
 
@@ -23,11 +30,21 @@ namespace Ibinimator.Renderer.Direct2D
 
         public DW.Factory FactoryDW { get; }
 
-        public D2D.RenderTarget Target { get; }
+        private readonly D2D.RenderTarget _target;
 
-        public override void Begin(object ctx) { Target.BeginDraw(); }
+        public D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
 
-        public override void Clear(Color color) { Target.Clear(color.Convert()); }
+        public override void Begin(object ctx)
+        {
+            _target.BeginDraw(); 
+            _virtualTarget.BeginDraw();
+        }
+
+        public override void Clear(Color color)
+        {
+            _target.Clear(color.Convert());
+            _virtualTarget.Clear(null);
+        }
 
         public override IBitmap CreateBitmap(Stream stream) { return new Bitmap(this, stream); }
 
@@ -102,6 +119,39 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }
 
+        public override void PopEffect()
+        {
+            _virtualTarget.Flush();
+
+            var d2dEffect = _effects.Pop();
+
+            if (_effects.Count > 0)
+                _effects.Peek().SetInput(0, d2dEffect.Output, false);
+            else
+            {
+                _target.QueryInterface<D2D.DeviceContext>().DrawImage(d2dEffect);
+                _target.QueryInterface<D2D.DeviceContext>().DrawImage(_virtualTarget.Bitmap);
+            }
+        }
+
+        public override void PushEffect(object effect)
+        {
+            if (!(effect is D2D.Effect)) throw new ArgumentException(nameof(effect));
+
+            _virtualTarget.Flush();
+
+            var d2dEffect = (D2D.Effect) effect;
+
+            d2dEffect.SetInput(0, _virtualTarget.Bitmap, true);
+
+            if(_effects.Count > 0)
+                _effects.Peek().SetInputEffect(0, d2dEffect);
+
+            _effects.Push(d2dEffect);
+        }
+        public override float Height => Target.Size.Height;
+        public override float Width => Target.Size.Width;
+
         public override void DrawBitmap(IBitmap iBitmap)
         {
             if (!(iBitmap is Bitmap bitmap)) return;
@@ -171,7 +221,11 @@ namespace Ibinimator.Renderer.Direct2D
                 pen.Style);
         }
 
-        public override void End() { Target.EndDraw(); }
+        public override void End()
+        {
+            _virtualTarget.EndDraw();
+            _target.EndDraw();
+        }
 
         public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
         {

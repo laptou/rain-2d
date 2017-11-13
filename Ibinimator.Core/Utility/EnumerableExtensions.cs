@@ -77,5 +77,15 @@ namespace Ibinimator.Core.Utility
                 if (!yielding && !predicate(element)) yielding = true;
             }
         }
+
+        public static IEnumerable<T> Cycle<T>(
+            this IEnumerable<T> enumerable,
+            int elements)
+        {
+            var enumerable1 = enumerable as IList<T> ?? enumerable.ToList();
+
+            return Enumerable.Concat(enumerable1.Skip(elements),
+                                     enumerable1.Take(elements - 1));
+        }
     }
 }
