@@ -470,5 +470,10 @@ namespace Ibinimator.Svg
         {
             return $"rgb({Red * 100}%, {Green * 100}%, {Blue * 100}%)";
         }
+
+        public static implicit operator Core.Model.Color (Color color)
+        {
+            return new Core.Model.Color(color.Red, color.Green, color.Blue, color.Alpha);
+        }
     }
 }

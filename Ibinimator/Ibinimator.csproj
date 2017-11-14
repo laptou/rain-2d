@@ -152,6 +152,7 @@
     <Compile Include="Service\Commands\RemoveTextCommand.cs" />
     <Compile Include="Service\Commands\TransformCommand.cs" />
     <Compile Include="Service\Commands\UngroupCommand.cs" />
+    <Compile Include="Service\GuideManager.cs" />
     <Compile Include="Service\Guide.cs" />
     <Compile Include="Service\SvgConverter.cs" />
     <Compile Include="Service\Tools\GradientTool.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\Control\SvgImage.cs" />
+    <Compile Include="View\Util\InversionConverter.cs" />
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="Service\CacheManager.cs" />

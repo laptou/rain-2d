@@ -200,7 +200,6 @@ namespace Ibinimator.Service
                     stroke.Width = info.Width;
                     break;
 
-                case nameof(PenInfo.Style):
                 case nameof(PenInfo.Dashes):
                     stroke.Dashes.Clear();
                     // TODO: FIX dashes and stuff

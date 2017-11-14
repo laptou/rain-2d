@@ -8,13 +8,14 @@ using Ibinimator.Core.Model;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
+
 // ReSharper disable InconsistentNaming
 
 namespace Ibinimator.Renderer.Direct2D
 {
     public class Direct2DRenderContext : RenderContext
     {
-        private readonly Stack<D2D.Effect> _effects = new Stack<D2D.Effect>();
+        private readonly Stack<Effect> _effects = new Stack<Effect>();
         private readonly D2D.BitmapRenderTarget _virtualTarget;
 
         public Direct2DRenderContext(D2D.RenderTarget target)
@@ -36,7 +37,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void Begin(object ctx)
         {
-            _target.BeginDraw(); 
+            _target.BeginDraw();
             _virtualTarget.BeginDraw();
         }
 
@@ -46,9 +47,15 @@ namespace Ibinimator.Renderer.Direct2D
             _virtualTarget.Clear(null);
         }
 
-        public override IBitmap CreateBitmap(Stream stream) { return new Bitmap(this, stream); }
+        public override IBitmap CreateBitmap(Stream stream)
+        {
+            return new Bitmap(this, stream);
+        }
 
-        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(Target, color); }
+        public override ISolidColorBrush CreateBrush(Color color)
+        {
+            return new SolidColorBrush(Target, color);
+        }
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
@@ -57,7 +64,10 @@ namespace Ibinimator.Renderer.Direct2D
             float endX,
             float endY)
         {
-            return new LinearGradientBrush(Target, stops, new RawVector2(startX, startY), new RawVector2(endX, endY));
+            return new LinearGradientBrush(Target,
+                                           stops,
+                                           new RawVector2(startX, startY),
+                                           new RawVector2(endX, endY));
         }
 
         public override IRadialGradientBrush CreateBrush(
@@ -76,7 +86,11 @@ namespace Ibinimator.Renderer.Direct2D
                                            new RawVector2(focusX, focusY));
         }
 
-        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
+        public override IGeometry CreateEllipseGeometry(
+            float cx,
+            float cy,
+            float rx,
+            float ry)
         {
             return new Geometry(Target,
                                 new D2D.EllipseGeometry(
@@ -97,19 +111,41 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(Target, geometries);
         }
 
-        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
+        public override T CreateEffect<T>()
+        {
+            if (typeof(T) == typeof(IGlowEffect))
+                return new GlowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
+
+            return default;
+        }
+
+        public override IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes)
         {
             return new Pen(width, brush as Brush, dashes, Target);
         }
 
-        public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
+        public override IGeometry CreateRectangleGeometry(
+            float x,
+            float y,
+            float w,
+            float h)
         {
             return new Geometry(Target,
                                 new D2D.RectangleGeometry(Factory2D,
-                                                          new RawRectangleF(x, y, x + w, y + h)));
+                                                          new RawRectangleF(
+                                                              x,
+                                                              y,
+                                                              x + w,
+                                                              y + h)));
         }
 
-        public override ITextLayout CreateTextLayout() { return new DirectWriteTextLayout(this); }
+        public override ITextLayout CreateTextLayout()
+        {
+            return new DirectWriteTextLayout(this);
+        }
 
         public override void Dispose()
         {
@@ -125,30 +161,25 @@ namespace Ibinimator.Renderer.Direct2D
 
             var d2dEffect = _effects.Pop();
 
-            if (_effects.Count > 0)
-                _effects.Peek().SetInput(0, d2dEffect.Output, false);
-            else
-            {
-                _target.QueryInterface<D2D.DeviceContext>().DrawImage(d2dEffect);
-                _target.QueryInterface<D2D.DeviceContext>().DrawImage(_virtualTarget.Bitmap);
-            }
+            if(_effects.Count == 0)
+                _target.QueryInterface<D2D.DeviceContext>()
+                       .DrawImage(d2dEffect.GetOutput());
         }
 
-        public override void PushEffect(object effect)
+        public override void PushEffect(IEffect effect)
         {
-            if (!(effect is D2D.Effect)) throw new ArgumentException(nameof(effect));
+            if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
 
             _virtualTarget.Flush();
 
-            var d2dEffect = (D2D.Effect) effect;
+            fx.SetInput(0, new Bitmap(_virtualTarget.Bitmap));
 
-            d2dEffect.SetInput(0, _virtualTarget.Bitmap, true);
+            if (_effects.Count > 0)
+                _effects.Peek().SetInput(0, fx);
 
-            if(_effects.Count > 0)
-                _effects.Peek().SetInputEffect(0, d2dEffect);
-
-            _effects.Push(d2dEffect);
+            _effects.Push(fx);
         }
+
         public override float Height => Target.Size.Height;
         public override float Width => Target.Size.Width;
 
@@ -158,11 +189,17 @@ namespace Ibinimator.Renderer.Direct2D
 
             Target.DrawBitmap(
                 bitmap,
-                new RawRectangleF(0, 0, bitmap.Width, bitmap.Height), 1,
+                new RawRectangleF(0, 0, bitmap.Width, bitmap.Height),
+                1,
                 D2D.BitmapInterpolationMode.Linear);
         }
 
-        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
+        public override void DrawEllipse(
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            IPen iPen)
         {
             var pen = iPen as Pen;
 
@@ -207,7 +244,12 @@ namespace Ibinimator.Renderer.Direct2D
                 pen.Style);
         }
 
-        public override void DrawRectangle(float left, float top, float width, float height, IPen iPen)
+        public override void DrawRectangle(
+            float left,
+            float top,
+            float width,
+            float height,
+            IPen iPen)
         {
             var pen = iPen as Pen;
             Target.DrawRectangle(
@@ -227,7 +269,12 @@ namespace Ibinimator.Renderer.Direct2D
             _target.EndDraw();
         }
 
-        public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
+        public override void FillEllipse(
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            IBrush brush)
         {
             Target.FillEllipse(
                 new D2D.Ellipse(
@@ -246,7 +293,12 @@ namespace Ibinimator.Renderer.Direct2D
                 brush as Brush);
         }
 
-        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
+        public override void FillRectangle(
+            float left,
+            float top,
+            float width,
+            float height,
+            IBrush brush)
         {
             Target.FillRectangle(
                 new RectangleF(
@@ -264,5 +316,54 @@ namespace Ibinimator.Renderer.Direct2D
             else
                 Target.Transform = transform.Convert() * Target.Transform;
         }
+    }
+
+    public abstract class Effect : IEffect
+    {
+        public abstract D2D.Image GetOutput();
+        public abstract void SetInput(int index, IBitmap bitmap);
+        public abstract void SetInput(int index, IEffect effect);
+        public abstract T Unwrap<T>() where T : class;
+    }
+
+    public class GlowEffect : Effect, IGlowEffect
+    {
+        public GlowEffect(D2D.DeviceContext dc)
+        {
+            blur = new D2D.Effect(dc, D2D.Effect.GaussianBlur);
+
+            composite = new D2D.Effect(dc, D2D.Effect.Composite);
+            composite.SetInputEffect(0, blur, false);
+        }
+
+        private readonly D2D.Effect blur;
+        private readonly D2D.Effect composite;
+
+        public float Radius
+        {
+            get => blur.GetFloatValue((int)D2D.GaussianBlurProperties.StandardDeviation);
+            set => blur.SetValue((int) D2D.GaussianBlurProperties.StandardDeviation,
+                                 value);
+        }
+
+        public override void SetInput(int index, IBitmap bitmap)
+        {
+            if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
+
+            blur.SetInput(0, bitmap.Unwrap<D2D.Bitmap>(), true);
+            composite.SetInput(1, bitmap.Unwrap<D2D.Bitmap>(), true);
+        }
+
+        public override void SetInput(int index, IEffect effect)
+        {
+            if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
+
+            blur.SetInputEffect(0, effect.Unwrap<D2D.Effect>());
+            composite.SetInputEffect(1, effect.Unwrap<D2D.Effect>());
+        }
+
+        public override D2D.Image GetOutput() { return composite.Output; }
+
+        public override T Unwrap<T>() { return composite as T; }
     }
 }

@@ -16,8 +16,8 @@ using Ellipse = Ibinimator.Svg.Ellipse;
 using GradientStop = Ibinimator.Renderer.GradientStop;
 using Group = Ibinimator.Renderer.Model.Group;
 using Layer = Ibinimator.Renderer.Model.Layer;
-using LineCap = Ibinimator.Svg.LineCap;
-using LineJoin = Ibinimator.Svg.LineJoin;
+using LineCap = Ibinimator.Core.Model.LineCap;
+using LineJoin = Ibinimator.Core.Model.LineJoin;
 using Path = Ibinimator.Renderer.Model.Path;
 using Rectangle = Ibinimator.Svg.Rectangle;
 using Text = Ibinimator.Svg.Text;
@@ -32,8 +32,10 @@ namespace Ibinimator.Utility
             {
                 Root = new Group(),
                 Bounds = new RectangleF(
-                    svgDocument.Viewbox.X, svgDocument.Viewbox.Y,
-                    svgDocument.Viewbox.Width, svgDocument.Viewbox.Height)
+                    svgDocument.Viewbox.X,
+                    svgDocument.Viewbox.Y,
+                    svgDocument.Viewbox.Width,
+                    svgDocument.Viewbox.Height)
             };
 
             foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(FromSvg))
@@ -50,7 +52,9 @@ namespace Ibinimator.Utility
             {
                 var group = new Group();
 
-                foreach (var child in containerElement.OfType<IGraphicalElement>().Select(FromSvg))
+                foreach (var child in containerElement
+                    .OfType<IGraphicalElement>()
+                    .Select(FromSvg))
                     group.Add(child, 0);
 
                 layer = group;
@@ -97,7 +101,8 @@ namespace Ibinimator.Utility
                         var polygonPath = new Path();
 
                         polygonPath.Instructions.AddItems(
-                            polygon.Points.Select(v => new LinePathInstruction(v)));
+                            polygon.Points.Select(
+                                v => new LinePathInstruction(v)));
 
                         polygonPath.Instructions.Add(new ClosePathInstruction(false));
 
@@ -107,7 +112,8 @@ namespace Ibinimator.Utility
                         var polylinePath = new Path();
 
                         polylinePath.Instructions.AddItems(
-                            polyline.Points.Select(v => new LinePathInstruction(v)));
+                            polyline.Points.Select(
+                                v => new LinePathInstruction(v)));
 
                         polylinePath.Instructions.Add(new ClosePathInstruction(true));
 
@@ -145,14 +151,20 @@ namespace Ibinimator.Utility
                         throw new ArgumentOutOfRangeException(nameof(shapeElement));
                 }
 
-                var dashes = shapeElement.StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels))
+                var dashes = shapeElement
+                    .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels))
                     .ToArray();
 
                 shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
                 shape.Stroke = FromSvg(
-                    shapeElement.Stroke, shapeElement.StrokeOpacity,
-                    shapeElement.StrokeWidth.To(Pixels), dashes, shapeElement.StrokeDashOffset,
-                    shapeElement.StrokeLineCap, shapeElement.StrokeLineJoin, shapeElement.StrokeMiterLimit);
+                    shapeElement.Stroke,
+                    shapeElement.StrokeOpacity,
+                    shapeElement.StrokeWidth.To(Pixels),
+                    dashes,
+                    shapeElement.StrokeDashOffset,
+                    shapeElement.StrokeLineCap,
+                    shapeElement.StrokeLineJoin,
+                    shapeElement.StrokeMiterLimit);
 
                 layer = shape as Layer;
             }
@@ -194,8 +206,12 @@ namespace Ibinimator.Utility
                                     s.Color.Alpha),
                                 Offset = s.Offset.To(Pixels, 1)
                             })),
-                        StartPoint = new Vector2(linearGradient.X1.To(Pixels, 1), linearGradient.Y1.To(Pixels, 1)),
-                        EndPoint = new Vector2(linearGradient.X2.To(Pixels, 1), linearGradient.Y2.To(Pixels, 1)),
+                        StartPoint =
+                            new Vector2(linearGradient.X1.To(Pixels, 1),
+                                        linearGradient.Y1.To(Pixels, 1)),
+                        EndPoint =
+                            new Vector2(linearGradient.X2.To(Pixels, 1),
+                                        linearGradient.Y2.To(Pixels, 1)),
                         Name = linearGradient.Id,
                         Transform = linearGradient.Transform,
                         ExtendMode = (ExtendMode) linearGradient.SpreadMethod,
@@ -223,8 +239,10 @@ namespace Ibinimator.Utility
                             radialGradient.FocusX.To(Pixels, 1),
                             radialGradient.FocusY.To(Pixels, 1)),
                         EndPoint = new Vector2(
-                            radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1),
-                            radialGradient.CenterX.To(Pixels, 1) + radialGradient.Radius.To(Pixels, 1)),
+                            radialGradient.CenterX.To(Pixels, 1) +
+                            radialGradient.Radius.To(Pixels, 1),
+                            radialGradient.CenterX.To(Pixels, 1) +
+                            radialGradient.Radius.To(Pixels, 1)),
                         Name = radialGradient.Id,
                         Transform = radialGradient.Transform,
                         ExtendMode = (ExtendMode) radialGradient.SpreadMethod,
@@ -247,7 +265,10 @@ namespace Ibinimator.Utility
             var bounds = doc.Bounds;
 
             svgDoc.Viewbox = new System.Drawing.RectangleF(
-                bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+                bounds.Left,
+                bounds.Top,
+                bounds.Width,
+                bounds.Height);
 
             return svgDoc;
         }
@@ -310,14 +331,16 @@ namespace Ibinimator.Utility
                 shape.Stroke = ToSvg(shapeLayer.Stroke?.Brush);
                 shape.StrokeOpacity = shapeLayer.Stroke?.Brush?.Opacity ?? 0;
 
-                var dashes = shapeLayer.Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width).ToArray();
+                var dashes = shapeLayer
+                    .Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
+                    .ToArray();
 
                 shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
-                shape.StrokeDashOffset = shapeLayer.Stroke.Style.DashOffset;
-                shape.StrokeLineCap = (LineCap) shapeLayer.Stroke.Style.StartCap;
-                shape.StrokeLineJoin = (LineJoin) shapeLayer.Stroke.Style.LineJoin;
-                shape.StrokeMiterLimit = shapeLayer.Stroke.Style.MiterLimit;
+                shape.StrokeDashOffset = shapeLayer.Stroke.DashOffset;
+                shape.StrokeLineCap = (LineCap) shapeLayer.Stroke.LineCap;
+                shape.StrokeLineJoin = (LineJoin) shapeLayer.Stroke.LineJoin;
+                shape.StrokeMiterLimit = shapeLayer.Stroke.MiterLimit;
 
                 element = shape;
             }
@@ -353,7 +376,10 @@ namespace Ibinimator.Utility
                     FontStretch = format.FontStretch,
                     FontWeight = format.FontWeight,
                     FontStyle = format.FontStyle,
-                    FontSize = format.FontSize != null ? new Length?(new Length(format.FontSize.Value, Points)) : null,
+                    FontSize =
+                        format.FontSize != null ?
+                            new Length?(new Length(format.FontSize.Value, Points)) :
+                            null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
                     Position = format.Range.Length,
 
@@ -366,14 +392,15 @@ namespace Ibinimator.Utility
 
                 if (format.Stroke != null)
                 {
-                    var dashes = format.Stroke.Dashes.Select(f => f * format.Stroke.Width).ToArray();
+                    var dashes = format.Stroke.Dashes.Select(f => f * format.Stroke.Width)
+                                       .ToArray();
 
                     span.StrokeWidth = new Length(format.Stroke.Width, Pixels);
                     span.StrokeDashArray = dashes.ToArray();
-                    span.StrokeDashOffset = format.Stroke.Style.DashOffset;
-                    span.StrokeLineCap = (LineCap) format.Stroke.Style.StartCap;
-                    span.StrokeLineJoin = (LineJoin) format.Stroke.Style.LineJoin;
-                    span.StrokeMiterLimit = format.Stroke.Style.MiterLimit;
+                    span.StrokeDashOffset = format.Stroke.DashOffset;
+                    span.StrokeLineCap = (LineCap) format.Stroke.LineCap;
+                    span.StrokeLineJoin = (LineJoin) format.Stroke.LineJoin;
+                    span.StrokeMiterLimit = format.Stroke.MiterLimit;
                 }
 
                 svgText.Add(span);
@@ -396,24 +423,24 @@ namespace Ibinimator.Utility
             return null;
         }
 
-        private static PenInfo FromSvg(Paint paint, float opacity,
-            float width, float[] dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit)
+        private static PenInfo FromSvg(
+            Paint paint,
+            float opacity,
+            float width,
+            float[] dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
         {
             var stroke = new PenInfo
             {
                 Brush = FromSvg(paint, opacity),
                 Width = width,
-                Style = new StrokeStyleProperties1
-                {
-                    DashStyle = dashes.Any() ? DashStyle.Custom : DashStyle.Solid,
-                    DashCap = (CapStyle) lineCap,
-                    StartCap = (CapStyle) lineCap,
-                    EndCap = (CapStyle) lineCap,
-                    LineJoin = (SharpDX.Direct2D1.LineJoin) lineJoin,
-                    DashOffset = dashOffset,
-                    MiterLimit = miterLimit
-                }
+                LineCap = lineCap,
+                LineJoin = lineJoin,
+                DashOffset = dashOffset,
+                MiterLimit = miterLimit
             };
 
             stroke.Dashes.AddItems(dashes);

@@ -45,6 +45,8 @@ namespace Ibinimator.Renderer
 
         public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
 
+        public abstract T CreateEffect<T>() where T : class, IEffect;
+
         public abstract IPen CreatePen(
             float width,
             IBrush brush,
@@ -100,7 +102,7 @@ namespace Ibinimator.Renderer
 
         public abstract void PopEffect();
 
-        public abstract void PushEffect(object effect);
+        public abstract void PushEffect(IEffect effect);
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 

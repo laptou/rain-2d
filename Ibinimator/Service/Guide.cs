@@ -6,19 +6,63 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Service
 {
-    internal struct Guide
+    public struct Guide
     {
-        public Guide(bool @virtual, Vector2 origin, float angle) : this()
+        public Guide(int id, bool @virtual, Vector2 origin, float angle, GuideType type) : this()
         {
+            Id = id;
             Virtual = @virtual;
             Origin = origin;
             Angle = angle;
+            Type = type;
         }
+
+        public Guide(int id, bool @virtual, Vector2 origin, float angle, int divisions, GuideType type) : this()
+        {
+            Id = id;
+            Virtual = @virtual;
+            Origin = origin;
+            Angle = angle;
+            Divisions = divisions;
+            Type = type;
+        }
+
+        public int Id { get; }
 
         public bool Virtual { get; }
 
         public Vector2 Origin { get; }
 
         public float Angle { get; }
+
+        public int Divisions { get; }
+
+        public GuideType Type { get; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Guide g)
+                return Equals(g);
+            return base.Equals(obj);
+        }
+
+        public bool Equals(Guide g)
+        {
+            return g.Id == Id && g.Virtual == Virtual && g.Type == Type;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Id;
+                hashCode = (hashCode * 397) ^ Virtual.GetHashCode();
+                hashCode = (hashCode * 397) ^ Origin.GetHashCode();
+                hashCode = (hashCode * 397) ^ Angle.GetHashCode();
+                hashCode = (hashCode * 397) ^ Divisions;
+                hashCode = (hashCode * 397) ^ (int) Type;
+                return hashCode;
+            }
+        }
     }
 }

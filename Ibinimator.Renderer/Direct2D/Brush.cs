@@ -54,6 +54,8 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
+        public T Unwrap<T>() where T : class { return Direct2DBrush as T; }
+
         #endregion
     }
 }

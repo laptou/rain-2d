@@ -4,18 +4,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="clr-namespace:Ibinimator.View.Control"
-    xmlns:view="clr-namespace:Ibinimator.View"
     xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
-    xmlns:service="clr-namespace:Ibinimator.Service"
-    xmlns:commands="clr-namespace:Ibinimator.Service.Commands"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
-    xmlns:d2d="clr-namespace:SharpDX.Direct2D1;assembly=SharpDX.Direct2D1"
     xmlns:tools="clr-namespace:Ibinimator.Service.Tools"
     xmlns:util="clr-namespace:Ibinimator.View.Util"
     xmlns:command="clr-namespace:Ibinimator.View.Command"
     xmlns:model="clr-namespace:Ibinimator.Renderer.Model;assembly=Ibinimator.Renderer"
     xmlns:renderer="clr-namespace:Ibinimator.Renderer;assembly=Ibinimator.Renderer"
+    xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
     x:Class="Ibinimator.View.MainView" d:DesignWidth="1920" d:DesignHeight="1080"
     mc:Ignorable="d" Title="Ibinimator" WindowState="Maximized"
     Icon="/Ibinimator;component/Resources/logo.png">
@@ -25,6 +21,7 @@
         <util:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
         <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <util:PercentageConverter x:Key="PercentageConverter" />
+        <util:InversionConverter x:Key="Inverter" />
     </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="30" CornerRadius="5" UseAeroCaptionButtons="False" ResizeBorderThickness="5" />
@@ -179,11 +176,11 @@
                                       Command="{x:Static command:ObjectCommands.XorCommand}"
                                       CommandParameter="{Binding HistoryManager}"
                                       InputGestureText="Control ^" />
-                            <Separator/>
+                            <Separator />
                             <MenuItem Header="Pathify"
                                       Command="{x:Static command:ObjectCommands.PathifyCommand}"
                                       CommandParameter="{Binding HistoryManager}"
-                                      InputGestureText="Control Shift Enter" ></MenuItem>
+                                      InputGestureText="Control Shift Enter" />
                         </MenuItem>
                         <MenuItem Header="Te_xt" />
                         <MenuItem Header="_Help">
@@ -309,8 +306,9 @@
                                           Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Horizontal Centers">
-                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/operation-align-center-horizontal.svg"
-                                          Style="{DynamicResource Icon}" />
+                        <control:SvgImage
+                            Source="/Ibinimator;component/Resources/Icon/operation-align-center-horizontal.svg"
+                            Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Right Edges">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/operation-align-right.svg"
@@ -321,8 +319,9 @@
                                           Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Vertical Centers">
-                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/operation-align-center-vertical.svg"
-                                          Style="{DynamicResource Icon}" />
+                        <control:SvgImage
+                            Source="/Ibinimator;component/Resources/Icon/operation-align-center-vertical.svg"
+                            Style="{DynamicResource Icon}" />
                     </Button>
                     <Button Style="{StaticResource ToolbarButton}" ToolTip="Align Bottom Edges">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/operation-align-bottom.svg"
@@ -774,7 +773,7 @@
                                            VerticalAlignment="Center" Margin="16,0" />
 
                                 <TextBox
-                                    Text="{Binding FillPicker.StrokeWidth, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
+                                    Text="{Binding FillPicker.StrokeInfo.Width, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                     BorderThickness="0,0,0,1" Margin="0" Grid.Row="0" Grid.Column="1">
                                     <i:Interaction.Behaviors>
@@ -787,9 +786,7 @@
 
                                 <UniformGrid Columns="2" Margin="0" Grid.Row="0" Grid.Column="3">
                                     <RadioButton GroupName="strokeDashStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeDash, 
-                                                     Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:DashStyle.Solid}, Mode=TwoWay}"
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center">
                                         <control:SvgImage
@@ -797,10 +794,9 @@
                                             Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeDashStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeDash, 
-                                                     Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:DashStyle.Custom}, Mode=TwoWay}"
-                                                 Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, 
+                                                     Converter={StaticResource Inverter}, Mode=TwoWay}"
+                                                 Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center">
                                         <control:SvgImage
                                             Source="/Ibinimator;component/Resources/Icon/icon-stroke-dash.svg"
@@ -813,31 +809,34 @@
 
                                 <UniformGrid Columns="3" Grid.Column="1" Margin="0,8,0,0" Grid.Row="1">
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeCap, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:CapStyle.Flat}, Mode=TwoWay}"
-                                                 Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
+                                                     ConverterParameter={x:Static coremodel:LineCap.Butt}, Mode=TwoWay}"
+                                                 Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/icon-end-flat.svg"
-                                                          Style="{DynamicResource Icon}" />
+                                        <control:SvgImage
+                                            Source="/Ibinimator;component/Resources/Icon/icon-end-flat.svg"
+                                            Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeCap, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:CapStyle.Square}, Mode=TwoWay}"
+                                                     ConverterParameter={x:Static coremodel:LineCap.Square}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/icon-end-square.svg"
-                                                          Style="{DynamicResource Icon}" />
+                                        <control:SvgImage
+                                            Source="/Ibinimator;component/Resources/Icon/icon-end-square.svg"
+                                            Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeCap, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:CapStyle.Round}, Mode=TwoWay}"
+                                                     ConverterParameter={x:Static coremodel:LineCap.Round}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
-                                        <control:SvgImage Source="/Ibinimator;component/Resources/Icon/icon-end-round.svg"
-                                                          Style="{DynamicResource Icon}" />
+                                        <control:SvgImage
+                                            Source="/Ibinimator;component/Resources/Icon/icon-end-round.svg"
+                                            Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                 </UniformGrid>
 
@@ -846,9 +845,9 @@
 
                                 <UniformGrid Columns="3" Grid.Column="3" Margin="0,8,0,0" Grid.Row="1">
                                     <RadioButton GroupName="strokeJoinStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeJoin, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:LineJoin.Miter}, Mode=TwoWay}"
+                                                     ConverterParameter={x:Static coremodel:LineJoin.Miter}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
                                         <control:SvgImage
@@ -856,9 +855,9 @@
                                             Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeJoin, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:LineJoin.Bevel}, Mode=TwoWay}"
+                                                     ConverterParameter={x:Static coremodel:LineJoin.Bevel}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
                                         <control:SvgImage
@@ -866,9 +865,9 @@
                                             Style="{DynamicResource Icon}" />
                                     </RadioButton>
                                     <RadioButton GroupName="strokeEndStyle" Style="{StaticResource ToolbarButton}"
-                                                 IsChecked="{Binding FillPicker.StrokeJoin, 
+                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, 
                                                      Converter={StaticResource EnumToBooleanConverter},
-                                                     ConverterParameter={x:Static d2d:LineJoin.Round}, Mode=TwoWay}"
+                                                     ConverterParameter={x:Static coremodel:LineJoin.Round}, Mode=TwoWay}"
                                                  Width="Auto" Height="25.6" HorizontalContentAlignment="Center"
                                                  Padding="0" VerticalAlignment="Center">
                                         <control:SvgImage
@@ -882,7 +881,7 @@
                                            VerticalAlignment="Center" Margin="16,0" />
 
                                 <TextBox
-                                    Text="{Binding FillPicker.StrokeMiterLimit, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
+                                    Text="{Binding FillPicker.StrokeInfo.MiterLimit, Mode=TwoWay, Converter={StaticResource DistanceConverter}}"
                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                     BorderThickness="0,0,0,1" Margin="0" Grid.Row="2" Grid.Column="1">
                                     <i:Interaction.Behaviors>

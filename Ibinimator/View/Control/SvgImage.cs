@@ -12,6 +12,7 @@ using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
+using Color = Ibinimator.Core.Model.Color;
 using Document = Ibinimator.Renderer.Model.Document;
 using WPF = System.Windows;
 
@@ -26,18 +27,15 @@ namespace Ibinimator.View.Control
     public class SvgImage : WPF.FrameworkElement, IArtContext
     {
         public static readonly WPF.DependencyProperty SourceProperty =
-                WPF.DependencyProperty.Register("Source",
-                                                typeof(Uri),
-                                                typeof(SvgImage),
-                                                new WPF.FrameworkPropertyMetadata(
-                                                    null,
-                                                    WPF
-                                                        .FrameworkPropertyMetadataOptions
-                                                        .AffectsMeasure |
-                                                    WPF
-                                                        .FrameworkPropertyMetadataOptions
-                                                        .AffectsRender,
-                                                    SourceChanged))
+                WPF.DependencyProperty.Register(
+                    "Source",
+                    typeof(Uri),
+                    typeof(SvgImage),
+                    new WPF.FrameworkPropertyMetadata(
+                        null,
+                        WPF.FrameworkPropertyMetadataOptions.AffectsMeasure |
+                        WPF.FrameworkPropertyMetadataOptions.AffectsRender,
+                        SourceChanged))
             ;
 
         private readonly CacheManager _cache;
@@ -89,12 +87,16 @@ namespace Ibinimator.View.Control
 
             var scale = (float) Math.Min(ActualWidth / _document.Bounds.Width,
                                          ActualHeight / _document.Bounds.Height);
-            var center = new Vector2((float) ActualWidth / 2,
-                                     (float) ActualHeight / 2);
 
             RenderContext.Begin(drawingContext);
-            RenderContext.Transform(Matrix3x2.CreateScale(scale, center));
+
+            RenderContext.Transform(Matrix3x2.CreateTranslation(-_document.Bounds.TopLeft));
+
+            // don't scale towards center - they are not center-aligned in the first place!
+            RenderContext.Transform(Matrix3x2.CreateScale(scale));
+
             _document.Root.Render(RenderContext, CacheManager);
+
             RenderContext.End();
         }
 

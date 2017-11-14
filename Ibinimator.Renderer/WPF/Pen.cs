@@ -50,7 +50,7 @@ namespace Ibinimator.Renderer.WPF
                 StartLineCap = (WPF.PenLineCap) pen.LineCap,
                 EndLineCap = (WPF.PenLineCap) pen.LineCap,
                 LineJoin = (WPF.PenLineJoin) pen.LineJoin,
-                DashStyle = new WPF.DashStyle(pen.Dashes.Cast<double>(), pen.DashOffset),
+                DashStyle = new WPF.DashStyle(pen.Dashes.Select(f => (double)f), pen.DashOffset),
                 MiterLimit = pen.MiterLimit
             };
         }

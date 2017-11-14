@@ -44,6 +44,8 @@ namespace Ibinimator.Renderer.WPF
             }
         }
 
+        public T Unwrap<T>() where T : class { return WpfBrush as T; }
+
         #endregion
     }
 }

@@ -41,9 +41,9 @@ namespace Ibinimator.Core.Utility
             return (float) Math.Sqrt(Math.Abs(f)) * Math.Sign(f);
         }
 
-        public static float Angle(Vector2 pos)
+        public static float Angle(Vector2 pos, bool reverse)
         {
-            return (float) Math.Atan2(pos.Y, pos.X);
+            return (float) Math.Atan2(reverse ? -pos.Y : pos.Y, pos.X);
         }
 
         public static (float left, float top, float right, float bottom) Bounds(
@@ -115,7 +115,7 @@ namespace Ibinimator.Core.Utility
         {
             var scale = m.GetScale();
             var translation = m.Translation;
-            var skewx = (float) Math.Atan2(m.M12, m.M11);
+            var skewx = m.GetRotation();
             var skewy = (float) Math.Atan2(m.M22, m.M21) - PiOverTwo;
             var rotation = Wrap(skewx, TwoPi);
             var skew = Wrap(skewy - skewx, TwoPi);
@@ -124,19 +124,20 @@ namespace Ibinimator.Core.Utility
             return (scale, rotation, translation, -skew);
         }
 
-        public static (Matrix3x2 scale, Matrix3x2 rotateTranslate)
+        public static (Matrix3x2 scale, Matrix3x2 rotate, Matrix3x2 translate)
             Decompose(this Matrix3x2 m)
         {
             var scale = m.GetScale() * Sign((m.M11, m.M22));
             var s = new Matrix3x2(scale.X, 0, 0, scale.Y, 0, 0);
-            var rt = new Matrix3x2(m.M11 / scale.X,
-                                   m.M12 / scale.X,
-                                   m.M21 / scale.Y,
-                                   m.M22 / scale.Y,
-                                   m.M31,
-                                   m.M32);
+            var r = new Matrix3x2(m.M11 / scale.X,
+                                  m.M12 / scale.X,
+                                  m.M21 / scale.Y,
+                                  m.M22 / scale.Y,
+                                  0,
+                                  0);
 
-            return (s, rt);
+            return (s, r, Matrix3x2.CreateTranslation(m.M31,
+                                                      m.M32));
         }
 
         public static float GetRotation(this Matrix3x2 m)
@@ -232,5 +233,16 @@ namespace Ibinimator.Core.Utility
         public static float Wrap(float f, float r) { return (f % r + r) % r; }
 
         public static int Wrap(int f, int r) { return (f % r + r) % r; }
+
+        public static Vector2 Angle(float a)
+        {
+            return new Vector2((float) Math.Cos(a), -(float) Math.Sin(a));
+        }
+
+        public static float Round(float rotate, float floor, float ceiling)
+        {
+            var f = (rotate - floor) / (ceiling - floor);
+            return (float) Math.Round(f) * (ceiling - floor) + floor;
+        }
     }
 }

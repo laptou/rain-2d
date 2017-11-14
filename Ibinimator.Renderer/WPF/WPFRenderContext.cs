@@ -72,6 +72,8 @@ namespace Ibinimator.Renderer.WPF
             });
         }
 
+        public override T CreateEffect<T>() { throw new NotImplementedException(); }
+
         public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
         {
             return new Pen(width, brush as Brush, dashes);
@@ -87,7 +89,7 @@ namespace Ibinimator.Renderer.WPF
         public override void Dispose() { _ctx = null; }
         public override float GetDpi() { return 0; }
         public override void PopEffect() { throw new NotImplementedException(); }
-        public override void PushEffect(object effect) { throw new NotImplementedException(); }
+        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
         public override float Height { get; }
         public override float Width { get; }
 
@@ -121,8 +123,8 @@ namespace Ibinimator.Renderer.WPF
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left,
                                            top,
-                                           top + height,
-                                           left + width,
+                                           height,
+                                           width,
                                            false,
                                            null,
                                            pen));

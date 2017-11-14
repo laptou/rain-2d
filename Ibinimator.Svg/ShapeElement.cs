@@ -78,18 +78,4 @@ namespace Ibinimator.Svg
 
         #endregion
     }
-
-    public enum LineCap
-    {
-        Butt,
-        Square,
-        Round
-    }
-
-    public enum LineJoin
-    {
-        Miter,
-        Bevel,
-        Round
-    }
 }

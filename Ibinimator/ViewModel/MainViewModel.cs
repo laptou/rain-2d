@@ -27,7 +27,7 @@ namespace Ibinimator.ViewModel
             BrushManager = new BrushManager(artView, SelectionManager, HistoryManager);
             ToolManager = new ToolManager(artView, SelectionManager);
 
-            FillPicker = new FillPickerViewModel(this);
+            FillPicker = new FillPickerViewModel(this, BrushManager);
             TransformPicker = new TransformViewModel(this, SelectionManager);
 
             Load();

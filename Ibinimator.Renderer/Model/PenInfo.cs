@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using SharpDX.Direct2D1;
 
 namespace Ibinimator.Renderer.Model
 {
@@ -12,7 +12,6 @@ namespace Ibinimator.Renderer.Model
         public PenInfo()
         {
             Dashes = new ObservableList<float>();
-            Style = new StrokeStyleProperties1();
         }
 
         public BrushInfo Brush
@@ -27,13 +26,37 @@ namespace Ibinimator.Renderer.Model
             set => Set(value);
         }
 
-        public StrokeStyleProperties1 Style
+        public float DashOffset
         {
-            get => Get<StrokeStyleProperties1>();
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        public LineCap LineCap
+        {
+            get => Get<LineCap>();
+            set => Set(value);
+        }
+
+        public LineJoin LineJoin
+        {
+            get => Get<LineJoin>();
+            set => Set(value);
+        }
+
+        public bool HasDashes
+        {
+            get => Get<bool>();
             set => Set(value);
         }
 
         public float Width
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
+        public float MiterLimit
         {
             get => Get<float>();
             set => Set(value);
