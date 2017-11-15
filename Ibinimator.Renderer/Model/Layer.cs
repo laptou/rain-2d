@@ -24,7 +24,7 @@ namespace Ibinimator.Renderer.Model
         ///     The entire layer graph starting at this layer,
         ///     as a list.
         /// </returns>
-        public virtual IEnumerable<Layer> Flatten()
+        public virtual IEnumerable<ILayer> Flatten()
         {
             yield return this;
         }
@@ -48,27 +48,22 @@ namespace Ibinimator.Renderer.Model
                         MathUtils.Invert(WorldTransform);
         }
 
-        public virtual Layer Find(Guid id) { return id == Id ? this : null; }
+        public virtual ILayer Find(Guid id) { return id == Id ? this : null; }
 
         public virtual RectangleF GetBounds(ICacheManager cache)
         {
             return new RectangleF(0, 0, Width, Height);
         }
 
-        public virtual IDisposable GetResource(ICacheManager cache, int id)
-        {
-            return null;
-        }
-
         public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
-            where T : Layer;
+            where T : ILayer;
 
-        public Layer Hit(ICacheManager cache, Vector2 point, bool includeMe)
+        public ILayer Hit(ICacheManager cache, Vector2 point, bool includeMe)
         {
             return Hit<Layer>(cache, point, includeMe);
         }
 
-        public abstract void Render(RenderContext target, ICacheManager cache);
+        public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
 
         public virtual string DefaultName => "Layer";
 
@@ -112,10 +107,10 @@ namespace Ibinimator.Renderer.Model
             set => Set(value);
         }
 
-        public Group Parent
+        public IContainerLayer Parent
         {
             get => Get<Group>();
-            protected internal set => Set(value);
+            set => Set(value);
         }
 
         public bool Selected

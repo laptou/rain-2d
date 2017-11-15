@@ -82,7 +82,7 @@ namespace Ibinimator.Service
             return pen;
         }
 
-        public void UnbindLayer(Layer layer)
+        public void UnbindLayer(ILayer layer)
         {
             if (layer is IFilledLayer filled)
             {
@@ -341,11 +341,6 @@ namespace Ibinimator.Service
         public RectangleF GetRelativeBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
-        }
-
-        public T GetResource<T>(ILayer layer, int id) where T : IDisposable
-        {
-            return (T) Get(_resources, (layer, id), l => l.layer.GetResource(this, id));
         }
 
         public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)

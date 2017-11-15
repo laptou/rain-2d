@@ -286,7 +286,7 @@ namespace Ibinimator.View.Control
 
                 ViewManager.Render(target, CacheManager);
 
-                ViewManager.Root.Render(target, CacheManager);
+                ViewManager.Root.Render(target, CacheManager, ViewManager);
 
                 if (SelectionManager == null) return;
 

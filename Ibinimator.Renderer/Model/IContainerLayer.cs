@@ -8,13 +8,12 @@ namespace Ibinimator.Renderer.Model
 {
     public interface IContainerLayer : ILayer
     {
-        ObservableList<Layer> SubLayers { get; }
+        ObservableList<ILayer> SubLayers { get; }
 
-        event EventHandler<Layer> LayerAdded;
-        event EventHandler<Layer> LayerRemoved;
+        event EventHandler<ILayer> LayerAdded;
+        event EventHandler<ILayer> LayerRemoved;
 
-        void Add(Layer child, int index = -1);
-        IEnumerable<Layer> Flatten();
-        void Remove(Layer child);
+        void Add(ILayer child, int index = -1);
+        void Remove(ILayer child);
     }
 }

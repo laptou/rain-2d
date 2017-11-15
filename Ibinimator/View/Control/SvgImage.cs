@@ -95,7 +95,7 @@ namespace Ibinimator.View.Control
             // don't scale towards center - they are not center-aligned in the first place!
             RenderContext.Transform(Matrix3x2.CreateScale(scale));
 
-            _document.Root.Render(RenderContext, CacheManager);
+            _document.Root.Render(RenderContext, CacheManager, ViewManager);
 
             RenderContext.End();
         }

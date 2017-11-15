@@ -273,7 +273,7 @@ namespace Ibinimator.Utility
             return svgDoc;
         }
 
-        public static IElement ToSvg(Layer layer)
+        public static IElement ToSvg(ILayer layer)
         {
             IGraphicalElement element = null;
 

@@ -156,13 +156,13 @@ namespace Ibinimator.Renderer.Model
 
         public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
-            if (!(this is T)) return null;
+            if (!(this is T t)) return default;
 
             point = Vector2.Transform(point, MathUtils.Invert(Transform));
 
             var layout = cache.GetTextLayout(this);
 
-            return layout.Hit(point) ? this as T : null;
+            return layout.Hit(point) ? t : default;
         }
 
         public void InsertText(int position, string text)
@@ -244,7 +244,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public override void Render(RenderContext target, ICacheManager cache)
+        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             target.Transform(Transform);
 

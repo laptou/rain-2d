@@ -43,26 +43,26 @@ namespace Ibinimator.Renderer.Model
 
         public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
-            if (!(this is T)) return null;
+            if (!(this is T t)) return default;
 
             var pt = Vector2.Transform(point, MathUtils.Invert(AbsoluteTransform));
 
             var bounds = cache.GetBounds(this);
 
-            if (!bounds.Contains(pt)) return null;
+            if (!bounds.Contains(pt)) return default;
 
             var geometry = cache.GetGeometry(this);
 
             if (Fill != null && geometry.FillContains(pt.X, pt.Y))
-                return this as T;
+                return t;
 
             if (Stroke != null && geometry.StrokeContains(pt.X, pt.Y, Stroke.Width))
-                return this as T;
+                return t;
 
-            return null;
+            return default;
         }
 
-        public override void Render(RenderContext target, ICacheManager cache)
+        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             target.Transform(Transform);
 

@@ -1,35 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer.Model
 {
-    public interface ILayer
+    public interface ILayer : INotifyPropertyChanged, INotifyPropertyChanging
     {
-        Matrix3x2 AbsoluteTransform { get; }
-        IGeometricLayer Clip { get; set; }
         string DefaultName { get; }
-        float Height { get; set; }
-        Guid Id { get; }
-        ILayer Mask { get; set; }
         string Name { get; set; }
-        float Opacity { get; set; }
-        Group Parent { get; }
-        bool Selected { get; set; }
-        Matrix3x2 Transform { get; }
-        float Width { get; set; }
+        Guid Id { get; }
+
+        Matrix3x2 AbsoluteTransform { get; }
         Matrix3x2 WorldTransform { get; }
+        Matrix3x2 Transform { get; }
+
+        float Height { get; set; }
+        float Width { get; set; }
+
+        IEnumerable<ILayer> Flatten();
+        ILayer Find(Guid id);
+        IContainerLayer Parent { get; set; }
+        IGeometricLayer Clip { get; set; }
+
+        ILayer Mask { get; set; }
+        float Opacity { get; set; }
+        bool Selected { get; set; }
 
         event EventHandler BoundsChanged;
 
         void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null);
-        Layer Find(Guid id);
         RectangleF GetBounds(ICacheManager cache);
-        IDisposable GetResource(ICacheManager cache, int id);
-        Layer Hit(ICacheManager cache, Vector2 point, bool includeMe);
-        T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : Layer;
-        void Render(RenderContext target, ICacheManager cache);
+
+        ILayer Hit(ICacheManager cache, Vector2 point, bool includeMe);
+        T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : ILayer;
+
+        void Render(RenderContext target, ICacheManager cache, IViewManager view);
     }
 }

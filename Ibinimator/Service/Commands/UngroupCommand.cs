@@ -9,8 +9,8 @@ namespace Ibinimator.Service.Commands
 {
     public class UngroupCommand : LayerCommandBase<IContainerLayer>
     {
-        private readonly Dictionary<Layer, IContainerLayer> _layers = new Dictionary<Layer, IContainerLayer>();
-        private readonly Dictionary<IContainerLayer, Group> _parents = new Dictionary<IContainerLayer, Group>();
+        private readonly Dictionary<ILayer, IContainerLayer> _layers = new Dictionary<ILayer, IContainerLayer>();
+        private readonly Dictionary<IContainerLayer, IContainerLayer> _parents = new Dictionary<IContainerLayer, IContainerLayer>();
 
         public UngroupCommand(long id, IContainerLayer[] targets) : base(id, targets)
         {

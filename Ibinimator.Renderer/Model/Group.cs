@@ -22,11 +22,11 @@ namespace Ibinimator.Renderer.Model
 
         #region IContainerLayer Members
 
-        public event EventHandler<Layer> LayerAdded;
+        public event EventHandler<ILayer> LayerAdded;
 
-        public event EventHandler<Layer> LayerRemoved;
+        public event EventHandler<ILayer> LayerRemoved;
 
-        public void Add(Layer child, int index = -1)
+        public void Add(ILayer child, int index = -1)
         {
             if (child.Parent != null)
                 throw new InvalidOperationException();
@@ -43,7 +43,7 @@ namespace Ibinimator.Renderer.Model
             LayerAdded?.Invoke(this, child);
         }
 
-        public override Layer Find(Guid id)
+        public override ILayer Find(Guid id)
         {
             if (id == Id) return this;
 
@@ -58,7 +58,8 @@ namespace Ibinimator.Renderer.Model
                     .FirstOrDefault(l => l != null);
         }
 
-        public override IEnumerable<Layer> Flatten()
+        /// <inheritdoc />
+        public override IEnumerable<ILayer> Flatten()
         {
             yield return this;
 
@@ -87,7 +88,7 @@ namespace Ibinimator.Renderer.Model
 
         public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
         {
-            T hit = null;
+            var hit = default(T);
 
             foreach (var layer in SubLayers)
             {
@@ -99,12 +100,12 @@ namespace Ibinimator.Renderer.Model
             }
 
             if (includeMe && hit != null)
-                return this is T ? this as T : hit;
+                return this is T t ? t : hit;
 
             return hit;
         }
 
-        public void Remove(Layer child)
+        public void Remove(ILayer child)
         {
             if (child.Parent != this)
                 throw new InvalidOperationException();
@@ -117,14 +118,14 @@ namespace Ibinimator.Renderer.Model
             LayerRemoved?.Invoke(this, child);
         }
 
-        public override void Render(RenderContext target, ICacheManager cache)
+        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             lock (this)
             {
                 target.Transform(Transform);
 
                 foreach (var layer in SubLayers.Reverse())
-                    layer.Render(target, cache);
+                    layer.Render(target, cache, view);
 
                 target.Transform(MathUtils.Invert(Transform));
             }
@@ -132,7 +133,7 @@ namespace Ibinimator.Renderer.Model
 
         public override string DefaultName => "Group";
 
-        public ObservableList<Layer> SubLayers { get; } = new ObservableList<Layer>();
+        public ObservableList<ILayer> SubLayers { get; } = new ObservableList<ILayer>();
 
         #endregion
     }
