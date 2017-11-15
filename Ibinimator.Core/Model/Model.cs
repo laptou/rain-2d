@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer.Model
+namespace Ibinimator.Core.Model
 {
     public abstract class Model
         : INotifyPropertyChanged,
@@ -51,7 +52,16 @@ namespace Ibinimator.Renderer.Model
 
         protected void RaisePropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            try
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                Debugger.Log(3, "Error-PropertyChanged-Handler", ex.Message);
+#endif
+            }
         }
 
         protected void RaisePropertyChanged<T>(Expression<Func<T>> propertyLambda)

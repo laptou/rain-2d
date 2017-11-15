@@ -10,7 +10,7 @@ using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Tools
 {
-    public class GradientTool : Model, ITool
+    public class GradientTool : Core.Model.Model, ITool
     {
         private readonly List<int> _selection = new List<int>();
         public GradientTool(IToolManager manager) { Manager = manager; }
@@ -108,9 +108,10 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { throw new NotImplementedException(); }
 
-        public IBitmap Cursor { get; }
+        public string Cursor { get; }
         public float CursorRotate { get; }
         public IToolManager Manager { get; }
+        public IToolOption[] Options { get; }
         public string Status { get; }
         public ToolType Type { get; }
 

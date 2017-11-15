@@ -129,6 +129,8 @@ namespace Ibinimator.Renderer.Model
                     .Select(layout.GetGeometryForGlyph)
                     .ToArray();
 
+            if (layout.Text.Length == 0) return null;
+
             return cache.Context.RenderContext.CreateGeometryGroup(geometries);
         }
 

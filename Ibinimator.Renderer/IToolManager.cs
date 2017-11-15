@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Renderer
 {

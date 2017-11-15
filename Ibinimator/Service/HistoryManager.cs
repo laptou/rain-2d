@@ -10,7 +10,7 @@ using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class HistoryManager : Model, IHistoryManager
+    public class HistoryManager : Core.Model.Model, IHistoryManager
     {
         private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
         private readonly Stack<IOperationCommand<ILayer>> _undo = new Stack<IOperationCommand<ILayer>>();

@@ -5,15 +5,16 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Tools
 {
-    public class ToolManager : Model, IToolManager
+    public class ToolManager : Core.Model.Model, IToolManager
     {
-        public ToolManager(ArtView artView, ISelectionManager selectionManager)
+        public ToolManager(IArtContext artView, ISelectionManager selectionManager)
         {
             Context = artView;
         }
@@ -22,9 +23,8 @@ namespace Ibinimator.Service.Tools
         {
             lock (this)
             {
-                var tool = Tool;
+                Tool?.Dispose();
                 Tool = null;
-                tool?.Dispose();
 
                 switch (type)
                 {
@@ -135,141 +135,5 @@ namespace Ibinimator.Service.Tools
         #endregion
     }
 
-    public enum ToolOptionType
-    {
-        Dropdown,
-        Number,
-        Switch,
-        MultiSwitch
-    }
-
-    public class ToolOption : Model
-    {
-        public ImageSource Icon
-        {
-            get => Get<ImageSource>();
-            set => Set(value);
-        }
-
-        public object Maximum
-        {
-            get => Get<object>();
-            set => Set(value);
-        }
-
-        public object Minimum
-        {
-            get => Get<object>();
-            set => Set(value);
-        }
-
-        public string Name
-        {
-            get => Get<string>();
-            set => Set(value);
-        }
-
-        public object[] Options
-        {
-            get => Get<object[]>();
-            set => Set(value);
-        }
-
-        public ToolOptionType Type
-        {
-            get => Get<ToolOptionType>();
-            set => Set(value);
-        }
-
-        public Unit Unit
-        {
-            get => Get<Unit>();
-            set => Set(value);
-        }
-
-        public object Value
-        {
-            get => Get<object>();
-            set => Set(value);
-        }
-
-        public void SetValue(object value)
-        {
-            SilentSet(value, nameof(Value));
-        }
-    }
-
-    public class ToolOption<T> : ToolOption
-    {
-        public ToolOption(string name, ToolOptionType type)
-        {
-            Name = name;
-            Type = type;
-        }
-
-        public new T Maximum
-        {
-            get => Get<T>();
-            set => Set(value);
-        }
-
-        public new T Minimum
-        {
-            get => Get<T>();
-            set => Set(value);
-        }
-
-        public new T[] Options
-        {
-            get => Get<T[]>();
-            set => Set(value);
-        }
-
-        public new ToolOptionType Type
-        {
-            get => Get<ToolOptionType>();
-            set => Set(value);
-        }
-
-        public new T Value
-        {
-            get => Get<T>();
-            set => Set(Validate(value));
-        }
-
-        public void SetValue(T value)
-        {
-            SilentSet(value, nameof(Value));
-        }
-
-        private T Validate(T value)
-        {
-            switch (System.Type.GetTypeCode(typeof(T)))
-            {
-                case TypeCode.Byte:
-                case TypeCode.DateTime:
-                case TypeCode.Decimal:
-                case TypeCode.Double:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.SByte:
-                case TypeCode.Single:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                    var comparable = (IComparable<T>)value;
-
-                    if (comparable.CompareTo(Minimum) < 0)
-                        return Minimum;
-
-                    if (comparable.CompareTo(Maximum) > 0)
-                        return Maximum;
-
-                    return value;
-                default:
-                    return value;
-            }
-        }
-    }
+    
 }

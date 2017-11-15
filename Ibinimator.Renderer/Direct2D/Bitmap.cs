@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
 
@@ -55,7 +56,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public Bitmap(D2D1.Bitmap bitmap)
         {
-            this._bmp = bitmap;
+            _bmp = bitmap;
         }
 
         public static implicit operator D2D1.Bitmap(Bitmap bmp) { return bmp._bmp; }

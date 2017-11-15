@@ -28,13 +28,14 @@ namespace Ibinimator.Service
         BottomRight = Bottom | Right
     }
 
-    public sealed class SelectionManager : Model, ISelectionManager
+    public sealed class SelectionManager : Core.Model.Model, ISelectionManager
     {
-        private IBitmap _cursor;
+        private string _cursor;
         private SelectionHandle _handle = 0;
         private (bool alt, bool shift, bool ctrl) _modifiers = (false, false, false);
         private (Vector2 position, bool down) _mouse = (Vector2.Zero, false);
         private float _deltaRotation = 0;
+        private float _accumRotation = 0;
         private Vector2 _deltaTranslation = Vector2.Zero;
 
         private RectangleF _selectionBounds;
@@ -233,7 +234,7 @@ namespace Ibinimator.Service
             if (hit != null && _handle == 0)
                 SetHandle(SelectionHandle.Translation);
 
-            if (!_modifiers.shift && _handle == 0)
+            if (!_modifiers.shift)
                 ClearSelection();
 
             if (hit != null)
@@ -253,30 +254,30 @@ namespace Ibinimator.Service
                 if (Math.Abs(localPos.X - SelectionBounds.Left) < 7.5)
                 {
                     if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
+                        Cursor = "cursor-resize-nwse";
 
                     if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
+                        Cursor = "cursor-resize-ew";
 
                     if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
+                        Cursor = "cursor-resize-nesw";
                 }
 
                 if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 7.5)
                     if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5 ||
                         Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-ns");
+                        Cursor = "cursor-resize-ns";
 
                 if (Math.Abs(localPos.X - SelectionBounds.Right) < 7.5)
                 {
                     if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-nesw");
+                        Cursor = "cursor-resize-nesw";
 
                     if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-ew");
+                        Cursor = "cursor-resize-ew";
 
                     if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
-                        Cursor = Context.CacheManager.GetBitmap("cursor-resize-nwse");
+                        Cursor = "cursor-resize-nwse";
                 }
 
                 var vertical = FromSelectionSpace(SelectionBounds.BottomCenter) -
@@ -286,7 +287,7 @@ namespace Ibinimator.Service
                                      Vector2.Normalize(vertical) * 15;
 
                 if (Vector2.Distance(rotationHandle, pos) < 7.5)
-                    Cursor = Context.CacheManager.GetBitmap("cursor-rotate");
+                    Cursor = "cursor-rotate";
             }
 
             #endregion
@@ -316,18 +317,46 @@ namespace Ibinimator.Service
 
                 #region segmented rotation
 
-                if (_modifiers.shift &&
-                    _deltaRotation % MathUtils.PiOverFour >= MathUtils.PiOverFour / 2)
-                    rotate = MathUtils.PiOverFour - _deltaRotation % MathUtils.PiOverFour;
+                if (_modifiers.shift)
+                {
+                    GuideManager.AddGuide(
+                        new Guide(
+                            0,
+                            true,
+                            origin,
+                            _selectionTransform.GetRotation(),
+                            GuideType.Rotation));
+
+                    _accumRotation += rotate;
+                    rotate = 0;
+
+                    // setting rotate to 0 means that the transformation matrix is
+                    // identity, which will cause rendering to stop so we invalidate
+                    // the matrix
+                    Context.InvalidateSurface();
+
+                    if (Math.Abs(_accumRotation) > MathUtils.PiOverFour / 2)
+                    {
+                        var delta = Math.Sign(_accumRotation) *
+                                    MathUtils.PiOverFour;
+
+                        rotate = delta;
+                        _accumRotation -= delta;
+                    }
+                }
 
                 #endregion
             }
 
             #endregion
 
+            #region translation
+
             if (_handle == SelectionHandle.Translation)
             {
                 translate = pos - _mouse.position;
+
+                #region snapped translation
 
                 if (_modifiers.shift)
                 {
@@ -338,22 +367,25 @@ namespace Ibinimator.Service
                     var origin = center - _deltaTranslation;
 
                     var localXaxis = localCenter + Vector2.UnitX;
+                    var localYaxis = localCenter + Vector2.UnitY;
                     var xaxis = FromSelectionSpace(localXaxis);
+                    var yaxis = FromSelectionSpace(localYaxis);
 
-                    Vector2 axisX;
+                    Vector2 axisX, axisY;
 
                     if (_modifiers.alt) // local axes
+                    {
                         axisX = xaxis - center;
-                    else axisX = Vector2.UnitX;
-
-                    var axisY = new Vector2(-axisX.Y, axisX.X);
+                        axisY = yaxis - center;
+                    }
+                    else (axisX, axisY) = (Vector2.UnitX, Vector2.UnitY);
 
                     GuideManager.AddGuide(
                         new Guide(
                             0,
                             true,
                             origin,
-                            MathUtils.Angle(axisX, false),
+                            MathUtils.Angle(axisX, true),
                             GuideType.Position));
 
                     GuideManager.AddGuide(
@@ -361,15 +393,19 @@ namespace Ibinimator.Service
                             1,
                             true,
                             origin,
-                            MathUtils.Angle(axisY, false),
+                            MathUtils.Angle(axisY, true),
                             GuideType.Position));
 
                     var dest = GuideManager.LinearSnap(pos, origin, GuideType.Position)
-                                       .Point;
+                                           .Point;
 
                     translate = dest - origin - _deltaTranslation;
                 }
+
+                #endregion
             }
+
+            #endregion
 
             #region scaling
 
@@ -488,50 +524,83 @@ namespace Ibinimator.Service
 
             target.Transform(MathUtils.Invert(SelectionTransform));
 
+            // render guides
             foreach (var guide in GuideManager.GetGuides(GuideType.All))
             {
-                var origin = guide.Origin;
-                var slope = Math.Tan(guide.Angle);
-                var diagonal = target.Height / target.Width;
-                Vector2 p1, p2;
+                // target.PushEffect(target.CreateEffect<IGlowEffect>());
 
-                if (slope > diagonal)
-                {
-                    p1 = new Vector2(
-                        (float) (origin.X + (origin.Y - target.Height) / slope),
-                        target.Height);
-                    p2 = new Vector2((float) (origin.X + origin.Y / slope), 0);
-                }
-                else
-                {
-                    p1 = new Vector2(
-                        target.Width,
-                        (float) (origin.Y + (origin.X - target.Width) * slope));
-                    p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
-                }
-
-                target.PushEffect(target.CreateEffect<IGlowEffect>());
-
-                IBrush brush = null;
+                IBrush brush;
 
                 switch (guide.Type)
                 {
                     case GuideType.Proportion:
-                        brush = cache.GetBrush("A4");
+                        brush = cache.GetBrush("A1");
                         break;
                     case GuideType.Position:
                         brush = cache.GetBrush("A2");
                         break;
                     case GuideType.Rotation:
+                        brush = cache.GetBrush("A3");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                using (var pen = target.CreatePen(2, brush))
-                    target.DrawLine(p1, p2, pen);
+                if (guide.Type.HasFlag(GuideType.Linear))
+                {
+                    var origin = guide.Origin;
+                    var slope = Math.Tan(guide.Angle);
+                    var diagonal = target.Height / target.Width;
+                    Vector2 p1, p2;
 
-                target.PopEffect();
+                    if (slope > diagonal)
+                    {
+                        p1 = new Vector2(
+                            (float) (origin.X + (origin.Y - target.Height) / slope),
+                            target.Height);
+                        p2 = new Vector2((float) (origin.X + origin.Y / slope), 0);
+                    }
+                    else
+                    {
+                        p1 = new Vector2(
+                            target.Width,
+                            (float) (origin.Y + (origin.X - target.Width) * slope));
+                        p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
+                    }
+
+                    using (var pen = target.CreatePen(2, brush))
+                        target.DrawLine(p1, p2, pen);
+                }
+
+                if (guide.Type.HasFlag(GuideType.Radial))
+                {
+                    var origin = guide.Origin;
+                    var axes = new[]
+                    {
+                        guide.Angle,
+                        guide.Angle + MathUtils.PiOverFour * 1,
+                        guide.Angle + MathUtils.PiOverFour * 2,
+                        guide.Angle + MathUtils.PiOverFour * 3
+                    };
+
+                    using (var pen = target.CreatePen(1, brush))
+                    {
+                        target.DrawEllipse(origin, 20, 20, pen);
+
+                        foreach (var x in axes)
+                        target.DrawLine(origin + MathUtils.Angle(x) * 20,
+                                        origin - MathUtils.Angle(x) * 20,
+                                        pen);
+                    }
+
+                    using (var pen = target.CreatePen(2, brush))
+                        target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25,
+                                        origin,
+                                        pen);
+
+                }
+
+                // target.PopEffect();
             }
 
             GuideManager.ClearVirtualGuides();
@@ -543,10 +612,10 @@ namespace Ibinimator.Service
         }
 
         public void Transform(
-            Vector2 localScale,
-            Vector2 globalTranslate,
-            float globalRotate,
-            float localShear,
+            Vector2 scale,
+            Vector2 translate,
+            float rotate,
+            float shear,
             Vector2 relativeOrigin)
         {
             var localOrigin = SelectionBounds.TopLeft +
@@ -555,32 +624,29 @@ namespace Ibinimator.Service
 
             // order doesn't really matter since only one of 
             // these will be non-default at a time
-            var local =
-                Matrix3x2.CreateTranslation(-localOrigin) *
-                Matrix3x2.CreateScale(localScale) *
-                Matrix3x2.CreateSkew(localShear, 0) *
-                Matrix3x2.CreateTranslation(localOrigin);
 
-            var global =
+            var transform =
+                MathUtils.Invert(SelectionTransform) *
+                Matrix3x2.CreateScale(scale, localOrigin) *
+                Matrix3x2.CreateSkew(shear, 0, localOrigin) *
+                SelectionTransform *
                 Matrix3x2.CreateTranslation(-origin) *
-                Matrix3x2.CreateRotation(globalRotate) *
-                Matrix3x2.CreateTranslation(globalTranslate) *
+                Matrix3x2.CreateRotation(rotate) *
+                Matrix3x2.CreateTranslation(translate) *
                 Matrix3x2.CreateTranslation(origin);
 
-            SelectionTransform = local *
-                                 SelectionTransform *
-                                 global;
+            SelectionTransform = SelectionTransform *
+                                 transform;
 
-            _deltaRotation += globalRotate;
-            _deltaTranslation += globalTranslate;
+            _deltaRotation += rotate;
+            _deltaTranslation += translate;
 
-            if (local.IsIdentity && global.IsIdentity) return;
+            if (transform.IsIdentity) return;
 
             var command = new TransformCommand(
                 Context.HistoryManager.Position + 1,
                 Selection.ToArray(),
-                local,
-                global);
+                global: transform);
 
             // perform the operation
             command.Do(Context);
@@ -592,9 +658,9 @@ namespace Ibinimator.Service
                 current.Targets.SequenceEqual(command.Targets))
                 Context.HistoryManager.Replace(new TransformCommand(
                                                    Context.HistoryManager.Position + 1,
-                                                   Selection.ToArray<ILayer>(),
-                                                   current.Local * local,
-                                                   current.Global * global));
+                                                   Selection.ToArray(),
+                                                   current.Local,
+                                                   current.Global * transform));
             else
                 Context.HistoryManager.Push(command);
 
@@ -629,7 +695,7 @@ namespace Ibinimator.Service
 
         public IArtContext Context { get; }
 
-        public IBitmap Cursor
+        public string Cursor
         {
             get => _cursor;
             set
@@ -667,8 +733,10 @@ namespace Ibinimator.Service
     public enum GuideType
     {
         All = 0,
-        Proportion = 1 << 0,
-        Position = 1 << 1,
-        Rotation = 1 << 2
+        Linear = 1 << -1,
+        Radial = 1 << -2,
+        Proportion = 1 << 0 | Linear,
+        Position = 1 << 1 | Linear,
+        Rotation = 1 << 2 | Radial
     }
 }

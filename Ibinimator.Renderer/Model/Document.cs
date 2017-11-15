@@ -9,7 +9,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
-    public class Document : Model
+    public class Document : Core.Model.Model
     {
         public RectangleF Bounds
         {

@@ -7,7 +7,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
-    public class PenInfo : Model
+    public class PenInfo : Core.Model.Model
     {
         public PenInfo()
         {

@@ -7,7 +7,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
+using Ibinimator.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
@@ -18,7 +20,7 @@ using FontWeight = Ibinimator.Core.Model.FontWeight;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class TextTool : Model, ITool
+    public sealed class TextTool : Core.Model.Model, ITool
     {
         private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
@@ -102,7 +104,7 @@ namespace Ibinimator.Service.Tools
                 Update();
             };
 
-            _fontSizeOption = new ToolOption<float>("Font Size", ToolOptionType.Number)
+            _fontSizeOption = new ToolOption<float>("Font Size", ToolOptionType.Length)
             {
                 Options = new float[]
                 {
@@ -188,7 +190,7 @@ namespace Ibinimator.Service.Tools
                 Update();
             };
 
-            Options = new ToolOption[]
+            Options = new IToolOption[]
             {
                 _fontFamilyOption,
                 _fontSizeOption,
@@ -202,7 +204,7 @@ namespace Ibinimator.Service.Tools
 
         public Text CurrentText => Context.SelectionManager.Selection.LastOrDefault() as Text;
 
-        public ToolOption[] Options { get; }
+        public IToolOption[] Options { get; }
 
         private IArtContext Context => Manager.Context;
 
@@ -323,6 +325,7 @@ namespace Ibinimator.Service.Tools
             _fontFaceDescriptions.Clear();
 
             if (_dwFontCollection.FindFamilyName(_fontFamilyOption.Value, out var index))
+            {
                 using (var dwFamily = _dwFontCollection.GetFontFamily(index))
                 {
                     for (var i = 0; i < dwFamily.FontCount; i++)
@@ -336,6 +339,7 @@ namespace Ibinimator.Service.Tools
                                 (FontWeight) dwFont.Weight);
                         }
                 }
+            }
 
             _fontNameOption.Options = fontFaces.ToArray();
         }
@@ -368,7 +372,6 @@ namespace Ibinimator.Service.Tools
         public void Dispose()
         {
             _dwFontCollection?.Dispose();
-            Cursor?.Dispose();
         }
 
         public bool KeyDown(Key key, ModifierKeys mods)
@@ -764,7 +767,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public IBitmap Cursor { get; private set; }
+        public string Cursor { get; private set; }
 
         public float CursorRotate { get; private set; }
 

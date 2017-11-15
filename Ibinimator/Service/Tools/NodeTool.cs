@@ -12,7 +12,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class NodeTool : Model, ITool
+    public class NodeTool : Core.Model.Model, ITool
     {
         private readonly List<int> _selection = new List<int>();
 
@@ -29,8 +29,8 @@ namespace Ibinimator.Service.Tools
         public Shape CurrentShape =>
             Context.SelectionManager.Selection.LastOrDefault() as Shape;
 
-        public ToolOption[] Options =>
-            new ToolOption[0]; // TODO: add actual tool options
+        public IToolOption[] Options =>
+            new IToolOption[0]; // TODO: add actual tool options
 
         private IArtContext Context => Manager.Context;
 
@@ -481,7 +481,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { return false; }
 
-        public IBitmap Cursor => null;
+        public string Cursor => null;
 
         public float CursorRotate => 0;
 

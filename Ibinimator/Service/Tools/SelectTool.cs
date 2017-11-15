@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
@@ -11,31 +12,61 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class SelectTool : Model, ITool
+    public sealed class SelectTool : Core.Model.Model, ITool
     {
+        private bool _down;
+
+        private readonly Dictionary<string, string> _statuses = new Dictionary<string, string>
+        {
+            {
+                "default",
+                "<b>Alt Click</b> to select-behind. " +
+                "<b>Shift Click</b> to multi-select."
+            },
+            {
+                "selection",
+                "<b>{0}</b> layer(s) selected " +
+                "[{1}]"
+            },
+            {
+                "transform",
+                "<b>Shift-Drag</b> for constrained movement. " +
+                "<b>Alt-Shift-Drag</b> for locally constrained movement."
+            }
+        };
+
         public SelectTool(IToolManager toolManager, ISelectionManager selectionManager)
         {
             Manager = toolManager;
 
-            Status =
-                "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
+            Status = _statuses["default"];
 
-            selectionManager.Updated += (sender, args) =>
-            {
-                var names = selectionManager
-                    .Selection.Select(l => l.Name ?? l.DefaultName)
-                    .ToArray();
-
-                if (names.Length == 0)
-                    Status =
-                        "<b>Alt Click</b> to select-behind, <b>Shift Click</b> to multi-select.";
-                else
-                    Status = $"<b>{names.Length}</b> layer(s) selected " +
-                             $"[{string.Join(", ", names.Take(6))}{(names.Length > 6 ? "..." : "")}]";
-            };
+            selectionManager.Updated += (sender, args) => { UpdateStatus(); };
         }
 
-        public ToolOption[] Options => new ToolOption[0];
+        private void UpdateStatus()
+        {
+            if (Selection.Count > 0)
+            {
+                if (!_down)
+                {
+                    var names = Selection.Select(l => l.Name ?? l.DefaultName)
+                                         .ToArray();
+
+                    Status = string.Format(
+                        _statuses["selection"],
+                        names.Length,
+                        string.Join(", ", names));
+                }
+                else Status = _statuses["transform"];
+
+                return;
+            }
+
+            Status = _statuses["default"];  
+        }
+
+        public IToolOption[] Options => new IToolOption[0];
 
         private IList<ILayer> Selection => Manager.Context.SelectionManager.Selection;
 
@@ -130,11 +161,21 @@ namespace Ibinimator.Service.Tools
 
         public bool KeyUp(Key key, ModifierKeys modifier) { return false; }
 
-        public bool MouseDown(Vector2 pos) { return false; }
+        public bool MouseDown(Vector2 pos)
+        {
+            _down = true;
+            UpdateStatus();
+            return false;
+        }
 
         public bool MouseMove(Vector2 pos) { return false; }
 
-        public bool MouseUp(Vector2 pos) { return false; }
+        public bool MouseUp(Vector2 pos)
+        {
+            _down = false;
+            UpdateStatus();
+            return false;
+        }
 
         public void Render(RenderContext target, ICacheManager cache)
         {
@@ -169,7 +210,7 @@ namespace Ibinimator.Service.Tools
             handles.Add(top - Vector2.Normalize(bottom - top) * 15);
 
             var zoom = Vector2.One; // MathUtils.GetScale(target.Transform);
-            
+
             using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
                 foreach (var v in handles)
@@ -182,7 +223,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { return false; }
 
-        public IBitmap Cursor => Manager.Context.SelectionManager.Cursor;
+        public string Cursor => Manager.Context.SelectionManager.Cursor;
 
         public float CursorRotate =>
             Manager.Context.SelectionManager.SelectionTransform.GetRotation();

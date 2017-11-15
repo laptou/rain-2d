@@ -256,7 +256,7 @@ namespace Ibinimator.View.Control
             // quickfix b/c asychronous events mean we can't use Handled
             // which creates the problem of backspace registering as 
             // text input for some reason
-            if (e.Text == "\b")
+            if (e.Text == "\b" || e.Text == "")
             {
                 _eventFlag.Set();
                 return;
@@ -308,7 +308,7 @@ namespace Ibinimator.View.Control
                     Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
                     Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
 
-                target.DrawBitmap(ToolManager.Tool.Cursor);
+                target.DrawBitmap(CacheManager.GetBitmap(ToolManager.Tool.Cursor));
             }
         }
 

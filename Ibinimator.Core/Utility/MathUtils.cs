@@ -142,7 +142,7 @@ namespace Ibinimator.Core.Utility
 
         public static float GetRotation(this Matrix3x2 m)
         {
-            return (float) Math.Atan2(m.M12, m.M11);
+            return Wrap((float) Math.Atan2(m.M12, m.M11), TwoPi);
         }
 
         public static Vector2 GetScale(this Matrix3x2 m)
@@ -154,7 +154,7 @@ namespace Ibinimator.Core.Utility
 
         public static float GetShear(this Matrix3x2 m)
         {
-            return (float) Math.Atan2(m.M22, m.M21) - PiOverTwo - GetRotation(m);
+            return Wrap((float) Math.Atan2(m.M22, m.M21) - PiOverTwo, TwoPi) - GetRotation(m);
         }
 
         public static Matrix3x2 Invert(Matrix3x2 mat)

@@ -8,7 +8,7 @@ using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.ViewModel
 {
-    public class DelegateCommand<T> : Model, ICommand
+    public class DelegateCommand<T> : Core.Model.Model, ICommand
     {
         private Action<T> _action;
         private Predicate<T> _predicate;

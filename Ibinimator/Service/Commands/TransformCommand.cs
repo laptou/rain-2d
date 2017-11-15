@@ -15,10 +15,10 @@ namespace Ibinimator.Service.Commands
         public Matrix3x2 Global { get; }
 
         public TransformCommand(long id, ILayer[] targets, 
-            Matrix3x2 local, Matrix3x2 global) : base(id, targets)
+            Matrix3x2? local = null, Matrix3x2? global = null) : base(id, targets)
         {
-            Local = local;
-            Global = global;
+            Local = local ?? Matrix3x2.Identity;
+            Global = global ?? Matrix3x2.Identity;
         }
 
         public override string Description => $"Transformed {Targets.Length} layer(s)";

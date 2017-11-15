@@ -12,7 +12,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class PencilTool : Model, ITool
+    public sealed class PencilTool : Core.Model.Model, ITool
     {
         private bool _alt;
         private bool _down;
@@ -27,7 +27,7 @@ namespace Ibinimator.Service.Tools
 
         public Path CurrentPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
 
-        public ToolOption[] Options => new ToolOption[0]; // TODO: add actual tool options
+        public IToolOption[] Options => new IToolOption[0]; // TODO: add actual tool options
 
         private IArtContext Context => Manager.Context;
 
@@ -250,7 +250,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public IBitmap Cursor => null;
+        public string Cursor => null;
 
         public float CursorRotate => 0;
 

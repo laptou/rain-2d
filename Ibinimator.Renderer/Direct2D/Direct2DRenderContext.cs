@@ -64,10 +64,11 @@ namespace Ibinimator.Renderer.Direct2D
             float endX,
             float endY)
         {
-            return new LinearGradientBrush(Target,
-                                           stops,
-                                           new RawVector2(startX, startY),
-                                           new RawVector2(endX, endY));
+            return new LinearGradientBrush(
+                Target,
+                stops,
+                new RawVector2(startX, startY),
+                new RawVector2(endX, endY));
         }
 
         public override IRadialGradientBrush CreateBrush(
@@ -79,11 +80,12 @@ namespace Ibinimator.Renderer.Direct2D
             float focusX,
             float focusY)
         {
-            return new RadialGradientBrush(Target,
-                                           stops,
-                                           new RawVector2(centerX, centerY),
-                                           new RawVector2(radiusX, radiusY),
-                                           new RawVector2(focusX, focusY));
+            return new RadialGradientBrush(
+                Target,
+                stops,
+                new RawVector2(centerX, centerY),
+                new RawVector2(radiusX, radiusY),
+                new RawVector2(focusX, focusY));
         }
 
         public override IGeometry CreateEllipseGeometry(
@@ -92,22 +94,26 @@ namespace Ibinimator.Renderer.Direct2D
             float rx,
             float ry)
         {
-            return new Geometry(Target,
-                                new D2D.EllipseGeometry(
-                                    Factory2D,
-                                    new D2D.Ellipse(
-                                        new RawVector2(cx, cy),
-                                        rx,
-                                        ry))
-                                {
-                                    FlatteningTolerance = 0.01f
-                                });
+            return new Geometry(
+                Target,
+                new D2D.EllipseGeometry(
+                    Factory2D,
+                    new D2D.Ellipse(
+                        new RawVector2(cx, cy),
+                        rx,
+                        ry))
+                {
+                    FlatteningTolerance = 0.01f
+                });
         }
 
         public override IGeometry CreateGeometry() { return new Geometry(Target); }
 
         public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
         {
+            if(geometries.Length == 0)
+                return new NullGeometry();
+
             return new Geometry(Target, geometries);
         }
 
@@ -134,12 +140,13 @@ namespace Ibinimator.Renderer.Direct2D
             float h)
         {
             return new Geometry(Target,
-                                new D2D.RectangleGeometry(Factory2D,
-                                                          new RawRectangleF(
-                                                              x,
-                                                              y,
-                                                              x + w,
-                                                              y + h)));
+                                new D2D.RectangleGeometry(
+                                    Factory2D,
+                                    new RawRectangleF(
+                                        x,
+                                        y,
+                                        x + w,
+                                        y + h)));
         }
 
         public override ITextLayout CreateTextLayout()
@@ -161,7 +168,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             var d2dEffect = _effects.Pop();
 
-            if(_effects.Count == 0)
+            if (_effects.Count == 0)
                 _target.QueryInterface<D2D.DeviceContext>()
                        .DrawImage(d2dEffect.GetOutput());
         }
@@ -341,7 +348,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public float Radius
         {
-            get => blur.GetFloatValue((int)D2D.GaussianBlurProperties.StandardDeviation);
+            get => blur.GetFloatValue((int) D2D.GaussianBlurProperties.StandardDeviation);
             set => blur.SetValue((int) D2D.GaussianBlurProperties.StandardDeviation,
                                  value);
         }

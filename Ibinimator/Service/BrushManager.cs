@@ -10,7 +10,7 @@ using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class BrushManager : Model, IBrushManager
+    public class BrushManager : Core.Model.Model, IBrushManager
     {
         private bool _selecting;
 

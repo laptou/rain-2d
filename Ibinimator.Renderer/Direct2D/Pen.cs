@@ -9,7 +9,7 @@ using LineJoin = Ibinimator.Core.Model.LineJoin;
 
 namespace Ibinimator.Renderer.Direct2D
 {
-    internal class Pen : PropertyChangedBase, IPen
+    internal class Pen : ResourceBase, IPen
     {
         private readonly RenderTarget _target;
         private Brush _brush;
@@ -84,7 +84,13 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region IPen Members
 
-        public void Dispose() { Style.Dispose(); }
+        public override void Dispose()
+        {
+            Style.Dispose();
+            base.Dispose();
+        }
+
+        public override void Optimize() { throw new NotImplementedException(); }
 
         public IList<float> Dashes { get; }
 

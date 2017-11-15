@@ -7,13 +7,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Color = System.Windows.Media.Color;
 
 namespace Ibinimator.Service
 {
-    public class CacheManager : Model, ICacheManager
+    public class CacheManager : Core.Model.Model, ICacheManager
     {
         private readonly Dictionary<string, IBitmap> _bitmaps =
             new Dictionary<string, IBitmap>();
@@ -138,9 +139,8 @@ namespace Ibinimator.Service
                     (value as ResourceBase)?.Disposed != true &&
                     value != null)
                     return value;
-
-                lock (_renderLock)
-                    return dict[key] = fallback(key);
+                
+                return dict[key] = fallback(key);
             }
         }
 
@@ -345,7 +345,7 @@ namespace Ibinimator.Service
 
         public T GetResource<T>(ILayer layer, int id) where T : IDisposable
         {
-            return (T) Get(_resources, (layer, id), l => l.Item1.GetResource(this, id));
+            return (T) Get(_resources, (layer, id), l => l.layer.GetResource(this, id));
         }
 
         public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)

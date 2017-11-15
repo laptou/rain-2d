@@ -82,7 +82,7 @@ namespace Ibinimator.ViewModel
         #endregion
     }
 
-    public sealed class NotifyTaskCompletion : Model, IProgress<double>
+    public sealed class NotifyTaskCompletion : Core.Model.Model, IProgress<double>
     {
         public NotifyTaskCompletion(Task task)
         {

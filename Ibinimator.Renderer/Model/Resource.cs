@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Renderer.Model
 {
-    public abstract class Resource : Model
+    public abstract class Resource : Core.Model.Model
     {
         #region ResoureScope enum
 

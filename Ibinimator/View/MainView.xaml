@@ -369,14 +369,14 @@
                               util:Helper.Accent="{DynamicResource A4}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
+                            <VirtualizingStackPanel Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplateSelector>
                         <util:EnumTemplateSelector PropertyName="Type" />
                     </ItemsControl.ItemTemplateSelector>
                     <ItemsControl.Resources>
-                        <DataTemplate x:Key="{x:Static tools:ToolOptionType.Dropdown}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Name}" />
@@ -398,11 +398,10 @@
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static tools:ToolOptionType.Number}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}">
                             <StackPanel Orientation="Horizontal" Margin="16,0">
                                 <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" />
-                                    :
+                                    <Run Text="{Binding Name}" />:
                                 </TextBlock>
                                 <ComboBox x:Name="Dropdown" ItemsSource="{Binding Options}"
                                           Margin="8,0" IsEditable="True">
@@ -435,19 +434,19 @@
                 <ToolBar ToolBarTray.IsLocked="True" Background="{x:Null}" Margin="0" Padding="0"
                          VerticalAlignment="Stretch">
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static renderer:ToolType.Select}, Mode=TwoWay}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Select}, Mode=TwoWay}"
                                  ToolTip="Select">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/tool-select.svg"
                                           Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static renderer:ToolType.Node}, Mode=TwoWay}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Node}, Mode=TwoWay}"
                                  ToolTip="Node">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/tool-node.svg"
                                           Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static renderer:ToolType.Pencil}, Mode=TwoWay}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Pencil}, Mode=TwoWay}"
                                  ToolTip="Pencil">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/tool-pencil.svg"
                                           Style="{DynamicResource Icon}" />
@@ -458,7 +457,7 @@
                                           Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static renderer:ToolType.Text}, Mode=TwoWay}"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Text}, Mode=TwoWay}"
                                  ToolTip="Text">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/tool-text.svg"
                                           Style="{DynamicResource Icon}" />
@@ -474,7 +473,7 @@
                                           Style="{DynamicResource Icon}" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" Style="{StaticResource ToolbarButton}" ToolTip="Gradient"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static renderer:ToolType.Gradient}, Mode=TwoWay}">
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Gradient}, Mode=TwoWay}">
                         <control:SvgImage Source="/Ibinimator;component/Resources/Icon/tool-gradient.svg"
                                           Style="{DynamicResource Icon}" />
                     </RadioButton>
@@ -1090,6 +1089,7 @@
                                 </Grid>
                                 <Border.RenderTransform>
                                     <TransformGroup>
+                                        <SkewTransform x:Name="ShearTransform" />
                                         <RotateTransform x:Name="RotateTransform" />
                                     </TransformGroup>
                                 </Border.RenderTransform>
@@ -1097,10 +1097,30 @@
                                     <EventTrigger RoutedEvent="Binding.TargetUpdated">
                                         <BeginStoryboard>
                                             <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="RotateTransform"
-                                                                 Storyboard.TargetProperty="Angle"
-                                                                 To="{Binding TransformPicker.Rotation, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}, NotifyOnTargetUpdated=True}"
-                                                                 Duration="0:0:0.25">
+                                                <DoubleAnimation
+                                                    Storyboard.TargetName="RotateTransform"
+                                                    Storyboard.TargetProperty="Angle"
+                                                    To="{Binding TransformPicker.Rotation, 
+                                                        Converter={StaticResource AngleConverter}, 
+                                                        ConverterParameter={x:Static model:Unit.Degrees}, 
+                                                        NotifyOnTargetUpdated=True}"
+                                                    Duration="0:0:0.25">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut" />
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation
+                                                    Storyboard.TargetName="ShearTransform"
+                                                    Storyboard.TargetProperty="AngleX"
+                                                    To="{Binding TransformPicker.Shear,
+                                                        Converter={StaticResource AngleConverter}, 
+                                                        ConverterParameter={x:Static model:Unit.Degrees}, 
+                                                        NotifyOnTargetUpdated=True}"
+                                                    Duration="0:0:0.25">
                                                     <DoubleAnimation.EasingFunction>
                                                         <CubicEase EasingMode="EaseOut" />
                                                     </DoubleAnimation.EasingFunction>

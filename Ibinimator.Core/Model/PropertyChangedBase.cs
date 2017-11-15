@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Ibinimator.Core.Model
 {
     public class PropertyChangedBase : INotifyPropertyChanged
     {
