@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Renderer
 {
@@ -19,5 +20,7 @@ namespace Ibinimator.Renderer
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
         bool TextInput(string text);
+
+        void RaiseStatus(Status status);
     }
 }

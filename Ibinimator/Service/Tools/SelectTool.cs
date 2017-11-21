@@ -39,7 +39,7 @@ namespace Ibinimator.Service.Tools
         {
             Manager = toolManager;
 
-            Status = _statuses["default"];
+            toolManager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
 
             selectionManager.Updated += (sender, args) => { UpdateStatus(); };
         }
@@ -53,17 +53,19 @@ namespace Ibinimator.Service.Tools
                     var names = Selection.Select(l => l.Name ?? l.DefaultName)
                                          .ToArray();
 
-                    Status = string.Format(
+                    var msg = string.Format(
                         _statuses["selection"],
                         names.Length,
                         string.Join(", ", names));
+
+                    Manager.RaiseStatus(new Status(Status.StatusType.Info, msg));
                 }
-                else Status = _statuses["transform"];
+                else Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["transform"]));
 
                 return;
             }
 
-            Status = _statuses["default"];  
+            Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
         }
 
         public IToolOption[] Options => new IToolOption[0];
@@ -78,7 +80,7 @@ namespace Ibinimator.Service.Tools
                 return;
 
             var targets =
-                Selection.SelectMany(l => (l as Layer).Flatten())
+                Selection.SelectMany(l => l.Flatten())
                          .OfType<IFilledLayer>()
                          .ToArray();
 
@@ -110,7 +112,7 @@ namespace Ibinimator.Service.Tools
                 return;
 
             var targets =
-                Selection.SelectMany(l => (l as Layer).Flatten())
+                Selection.SelectMany(l => l.Flatten())
                          .OfType<IStrokedLayer>()
                          .ToArray();
 
@@ -177,7 +179,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public void Render(RenderContext target, ICacheManager cache)
+        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             var rect = Manager.Context.SelectionManager.SelectionBounds;
 
@@ -207,34 +209,26 @@ namespace Ibinimator.Service.Tools
 
             var bottom = Transform((x1 + x2) / 2, y2);
             handles.Add(bottom);
-            handles.Add(top - Vector2.Normalize(bottom - top) * 15);
-
-            var zoom = Vector2.One; // MathUtils.GetScale(target.Transform);
+            handles.Add(top - Vector2.Normalize(bottom - top) * 15 / view.Zoom);
 
             using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
             {
                 foreach (var v in handles)
                 {
-                    target.FillEllipse(v, 5f / zoom.Y, 5f / zoom.X, cache.GetBrush("A1"));
-                    target.DrawEllipse(v, 5f / zoom.Y, 5f / zoom.X, pen);
+                    target.FillEllipse(v, 5f / view.Zoom, 5f / view.Zoom, cache.GetBrush("A1"));
+                    target.DrawEllipse(v, 5f / view.Zoom, 5f / view.Zoom, pen);
                 }
             }
         }
 
         public bool TextInput(string text) { return false; }
 
-        public string Cursor => Manager.Context.SelectionManager.Cursor;
+        public string CursorImage => Manager.Context.SelectionManager.Cursor;
 
         public float CursorRotate =>
             Manager.Context.SelectionManager.SelectionTransform.GetRotation();
 
         public IToolManager Manager { get; }
-
-        public string Status
-        {
-            get => Get<string>();
-            private set => Set(value);
-        }
 
         public ToolType Type => ToolType.Select;
 

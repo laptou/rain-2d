@@ -62,9 +62,8 @@ namespace Ibinimator.Renderer.Model
             index = 0;
 
             do
-            {
                 index++;
-            } while (index < sorted.Length && sorted[index].Range.Index <= position);
+            while (index < sorted.Length && sorted[index].Range.Index <= position);
 
             var format = sorted.ElementAtOrDefault(--index);
 
@@ -250,7 +249,7 @@ namespace Ibinimator.Renderer.Model
 
             var layout = cache.GetTextLayout(this);
 
-            for (var i = 0; i < layout.GetGlyphCount();)
+            for (var i = 0; i < layout.GetGlyphCount(); i += layout.GetGlyphCountForGeometry(i))
             {
                 var geom = layout.GetGeometryForGlyph(i);
                 var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
@@ -260,9 +259,7 @@ namespace Ibinimator.Renderer.Model
                     target.FillGeometry(geom, fill);
 
                 if (pen?.Brush != null)
-                    target.DrawGeometry(geom, pen);
-
-                i += layout.GetGlyphCountForGeometry(i);
+                    target.DrawGeometry(geom, pen, pen.Width * view.Zoom);
             }
 
             target.Transform(MathUtils.Invert(Transform));

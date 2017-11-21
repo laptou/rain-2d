@@ -20,14 +20,31 @@ namespace Ibinimator.Renderer.WPF
 
         public Pen(Brush brush) : this(1, brush) { }
 
-        public Pen(float width, Brush brush) : this(width, brush, Enumerable.Empty<float>()) { }
+        public Pen(float width, Brush brush) : this(width,
+                                                    brush,
+                                                    Enumerable.Empty<float>()) { }
 
         public Pen(float width, Brush brush, IEnumerable<float> dashes)
+            : this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4) { }
+
+        public Pen(
+            float width,
+            Brush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
         {
             Width = width;
             Brush = brush;
 
             Dashes = new ObservableList<float>(dashes);
+
+            DashOffset = dashOffset;
+            LineCap = lineCap;
+            LineJoin = lineJoin;
+            MiterLimit = miterLimit;
         }
 
         public Brush Brush
@@ -50,7 +67,8 @@ namespace Ibinimator.Renderer.WPF
                 StartLineCap = (WPF.PenLineCap) pen.LineCap,
                 EndLineCap = (WPF.PenLineCap) pen.LineCap,
                 LineJoin = (WPF.PenLineJoin) pen.LineJoin,
-                DashStyle = new WPF.DashStyle(pen.Dashes.Select(f => (double)f), pen.DashOffset),
+                DashStyle =
+                    new WPF.DashStyle(pen.Dashes.Select(f => (double) f), pen.DashOffset),
                 MiterLimit = pen.MiterLimit
             };
         }

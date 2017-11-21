@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -27,16 +29,15 @@ namespace Ibinimator.View.Control
     public class SvgImage : WPF.FrameworkElement, IArtContext
     {
         public static readonly WPF.DependencyProperty SourceProperty =
-                WPF.DependencyProperty.Register(
-                    "Source",
-                    typeof(Uri),
-                    typeof(SvgImage),
-                    new WPF.FrameworkPropertyMetadata(
-                        null,
-                        WPF.FrameworkPropertyMetadataOptions.AffectsMeasure |
-                        WPF.FrameworkPropertyMetadataOptions.AffectsRender,
-                        SourceChanged))
-            ;
+            WPF.DependencyProperty.Register(
+                "Source",
+                typeof(Uri),
+                typeof(SvgImage),
+                new WPF.FrameworkPropertyMetadata(
+                    null,
+                    WPF.FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    WPF.FrameworkPropertyMetadataOptions.AffectsRender,
+                    SourceChanged));
 
         private readonly CacheManager _cache;
         private Document _document;
@@ -48,8 +49,10 @@ namespace Ibinimator.View.Control
             SnapsToDevicePixels = true;
             UseLayoutRounding = true;
             _cache = new CacheManager(this);
+            ViewManager = new ViewManager(this);
         }
 
+        [Category("Common")]
         public Uri Source
         {
             get => (Uri) GetValue(SourceProperty);
@@ -90,7 +93,8 @@ namespace Ibinimator.View.Control
 
             RenderContext.Begin(drawingContext);
 
-            RenderContext.Transform(Matrix3x2.CreateTranslation(-_document.Bounds.TopLeft));
+            RenderContext.Transform(
+                Matrix3x2.CreateTranslation(-_document.Bounds.TopLeft));
 
             // don't scale towards center - they are not center-aligned in the first place!
             RenderContext.Transform(Matrix3x2.CreateScale(scale));
@@ -100,55 +104,58 @@ namespace Ibinimator.View.Control
             RenderContext.End();
         }
 
-        private Stream GetStream()
+        private async Task<Stream> GetStream()
         {
-            try
+            if (Source.IsAbsoluteUri)
             {
-                return WPF.Application.GetResourceStream(Source)?.Stream;
+                switch (Source.Scheme)
+                {
+                    case "file":
+                        return File.OpenRead(Source.LocalPath);
+                    case "http":
+                        var request = WebRequest.CreateHttp(Source);
+                        var response = await Task.Factory.FromAsync(
+                            request.BeginGetResponse,
+                            request.EndGetResponse,
+                            null);
+                        return response.GetResponseStream();
+                    default:
+                        throw new Exception("Unsupported URI scheme!");
+                }
             }
-            catch
-            {
-                return null;
-            }
+
+            return WPF.Application.GetResourceStream(Source)?.Stream;
         }
 
-        private static void SourceChanged(
+        private static async void SourceChanged(
             WPF.DependencyObject d,
             WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
-                svgImage.Update();
+                await svgImage.UpdateAsync();
         }
 
-        private void Update()
+        private async Task UpdateAsync()
         {
             if (Source == null) return;
 
-            try
-            {
-                _prepared = false;
+            _prepared = false;
 
-                XDocument xdoc;
+            XDocument xdoc;
 
-                using (var stream = GetStream())
-                {
-                    xdoc = XDocument.Load(stream);
-                }
+            using (var stream = await GetStream())
+                xdoc = XDocument.Load(stream);
 
-                var document = new Svg.Document();
-                document.FromXml(xdoc.Root, new SvgContext());
+            var document = new Svg.Document();
+            document.FromXml(xdoc.Root, new SvgContext());
 
-                _document = SvgConverter.FromSvg(document);
-                _prepared = true;
-            }
-            catch
-            {
-                // swallow the exception
-            }
+            _document = SvgConverter.FromSvg(document);
+            _prepared = true;
         }
 
         #region IArtContext Members
 
+        public event EventHandler StatusChanged;
         public void InvalidateSurface() { InvalidateVisual(); }
 
         public IBrushManager BrushManager { get; }
@@ -160,6 +167,7 @@ namespace Ibinimator.View.Control
         public ISelectionManager SelectionManager { get; }
         public IToolManager ToolManager { get; }
         public IViewManager ViewManager { get; }
+        public Status Status { get; set; }
 
         #endregion
     }

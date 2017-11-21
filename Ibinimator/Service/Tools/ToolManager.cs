@@ -114,6 +114,11 @@ namespace Ibinimator.Service.Tools
             }
         }
 
+        public void RaiseStatus(Status status)
+        {
+            Context.Status = status;
+        }
+
         public IArtContext Context { get; }
 
         public ITool Tool

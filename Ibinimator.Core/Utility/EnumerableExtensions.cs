@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Utility
@@ -86,6 +87,31 @@ namespace Ibinimator.Core.Utility
 
             return Enumerable.Concat(enumerable1.Skip(elements),
                                      enumerable1.Take(elements - 1));
+        }
+
+        public static IEnumerable<T> Replace<T>(
+            this IEnumerable<T> enumerable,
+            T oldItem,
+            T newItem)
+        {
+            foreach (var item in enumerable)
+            {
+                if (item.Equals(oldItem)) yield return newItem;
+                else yield return item;
+            }
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static string ToTitle(this string s)
+        {
+            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(s);
+        }
+
+        public static string Pascalize(this string s)
+        {
+            return s.ToTitle().Replace("-", "");
         }
     }
 }

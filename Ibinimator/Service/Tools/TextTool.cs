@@ -659,6 +659,8 @@ namespace Ibinimator.Service.Tools
                         new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,
                             root,
                             text));
+
+                    text.Selected = true;
                 }
 
                 _lastClickTime = Time.Now;
@@ -720,14 +722,14 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public void Render(RenderContext target, ICacheManager cacheManager)
+        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             if (CurrentText == null) return;
 
             target.Transform(CurrentText.AbsoluteTransform);
 
             if (_selectionRange == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-                using (var pen = target.CreatePen(_caretSize.X / 2, cacheManager.GetBrush("T2")))
+                using (var pen = target.CreatePen(_caretSize.X / 2, cache.GetBrush("T2")))
                 {
                     target.DrawLine(
                         _caretPosition,
@@ -741,7 +743,7 @@ namespace Ibinimator.Service.Tools
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(
                         selectionRect,
-                        cacheManager.GetBrush("A1A"));
+                        cache.GetBrush("A1A"));
 
             target.Transform(MathUtils.Invert(CurrentText.AbsoluteTransform));
 
@@ -767,7 +769,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public string Cursor { get; private set; }
+        public string CursorImage { get; private set; }
 
         public float CursorRotate { get; private set; }
 

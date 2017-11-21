@@ -70,8 +70,8 @@ namespace Ibinimator.Service
                 {
                     Selection.Add(layer);
 
-                    if (layer is IContainerLayer container)
-                        Selection.RemoveItems(container.SubLayers);
+                    foreach (var child in layer.Flatten().Skip(1))
+                        child.Selected = false;
                 }
                 else if (!layer.Selected && contains)
                     Selection.Remove(layer);
@@ -234,7 +234,7 @@ namespace Ibinimator.Service
             if (hit != null && _handle == 0)
                 SetHandle(SelectionHandle.Translation);
 
-            if (!_modifiers.shift)
+            if (!_modifiers.shift && hit?.Selected != true)
                 ClearSelection();
 
             if (hit != null)
@@ -527,7 +527,7 @@ namespace Ibinimator.Service
             // render guides
             foreach (var guide in GuideManager.GetGuides(GuideType.All))
             {
-                // target.PushEffect(target.CreateEffect<IGlowEffect>());
+                 target.PushEffect(target.CreateEffect<IGlowEffect>());
 
                 IBrush brush;
 
@@ -600,8 +600,8 @@ namespace Ibinimator.Service
 
                 }
 
-                // target.PopEffect();
-            }
+                 target.PopEffect();
+            } 
 
             GuideManager.ClearVirtualGuides();
         }

@@ -99,7 +99,8 @@ namespace Ibinimator.Service.Tools
 
         public void Render(
             RenderContext target,
-            ICacheManager cacheManager)
+            ICacheManager cache,
+            IViewManager view)
         {
             if (CurrentShape == null) return;
 
@@ -108,7 +109,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { throw new NotImplementedException(); }
 
-        public string Cursor { get; }
+        public string CursorImage { get; }
         public float CursorRotate { get; }
         public IToolManager Manager { get; }
         public IToolOption[] Options { get; }

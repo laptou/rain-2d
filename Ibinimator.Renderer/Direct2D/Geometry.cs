@@ -26,11 +26,10 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries)
-            : this(target,
-                   new D2D1.GeometryGroup(
-                       target.Factory,
-                       D2D1.FillMode.Alternate,
-                       geometries.OfType<Geometry>().Select(g => g._geom).ToArray())) { }
+            : this(target)
+        {
+            Load(geometries.SelectMany(g => g.Read()));
+        }
 
         private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
 

@@ -14,9 +14,9 @@ namespace Ibinimator.Service
     {
         private bool _selecting;
 
-        public BrushManager(ArtView artView, ISelectionManager selectionManager, IHistoryManager historyManager)
+        public BrushManager(IArtContext artContext, ISelectionManager selectionManager, IHistoryManager historyManager)
         {
-            Context = artView;
+            Context = artContext;
 
             selectionManager.Updated += OnUpdated;
 

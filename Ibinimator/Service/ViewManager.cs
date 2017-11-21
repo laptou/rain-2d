@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
@@ -13,9 +14,9 @@ namespace Ibinimator.Service
 {
     public class ViewManager : Core.Model.Model, IViewManager
     {
-        public ViewManager(ArtView artView)
+        public ViewManager(IArtContext artContext)
         {
-            Context = artView;
+            Context = artContext;
             Document = new Document();
             Zoom = 1;
         }
@@ -25,39 +26,27 @@ namespace Ibinimator.Service
             DocumentUpdated?.Invoke(sender, e);
         }
 
-        private void Update()
-        {
-            Transform = Matrix3x2.CreateTranslation(Pan) * Matrix3x2.CreateScale(Zoom);
-        }
+        private void Update() { Transform = Matrix3x2.CreateTranslation(Pan) * Matrix3x2.CreateScale(Zoom); }
 
         #region IViewManager Members
 
         public event PropertyChangedEventHandler DocumentUpdated;
 
-        public Vector2 FromArtSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, Transform);
-        }
+        public Vector2 FromArtSpace(Vector2 v) { return Vector2.Transform(v, Transform); }
 
-        public RectangleF FromArtSpace(RectangleF v)
-        {
-            return MathUtils.Bounds(v, Transform);
-        }
+        public RectangleF FromArtSpace(RectangleF v) { return MathUtils.Bounds(v, Transform); }
 
         public void Render(RenderContext target, ICacheManager cache)
         {
-            using (var pen = target.CreatePen(1, cache.GetBrush("L3")))
-            {
+            using (var brush = target.CreateBrush(new Color(0.9f)))
+            using (var pen = target.CreatePen(1, brush))
                 target.DrawRectangle(Document.Bounds, pen);
-            }
 
-            target.FillRectangle(Document.Bounds, cache.GetBrush("L0"));
+            using (var brush = target.CreateBrush(new Color(1f)))
+                target.FillRectangle(Document.Bounds, brush);
         }
 
-        public Vector2 ToArtSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, MathUtils.Invert(Transform));
-        }
+        public Vector2 ToArtSpace(Vector2 v) { return Vector2.Transform(v, MathUtils.Invert(Transform)); }
 
         public RectangleF ToArtSpace(RectangleF v)
         {
@@ -83,7 +72,7 @@ namespace Ibinimator.Service
             get => Get<Vector2>();
             set
             {
-                Set(value);
+                Set(Vector2.Clamp(value, -Document.Bounds.Size, Document.Bounds.Size));
                 Update();
             }
         }
@@ -105,7 +94,7 @@ namespace Ibinimator.Service
             get => Get<float>();
             set
             {
-                Set(value);
+                Set(MathUtils.Clamp(1e-4f, 1e4f, value));
                 Update();
             }
         }

@@ -4,19 +4,19 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel
 {
     public class TransformViewModel : ViewModel
     {
-        private readonly MainViewModel _parent;
+        public IArtContext ArtContext { get; }
 
-        public TransformViewModel(MainViewModel parent, Renderer.ISelectionManager selectionManager)
+        public TransformViewModel(IArtContext artContext)
         {
-            _parent = parent;
-
-            selectionManager.PropertyChanged += (s, e) =>
+            ArtContext = artContext;
+            artContext.SelectionManager.PropertyChanged += (s, e) =>
             {
                 RaisePropertyChanged(nameof(X));
                 RaisePropertyChanged(nameof(Y));
@@ -29,16 +29,16 @@ namespace Ibinimator.ViewModel
 
         private Vector2 GetSize()
         {
-            if (_parent.SelectionManager == null)
+            if (ArtContext.SelectionManager == null)
                 return Vector2.Zero;
 
-            return _parent.SelectionManager.SelectionBounds.Size *
-                   _parent.SelectionManager.SelectionTransform.GetScale();
+            return ArtContext.SelectionManager.SelectionBounds.Size *
+                   ArtContext.SelectionManager.SelectionTransform.GetScale();
         }
 
         private void SetSize(Vector2 size)
         {
-            _parent.SelectionManager?.Transform(
+            ArtContext.SelectionManager?.Transform(
                 size / GetSize(),
                 Vector2.Zero,
                 0,
@@ -48,13 +48,13 @@ namespace Ibinimator.ViewModel
 
         private Vector2 GetPosition()
         {
-            return Vector2.Transform(_parent.SelectionManager.SelectionBounds.TopLeft,
-                                     _parent.SelectionManager.SelectionTransform);
+            return Vector2.Transform(ArtContext.SelectionManager.SelectionBounds.TopLeft,
+                                     ArtContext.SelectionManager.SelectionTransform);
         }
 
         private void SetPosition(Vector2 position)
         {
-            _parent.SelectionManager?.Transform(
+            ArtContext.SelectionManager?.Transform(
                 Vector2.One,
                 position - GetPosition(),
                 0,
@@ -76,8 +76,8 @@ namespace Ibinimator.ViewModel
 
         public float Rotation
         {
-            get => _parent.SelectionManager?.SelectionTransform.GetRotation() ?? 0;
-            set => _parent.SelectionManager?.Transform(
+            get => ArtContext.SelectionManager?.SelectionTransform.GetRotation() ?? 0;
+            set => ArtContext.SelectionManager?.Transform(
                 Vector2.One,
                 Vector2.Zero,
                 value - Rotation,
@@ -87,8 +87,8 @@ namespace Ibinimator.ViewModel
 
         public float Shear
         {
-            get => _parent.SelectionManager?.SelectionTransform.GetShear() ?? 0;
-            set => _parent.SelectionManager?.Transform(
+            get => ArtContext.SelectionManager?.SelectionTransform.GetShear() ?? 0;
+            set => ArtContext.SelectionManager?.Transform(
                 Vector2.One,
                 Vector2.Zero,
                 0,

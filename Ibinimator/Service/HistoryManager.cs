@@ -15,10 +15,7 @@ namespace Ibinimator.Service
         private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
         private readonly Stack<IOperationCommand<ILayer>> _undo = new Stack<IOperationCommand<ILayer>>();
 
-        public HistoryManager(ArtView context)
-        {
-            Context = context;
-        }
+        public HistoryManager(IArtContext context) { Context = context; }
 
         public long NextId => Position + 1;
 
@@ -37,13 +34,21 @@ namespace Ibinimator.Service
                 Position = 0;
             }
 
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            CollectionChanged?.Invoke(
+                this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public void Do(IOperationCommand<ILayer> command)
         {
-            command.Do(Context);
-            Push(command);
+            try
+            {
+                command.Do(Context);
+                Push(command);
+            }
+            catch (Exception e)
+            {
+                Context.Status = new Status(Status.StatusType.Error, e.Message);
+            }
         }
 
         public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
@@ -68,7 +73,8 @@ namespace Ibinimator.Service
                 RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(
+                                              NotifyCollectionChangedAction.Reset));
             }
 
             return result;
@@ -86,14 +92,12 @@ namespace Ibinimator.Service
                 RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(
+                                              NotifyCollectionChangedAction.Reset));
             }
         }
 
-        public void Redo()
-        {
-            Position++;
-        }
+        public void Redo() { Position++; }
 
         public void Replace(IOperationCommand<ILayer> command)
         {
@@ -108,19 +112,14 @@ namespace Ibinimator.Service
                 RaisePropertyChanged(nameof(Position));
 
                 CollectionChanged?.Invoke(this,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(
+                                              NotifyCollectionChangedAction.Reset));
             }
         }
 
-        public void Undo()
-        {
-            Position--;
-        }
+        public void Undo() { Position--; }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         public IArtContext Context { get; }
 

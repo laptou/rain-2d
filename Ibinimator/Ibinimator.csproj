@@ -77,6 +77,9 @@
       <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
@@ -102,10 +105,6 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -138,6 +137,7 @@
     <Compile Include="Model\ToolOption.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\Commands\AddLayerCommand.cs" />
+    <Compile Include="Service\Commands\AlignCommand.cs" />
     <Compile Include="Service\Commands\ApplyFillCommand.cs" />
     <Compile Include="Service\Commands\ApplyFormatCommand.cs" />
     <Compile Include="Service\Commands\ApplyFormatRangeCommand.cs" />
@@ -156,6 +156,7 @@
     <Compile Include="Service\Commands\UngroupCommand.cs" />
     <Compile Include="Service\GuideManager.cs" />
     <Compile Include="Service\Guide.cs" />
+    <Compile Include="Service\SettingsManager.cs" />
     <Compile Include="Service\SvgConverter.cs" />
     <Compile Include="Service\Tools\GradientTool.cs" />
     <Compile Include="Service\Tools\NodeTool.cs" />
@@ -180,8 +181,17 @@
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
+    <Compile Include="View\Control\ArtContext.cs" />
     <Compile Include="View\Control\SvgImage.cs" />
-    <Compile Include="View\Util\InversionConverter.cs" />
+    <Compile Include="View\Control\Pane.cs" />
+    <Compile Include="View\Panes\TransformPane.xaml.cs">
+      <DependentUpon>TransformPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Utility\DesignerResourceDictionary.cs" />
+    <Compile Include="View\Utility\InversionConverter.cs" />
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="Service\CacheManager.cs" />
@@ -201,6 +211,7 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Utility\SettingsBinding.cs" />
     <Compile Include="View\Utility\SvgMarkupExtension.cs" />
     <Compile Include="View\Utility\TextBlockHelper.cs" />
     <Compile Include="View\Utility\TextBoxEnterBehavior.cs" />
@@ -230,6 +241,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="settings.default.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\Font\ROBOTO-BLACK.TTF" />
     <Resource Include="Resources\Font\ROBOTO-BLACKITALIC.TTF" />
     <Resource Include="Resources\Font\ROBOTO-BOLD.TTF" />
@@ -253,6 +267,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Theme.Dark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Theme.Light.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Control\HSLWheel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,6 +284,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\MainView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Panes\TransformPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -303,6 +333,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Icon\tool-select-dark.svg" />
+    <Resource Include="Resources\Icon\tool-select-light.svg" />
     <Resource Include="Resources\Icon\cursor-resize-ew%402x.png" />
     <Resource Include="Resources\Icon\cursor-resize-ew.png" />
     <Resource Include="Resources\Icon\cursor-resize-nesw%402x.png" />
@@ -313,50 +345,92 @@
     <Resource Include="Resources\Icon\cursor-resize-nwse.png" />
     <Resource Include="Resources\Icon\cursor-rotate%402x.png" />
     <Resource Include="Resources\Icon\cursor-rotate.png" />
-    <Resource Include="Resources\Icon\icon-close.svg" />
-    <Resource Include="Resources\Icon\icon-corner-bevel.svg" />
-    <Resource Include="Resources\Icon\icon-corner-miter.svg" />
-    <Resource Include="Resources\Icon\icon-corner-round.svg" />
-    <Resource Include="Resources\Icon\icon-end-flat.svg" />
-    <Resource Include="Resources\Icon\icon-end-round.svg" />
-    <Resource Include="Resources\Icon\icon-end-square.svg" />
-    <Resource Include="Resources\Icon\icon-expander.svg" />
-    <Resource Include="Resources\Icon\icon-minimize.svg" />
-    <Resource Include="Resources\Icon\icon-restore.svg" />
-    <Resource Include="Resources\Icon\icon-stroke-dash.svg" />
-    <Resource Include="Resources\Icon\icon-stroke-solid.svg" />
-    <Resource Include="Resources\Icon\operation-align-bottom.svg" />
-    <Resource Include="Resources\Icon\operation-align-center-horizontal.svg" />
-    <Resource Include="Resources\Icon\operation-align-center-vertical.svg" />
-    <Resource Include="Resources\Icon\operation-align-left.svg" />
-    <Resource Include="Resources\Icon\operation-align-right.svg" />
-    <Resource Include="Resources\Icon\operation-align-top.svg" />
-    <Resource Include="Resources\Icon\operation-difference.svg" />
-    <Resource Include="Resources\Icon\operation-flip-horizontal.svg" />
-    <Resource Include="Resources\Icon\operation-flip-vertical.svg" />
-    <Resource Include="Resources\Icon\operation-intersection.svg" />
-    <Resource Include="Resources\Icon\operation-rotate-ccw.svg" />
-    <Resource Include="Resources\Icon\operation-rotate-cw.svg" />
-    <Resource Include="Resources\Icon\operation-send-backward.svg" />
-    <Resource Include="Resources\Icon\operation-send-forward.svg" />
-    <Resource Include="Resources\Icon\operation-send-to-back.svg" />
-    <Resource Include="Resources\Icon\operation-send-to-front.svg" />
-    <Resource Include="Resources\Icon\operation-union.svg" />
-    <Resource Include="Resources\Icon\operation-xor.svg" />
-    <Resource Include="Resources\Icon\option-grid.svg" />
-    <Resource Include="Resources\Icon\option-snap.svg" />
-    <Resource Include="Resources\Icon\slice1.svg" />
-    <Resource Include="Resources\Icon\tool-eyedropper.svg" />
-    <Resource Include="Resources\Icon\tool-flood.svg" />
-    <Resource Include="Resources\Icon\tool-gradient.svg" />
-    <Resource Include="Resources\Icon\tool-keyframe.svg" />
-    <Resource Include="Resources\Icon\tool-mask.svg" />
-    <Resource Include="Resources\Icon\tool-node.svg" />
-    <Resource Include="Resources\Icon\tool-pen.svg" />
-    <Resource Include="Resources\Icon\tool-pencil.svg" />
-    <Resource Include="Resources\Icon\tool-select.svg" />
-    <Resource Include="Resources\Icon\tool-text.svg" />
-    <Resource Include="Resources\Icon\tool-zoom.svg" />
+    <Resource Include="Resources\Icon\icon-close-dark.svg" />
+    <Resource Include="Resources\Icon\icon-close-light.svg" />
+    <Resource Include="Resources\Icon\icon-corner-bevel-dark.svg" />
+    <Resource Include="Resources\Icon\icon-corner-bevel-light.svg" />
+    <Resource Include="Resources\Icon\icon-corner-miter-dark.svg" />
+    <Resource Include="Resources\Icon\icon-corner-miter-light.svg" />
+    <Resource Include="Resources\Icon\icon-corner-round-dark.svg" />
+    <Resource Include="Resources\Icon\icon-corner-round-light.svg" />
+    <Resource Include="Resources\Icon\icon-end-flat-dark.svg" />
+    <Resource Include="Resources\Icon\icon-end-flat-light.svg" />
+    <Resource Include="Resources\Icon\icon-end-round-dark.svg" />
+    <Resource Include="Resources\Icon\icon-end-round-light.svg" />
+    <Resource Include="Resources\Icon\icon-end-square-dark.svg" />
+    <Resource Include="Resources\Icon\icon-end-square-light.svg" />
+    <Resource Include="Resources\Icon\icon-expander-dark.svg" />
+    <Resource Include="Resources\Icon\icon-expander-light.svg" />
+    <Resource Include="Resources\Icon\icon-minimize-dark.svg" />
+    <Resource Include="Resources\Icon\icon-minimize-light.svg" />
+    <Resource Include="Resources\Icon\icon-restore-dark.svg" />
+    <Resource Include="Resources\Icon\icon-restore-light.svg" />
+    <Resource Include="Resources\Icon\icon-stroke-dash-dark.svg" />
+    <Resource Include="Resources\Icon\icon-stroke-dash-light.svg" />
+    <Resource Include="Resources\Icon\icon-stroke-solid-dark.svg" />
+    <Resource Include="Resources\Icon\icon-stroke-solid-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-bottom-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-bottom-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-center-horizontal-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-center-horizontal-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-center-vertical-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-center-vertical-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-left-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-left-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-right-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-right-light.svg" />
+    <Resource Include="Resources\Icon\operation-align-top-dark.svg" />
+    <Resource Include="Resources\Icon\operation-align-top-light.svg" />
+    <Resource Include="Resources\Icon\operation-difference-dark.svg" />
+    <Resource Include="Resources\Icon\operation-difference-light.svg" />
+    <Resource Include="Resources\Icon\operation-flip-horizontal-dark.svg" />
+    <Resource Include="Resources\Icon\operation-flip-horizontal-light.svg" />
+    <Resource Include="Resources\Icon\operation-flip-vertical-dark.svg" />
+    <Resource Include="Resources\Icon\operation-flip-vertical-light.svg" />
+    <Resource Include="Resources\Icon\operation-intersection-dark.svg" />
+    <Resource Include="Resources\Icon\operation-intersection-light.svg" />
+    <Resource Include="Resources\Icon\operation-rotate-ccw-dark.svg" />
+    <Resource Include="Resources\Icon\operation-rotate-ccw-light.svg" />
+    <Resource Include="Resources\Icon\operation-rotate-cw-dark.svg" />
+    <Resource Include="Resources\Icon\operation-rotate-cw-light.svg" />
+    <Resource Include="Resources\Icon\operation-send-backward-dark.svg" />
+    <Resource Include="Resources\Icon\operation-send-backward-light.svg" />
+    <Resource Include="Resources\Icon\operation-send-forward-dark.svg" />
+    <Resource Include="Resources\Icon\operation-send-forward-light.svg" />
+    <Resource Include="Resources\Icon\operation-send-to-back-dark.svg" />
+    <Resource Include="Resources\Icon\operation-send-to-back-light.svg" />
+    <Resource Include="Resources\Icon\operation-send-to-front-dark.svg" />
+    <Resource Include="Resources\Icon\operation-send-to-front-light.svg" />
+    <Resource Include="Resources\Icon\operation-union-dark.svg" />
+    <Resource Include="Resources\Icon\operation-union-light.svg" />
+    <Resource Include="Resources\Icon\operation-xor-dark.svg" />
+    <Resource Include="Resources\Icon\operation-xor-light.svg" />
+    <Resource Include="Resources\Icon\option-grid-dark.svg" />
+    <Resource Include="Resources\Icon\option-grid-light.svg" />
+    <Resource Include="Resources\Icon\option-snap-dark.svg" />
+    <Resource Include="Resources\Icon\option-snap-light.svg" />
+    <Resource Include="Resources\Icon\slice1-dark.svg" />
+    <Resource Include="Resources\Icon\slice2-light.svg" />
+    <Resource Include="Resources\Icon\tool-eyedropper-dark.svg" />
+    <Resource Include="Resources\Icon\tool-eyedropper-light.svg" />
+    <Resource Include="Resources\Icon\tool-flood-dark.svg" />
+    <Resource Include="Resources\Icon\tool-flood-light.svg" />
+    <Resource Include="Resources\Icon\tool-gradient-dark.svg" />
+    <Resource Include="Resources\Icon\tool-gradient-light.svg" />
+    <Resource Include="Resources\Icon\tool-keyframe-dark.svg" />
+    <Resource Include="Resources\Icon\tool-keyframe-light.svg" />
+    <Resource Include="Resources\Icon\tool-mask-dark.svg" />
+    <Resource Include="Resources\Icon\tool-mask-light.svg" />
+    <Resource Include="Resources\Icon\tool-node-dark.svg" />
+    <Resource Include="Resources\Icon\tool-node-light.svg" />
+    <Resource Include="Resources\Icon\tool-pen-dark.svg" />
+    <Resource Include="Resources\Icon\tool-pen-light.svg" />
+    <Resource Include="Resources\Icon\tool-pencil-dark.svg" />
+    <Resource Include="Resources\Icon\tool-pencil-light.svg" />
+    <Resource Include="Resources\Icon\tool-text-dark.svg" />
+    <Resource Include="Resources\Icon\tool-text-light.svg" />
+    <Resource Include="Resources\Icon\tool-zoom-dark.svg" />
+    <Resource Include="Resources\Icon\tool-zoom-light.svg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

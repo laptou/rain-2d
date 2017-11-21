@@ -18,7 +18,7 @@ namespace Ibinimator.Svg
                 _elements[id] = 
                     X.FromXml(
                         Root.DescendantsAndSelf()
-                            .First(x => (string)x.Attribute("id") == id), 
+                            .FirstOrDefault(x => (string)x.Attribute("id") == id), 
                     this);
 
             set => _elements[id] = value;

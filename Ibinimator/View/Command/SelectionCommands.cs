@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
@@ -13,116 +12,226 @@ namespace Ibinimator.View.Command
 {
     public static class SelectionCommands
     {
-        public static readonly DelegateCommand<ISelectionManager> SelectAllCommand =
-            CommandManager.Register<ISelectionManager>(SelectAll);
+        public static readonly DelegateCommand<IArtContext> SelectAllCommand =
+            CommandManager.Register<IArtContext>(SelectAll);
 
-        public static readonly DelegateCommand<ISelectionManager> DeselectAllCommand =
-            CommandManager.Register<ISelectionManager>(DeselectAll);
+        public static readonly DelegateCommand<IArtContext> DeselectAllCommand =
+            CommandManager.Register<IArtContext>(DeselectAll);
 
-        public static readonly DelegateCommand<ISelectionManager> MoveToBottomCommand =
-            CommandManager.Register<ISelectionManager>(MoveToBottom);
+        public static readonly DelegateCommand<IArtContext> MoveToBottomCommand =
+            CommandManager.Register<IArtContext>(MoveToBottom);
 
-        public static readonly DelegateCommand<ISelectionManager> MoveToTopCommand =
-            CommandManager.Register<ISelectionManager>(MoveToTop);
+        public static readonly DelegateCommand<IArtContext> MoveToTopCommand =
+            CommandManager.Register<IArtContext>(MoveToTop);
 
-        public static readonly DelegateCommand<ISelectionManager> MoveUpCommand =
-            CommandManager.Register<ISelectionManager>(MoveUp);
+        public static readonly DelegateCommand<IArtContext> MoveUpCommand =
+            CommandManager.Register<IArtContext>(MoveUp);
 
-        public static readonly DelegateCommand<ISelectionManager> MoveDownCommand =
-            CommandManager.Register<ISelectionManager>(MoveDown);
+        public static readonly DelegateCommand<IArtContext> MoveDownCommand =
+            CommandManager.Register<IArtContext>(MoveDown);
 
-        public static readonly DelegateCommand<ISelectionManager> FlipVerticalCommand =
-            CommandManager.Register<ISelectionManager>(FlipVertical);
+        public static readonly DelegateCommand<IArtContext> FlipVerticalCommand =
+            CommandManager.Register<IArtContext>(FlipVertical);
 
-        public static readonly DelegateCommand<ISelectionManager> FlipHorizontalCommand =
-            CommandManager.Register<ISelectionManager>(FlipHorizontal);
+        public static readonly DelegateCommand<IArtContext> FlipHorizontalCommand =
+            CommandManager.Register<IArtContext>(FlipHorizontal);
 
-        public static readonly DelegateCommand<ISelectionManager> RotateCounterClockwiseCommand =
-            CommandManager.Register<ISelectionManager>(RotateCounterClockwise);
+        public static readonly DelegateCommand<IArtContext> RotateCounterClockwiseCommand
+            = CommandManager.Register<IArtContext>(RotateCounterClockwise);
 
-        public static readonly DelegateCommand<ISelectionManager> RotateClockwiseCommand =
-            CommandManager.Register<ISelectionManager>(RotateClockwise);
+        public static readonly DelegateCommand<IArtContext> RotateClockwiseCommand =
+            CommandManager.Register<IArtContext>(RotateClockwise);
 
-        private static void DeselectAll(ISelectionManager selectionManager)
+        public static readonly DelegateCommand<IArtContext> AlignLeftCommand =
+            CommandManager.Register<IArtContext>(AlignLeft);
+
+        public static readonly DelegateCommand<IArtContext> AlignTopCommand =
+            CommandManager.Register<IArtContext>(AlignTop);
+
+        public static readonly DelegateCommand<IArtContext> AlignBottomCommand =
+            CommandManager.Register<IArtContext>(AlignBottom);
+
+        public static readonly DelegateCommand<IArtContext> AlignRightCommand =
+            CommandManager.Register<IArtContext>(AlignRight);
+
+        public static readonly DelegateCommand<IArtContext> AlignCenterXCommand =
+            CommandManager.Register<IArtContext>(AlignCenterX);
+
+        public static readonly DelegateCommand<IArtContext> AlignCenterYCommand =
+            CommandManager.Register<IArtContext>(AlignCenterY);
+
+        private static void Align(IArtContext artContext, Direction dir)
         {
-            selectionManager.ClearSelection();
+            var cmd = new AlignCommand(artContext.HistoryManager.Position + 1,
+                                       artContext.SelectionManager.Selection.ToArray(),
+                                       dir);
+
+            artContext.HistoryManager.Do(cmd);
+
+            artContext.SelectionManager.Update(true);
         }
 
-        private static void FlipHorizontal(ISelectionManager selectionManager)
+        private static void AlignBottom(IArtContext artContext)
         {
-            selectionManager.Transform(new Vector2(-1, 1), Vector2.Zero, 0, 0, Vector2.One * 0.5f);
+            Align(artContext, Direction.Down);
         }
 
-        private static void FlipVertical(ISelectionManager selectionManager)
+        private static void AlignCenterX(IArtContext artContext)
         {
-            selectionManager.Transform(new Vector2(1, -1), Vector2.Zero, 0, 0, Vector2.One * 0.5f);
+            Align(artContext, Direction.Horizontal);
         }
 
-        private static bool HasSelection(ISelectionManager selectionManager)
+        private static void AlignCenterY(IArtContext artContext)
         {
-            return selectionManager?.Selection.Count > 0;
+            Align(artContext, Direction.Vertical);
         }
 
-        private static void MoveDown(ISelectionManager selectionManager)
+        private static void AlignLeft(IArtContext artContext)
         {
-            var history = selectionManager.Context.HistoryManager;
+            Align(artContext, Direction.Left);
+        }
+
+        private static void AlignRight(IArtContext artContext)
+        {
+            Align(artContext, Direction.Right);
+        }
+
+        private static void AlignTop(IArtContext artContext)
+        {
+            Align(artContext, Direction.Up);
+        }
+
+        private static void DeselectAll(IArtContext artContext)
+        {
+            artContext.SelectionManager.ClearSelection();
+        }
+
+        private static void FlipHorizontal(IArtContext artContext)
+        {
+            artContext.SelectionManager.Transform(new Vector2(-1, 1),
+                                                  Vector2.Zero,
+                                                  0,
+                                                  0,
+                                                  Vector2.One * 0.5f);
+        }
+
+        private static void FlipVertical(IArtContext artContext)
+        {
+            artContext.SelectionManager.Transform(new Vector2(1, -1),
+                                                  Vector2.Zero,
+                                                  0,
+                                                  0,
+                                                  Vector2.One * 0.5f);
+        }
+
+        private static bool HasSelection(IArtContext artContext)
+        {
+            return artContext.SelectionManager?.Selection.Count > 0;
+        }
+
+        private static void MoveDown(IArtContext artContext)
+        {
+            var history = artContext.SelectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
                     history.Position + 1,
-                    selectionManager.Selection.ToArray<ILayer>(),
+                    artContext.SelectionManager.Selection.ToArray(),
                     1));
         }
 
-        private static void MoveToBottom(ISelectionManager selectionManager)
+        private static void MoveToBottom(IArtContext artContext)
         {
-            var history = selectionManager.Context.HistoryManager;
+            var history = artContext.SelectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
                     history.Position + 1,
-                    selectionManager.Selection.ToArray<ILayer>(),
+                    artContext.SelectionManager.Selection.ToArray(),
                     100000000));
         }
 
-        private static void MoveToTop(ISelectionManager selectionManager)
+        private static void MoveToTop(IArtContext artContext)
         {
-            var history = selectionManager.Context.HistoryManager;
+            var history = artContext.SelectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
                     history.Position + 1,
-                    selectionManager.Selection.ToArray<ILayer>(),
+                    artContext.SelectionManager.Selection.ToArray(),
                     -100000000));
         }
 
-        private static void MoveUp(ISelectionManager selectionManager)
+        private static void MoveUp(IArtContext artContext)
         {
-            var history = selectionManager.Context.HistoryManager;
+            var history = artContext.SelectionManager.Context.HistoryManager;
 
             history.Do(
                 new ChangeZIndexCommand(
                     history.Position + 1,
-                    selectionManager.Selection.ToArray<ILayer>(),
+                    artContext.SelectionManager.Selection.ToArray(),
                     -1));
         }
 
-        private static void RotateClockwise(ISelectionManager selectionManager)
+        private static void RotateClockwise(IArtContext artContext)
         {
-            selectionManager.Transform(Vector2.One, Vector2.Zero, MathUtils.PiOverTwo, 0, Vector2.One * 0.5f);
+            artContext.SelectionManager.Transform(Vector2.One,
+                                                  Vector2.Zero,
+                                                  MathUtils.PiOverTwo,
+                                                  0,
+                                                  Vector2.One * 0.5f);
         }
 
-        private static void RotateCounterClockwise(ISelectionManager selectionManager)
+        private static void RotateCounterClockwise(IArtContext artContext)
         {
-            selectionManager.Transform(Vector2.One, Vector2.Zero, -MathUtils.PiOverTwo, 0, Vector2.One * 0.5f);
+            artContext.SelectionManager.Transform(Vector2.One,
+                                                  Vector2.Zero,
+                                                  -MathUtils.PiOverTwo,
+                                                  0,
+                                                  Vector2.One * 0.5f);
         }
 
-        private static void SelectAll(ISelectionManager selectionManager)
+        private static void SelectAll(IArtContext artContext)
         {
-            selectionManager.ClearSelection();
+            artContext.SelectionManager.ClearSelection();
 
-            foreach (var layer in selectionManager.Context.ViewManager.Root.Flatten().Skip(1))
+            foreach (var layer in artContext
+                .SelectionManager.Context.ViewManager.Root.Flatten()
+                .Skip(1))
                 layer.Selected = true;
+        }
+
+        public static readonly DelegateCommand<IArtContext> GroupCommand =
+            CommandManager.Register<IArtContext>(Group);
+
+        public static readonly DelegateCommand<IArtContext> UngroupCommand =
+            CommandManager.Register<IArtContext>(Ungroup);
+
+        private static void Group(IArtContext ctx)
+        {
+            var selectionManager = ctx.SelectionManager;
+
+            if (selectionManager.Selection.Count == 0)
+                return;
+
+            var command = new GroupCommand(
+                ctx.HistoryManager.Position + 1,
+                selectionManager.Selection.ToArray());
+
+            ctx.HistoryManager.Do(command);
+        }
+
+        private static void Ungroup(IArtContext ctx)
+        {
+            var selectionManager = ctx.SelectionManager;
+
+            if (selectionManager.Selection.Count == 0)
+                return;
+
+            var command = new UngroupCommand(
+                ctx.HistoryManager.Position + 1,
+                selectionManager.Selection.OfType<IContainerLayer>().ToArray());
+            ctx.HistoryManager.Do(command);
         }
     }
 }

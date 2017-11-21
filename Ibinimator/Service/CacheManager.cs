@@ -139,7 +139,7 @@ namespace Ibinimator.Service
                     (value as ResourceBase)?.Disposed != true &&
                     value != null)
                     return value;
-                
+
                 return dict[key] = fallback(key);
             }
         }
@@ -298,10 +298,7 @@ namespace Ibinimator.Service
             }
         }
 
-        private void RaiseBoundsChanged(ILayer layer)
-        {
-            BoundsChanged?.Invoke(this, layer);
-        }
+        private void RaiseBoundsChanged(ILayer layer) { BoundsChanged?.Invoke(this, layer); }
 
         public event EventHandler<ILayer> BoundsChanged;
 
@@ -321,17 +318,11 @@ namespace Ibinimator.Service
 
         public IBitmap GetBitmap(string key) { return _bitmaps[key]; }
 
-        public RectangleF GetBounds(ILayer layer)
-        {
-            return Get(_bounds, layer, l => l.GetBounds(this));
-        }
+        public RectangleF GetBounds(ILayer layer) { return Get(_bounds, layer, l => l.GetBounds(this)); }
 
         public IBrush GetBrush(string key) { return _brushes[key]; }
 
-        public IBrush GetFill(IFilledLayer layer)
-        {
-            return Get(_fills, layer, l => BindBrush(l, l.Fill));
-        }
+        public IBrush GetFill(IFilledLayer layer) { return Get(_fills, layer, l => BindBrush(l, l.Fill)); }
 
         public IGeometry GetGeometry(IGeometricLayer layer)
         {
@@ -375,15 +366,20 @@ namespace Ibinimator.Service
 
         public void LoadBrushes(RenderContext target)
         {
-            foreach (DictionaryEntry entry in Application.Current.Resources)
-                if (entry.Value is Color color)
-                    _brushes[(string) entry.Key] =
-                        target.CreateBrush(
-                            new Core.Model.Color(
-                                color.R / 255f,
-                                color.G / 255f,
-                                color.B / 255f,
-                                color.A / 255f));
+            foreach (var entry in Application.Current.Resources.MergedDictionaries
+                                             .SelectMany(k => k.Cast<DictionaryEntry>())
+                                             .Where(k => k.Value is Color))
+            {
+                var color = (Color)entry.Value;
+
+                _brushes[(string) entry.Key] =
+                    target.CreateBrush(
+                        new Core.Model.Color(
+                            color.R / 255f,
+                            color.G / 255f,
+                            color.B / 255f,
+                            color.A / 255f));
+            }
         }
 
         public QuickLock Lock() { return new QuickLock(_renderLock); }

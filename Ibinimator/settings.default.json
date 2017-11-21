@@ -1,0 +1,223 @@
+{
+    "shortcuts": {
+        "file.open": [ "ctrl+o" ],
+        "file.save": [ "ctrl+s" ],
+        "edit.undo": [ "ctrl+z" ],
+        "edit.redo": [ "ctrl+shift+z", "ctrl+y" ],
+        "object.union": [ "ctrl+shift+plus" ],
+        "object.intersection": [ "ctrl+shift+asterisk" ],
+        "object.difference": [ "ctrl+shift+minus" ],
+        "object.exclusion": [ "ctrl+shift+caret" ],
+        "selection.group": [ "ctrl+g" ],
+        "selection.ungroup": [ "ctrl+shift+g" ],
+        "selection.move-bottom": [ "ctrl+shift+leftsquare" ],
+        "selection.move-down": [ "ctrl+leftsquare" ],
+        "selection.move-up": [ "ctrl+rightsquare" ],
+        "selection.move-top": [ "ctrl+shift+rightsquare" ],
+        "object.pathify": [ "ctrl+shift+enter" ]
+    },
+    "menus": [
+        {
+            "name": "File",
+            "menus": [
+                {
+                    "name": "Open",
+                    "command": "file.open"
+                },
+                {
+                    "name": "Save",
+                    "command": "file.save"
+                }
+            ]
+        },
+        {
+            "name": "Edit",
+            "menus": [
+                {
+                    "name": "Undo",
+                    "command": "edit.undo"
+                },
+                {
+                    "name": "Redo",
+                    "command": "edit.redo"
+                }
+            ]
+        },
+        {
+            "name": "Object",
+            "menus": [
+                {
+                    "name": "Union",
+                    "command": "object.union"
+                },
+                {
+                    "name": "Difference",
+                    "command": "object.difference"
+                },
+                {
+                    "name": "Intersection",
+                    "command": "object.intersection"
+                },
+                {
+                    "name": "Exclusion",
+                    "command": "object.exclusion"
+                },
+                null,
+                {
+                    "name": "Group",
+                    "command": "selection.group"
+                },
+                {
+                    "name": "Ungroup",
+                    "command": "selection.ungroup"
+                },
+                null,
+                {
+                    "name": "Move To Top",
+                    "command": "selection.move-top"
+                },
+                {
+                    "name": "Move Up",
+                    "command": "selection.move-up"
+                },
+                {
+                    "name": "Move Down",
+                    "command": "selection.move-down"
+                },
+                {
+                    "name": "Move To Bottom",
+                    "command": "selection.move-bottom"
+                }
+            ]
+        },
+        {
+            "name": "Help",
+            "menus": [
+                {
+                    "name": "License",
+                    "command": "help.license"
+                }
+            ] 
+        }
+    ],
+    "toolbars": [
+        {
+            "name": "Move to Bottom",
+            "command": "selection.move-bottom",
+            "icon": "operation-send-to-back",
+            "type": "button"
+        },
+        {
+            "name": "Move Down",
+            "command": "selection.move-down",
+            "icon": "operation-send-backward",
+            "type": "button"
+        },
+        {
+            "name": "Move Up",
+            "command": "selection.move-up",
+            "icon": "operation-send-forward",
+            "type": "button"
+        },
+        {
+            "name": "Move to Top",
+            "command": "selection.move-top",
+            "icon": "operation-send-to-front",
+            "type": "button"
+        },
+        { "type": "space" },
+        {
+            "name": "Mirror Horizontally",
+            "command": "selection.mirror-x",
+            "icon": "operation-flip-horizontal",
+            "type": "button"
+        },
+        {
+            "name": "Mirror Vertically",
+            "command": "selection.mirror-y",
+            "icon": "operation-flip-vertical",
+            "type": "button"
+        },
+        {
+            "name": "Rotate Clockwise",
+            "command": "selection.rotate-cw",
+            "icon": "operation-rotate-cw",
+            "type": "button"
+        },
+        {
+            "name": "Rotate Counterclockwise",
+            "command": "selection.rotate-ccw",
+            "icon": "operation-rotate-ccw",
+            "type": "button"
+        },
+        { "type": "space" },
+        {
+            "name": "Align Left",
+            "command": "selection.align-left",
+            "icon": "operation-align-left",
+            "type": "button"
+        },
+        {
+            "name": "Align Horizontal Centers",
+            "command": "selection.align-center-x",
+            "icon": "operation-align-center-horizontal",
+            "type": "button"
+        },
+        {
+            "name": "Align Right",
+            "command": "selection.align-right",
+            "icon": "operation-align-right",
+            "type": "button"
+        },
+        {
+            "name": "Align Top",
+            "command": "selection.align-top",
+            "icon": "operation-align-top",
+            "type": "button"
+        },
+        {
+            "name": "Align Vertical Centers",
+            "command": "selection.align-center-y",
+            "icon": "operation-align-center-vertical",
+            "type": "button"
+        },
+        {
+            "name": "Align Bottom",
+            "command": "selection.align-bottom",
+            "icon": "operation-align-bottom",
+            "type": "button"
+        },
+        { "type": "space" },
+        {
+            "name": "Union",
+            "command": "object.union",
+            "icon": "operation-union",
+            "type": "button"
+        },
+        {
+            "name": "Difference",
+            "command": "object.difference",
+            "icon": "operation-difference",
+            "type": "button"
+        },
+        {
+            "name": "Intersection",
+            "command": "object.intersection",
+            "icon": "operation-intersection",
+            "type": "button"
+        },
+        {
+            "name": "Exclusion",
+            "command": "object.exclusion",
+            "icon": "operation-xor",
+            "type": "button"
+        },
+        {
+            "name": "Pathify",
+            "command": "object.pathify",
+            "icon": "icon-close",
+            "type": "button"
+        }
+    ],
+    "theme": "light"
+}

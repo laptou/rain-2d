@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ibinimator.Renderer.WPF;
 using System.Linq;
 using System.Numerics;
@@ -13,17 +14,19 @@ using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
+using Ibinimator.Service.Tools;
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.View.Control
 {
-    public class ArtView : D2DImage, IArtContext
+    public class ArtView : D2DImage
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
         private readonly Queue<InputEvent> _events = new Queue<InputEvent>();
         private bool _eventLoop;
 
         private Vector2 _lastPosition;
+        private ISet<Key> _keys = new HashSet<Key>();
 
         public ArtView()
         {
@@ -33,61 +36,7 @@ namespace Ibinimator.View.Control
             RenderTargetBound += OnRenderTargetBound;
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
-        }
-
-        public void SetManager<T>(T manager) where T : IArtContextManager
-        {
-            if (manager == null) throw new ArgumentNullException(nameof(manager));
-
-            var managerInterfaces =
-                typeof(T).FindInterfaces((type, criteria) =>
-                                             typeof(IArtContextManager).IsAssignableFrom(
-                                                 type),
-                                         null)
-                         .Concat(new[] {typeof(T)});
-
-            var interfaces = managerInterfaces.ToList();
-
-            if (interfaces.Contains(typeof(IBrushManager)))
-                BrushManager = (IBrushManager) manager;
-
-            if (interfaces.Contains(typeof(ICacheManager)))
-            {
-                CacheManager?.ResetAll();
-
-                CacheManager = (ICacheManager) manager;
-
-                if (RenderContext != null)
-                {
-                    CacheManager.LoadBrushes(RenderContext);
-                    CacheManager.LoadBitmaps(RenderContext);
-
-                    if (ViewManager?.Root != null)
-                        CacheManager.Bind(ViewManager.Document);
-                }
-            }
-
-            if (interfaces.Contains(typeof(IHistoryManager)))
-                HistoryManager = (IHistoryManager) manager;
-
-            if (interfaces.Contains(typeof(ISelectionManager)))
-                SelectionManager = (ISelectionManager) manager;
-
-            if (interfaces.Contains(typeof(IToolManager)))
-                ToolManager = (IToolManager) manager;
-
-            if (interfaces.Contains(typeof(IViewManager)))
-            {
-                ViewManager = (IViewManager) manager;
-                ViewManager.DocumentUpdated +=
-                    (s, e) => CacheManager?.Bind(ViewManager.Document);
-
-                CacheManager?.ResetDeviceResources();
-                if (ViewManager?.Root != null)
-                    CacheManager?.Bind(ViewManager.Document);
-            }
-
-            InvalidateSurface();
+            ArtContext = new ArtContext(this);
         }
 
         protected override void OnLostMouseCapture(MouseEventArgs e)
@@ -109,6 +58,27 @@ namespace Ibinimator.View.Control
             }
         }
 
+        protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
+        {
+            base.OnLostKeyboardFocus(e);
+
+            Trace.WriteLine($"Lost key focus: {string.Join(", ", _keys)}");
+
+            lock (_events)
+            {
+                foreach (var key in _keys)
+                {
+                    _events.Enqueue(
+                        new InputEvent(
+                            InputEventType.KeyUp,
+                            key,
+                            Keyboard.Modifiers));
+                }
+            }
+
+            _keys.Clear();
+        }
+
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -127,35 +97,38 @@ namespace Ibinimator.View.Control
         {
             base.OnPreviewKeyDown(e);
 
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+            Trace.WriteLine($"Key down: {key}");
+
             lock (_events)
             {
                 _events.Enqueue(
-                    new InputEvent(
-                        InputEventType.KeyDown,
-                        e.Key == Key.System ? e.SystemKey : e.Key,
-                        Keyboard.Modifiers));
+                    new InputEvent(InputEventType.KeyDown, key, Keyboard.Modifiers));
             }
 
             _eventFlag.Set();
 
-            // e.Handled = true;
+            _keys.Add(key);
         }
 
         protected override void OnPreviewKeyUp(KeyEventArgs e)
         {
             base.OnPreviewKeyUp(e);
 
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+            Trace.WriteLine($"Key up: {key}");
+
             lock (_events)
             {
                 _events.Enqueue(
-                    new InputEvent(
-                        InputEventType.KeyUp,
-                        e.Key == Key.System ? e.SystemKey : e.Key,
-                        Keyboard.Modifiers));
+                    new InputEvent(InputEventType.KeyUp, key, Keyboard.Modifiers));
             }
 
             _eventFlag.Set();
-            // e.Handled = true;
+
+            _keys.Remove(key);
         }
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -163,6 +136,8 @@ namespace Ibinimator.View.Control
             base.OnPreviewMouseDown(e);
 
             CaptureMouse();
+
+            if (e.MiddleButton == MouseButtonState.Pressed) return;
 
             lock (_events)
             {
@@ -184,6 +159,20 @@ namespace Ibinimator.View.Control
 
             var pos = e.GetPosition(this).Convert();
 
+            if (e.MiddleButton == MouseButtonState.Pressed)
+            {
+                var artPosLast = ArtContext.ViewManager.ToArtSpace(_lastPosition);
+                var artPos = ArtContext.ViewManager.ToArtSpace(new Vector2(pos.X, pos.Y));
+
+                ArtContext.ViewManager.Pan += artPos - artPosLast;
+
+                _lastPosition = pos;
+
+                ArtContext.InvalidateSurface();
+
+                return;
+            }
+
             lock (_events)
             {
                 _events.Enqueue(
@@ -201,6 +190,8 @@ namespace Ibinimator.View.Control
         {
             base.OnPreviewMouseUp(e);
 
+            ReleaseMouseCapture();
+
             lock (_events)
             {
                 _events.Enqueue(
@@ -212,39 +203,42 @@ namespace Ibinimator.View.Control
                         e.GetPosition(this).Convert()));
             }
 
-            ReleaseMouseCapture();
+            if (e.MiddleButton == MouseButtonState.Pressed) return;
 
             _eventFlag.Set();
         }
 
         protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
         {
-            if (ViewManager == null) return;
+            if (ArtContext.ViewManager == null) return;
 
+            var vm = ArtContext.ViewManager;
             var scale = 1 + e.Delta / 500f;
-            var pos1 = e.GetPosition(this);
-            var pos = ViewManager.ToArtSpace(new Vector2((float) pos1.X, (float) pos1.Y));
+            var pos = e.GetPosition(this).Convert();
+            var pan = e.Delta / (vm.Zoom * vm.Zoom);
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                ViewManager.Zoom *= scale;
+            {
+                vm.Zoom *= scale;
+                vm.Pan += pos * (Vector2.One - new Vector2(scale)) / 2;
+            }
             else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                ViewManager.Pan += new Vector2(e.Delta / 10f / ViewManager.Zoom, 0);
-            else
-                ViewManager.Pan += new Vector2(0, e.Delta / 10f / ViewManager.Zoom);
+                vm.Pan += Vector2.UnitX * pan;
+            else vm.Pan += Vector2.UnitY * pan;
 
-            InvalidateSurface();
+            ArtContext.InvalidateSurface();
 
             OnMouseWheel(e);
         }
 
         protected void OnRenderTargetBound(object sender, RenderTarget target)
         {
-            CacheManager?.ResetAll();
-            CacheManager?.LoadBrushes(RenderContext);
-            CacheManager?.LoadBitmaps(RenderContext);
+            ArtContext.CacheManager?.ResetAll();
+            ArtContext.CacheManager?.LoadBrushes(RenderContext);
+            ArtContext.CacheManager?.LoadBitmaps(RenderContext);
 
-            if (ViewManager?.Root != null)
-                CacheManager?.Bind(ViewManager.Document);
+            if (ArtContext.ViewManager?.Root != null)
+                ArtContext.CacheManager?.Bind(ArtContext.ViewManager.Document);
 
             InvalidateVisual();
         }
@@ -277,26 +271,27 @@ namespace Ibinimator.View.Control
         {
             target.Clear(new Color(0.5f));
 
-            if (ViewManager == null) return;
+            if (ArtContext.ViewManager == null) return;
 
-            using (CacheManager.Lock())
+            using (ArtContext.CacheManager.Lock())
             {
+                var ac = ArtContext;
 
-                target.Transform(ViewManager.Transform, true);
+                target.Transform(ac.ViewManager.Transform, true);
 
-                ViewManager.Render(target, CacheManager);
+                ac.ViewManager.Render(target, ac.CacheManager);
 
-                ViewManager.Root.Render(target, CacheManager, ViewManager);
+                ac.ViewManager.Root.Render(target, ac.CacheManager, ac.ViewManager);
 
-                if (SelectionManager == null) return;
+                if (ac.SelectionManager == null) return;
 
-                SelectionManager.Render(target, CacheManager);
+                ac.SelectionManager.Render(target, ac.CacheManager);
 
-                if (ToolManager?.Tool == null) return;
+                if (ac.ToolManager?.Tool == null) return;
 
-                ToolManager.Tool.Render(target, CacheManager);
+                ac.ToolManager.Tool.Render(target, ac.CacheManager, ac.ViewManager);
 
-                if (ToolManager.Tool.Cursor == null)
+                if (ac.ToolManager.Tool.CursorImage == null)
                 {
                     Cursor = Cursors.Arrow;
                     return;
@@ -305,35 +300,40 @@ namespace Ibinimator.View.Control
                 Cursor = Cursors.None;
 
                 target.Transform(
-                    Matrix3x2.CreateRotation(ToolManager.Tool.CursorRotate, new Vector2(8)) *
-                    Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)), true);
+                    Matrix3x2.CreateRotation(ac.ToolManager.Tool.CursorRotate,
+                                             new Vector2(8)) *
+                    Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)),
+                    true);
 
-                target.DrawBitmap(CacheManager.GetBitmap(ToolManager.Tool.Cursor));
+                target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.CursorImage));
             }
         }
 
         private void EventLoop()
         {
+            var ac = ArtContext;
+
             while (_eventLoop)
             {
                 while (_events.Count > 0)
                 {
                     var evt = _events.Dequeue();
 
-                    var pos = ViewManager.ToArtSpace(evt.Position);
+                    var pos = ac.ViewManager.ToArtSpace(evt.Position);
 
                     switch (evt.Type)
                     {
                         case InputEventType.MouseDown:
-                            if (!ToolManager.MouseDown(pos))
-                                SelectionManager.MouseDown(pos);
+                            if (!ac.ToolManager.MouseDown(pos))
+                                ac.SelectionManager.MouseDown(pos);
                             break;
                         case InputEventType.MouseUp:
-                            if (!ToolManager.MouseUp(pos))
-                                SelectionManager.MouseUp(pos);
+                            if (!ac.ToolManager.MouseUp(pos))
+                                ac.SelectionManager.MouseUp(pos);
                             break;
                         case InputEventType.MouseMove:
-                            if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
+                            if (Time.Now - evt.Time > 16
+                            ) // at 16ms, begin skipping mouse moves
                             {
                                 lock (_events)
                                 {
@@ -343,20 +343,20 @@ namespace Ibinimator.View.Control
                                 }
                             }
 
-                            if (!ToolManager.MouseMove(pos))
-                                SelectionManager.MouseMove(pos);
+                            if (!ac.ToolManager.MouseMove(pos))
+                                ac.SelectionManager.MouseMove(pos);
                             break;
 
                         case InputEventType.TextInput:
-                            ToolManager.TextInput(evt.Text);
+                            ac.ToolManager.TextInput(evt.Text);
                             break;
                         case InputEventType.KeyUp:
-                            if(!ToolManager.KeyUp(evt.Key, evt.Modifier))
-                                SelectionManager.KeyUp(evt.Key, evt.Modifier);
+                            if (!ac.ToolManager.KeyUp(evt.Key, evt.Modifier))
+                                ac.SelectionManager.KeyUp(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.KeyDown:
-                            if (!ToolManager.KeyDown(evt.Key, evt.Modifier))
-                                SelectionManager.KeyDown(evt.Key, evt.Modifier);
+                            if (!ac.ToolManager.KeyDown(evt.Key, evt.Modifier))
+                                ac.SelectionManager.KeyDown(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.Scroll:
                             break;
@@ -384,21 +384,13 @@ namespace Ibinimator.View.Control
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            CacheManager?.ResetAll();
+            ArtContext.CacheManager?.ResetAll();
             _eventLoop = false;
         }
 
         #region IArtContext Members
 
-        public void InvalidateSurface() { base.InvalidateSurface(null); }
-
-        public IBrushManager BrushManager { get; private set; }
-        public ICacheManager CacheManager { get; private set; }
-        public IHistoryManager HistoryManager { get; private set; }
-
-        public ISelectionManager SelectionManager { get; private set; }
-        public IToolManager ToolManager { get; private set; }
-        public IViewManager ViewManager { get; private set; }
+        public ArtContext ArtContext { get; }
 
         #endregion
     }

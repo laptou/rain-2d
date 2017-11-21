@@ -72,7 +72,10 @@ namespace Ibinimator.Renderer.Model
                     target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
 
                 if (Stroke?.Brush != null)
-                    target.DrawGeometry(cache.GetGeometry(this), cache.GetStroke(this));
+                {
+                    var pen = cache.GetStroke(this);
+                    target.DrawGeometry(cache.GetGeometry(this), pen, pen.Width * view.Zoom);
+                }
             }
 
             target.Transform(MathUtils.Invert(Transform));

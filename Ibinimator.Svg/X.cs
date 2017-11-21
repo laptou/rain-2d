@@ -133,6 +133,8 @@ namespace Ibinimator.Svg
 
         public static IElement FromXml (XElement element, SvgContext context)
         {
+            if (element == null) return null;
+
             IElement ielement;
 
             switch (element.Name.LocalName)

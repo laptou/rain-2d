@@ -9,10 +9,7 @@ namespace Ibinimator.Renderer.Model
 {
     public class PenInfo : Core.Model.Model
     {
-        public PenInfo()
-        {
-            Dashes = new ObservableList<float>();
-        }
+        public PenInfo() { Dashes = new ObservableList<float>(); }
 
         public BrushInfo Brush
         {
@@ -64,7 +61,13 @@ namespace Ibinimator.Renderer.Model
 
         public IPen CreatePen(RenderContext renderCtx)
         {
-            return renderCtx.CreatePen(Width, Brush?.CreateBrush(renderCtx), Dashes);
+            return renderCtx.CreatePen(Width,
+                                       Brush?.CreateBrush(renderCtx),
+                                       Dashes,
+                                       DashOffset,
+                                       LineCap,
+                                       LineJoin,
+                                       MiterLimit);
         }
     }
 }

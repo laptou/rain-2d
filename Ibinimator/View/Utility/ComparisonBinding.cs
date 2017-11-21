@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace Ibinimator.View.Util
+namespace Ibinimator.View.Utility
 {
     // Supported types of comparisons
     [SuppressMessage("ReSharper", "InconsistentNaming")]

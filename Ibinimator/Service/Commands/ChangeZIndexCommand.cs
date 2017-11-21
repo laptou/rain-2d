@@ -18,7 +18,7 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Changed z-index of {Targets.Length} layer(s)";
 
-        public override void Do(IArtContext artView)
+        public override void Do(IArtContext artContext)
         {
             foreach (var target in Targets)
             {
@@ -26,9 +26,11 @@ namespace Ibinimator.Service.Commands
                 var index = siblings.IndexOf(target as Layer);
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index + Delta));
             }
+
+            artContext.SelectionManager.Update(true);
         }
 
-        public override void Undo(IArtContext artView)
+        public override void Undo(IArtContext artContext)
         {
             foreach (var target in Targets)
             {
@@ -36,6 +38,8 @@ namespace Ibinimator.Service.Commands
                 var index = siblings.IndexOf(target as Layer);
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index - Delta));
             }
+
+            artContext.SelectionManager.Update(true);
         }
     }
 }

@@ -12,94 +12,60 @@ namespace Ibinimator.View.Command
 {
     public static class ObjectCommands
     {
-        public static readonly DelegateCommand<IHistoryManager> UnionCommand =
-            CommandManager.Register<IHistoryManager>(Union);
+        public static readonly DelegateCommand<IArtContext> UnionCommand =
+            CommandManager.Register<IArtContext>(Union);
 
-        public static readonly DelegateCommand<IHistoryManager> IntersectionCommand =
-            CommandManager.Register<IHistoryManager>(Intersection);
+        public static readonly DelegateCommand<IArtContext> IntersectionCommand =
+            CommandManager.Register<IArtContext>(Intersection);
 
-        public static readonly DelegateCommand<IHistoryManager> DifferenceCommand =
-            CommandManager.Register<IHistoryManager>(Difference);
+        public static readonly DelegateCommand<IArtContext> DifferenceCommand =
+            CommandManager.Register<IArtContext>(Difference);
 
-        public static readonly DelegateCommand<IHistoryManager> XorCommand =
-            CommandManager.Register<IHistoryManager>(Xor);
+        public static readonly DelegateCommand<IArtContext> XorCommand =
+            CommandManager.Register<IArtContext>(Xor);
 
-        public static readonly DelegateCommand<IHistoryManager> GroupCommand =
-            CommandManager.Register<IHistoryManager>(Group);
+        public static readonly DelegateCommand<IArtContext> PathifyCommand =
+            CommandManager.Register<IArtContext>(Pathify);
 
-        public static readonly DelegateCommand<IHistoryManager> UngroupCommand =
-            CommandManager.Register<IHistoryManager>(Ungroup);
-
-        public static readonly DelegateCommand<IHistoryManager> PathifyCommand =
-            CommandManager.Register<IHistoryManager>(Pathify);
-
-        private static void BinaryOperation(IHistoryManager manager, CombineMode operation)
+        private static void BinaryOperation(IArtContext ctx, CombineMode operation)
         {
-            var selectionManager = manager.Context.SelectionManager;
+            var selectionManager = ctx.SelectionManager;
+
+            if (selectionManager.Selection.Count != 2)
+            {
+                ctx.Status = new Status(Status.StatusType.Error,
+                                        "Select exactly 2 objects to perform a boolean operation.");
+                return;
+            }
+
             if (selectionManager.Selection[0] is IGeometricLayer x &&
                 selectionManager.Selection[1] is IGeometricLayer y)
-                manager.Do(new BinaryOperationCommand(
-                    manager.Position + 1,
-                    new[] {x, y},
-                    operation));
+                ctx.HistoryManager.Do(new BinaryOperationCommand(
+                                          ctx.HistoryManager.Position + 1,
+                                          new[] {x, y},
+                                          operation));
         }
 
-        private static void Difference(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Exclude);
-        }
+        private static void Difference(IArtContext manager) { BinaryOperation(manager, CombineMode.Exclude); }
 
-        private static void Group(IHistoryManager manager)
-        {
-            var selectionManager = manager.Context.SelectionManager;
-
-            if (selectionManager.Selection.Count == 0)
-                return;
-
-            var command = new GroupCommand(
-                manager.Position + 1,
-                selectionManager.Selection.ToArray<ILayer>());
-            manager.Do(command);
-        }
-
-        private static void Intersection(IHistoryManager manager)
+        private static void Intersection(IArtContext manager)
         {
             BinaryOperation(manager, CombineMode.Intersect);
         }
 
-        private static void Ungroup(IHistoryManager manager)
+        private static void Union(IArtContext manager) { BinaryOperation(manager, CombineMode.Union); }
+
+        private static void Xor(IArtContext manager) { BinaryOperation(manager, CombineMode.Xor); }
+
+        private static void Pathify(IArtContext ctx)
         {
-            var selectionManager = manager.Context.SelectionManager;
-
-            if (selectionManager.Selection.Count == 0)
-                return;
-
-            var command = new UngroupCommand(
-                manager.Position + 1,
-                selectionManager.Selection.OfType<IContainerLayer>().ToArray());
-            manager.Do(command);
-        }
-
-        private static void Union(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Union);
-        }
-
-        private static void Xor(IHistoryManager manager)
-        {
-            BinaryOperation(manager, CombineMode.Xor);
-        }
-
-        private static void Pathify(IHistoryManager manager)
-        {
-            manager.Do(
+            ctx.HistoryManager.Do(
                 new ConvertToPathCommand(
-                    manager.Position + 1, 
-                    manager.Context
-                        .SelectionManager
-                        .Selection
-                        .OfType<IGeometricLayer>()
-                        .ToArray()));
+                    ctx.HistoryManager.Position + 1,
+                    ctx.SelectionManager
+                       .Selection
+                       .OfType<IGeometricLayer>()
+                       .ToArray()));
         }
     }
 }

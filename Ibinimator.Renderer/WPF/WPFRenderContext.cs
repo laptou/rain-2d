@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Ibinimator.Core.Model;
 using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.Renderer.WPF
@@ -21,11 +22,20 @@ namespace Ibinimator.Renderer.WPF
                 _ctx = dc;
         }
 
-        public override void Clear(Color color) { _commandQueue.Enqueue(new ClearRenderCommand(color)); }
+        public override void Clear(Color color)
+        {
+            _commandQueue.Enqueue(new ClearRenderCommand(color));
+        }
 
-        public override IBitmap CreateBitmap(Stream stream) { throw new NotImplementedException(); }
+        public override IBitmap CreateBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
 
-        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(color); }
+        public override ISolidColorBrush CreateBrush(Color color)
+        {
+            return new SolidColorBrush(color);
+        }
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
@@ -56,7 +66,11 @@ namespace Ibinimator.Renderer.WPF
                 new Point(focusX, focusY));
         }
 
-        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
+        public override IGeometry CreateEllipseGeometry(
+            float cx,
+            float cy,
+            float rx,
+            float ry)
         {
             return new Geometry(new EllipseGeometry(new Point(cx, cy), rx, ry));
         }
@@ -74,26 +88,58 @@ namespace Ibinimator.Renderer.WPF
 
         public override T CreateEffect<T>() { throw new NotImplementedException(); }
 
-        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
+        public override IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes)
         {
             return new Pen(width, brush as Brush, dashes);
         }
 
-        public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
+        public override IGeometry CreateRectangleGeometry(
+            float x,
+            float y,
+            float w,
+            float h)
         {
-            return new Geometry(new RectangleGeometry(new Rect(new Point(x, y), new Size(w, h))));
+            return new Geometry(
+                new RectangleGeometry(new Rect(new Point(x, y), new Size(w, h))));
         }
 
-        public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
+        public override ITextLayout CreateTextLayout()
+        {
+            throw new NotImplementedException();
+        }
 
         public override void Dispose() { _ctx = null; }
+
+        public override IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
+        {
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit);
+        }
+
         public override float GetDpi() { return 0; }
         public override void PopEffect() { throw new NotImplementedException(); }
-        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
+
+        public override void PushEffect(IEffect effect)
+        {
+            throw new NotImplementedException();
+        }
+
         public override float Height { get; }
         public override float Width { get; }
 
-        public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
+        public override void DrawBitmap(IBitmap bitmap)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {
@@ -110,7 +156,14 @@ namespace Ibinimator.Renderer.WPF
 
         public override void DrawGeometry(IGeometry geometry, IPen pen)
         {
+            DrawGeometry(geometry, pen, pen.Width);
+        }
+
+        public override void DrawGeometry(IGeometry geometry, IPen pen, float width)
+        {
+#warning This currently ignores the width parameter. See Apply().
             _commandQueue.Enqueue(new GeometryRenderCommand(geometry, false, null, pen));
+
         }
 
         public override void DrawLine(Vector2 v1, Vector2 v2, IPen pen)
@@ -118,7 +171,12 @@ namespace Ibinimator.Renderer.WPF
             _commandQueue.Enqueue(new LineRenderCommand(v1, v2, pen));
         }
 
-        public override void DrawRectangle(float left, float top, float width, float height, IPen pen)
+        public override void DrawRectangle(
+            float left,
+            float top,
+            float width,
+            float height,
+            IPen pen)
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left,
@@ -138,7 +196,12 @@ namespace Ibinimator.Renderer.WPF
             _ctx = null;
         }
 
-        public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
+        public override void FillEllipse(
+            float cx,
+            float cy,
+            float rx,
+            float ry,
+            IBrush brush)
         {
             _commandQueue.Enqueue(
                 new EllipseRenderCommand(
@@ -161,7 +224,12 @@ namespace Ibinimator.Renderer.WPF
             FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height, brush);
         }
 
-        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
+        public override void FillRectangle(
+            float left,
+            float top,
+            float width,
+            float height,
+            IBrush brush)
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left, top, width, height, true, brush, null));

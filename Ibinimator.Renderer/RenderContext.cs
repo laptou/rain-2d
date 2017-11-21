@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer
 {
@@ -35,6 +36,8 @@ namespace Ibinimator.Renderer
             float focusX,
             float focusY);
 
+        public abstract T CreateEffect<T>() where T : class, IEffect;
+
         public abstract IGeometry CreateEllipseGeometry(
             float cx,
             float cy,
@@ -44,8 +47,6 @@ namespace Ibinimator.Renderer
         public abstract IGeometry CreateGeometry();
 
         public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
-
-        public abstract T CreateEffect<T>() where T : class, IEffect;
 
         public abstract IPen CreatePen(
             float width,
@@ -70,6 +71,8 @@ namespace Ibinimator.Renderer
             IPen pen);
 
         public abstract void DrawGeometry(IGeometry geometry, IPen pen);
+
+        public abstract void DrawGeometry(IGeometry geometry, IPen pen, float width);
 
         public abstract void DrawLine(Vector2 v1, Vector2 v2, IPen pen);
 
@@ -136,6 +139,15 @@ namespace Ibinimator.Renderer
         public abstract void Dispose();
 
         #endregion
+
+        public abstract IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit);
     }
 
     internal class LineRenderCommand : GeometricRenderCommand

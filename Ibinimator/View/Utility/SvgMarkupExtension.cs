@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 using System.Windows.Markup;
 using System.Windows.Media;
 using Ibinimator.View.Control;
-using WPF = System.Windows;
 
-namespace Ibinimator.View.Util
+namespace Ibinimator.View.Utility
 {
     public class SvgExtension : MarkupExtension
     {

@@ -7,22 +7,25 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.Svg;
 using Ibinimator.Utility;
 using Ibinimator.ViewModel;
+using Document = Ibinimator.Svg.Document;
 
 namespace Ibinimator.View.Command
 {
     public static class FileCommands
     {
-        public static readonly AsyncDelegateCommand<IViewManager> SaveCommand =
-            CommandManager.RegisterAsync<IViewManager>(SaveAsync);
+        public static readonly AsyncDelegateCommand<IArtContext> SaveCommand =
+            CommandManager.RegisterAsync<IArtContext>(SaveAsync);
 
-        public static readonly AsyncDelegateCommand<IViewManager> OpenCommand =
-            CommandManager.RegisterAsync<IViewManager>(OpenAsync);
+        public static readonly AsyncDelegateCommand<IArtContext> OpenCommand =
+            CommandManager.RegisterAsync<IArtContext>(OpenAsync);
 
-        private static async Task OpenAsync(IViewManager vm)
+        private static async Task OpenAsync(IArtContext artCtx)
         {
+            var vm = artCtx.ViewManager;
             var ofd = new OpenFileDialog
             {
                 DefaultExt = ".svg",
@@ -33,6 +36,7 @@ namespace Ibinimator.View.Command
             await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
+            {
                 using (var stream = ofd.OpenFile())
                 {
                     var xdoc = XDocument.Load(stream);
@@ -40,22 +44,23 @@ namespace Ibinimator.View.Command
                     doc.FromXml(xdoc.Root, new SvgContext {Root = xdoc.Root});
                     vm.Document = SvgConverter.FromSvg(doc);
 
-                    vm.Context.CacheManager.ResetAll();
-                    vm.Context.CacheManager.LoadBitmaps(vm.Context.RenderContext);
-                    vm.Context.CacheManager.LoadBrushes(vm.Context.RenderContext);
-                    vm.Context.CacheManager.Bind(vm.Document);
+                    artCtx.CacheManager.ResetAll();
+                    artCtx.CacheManager.LoadBitmaps(artCtx.RenderContext);
+                    artCtx.CacheManager.LoadBrushes(artCtx.RenderContext);
+                    artCtx.CacheManager.Bind(vm.Document);
                     vm.Pan = Vector2.One * 10;
 
                     var artDim = Math.Max(vm.Document.Bounds.Width, vm.Document.Bounds.Height);
-                    // var viewDim = Math.Min(vm.Context.ActualWidth, vm.Context.ActualHeight);
+                    // var viewDim = Math.Min(artCtx.ActualWidth, artCtx.ActualHeight);
 
                     vm.Zoom = 1; //(float)(viewDim / (artDim + 20));
                 }
+            }
         }
 
-        private static async Task SaveAsync(IViewManager vm)
+        private static async Task SaveAsync(IArtContext artCtx)
         {
-            var doc = vm.Document;
+            var doc = artCtx.ViewManager.Document;
 
             if (doc.Path == null)
             {

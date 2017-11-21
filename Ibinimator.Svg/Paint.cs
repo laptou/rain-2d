@@ -92,4 +92,9 @@ namespace Ibinimator.Svg
             return Color.ToString();
         }
     }
+
+    public class AppColor : Paint
+    {
+        
+    }
 }

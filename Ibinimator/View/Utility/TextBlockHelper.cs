@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Xml;
 
-namespace Ibinimator.View.Util
+namespace Ibinimator.View.Utility
 {
     public static class TextBlockHelper
     {

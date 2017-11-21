@@ -199,15 +199,15 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public void Render(RenderContext target, ICacheManager cacheManager)
+        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             if (CurrentPath == null) return;
 
             var transform = CurrentPath.AbsoluteTransform;
             target.Transform(transform);
 
-            using (var geom = cacheManager.GetGeometry(CurrentPath))
-            using (var pen = target.CreatePen(1, cacheManager.GetBrush("A2")))
+            using (var geom = cache.GetGeometry(CurrentPath))
+            using (var pen = target.CreatePen(1, cache.GetBrush("A2")))
             {
                 target.DrawGeometry(geom, pen);
             }
@@ -231,13 +231,13 @@ namespace Ibinimator.Service.Tools
 
                     if (_down)
                         target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) ? cache.GetBrush("A4") : cache.GetBrush("L1"));
                     else
                         target.FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height,
-                            rect.Contains(_lastPos) ? cacheManager.GetBrush("A3") : cacheManager.GetBrush("L1"));
+                            rect.Contains(_lastPos) ? cache.GetBrush("A3") : cache.GetBrush("L1"));
 
                     using (var pen = target.CreatePen(1,
-                        i == 0 ? cacheManager.GetBrush("A4") : cacheManager.GetBrush("A2")))
+                        i == 0 ? cache.GetBrush("A4") : cache.GetBrush("A2")))
                     {
                         target.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height, pen);
                     }
@@ -250,7 +250,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public string Cursor => null;
+        public string CursorImage => null;
 
         public float CursorRotate => 0;
 

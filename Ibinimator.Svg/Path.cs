@@ -28,7 +28,6 @@ namespace Ibinimator.Svg
             if (Data.Length <= 0) return element;
 
             var pathData = "";
-            PathInstruction lastNode = null;
 
             foreach (var pathNode in Data)
             {
@@ -58,8 +57,6 @@ namespace Ibinimator.Svg
                         pathData += $"M{mn.X},{mn.Y} ";
                         break;
                 }
-
-                lastNode = pathNode;
             }
 
             element.SetAttributeValue("d", pathData);

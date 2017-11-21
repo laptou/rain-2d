@@ -130,7 +130,7 @@ namespace Ibinimator.Renderer.Direct2D
             IBrush brush,
             IEnumerable<float> dashes)
         {
-            return new Pen(width, brush as Brush, dashes, Target);
+            return CreatePen(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4);
         }
 
         public override IGeometry CreateRectangleGeometry(
@@ -158,6 +158,18 @@ namespace Ibinimator.Renderer.Direct2D
         {
             Target.Dispose();
             FactoryDW.Dispose();
+        }
+
+        public override IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
+        {
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, Target);
         }
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }
@@ -226,6 +238,11 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void DrawGeometry(IGeometry geometry, IPen iPen)
         {
+            DrawGeometry(geometry, iPen, iPen.Width);
+        }
+
+        public override void DrawGeometry(IGeometry geometry, IPen iPen, float width)
+        {
             var pen = iPen as Pen;
 
             if (geometry == null || iPen == null) return;
@@ -233,7 +250,7 @@ namespace Ibinimator.Renderer.Direct2D
             Target.DrawGeometry(
                 geometry as Geometry,
                 pen.Brush,
-                pen.Width,
+                width,
                 pen.Style);
         }
 

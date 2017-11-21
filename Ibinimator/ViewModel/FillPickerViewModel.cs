@@ -20,7 +20,6 @@ namespace Ibinimator.ViewModel
 
     public class ColorPickerViewModel : ViewModel
     {
-        private double _alpha;
         private double _hue;
         private double _lightness;
         private double _saturation;
@@ -37,9 +36,8 @@ namespace Ibinimator.ViewModel
 
         public double Alpha
         {
-            get => _alpha;
-            set => Color =
-                ColorUtils.HslaToColor(Hue, Saturation, Lightness, _alpha = value);
+            get => Color.A;
+            set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, value);
         }
 
         public double Blue
@@ -54,7 +52,7 @@ namespace Ibinimator.ViewModel
             set
             {
                 Set(value);
-                (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(value);
+                (_hue, _saturation, _lightness, _) = ColorUtils.ColorToHsla(value);
 
                 RaisePropertyChanged(nameof(Red));
                 RaisePropertyChanged(nameof(Green));
@@ -107,6 +105,7 @@ namespace Ibinimator.ViewModel
             RaisePropertyChanged(nameof(Red));
             RaisePropertyChanged(nameof(Green));
             RaisePropertyChanged(nameof(Blue));
+            RaisePropertyChanged(nameof(Alpha));
         }
     }
 

@@ -10,21 +10,23 @@ using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Renderer
 {
-
     public interface ITool : INotifyPropertyChanged, IDisposable
     {
-        string Cursor { get; }
+        string CursorImage { get; }
         float CursorRotate { get; }
 
         IToolManager Manager { get; }
-
         IToolOption[] Options { get; }
-        string Status { get; }
 
         ToolType Type { get; }
 
         void ApplyFill(BrushInfo brush);
         void ApplyStroke(PenInfo pen);
+
+
+        void Render(RenderContext target, ICacheManager cache, IViewManager view);
+
+        #region Events
 
         bool KeyDown(Key key, ModifierKeys modifiers);
         bool KeyUp(Key key, ModifierKeys modifiers);
@@ -33,8 +35,9 @@ namespace Ibinimator.Renderer
         bool MouseMove(Vector2 pos);
         bool MouseUp(Vector2 pos);
 
-        void Render(RenderContext target, ICacheManager cacheManager);
         bool TextInput(string text);
+
+        #endregion
     }
 
     public interface IToolOption

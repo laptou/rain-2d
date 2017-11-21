@@ -19,6 +19,8 @@ namespace Ibinimator.Renderer.Direct2D
         private float _miterLimit;
 
         private float _width;
+        private IEnumerable<float> dashes;
+        private RenderTarget target;
 
         public Pen(Brush brush, RenderTarget target) : this(1, brush, target) { }
 
@@ -27,15 +29,26 @@ namespace Ibinimator.Renderer.Direct2D
                                                                          Enumerable.Empty<float>(),
                                                                          target) { }
 
-        public Pen(float width, Brush brush, IEnumerable<float> dashes, RenderTarget target)
+        public Pen(float width, Brush brush, IEnumerable<float> dashes, RenderTarget target) :
+            this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4, target)
+        {
+        }
+
+        public Pen(float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin, float miterLimit, RenderTarget target)
         {
             Width = width;
             Brush = brush;
-            _target = target;
 
             var list = new ObservableList<float>(dashes);
             list.CollectionChanged += (s, e) => { RecreateStyle(); };
             Dashes = list;
+            
+            DashOffset = dashOffset;
+            LineCap = lineCap;
+            LineJoin = lineJoin;
+            MiterLimit = miterLimit;
+            _target = target;
+
             RecreateStyle();
         }
 

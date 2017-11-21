@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace Ibinimator.View.Util
+namespace Ibinimator.View.Utility
 {
     public class EnumToBooleanConverter : IValueConverter
     {
