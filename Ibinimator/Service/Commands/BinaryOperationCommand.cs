@@ -18,11 +18,17 @@ namespace Ibinimator.Service.Commands
         private IContainerLayer _parent1;
         private IContainerLayer _parent2;
 
-        public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(id, targets)
+        public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(
+            id, targets)
         {
             if (targets.Length != 2)
                 throw new ArgumentException("Binary operations can only have 2 operands.");
             Operation = operation;
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override string Description => Operation.ToString();

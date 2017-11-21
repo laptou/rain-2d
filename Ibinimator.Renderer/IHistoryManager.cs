@@ -13,6 +13,15 @@ namespace Ibinimator.Renderer
           IEnumerable<IOperationCommand<ILayer>>
     {
         /// <summary>
+        /// Merges the command with the previous command, provided that they are logically mergeable
+        /// and occurred in quick succession.
+        /// </summary>
+        /// <param name="newCommand">The command containing the new data.</param>
+        /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
+        void Merge(IOperationCommand<ILayer> newCommand, int timeLimit);
+
+
+        /// <summary>
         ///     Returns the last operation that was performed.
         /// </summary>
         IOperationCommand<ILayer> Current { get; }

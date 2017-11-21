@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class InsertTextCommand : LayerCommandBase<ITextLayer>
     {
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
         public InsertTextCommand(long id, ITextLayer target, string text, int index)
             : base(id, new[] {target})
         {

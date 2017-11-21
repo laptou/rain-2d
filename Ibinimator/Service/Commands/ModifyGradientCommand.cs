@@ -62,6 +62,7 @@ namespace Ibinimator.Service.Commands
 
         public void Do(IArtContext artContext) { throw new NotImplementedException(); }
         public void Undo(IArtContext artContext) { throw new NotImplementedException(); }
+        public IOperationCommand Merge(IOperationCommand newCommand) { throw new NotImplementedException(); }
 
         public string Description { get; }
 

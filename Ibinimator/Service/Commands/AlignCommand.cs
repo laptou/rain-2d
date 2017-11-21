@@ -12,13 +12,14 @@ namespace Ibinimator.Service.Commands
 {
     public class AlignCommand : LayerCommandBase<ILayer>
     {
-        public Dictionary<ILayer, Matrix3x2> _transformations =
+        private readonly Dictionary<ILayer, Matrix3x2> _transformations =
             new Dictionary<ILayer, Matrix3x2>();
 
         public AlignCommand(long id, ILayer[] targets, Direction direction) :
             base(id, targets)
         {
             Direction = direction;
+            Description = $"Aligned {Direction}";
         }
 
         public override void Do(IArtContext artContext)
@@ -73,6 +74,11 @@ namespace Ibinimator.Service.Commands
             }
 
             artContext.InvalidateSurface();
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation cannot be merged.");
         }
 
         public override string Description { get; }

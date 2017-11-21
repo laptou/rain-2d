@@ -5,12 +5,22 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class TransformCommand : LayerCommandBase<ILayer>
     {
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (!Targets.SequenceEqual(newCommand.Targets)) return null;
+
+            var transformCommand = (TransformCommand)newCommand;
+
+            return new TransformCommand(Id, Targets, Local * transformCommand.Local, Global * transformCommand.Global);
+        }
+
         public Matrix3x2 Local { get; }
         public Matrix3x2 Global { get; }
 

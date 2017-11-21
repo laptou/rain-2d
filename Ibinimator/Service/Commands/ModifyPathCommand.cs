@@ -4,12 +4,18 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ModifyPathCommand : LayerCommandBase<Path>
     {
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
         #region NodeOperation enum
 
         public enum NodeOperation

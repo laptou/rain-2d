@@ -51,6 +51,34 @@ namespace Ibinimator.Service
             }
         }
 
+        public void Merge(IOperationCommand<ILayer> command, int timeLimit)
+        {
+            lock (this)
+            {
+                _redo.Clear();
+                var old = _undo.Peek();
+
+                if (old.GetType() == command.GetType())
+                {
+                    _undo.Pop();
+
+                    command.Do(Context);
+
+                    if (command.Time - old.Time < timeLimit && old.Merge(command) is IOperationCommand<ILayer> newCmd)
+                        Push(newCmd);
+                    else Push(command);
+                }
+                else
+                {
+                    Do(command);
+                }
+            }
+
+            CollectionChanged?.Invoke(this,
+                                      new NotifyCollectionChangedEventArgs(
+                                          NotifyCollectionChangedAction.Reset));
+        }
+
         public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
         {
             lock (this)

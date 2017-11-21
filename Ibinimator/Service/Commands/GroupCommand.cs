@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public class GroupCommand : LayerCommandBase<ILayer>
     {
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
         private readonly Dictionary<ILayer, int> _zIndices = new Dictionary<ILayer, int>();
         private Group _group;
 

@@ -648,21 +648,7 @@ namespace Ibinimator.Service
                 Selection.ToArray(),
                 global: transform);
 
-            // perform the operation
-            command.Do(Context);
-
-            // if there's already a transform command on the stack,
-            // merge it with the previous one
-            if (Context.HistoryManager.Current is TransformCommand current &&
-                command.Time - current.Time < 500 &&
-                current.Targets.SequenceEqual(command.Targets))
-                Context.HistoryManager.Replace(new TransformCommand(
-                                                   Context.HistoryManager.Position + 1,
-                                                   Selection.ToArray(),
-                                                   current.Local,
-                                                   current.Global * transform));
-            else
-                Context.HistoryManager.Push(command);
+            Context.HistoryManager.Merge(command, 500);
 
             Context.InvalidateSurface();
         }

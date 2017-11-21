@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public class UngroupCommand : LayerCommandBase<IContainerLayer>
     {
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
         private readonly Dictionary<ILayer, IContainerLayer> _layers = new Dictionary<ILayer, IContainerLayer>();
         private readonly Dictionary<IContainerLayer, IContainerLayer> _parents = new Dictionary<IContainerLayer, IContainerLayer>();
 

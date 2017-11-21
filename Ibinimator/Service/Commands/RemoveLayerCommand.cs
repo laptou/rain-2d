@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
@@ -13,6 +14,11 @@ namespace Ibinimator.Service.Commands
         public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
         {
             Layer = layer;
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override string Description => $"Removed {Layer.DefaultName}";

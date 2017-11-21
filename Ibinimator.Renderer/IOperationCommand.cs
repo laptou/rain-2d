@@ -24,6 +24,9 @@ namespace Ibinimator.Renderer
         void Do(IArtContext artContext);
 
         void Undo(IArtContext artContext);
+
+        IOperationCommand Merge(IOperationCommand newCommand);
+
     }
 
     public interface IOperationCommand<out T> : IOperationCommand

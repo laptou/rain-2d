@@ -21,6 +21,8 @@ namespace Ibinimator.Service.Commands
 
         public abstract void Undo(IArtContext artContext);
 
+        public abstract IOperationCommand Merge(IOperationCommand newCommand);
+
         public abstract string Description { get; }
 
         public long Id { get; }

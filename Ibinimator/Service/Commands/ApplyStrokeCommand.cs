@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ApplyStrokeCommand : LayerCommandBase<IStrokedLayer>
     {
-        public ApplyStrokeCommand(long id, IStrokedLayer[] targets,
+        public ApplyStrokeCommand(
+            long id, IStrokedLayer[] targets,
             PenInfo newPenInfo, IEnumerable<PenInfo> oldPenInfos) : base(id, targets)
         {
             OldStrokes = oldPenInfos.Select(i => i?.Clone<PenInfo>()).ToArray();
@@ -37,6 +39,16 @@ namespace Ibinimator.Service.Commands
                 {
                     Targets[i].Stroke = OldStrokes[i];
                 }
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (!Targets.SequenceEqual(newCommand.Targets)) return null;
+
+            var applyStrokeCommand = (ApplyStrokeCommand) newCommand;
+
+            return new ApplyStrokeCommand(Id, Targets,
+                                          applyStrokeCommand.NewStroke, OldStrokes);
         }
     }
 }

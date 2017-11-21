@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ApplyFormatCommand : LayerCommandBase<ITextLayer>
     {
-        public ApplyFormatCommand(long id, ITextLayer[] targets,
+        public ApplyFormatCommand(
+            long id, ITextLayer[] targets,
             string newFontFamilyName, float newFontSize, FontStretch newFontStretch,
             FontStyle newFontStyle, FontWeight newFontWeight,
             string[] oldFontFamilyNames, float[] oldFontSizes, FontStretch[] oldFontStretches,
@@ -68,6 +70,25 @@ namespace Ibinimator.Service.Commands
                     target.FontWeight = OldFontWeights[i];
                 }
             }
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (!Targets.SequenceEqual(newCommand.Targets)) return null;
+
+            var applyFormatCommand = (ApplyFormatCommand) newCommand;
+
+            return new ApplyFormatCommand(Id, Targets,
+                                          applyFormatCommand.NewFontFamilyName,
+                                          applyFormatCommand.NewFontSize,
+                                          applyFormatCommand.NewFontStretch,
+                                          applyFormatCommand.NewFontStyle,
+                                          applyFormatCommand.NewFontWeight,
+                                          OldFontFamilyNames,
+                                          OldFontSizes,
+                                          OldFontStretches,
+                                          OldFontStyles,
+                                          OldFontWeights);
         }
     }
 }

@@ -218,7 +218,7 @@ namespace Ibinimator.Service.Tools
 
             var current = new ApplyFormatRangeCommand(
                 Context.HistoryManager.Position + 1,
-                CurrentText, old, @new);
+                CurrentText, @new, old);
 
             // no Do() b/c it's already done
             history.Push(current);

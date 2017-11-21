@@ -3,26 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Renderer;
+using Ibinimator.Renderer.Model;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command
 {
     public static class HistoryCommands
     {
-        public static readonly DelegateCommand<IHistoryManager> UndoCommand =
-            CommandManager.Register<IHistoryManager>(Undo);
+        public static readonly DelegateCommand<IArtContext> UndoCommand =
+            CommandManager.Register<IArtContext>(Undo);
 
-        public static readonly DelegateCommand<IHistoryManager> RedoCommand =
-            CommandManager.Register<IHistoryManager>(Redo);
+        public static readonly DelegateCommand<IArtContext> RedoCommand =
+            CommandManager.Register<IArtContext>(Redo);
 
-        private static void Redo(IHistoryManager historyManager)
+        private static void Redo(IArtContext artContext)
         {
-            historyManager.Redo();
+            artContext.HistoryManager.Redo();
         }
 
-        private static void Undo(IHistoryManager historyManager)
+        private static void Undo(IArtContext artContext)
         {
-            historyManager.Undo();
+            artContext.HistoryManager.Undo();
         }
     }
 }

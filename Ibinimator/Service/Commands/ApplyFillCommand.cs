@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
@@ -13,6 +14,15 @@ namespace Ibinimator.Service.Commands
         {
             OldFills = old.Select(o => (BrushInfo) o?.Clone()).ToArray();
             NewFill = (BrushInfo) @new?.Clone();
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (!Targets.SequenceEqual(newCommand.Targets)) return null;
+
+            var applyFillCommand = (ApplyFillCommand) newCommand;
+
+            return new ApplyFillCommand(Id, Targets, applyFillCommand.NewFill, OldFills);
         }
 
         public override string Description => $"Filled {Targets.Length} layer(s)";

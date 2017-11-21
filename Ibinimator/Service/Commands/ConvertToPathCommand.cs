@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
@@ -17,13 +18,18 @@ namespace Ibinimator.Service.Commands
             Description = $"Converted {targets.Length} layer(s) to paths";
         }
 
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
         public override string Description { get; }
 
         public IReadOnlyList<Path> Products => _products;
 
         public override void Do(IArtContext artContext)
         {
-            _targetParents = Targets.Select(t => t.Parent).ToArray<IContainerLayer>();
+            _targetParents = Targets.Select(t => t.Parent).ToArray();
 
             _products = Targets.Select(t =>
             {

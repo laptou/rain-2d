@@ -90,20 +90,7 @@ namespace Ibinimator.Service.Tools
                 brush,
                 targets.Select(t => t.Fill).ToArray());
 
-            var old = Manager.Context.HistoryManager.Current;
-
-            if (old is ApplyFillCommand oldFillCommand && command.Time - old.Time <= 500)
-            {
-                Manager.Context.HistoryManager.Pop();
-
-                command = new ApplyFillCommand(
-                    command.Id,
-                    command.Targets,
-                    command.NewFill,
-                    oldFillCommand.OldFills);
-            }
-
-            Manager.Context.HistoryManager.Do(command);
+            Manager.Context.HistoryManager.Merge(command, 500);
         }
 
         public void ApplyStroke(PenInfo pen)
