@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class SvgContext
+    public sealed class SvgContext
     {
         private readonly Dictionary<string, IElement> _elements = new Dictionary<string, IElement>();
 

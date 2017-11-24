@@ -10,10 +10,11 @@ namespace Ibinimator.View.Control
 {
     public class Pane : TabItem
     {
-        static Pane()
+        public Pane() { Loaded += OnLoaded; }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(Pane),
-                                                     new FrameworkPropertyMetadata(typeof(TabItem)));
+            Application.LoadComponent(this, Source);
         }
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
@@ -28,14 +29,14 @@ namespace Ibinimator.View.Control
 
         private static void SourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Pane pane && pane.Source != null)
+            if (d is Pane pane && pane.Source != null && pane.IsLoaded)
             {
-                var content = Application.LoadComponent(pane.Source);
+                Application.LoadComponent(pane, pane.Source);
 
-                if (content is Pane sourcePane)
-                    pane.Content = sourcePane.Content;
-                else
-                    pane.Content = content;
+                //if (content is Pane sourcePane)
+                //    pane.Content = sourcePane.Content;
+                //else
+                //    pane.Content = content;
             }
         }
     }

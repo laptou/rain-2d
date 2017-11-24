@@ -13,16 +13,13 @@ namespace Ibinimator.Service.Commands
 {
     public sealed class BinaryOperationCommand : LayerCommandBase<IGeometricLayer>
     {
-        private IGeometricLayer _operand1;
-        private IGeometricLayer _operand2;
-        private IContainerLayer _parent1;
-        private IContainerLayer _parent2;
+        private readonly Dictionary<ILayer, (IContainerLayer parent, int index)> _parents =
+            new Dictionary<ILayer, (IContainerLayer, int)>();
 
-        public BinaryOperationCommand(long id, IGeometricLayer[] targets, CombineMode operation) : base(
-            id, targets)
+        public BinaryOperationCommand(
+            long id, IEnumerable<IGeometricLayer> targets, CombineMode operation) :
+            base(id, targets.OrderByDescending(l => l.Order).ToArray())
         {
-            if (targets.Length != 2)
-                throw new ArgumentException("Binary operations can only have 2 operands.");
             Operation = operation;
         }
 
@@ -39,23 +36,28 @@ namespace Ibinimator.Service.Commands
 
         public override void Do(IArtContext artContext)
         {
-            if (Product == null)
-            {
-                _operand1 = Targets[0];
-                _operand2 = Targets[1];
+            var operand1 = Targets[0];
 
-                var xg = artContext.CacheManager.GetGeometry(_operand1);
-                var yg = artContext.CacheManager.GetGeometry(_operand2);
+            _parents[operand1] = (operand1.Parent, operand1.Parent.SubLayers.IndexOf(operand1));
+
+            for (var i = 1; i < Targets.Length; i++)
+            {
+                var operand2 = Targets[i];
+
+                _parents[operand2] = (operand2.Parent, operand2.Parent.SubLayers.IndexOf(operand2));
+
+                var xg = artContext.CacheManager.GetGeometry(operand1);
+                var yg = artContext.CacheManager.GetGeometry(operand2);
 
                 var z = new Path
                 {
-                    Fill = _operand1.Fill,
-                    Stroke = _operand1.Stroke
+                    Fill = operand1.Fill,
+                    Stroke = operand1.Stroke
                 };
 
-                using (var xtg = xg.Transform(_operand1.AbsoluteTransform))
+                using (var xtg = xg.Transform(operand1.AbsoluteTransform))
                 {
-                    using (var ytg = yg.Transform(_operand2.AbsoluteTransform))
+                    using (var ytg = yg.Transform(operand2.AbsoluteTransform))
                     {
                         IGeometry zg;
 
@@ -81,23 +83,26 @@ namespace Ibinimator.Service.Commands
                     }
                 }
 
-                z.ApplyTransform(MathUtils.Invert(_operand1.WorldTransform), Matrix3x2.Identity);
 
-                Product = z;
-                _parent1 = _operand1.Parent;
-                _parent2 = _operand2.Parent;
+                operand1.Parent?.Remove(operand1);
+                operand2.Parent?.Remove(operand2);
+
+                operand1 = z;
             }
 
-            _parent1.Add(Product);
-            _parent1.Remove(_operand1 as Layer);
-            _parent2.Remove(_operand2 as Layer);
+            Product = (Path) operand1;
+
+            var parent = _parents[Targets[0]].parent;
+            Product.ApplyTransform(global: MathUtils.Invert(parent.AbsoluteTransform));
+            parent.Add(Product);
         }
 
         public override void Undo(IArtContext artView)
         {
             Product.Parent.Remove(Product);
-            _parent1.Add(_operand1 as Layer);
-            _parent2.Add(_operand2 as Layer);
+
+            foreach (var pair in _parents)
+                pair.Value.parent.Add(pair.Key, pair.Value.index);
         }
     }
 }

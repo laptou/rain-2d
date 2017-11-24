@@ -311,9 +311,10 @@ namespace Ibinimator.ViewModel
                     case ToolbarItemType.Button:
                         var icon = SettingsManager.GetString(localPath + ".icon");
                         var name = SettingsManager.GetString(localPath + ".name");
+                        var cmd = SettingsManager.GetString(localPath + ".command", null);
                         yield return new ToolbarItem(
                             name,
-                            MapCommand(localPath + ".command"),
+                            MapCommand(cmd),
                             $"/Ibinimator;component/Resources/Icon/{icon}-{theme}.svg",
                             ArtContext);
                         break;

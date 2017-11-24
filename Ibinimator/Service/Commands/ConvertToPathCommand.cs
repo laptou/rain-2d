@@ -32,21 +32,23 @@ namespace Ibinimator.Service.Commands
             _targetParents = Targets.Select(t => t.Parent).ToArray();
 
             _products = Targets.Select(t =>
-            {
-                var path = new Path();
-                var geometry = artContext.CacheManager.GetGeometry(t);
-                path.Instructions.AddItems(geometry.Read());
-                path.Fill = t.Fill;
-                path.Stroke = t.Stroke;
-                path.ApplyTransform(t.Transform);
+                               {
+                                   var path = new Path();
+                                   var geometry = artContext.CacheManager.GetGeometry(t);
+                                   path.Instructions.AddItems(geometry.Read());
+                                   path.Fill = t.Fill;
+                                   path.Stroke = t.Stroke;
+                                   path.ApplyTransform(t.Transform);
 
-                return path;
-            }).ToArray();
+                                   return path;
+                               })
+                               .ToArray();
 
             for (var i = 0; i < _products.Length; i++)
             {
-                var index = _targetParents[i].SubLayers.IndexOf(Targets[i] as Layer);
-                _targetParents[i].Remove(Targets[i] as Layer);
+                var index = _targetParents[i].SubLayers.IndexOf(Targets[i]);
+
+                _targetParents[i].Remove(Targets[i]);
                 _targetParents[i].Add(_products[i], index);
             }
         }
@@ -55,7 +57,9 @@ namespace Ibinimator.Service.Commands
         {
             for (var i = 0; i < _products.Length; i++)
             {
-                _targetParents[i].Add(Targets[i] as Layer);
+                var index = _targetParents[i].SubLayers.IndexOf(_products[i]);
+
+                _targetParents[i].Add(Targets[i], index);
                 _targetParents[i].Remove(_products[i]);
             }
         }

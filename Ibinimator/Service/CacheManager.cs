@@ -366,8 +366,8 @@ namespace Ibinimator.Service
 
         public void LoadBrushes(RenderContext target)
         {
-            foreach (var entry in Application.Current.Resources.MergedDictionaries
-                                             .SelectMany(k => k.Cast<DictionaryEntry>())
+            foreach (var entry in new ResourceDictionary {  Source = new Uri("/Ibinimator;component/Theme.Light.xaml", UriKind.Relative)}
+                                             .Cast<DictionaryEntry>()
                                              .Where(k => k.Value is Color))
             {
                 var color = (Color)entry.Value;

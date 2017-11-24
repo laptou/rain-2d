@@ -7,13 +7,14 @@
               xmlns:utility="clr-namespace:Ibinimator.View.Utility" xmlns:viewModel="clr-namespace:Ibinimator.ViewModel"
               d:DataContext="{d:DesignInstance Type=viewModel:TransformViewModel,
                                                IsDesignTimeCreatable=False}"
-              d:DesignHeight="300" d:DesignWidth="300"
+              d:DesignHeight="300" d:DesignWidth="300" FocusManager.IsFocusScope="True"
               mc:Ignorable="d">
     <control:Pane.Resources>
         <utility:UnitConverter x:Key="AngleConverter" BaseUnit="Radians" />
         <utility:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
     </control:Pane.Resources>
-    <Grid Margin="8,0,8,8">
+    <Grid Margin="8,0,8,8"
+          KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
@@ -51,32 +52,30 @@
                     <RotateTransform x:Name="RotateTransform" />
                 </TransformGroup>
             </Border.RenderTransform>
+            <Border.Resources>
+                <Storyboard x:Key="RotateStoryboard">
+                    <DoubleAnimation Storyboard.TargetName="RotateTransform" Storyboard.TargetProperty="Angle"
+                                     To="{Binding Rotation, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}, NotifyOnTargetUpdated=True}"
+                                     Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut" />
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+                <Storyboard x:Key="ShearStoryboard">
+                    <DoubleAnimation Storyboard.TargetName="ShearTransform" Storyboard.TargetProperty="AngleX"
+                                     To="{Binding Shear, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}, NotifyOnTargetUpdated=True}"
+                                     Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut" />
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+            </Border.Resources>
             <Border.Triggers>
                 <EventTrigger RoutedEvent="Binding.TargetUpdated">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.Target="{x:Reference RotateTransform}"
-                                             Storyboard.TargetProperty="Angle"
-                                             To="{Binding Rotation, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}, NotifyOnTargetUpdated=True}"
-                                             Duration="0:0:0.25">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.Target="{x:Reference ShearTransform}"
-                                             Storyboard.TargetProperty="AngleX"
-                                             To="{Binding Shear, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}, NotifyOnTargetUpdated=True}"
-                                             Duration="0:0:0.25">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
+                    <BeginStoryboard Storyboard="{StaticResource RotateStoryboard}" />
+                    <BeginStoryboard Storyboard="{StaticResource ShearStoryboard}" />
                 </EventTrigger>
             </Border.Triggers>
         </Border>
@@ -84,6 +83,7 @@
                    HorizontalAlignment="Center" VerticalAlignment="Center"
                    Text="X:" />
         <TextBox Grid.Row="0" Grid.Column="2"
+                 TabIndex="1"
                  Text="{Binding X, Converter={StaticResource DistanceConverter}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />
@@ -95,6 +95,7 @@
             W:
         </TextBlock>
         <TextBox Grid.Row="0" Grid.Column="4"
+                 TabIndex="3"
                  Text="{Binding Width, Converter={StaticResource DistanceConverter}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />
@@ -105,6 +106,7 @@
             Y:
         </TextBlock>
         <TextBox Grid.Row="1" Grid.Column="2"
+                 TabIndex="2"
                  Text="{Binding Y, Converter={StaticResource DistanceConverter}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />
@@ -115,6 +117,7 @@
             H:
         </TextBlock>
         <TextBox Grid.Row="1" Grid.Column="4"
+                 TabIndex="4"
                  Text="{Binding Height, Converter={StaticResource DistanceConverter}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />
@@ -126,6 +129,7 @@
             R:
         </TextBlock>
         <TextBox Grid.Row="2" Grid.Column="2"
+                 TabIndex="5"
                  Text="{Binding Rotation, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />
@@ -136,6 +140,7 @@
             S:
         </TextBlock>
         <TextBox Grid.Row="2" Grid.Column="4"
+                 TabIndex="6"
                  Text="{Binding Shear, Converter={StaticResource AngleConverter}, ConverterParameter={x:Static model:Unit.Degrees}}">
             <i:Interaction.Behaviors>
                 <utility:TextBoxEnterBehavior />

@@ -10,9 +10,27 @@ namespace Ibinimator.Renderer.Model
 {
     public class Group : Layer, IContainerLayer
     {
+        public override IEnumerable<ILayer> Flatten(int depth)
+        {
+            if (depth < 0) yield break;
+
+            yield return this;
+
+            foreach (var layer in SubLayers)
+            {
+                var graph = layer.Flatten(depth - 1);
+
+                foreach (var child in graph)
+                    yield return child;
+            }
+        }
+
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
+
+            if(e.PropertyName == nameof(ILayer.Transform))
+                RaiseBoundsChanged();
         }
 
         private void OnSubLayerChanging(object sender, PropertyChangingEventArgs e)
@@ -40,8 +58,15 @@ namespace Ibinimator.Renderer.Model
 
             child.PropertyChanged += OnSubLayerChanged;
             child.PropertyChanging += OnSubLayerChanging;
+            child.BoundsChanged += OnBoundsChanged;
             LayerAdded?.Invoke(this, child);
         }
+
+        private void OnBoundsChanged(object sender, EventArgs e)
+        {
+            RaiseBoundsChanged();
+        }
+
 
         public override ILayer Find(Guid id)
         {
@@ -58,7 +83,6 @@ namespace Ibinimator.Renderer.Model
                     .FirstOrDefault(l => l != null);
         }
 
-        /// <inheritdoc />
         public override IEnumerable<ILayer> Flatten()
         {
             yield return this;
@@ -115,11 +139,15 @@ namespace Ibinimator.Renderer.Model
             SubLayers.Remove(child);
             child.PropertyChanged -= OnSubLayerChanged;
             child.PropertyChanging -= OnSubLayerChanging;
+            child.BoundsChanged -= OnBoundsChanged;
+
             LayerRemoved?.Invoke(this, child);
         }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
+            if (!Visible) return;
+
             lock (this)
             {
                 target.Transform(Transform);
@@ -132,6 +160,9 @@ namespace Ibinimator.Renderer.Model
         }
 
         public override string DefaultName => "Group";
+
+        /// <inheritdoc cref="ILayer.Size" />
+        public override int Size => SubLayers.Count;
 
         public ObservableList<ILayer> SubLayers { get; } = new ObservableList<ILayer>();
 

@@ -56,27 +56,27 @@ namespace Ibinimator.Service
             lock (this)
             {
                 _redo.Clear();
-                var old = _undo.Peek();
+                var old = _undo.Count > 0 ? _undo.Peek() : null;
 
-                if (old.GetType() == command.GetType())
+                if (old?.GetType() == command.GetType())
                 {
-                    _undo.Pop();
-
                     command.Do(Context);
 
-                    if (command.Time - old.Time < timeLimit && old.Merge(command) is IOperationCommand<ILayer> newCmd)
-                        Push(newCmd);
+                    if (command.Time - old.Time < timeLimit &&
+                        old.Merge(command) is IOperationCommand<ILayer> newCmd)
+                        Replace(newCmd);
                     else Push(command);
                 }
                 else
                 {
                     Do(command);
+                    CollectionChanged?.Invoke(this,
+                                              new NotifyCollectionChangedEventArgs(
+                                                  NotifyCollectionChangedAction.Reset));
                 }
             }
 
-            CollectionChanged?.Invoke(this,
-                                      new NotifyCollectionChangedEventArgs(
-                                          NotifyCollectionChangedAction.Reset));
+            
         }
 
         public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
@@ -96,13 +96,13 @@ namespace Ibinimator.Service
                 _redo.Clear();
                 result = _undo.Pop();
 
-                RaisePropertyChanged(nameof(Current));
-                RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Position));
-
                 CollectionChanged?.Invoke(this,
                                           new NotifyCollectionChangedEventArgs(
                                               NotifyCollectionChangedAction.Reset));
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Position));
             }
 
             return result;
@@ -115,13 +115,13 @@ namespace Ibinimator.Service
                 _redo.Clear();
                 _undo.Push(command);
 
-                RaisePropertyChanged(nameof(Current));
-                RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Position));
-
                 CollectionChanged?.Invoke(this,
                                           new NotifyCollectionChangedEventArgs(
                                               NotifyCollectionChangedAction.Reset));
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Position));
             }
         }
 
@@ -135,13 +135,13 @@ namespace Ibinimator.Service
                 _undo.Pop();
                 _undo.Push(command);
 
-                RaisePropertyChanged(nameof(Current));
-                RaisePropertyChanged(nameof(NextId));
-                RaisePropertyChanged(nameof(Position));
-
                 CollectionChanged?.Invoke(this,
                                           new NotifyCollectionChangedEventArgs(
                                               NotifyCollectionChangedAction.Reset));
+
+                RaisePropertyChanged(nameof(Current));
+                RaisePropertyChanged(nameof(NextId));
+                RaisePropertyChanged(nameof(Position));
             }
         }
 
@@ -194,18 +194,18 @@ namespace Ibinimator.Service
         #endregion
     }
 
-    public class KeyComparer<K, V> : IEqualityComparer<KeyValuePair<K, V>>
+    public class KeyComparer<TK, TV> : IEqualityComparer<KeyValuePair<TK, TV>>
     {
         #region IEqualityComparer<KeyValuePair<K,V>> Members
 
-        public bool Equals(KeyValuePair<K, V> x, KeyValuePair<K, V> y)
+        public bool Equals(KeyValuePair<TK, TV> x, KeyValuePair<TK, TV> y)
         {
-            return EqualityComparer<K>.Default.Equals(x.Key, y.Key);
+            return EqualityComparer<TK>.Default.Equals(x.Key, y.Key);
         }
 
-        public int GetHashCode(KeyValuePair<K, V> obj)
+        public int GetHashCode(KeyValuePair<TK, TV> obj)
         {
-            return EqualityComparer<K>.Default.GetHashCode(obj.Key);
+            return EqualityComparer<TK>.Default.GetHashCode(obj.Key);
         }
 
         #endregion

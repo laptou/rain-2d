@@ -1,181 +1,79 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using Ibinimator.Shared;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using System.Numerics;
-//using Ibinimator.Renderer;
-//using Ibinimator.Utility;
-//using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Ibinimator.Core.Utility;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-//namespace Ibinimator.Test
-//{
-//    [TestClass]
-//    public class MathTest
-//    {
-//        [TestMethod]
-//        public void CrossSection()
-//        {
-//            var rect = new RectangleF(0, -100, 200, 100);
+namespace Ibinimator.Test
+{
+    [TestClass]
+    public class MathTest
+    {
+        /// <summary>
+        ///  Gets or sets the test context which provides
+        ///  information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
 
-//            Assert.AreEqual((new Vector2(0, -100), Vector2.Zero),
-//                MathUtils.CrossSection(new Vector2(0, 1), Vector2.Zero, rect));
-//            Assert.AreEqual((new Vector2(200, 0), Vector2.Zero),
-//                MathUtils.CrossSection(new Vector2(1, 0), Vector2.Zero, rect));
-//            Assert.AreEqual(
-//                (new Vector2(100, -100), Vector2.Zero),
-//                MathUtils.CrossSection(new Vector2(1, 1), Vector2.Zero, rect));
-//            Assert.AreEqual(
-//                (new Vector2(200, -100), Vector2.Zero),
-//                MathUtils.CrossSection(new Vector2(1, 0.5f), Vector2.Zero, rect));
-//            Assert.AreEqual(
-//                (new Vector2(200, -50), Vector2.Zero),
-//                MathUtils.CrossSection(new Vector2(1, 0.25f), Vector2.Zero, rect));
-//        }
+        [TestMethod]
+        public void TestMatrices()
+        {
+            var times1 = new List<double>();
 
-//        [TestMethod]
-//        public void Decompose()
-//        {
-//            var m = Matrix3x2.Identity;
-//            var d = m.Decompose();
+            for (var i = 0; i < 100; i++)
+            {
+                var mat = SharpDX.Matrix3x2.Identity;
 
-//            void Verify(Matrix3x2 mat)
-//            {
-//                var decomp = mat.Decompose();
+                var s = SharpDX.Matrix3x2.Scaling(13);
+                var r = SharpDX.Matrix3x2.Rotation(13);
+                var t = SharpDX.Matrix3x2.Translation(13, 13);
 
-//                var mat2 = Matrix3x2.Identity;
-//                mat2 *= Matrix3x2.Scaling(decomp.scale);
-//                mat2 *= Matrix3x2.Skew(0, decomp.skew);
-//                mat2 *= Matrix3x2.Rotation(decomp.rotation);
-//                mat2 *= Matrix3x2.Translation(decomp.translation);
+                var sw = Stopwatch.StartNew();
 
-//                var r = new RectangleF(0, 0, 100, 100);
+                for (var j = 0; j < 10000; j++)
+                {
+                    mat *= s;
+                    mat *= r;
+                    mat *= t;
+                }
 
-//                var tl = Matrix3x2.TransformPoint(mat, r.TopLeft);
-//                var tr = Matrix3x2.TransformPoint(mat, r.TopRight);
-//                var br = Matrix3x2.TransformPoint(mat, r.BottomRight);
-//                var bl = Matrix3x2.TransformPoint(mat, r.BottomLeft);
+                sw.Stop();
 
-//                var tl2 = Matrix3x2.TransformPoint(mat2, r.TopLeft);
-//                var tr2 = Matrix3x2.TransformPoint(mat2, r.TopRight);
-//                var br2 = Matrix3x2.TransformPoint(mat2, r.BottomRight);
-//                var bl2 = Matrix3x2.TransformPoint(mat2, r.BottomLeft);
+                times1.Add(sw.Elapsed.TotalMilliseconds);
+            }
 
-//                AreEqual(tl, tl2, 1e-4f);
-//                AreEqual(tr, tr2, 1e-4f);
-//                AreEqual(br, br2, 1e-4f);
-//                AreEqual(bl, bl2, 1e-4f);
+            var times2 = new List<double>();
 
-//                var rnd = new Random();
+            for (var i = 0; i < 100; i++)
+            {
 
-//                for (var i = 0; i < 10000; i++)
-//                {
-//                    var v = rnd.NextVector2(-Vector2.One * 10, Vector2.One * 10);
-//                    AreEqual(Matrix3x2.TransformPoint(mat, v), Matrix3x2.TransformPoint(mat2, v), 1e-4f);
-//                }
-//            }
+                var mat = System.Numerics.Matrix3x2.Identity;
 
-//            Assert.AreEqual(Vector2.One, d.scale);
-//            Assert.AreEqual(Vector2.Zero, d.translation);
-//            Assert.AreEqual(0, d.skew, 1e-5f);
-//            Assert.AreEqual(0, d.rotation, 1e-5f);
-//            Verify(m);
+                var s = System.Numerics.Matrix3x2.CreateScale(13);
+                var r = System.Numerics.Matrix3x2.CreateRotation(13);
+                var t = System.Numerics.Matrix3x2.CreateTranslation(13, 13);
 
-//            m *= Matrix3x2.Scaling(2, 3);
-//            d = m.Decompose();
-//            Assert.AreEqual(new Vector2(2, 3), d.scale);
-//            Assert.AreEqual(Vector2.Zero, d.translation);
-//            Assert.AreEqual(0, d.skew, 1e-5f);
-//            Assert.AreEqual(0, d.rotation, 1e-5f);
-//            Verify(m);
+                var sw = Stopwatch.StartNew();
 
-//            m *= Matrix3x2.Translation(2, 3);
-//            d = m.Decompose();
-//            Assert.AreEqual(new Vector2(2, 3), d.scale);
-//            Assert.AreEqual(new Vector2(2, 3), d.translation);
-//            Assert.AreEqual(0, d.skew, 1e-5f);
-//            Assert.AreEqual(0, d.rotation, 1e-5f);
-//            Verify(m);
+                for (var j = 0; j < 10000; j++)
+                {
+                    mat *= s;
+                    mat *= r;
+                    mat *= t;
+                }
 
-//            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo);
-//            d = m.Decompose();
-//            Assert.AreEqual(new Vector2(2, 3), d.scale);
-//            Assert.AreEqual(new Vector2(-3, 2), d.translation);
-//            Assert.AreEqual(0, d.skew, 1e-5f);
-//            Assert.AreEqual(MathUtils.PiOverTwo, d.rotation, 1e-5f);
-//            Verify(m);
+                sw.Stop();
 
-//            m *= Matrix3x2.Scaling(2, 1);
-//            d = m.Decompose();
-//            Assert.AreEqual(new Vector2(2, 6), d.scale);
-//            Assert.AreEqual(new Vector2(-6, 2), d.translation);
-//            Assert.AreEqual(MathUtils.PiOverTwo, d.rotation, 1e-5f);
-//            Verify(m);
+                times2.Add(sw.Elapsed.TotalMilliseconds);
+            }
 
-//            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo / 2);
-//            d = m.Decompose();
-//            Assert.AreEqual(new Vector2(2, 6), d.scale);
-//            Assert.AreEqual(MathUtils.Rotate(new Vector2(-6, 2), MathUtils.PiOverTwo / 2), d.translation);
-//            Assert.AreEqual(MathUtils.PiOverTwo * 1.5f, d.rotation, 1e-5f);
-//            Verify(m);
-
-//            m = Matrix3x2.Rotation(MathUtils.PiOverTwo / 2) * Matrix3x2.Scaling(2, 1);
-//            Verify(m);
-
-//            m = Matrix3x2.Rotation(MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
-//            m *= Matrix3x2.Rotation(MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
-//            Verify(m);
-
-//            m = Matrix3x2.Rotation(-MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(2, 1);
-//            m *= Matrix3x2.Rotation(-MathUtils.PiOverTwo * 1.25f) * Matrix3x2.Scaling(10, -6);
-//            Verify(m);
-
-//            m = Matrix3x2.Scaling(2, -1);
-//            Verify(m);
-
-//            m = Matrix3x2.Skew(45, 0);
-//            Verify(m);
-//        }
-
-//        [TestMethod]
-//        public void Projection()
-//        {
-//            var vec = new Vector2(10, 10);
-//            var axis = new Vector2(1, 1);
-//            var expected = new Vector2(10, 10);
-//            var actual = MathUtils.Project(vec, axis);
-//            Assert.AreEqual(expected, actual);
-
-//            vec = new Vector2(10, 0);
-//            axis = new Vector2(1, 1);
-//            expected = new Vector2(5, 5);
-//            actual = MathUtils.Project(vec, axis);
-//            Assert.AreEqual(expected, actual);
-//        }
-
-//        [TestMethod]
-//        public void Rotation()
-//        {
-//            var v1 = new Vector2(1, 0);
-//            var v2 = new Vector2(MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-//            var v3 = new Vector2(0, 1);
-//            var v4 = new Vector2(-MathUtils.InverseSqrt2, MathUtils.InverseSqrt2);
-//            var v5 = new Vector2(-1, 0);
-//            var v6 = new Vector2(-MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
-//            var v7 = new Vector2(0, -1);
-//            var v8 = new Vector2(MathUtils.InverseSqrt2, -MathUtils.InverseSqrt2);
-
-//            Assert.AreEqual(v2, MathUtils.Rotate(v1, MathUtils.PiOverTwo / 2));
-//            Assert.AreEqual(v3, MathUtils.Rotate(v1, MathUtils.PiOverTwo));
-//            Assert.AreEqual(v5, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 2));
-//            Assert.AreEqual(v7, MathUtils.Rotate(v1, MathUtils.PiOverTwo * 3));
-//            Assert.AreEqual(new Vector2(3, 0), MathUtils.Rotate(v5, v1, MathUtils.PiOverTwo * 2));
-//        }
-
-//        private void AreEqual(Vector2 expected, Vector2 actual, float delta)
-//        {
-//            Assert.AreEqual(expected.X, actual.X, delta * expected.Length());
-//            Assert.AreEqual(expected.Y, actual.Y, delta * expected.Length());
-//        }
-//    }
-//}
+            TestContext.WriteLine($"SharpDX: {times1.Average()}ms\n" +
+                                  $"System.Numerics: {times2.Average()}ms");
+            TestContext.WriteLine($"HW Acceleration: {System.Numerics.Vector.IsHardwareAccelerated}");
+            TestContext.WriteLine($"64-Bit CPU: {Environment.Is64BitOperatingSystem}");
+            TestContext.WriteLine($"64-Bit Process: {Environment.Is64BitProcess}");
+        }
+    }
+}

@@ -62,6 +62,9 @@ namespace Ibinimator.View.Command
 
         private static void Align(IArtContext artContext, Direction dir)
         {
+            if (artContext.SelectionManager.Selection.Count == 0)
+                return;
+
             var cmd = new AlignCommand(artContext.HistoryManager.Position + 1,
                                        artContext.SelectionManager.Selection.ToArray(),
                                        dir);

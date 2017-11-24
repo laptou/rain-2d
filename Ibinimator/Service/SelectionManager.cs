@@ -30,13 +30,16 @@ namespace Ibinimator.Service
 
     public sealed class SelectionManager : Core.Model.Model, ISelectionManager
     {
+        private int _depth = 1;
+        private long _clickTime;
+
         private string _cursor;
         private SelectionHandle _handle = 0;
         private (bool alt, bool shift, bool ctrl) _modifiers = (false, false, false);
         private (Vector2 position, bool down) _mouse = (Vector2.Zero, false);
-        private float _deltaRotation = 0;
-        private float _accumRotation = 0;
-        private Vector2 _deltaTranslation = Vector2.Zero;
+
+        private float _accumRotation;
+        private Vector2 _deltaTranslation;
 
         private RectangleF _selectionBounds;
         private Matrix3x2 _selectionTransform = Matrix3x2.Identity;
@@ -54,6 +57,8 @@ namespace Ibinimator.Service
             Selection = new ObservableList<ILayer>();
             Selection.CollectionChanged += (sender, args) =>
             {
+                _depth = Selection.Count == 0 ? 1 : Selection.Select(l => l.Depth).Min();
+
                 Update(true);
                 Updated?.Invoke(this, null);
             };
@@ -95,10 +100,7 @@ namespace Ibinimator.Service
             while (Selection.Count > 0) Selection[0].Selected = false;
         }
 
-        public Vector2 FromSelectionSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectionTransform);
-        }
+        public Vector2 FromSelectionSpace(Vector2 v) { return Vector2.Transform(v, SelectionTransform); }
 
         public void KeyDown(Key key, ModifierKeys modifiers)
         {
@@ -134,8 +136,8 @@ namespace Ibinimator.Service
         public void MouseDown(Vector2 pos)
         {
             _mouse = (pos, true);
-            _deltaRotation = 0;
             _deltaTranslation = Vector2.Zero;
+            var _deltaTime = Time.Now - _clickTime;
 
             #region handle testing
 
@@ -190,6 +192,9 @@ namespace Ibinimator.Service
 
             #endregion
 
+            if (_deltaTime < 500)
+                _depth++;
+
             #region hit testing
 
             // for every element in the scene, perform a hit-test
@@ -199,37 +204,25 @@ namespace Ibinimator.Service
             // then hit-test in the root
             ILayer hit = null;
 
-            foreach (var layer in Selection)
+            foreach (var layer in root.Flatten(_depth).Skip(1))
             {
-                var test = layer;
+                var test = layer.Hit(Context.CacheManager, pos, true);
 
-                if (_modifiers.alt)
-                {
-                    while (test.Parent != null)
-                    {
-                        var index = test.Parent.SubLayers.IndexOf(test as Layer);
+                if (test == null) continue;
 
-                        // for every layer that is below this layer (higher index means
-                        // lower z-index)
-                        foreach (var sibling in test.Parent.SubLayers.Cycle(index).Skip(1)
-                        )
-                        {
-                            hit = sibling.Hit(Context.CacheManager, pos, true);
-                            if (hit != null) break;
-                        }
+                hit = test;
 
-                        test = test.Parent;
-                    }
-                }
+                if (hit.Depth < _depth) continue;
 
-                if (hit != null) break;
-                hit = test.Hit(Context.CacheManager, pos, _modifiers.alt);
+                if (_modifiers.alt && hit.Selected) continue;
+
+                break;
             }
 
-            if (hit == null)
-                hit = root.Hit(Context.CacheManager, pos, false);
-
             #endregion
+
+            if (_deltaTime < 500 && hit == null)
+                _depth--;
 
             if (hit != null && _handle == 0)
                 SetHandle(SelectionHandle.Translation);
@@ -239,6 +232,8 @@ namespace Ibinimator.Service
 
             if (hit != null)
                 hit.Selected = true;
+
+            _clickTime = Time.Now;
         }
 
         public void MouseMove(Vector2 pos)
@@ -527,7 +522,7 @@ namespace Ibinimator.Service
             // render guides
             foreach (var guide in GuideManager.GetGuides(GuideType.All))
             {
-                 target.PushEffect(target.CreateEffect<IGlowEffect>());
+                target.PushEffect(target.CreateEffect<IGlowEffect>());
 
                 IBrush brush;
 
@@ -588,20 +583,19 @@ namespace Ibinimator.Service
                         target.DrawEllipse(origin, 20, 20, pen);
 
                         foreach (var x in axes)
-                        target.DrawLine(origin + MathUtils.Angle(x) * 20,
-                                        origin - MathUtils.Angle(x) * 20,
-                                        pen);
+                            target.DrawLine(origin + MathUtils.Angle(x) * 20,
+                                            origin - MathUtils.Angle(x) * 20,
+                                            pen);
                     }
 
                     using (var pen = target.CreatePen(2, brush))
                         target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25,
                                         origin,
                                         pen);
-
                 }
 
-                 target.PopEffect();
-            } 
+                target.PopEffect();
+            }
 
             GuideManager.ClearVirtualGuides();
         }
@@ -638,7 +632,6 @@ namespace Ibinimator.Service
             SelectionTransform = SelectionTransform *
                                  transform;
 
-            _deltaRotation += rotate;
             _deltaTranslation += translate;
 
             if (transform.IsIdentity) return;

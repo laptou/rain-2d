@@ -31,19 +31,10 @@ namespace Ibinimator.View.Command
         {
             var selectionManager = ctx.SelectionManager;
 
-            if (selectionManager.Selection.Count != 2)
-            {
-                ctx.Status = new Status(Status.StatusType.Error,
-                                        "Select exactly 2 objects to perform a boolean operation.");
-                return;
-            }
-
-            if (selectionManager.Selection[0] is IGeometricLayer x &&
-                selectionManager.Selection[1] is IGeometricLayer y)
-                ctx.HistoryManager.Do(new BinaryOperationCommand(
-                                          ctx.HistoryManager.Position + 1,
-                                          new[] {x, y},
-                                          operation));
+            ctx.HistoryManager.Do(new BinaryOperationCommand(
+                                      ctx.HistoryManager.Position + 1,
+                                      selectionManager.Selection.OfType<IGeometricLayer>(),
+                                      operation));
         }
 
         private static void Difference(IArtContext manager) { BinaryOperation(manager, CombineMode.Exclude); }

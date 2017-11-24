@@ -245,6 +245,8 @@ namespace Ibinimator.Renderer.Model
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
+            if (!Visible) return;
+
             target.Transform(Transform);
 
             var layout = cache.GetTextLayout(this);

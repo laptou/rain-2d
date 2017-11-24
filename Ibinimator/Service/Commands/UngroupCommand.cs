@@ -34,7 +34,7 @@ namespace Ibinimator.Service.Commands
                     target.Remove(layer);
                     target.Parent.Add(layer);
 
-                    layer.ApplyTransform(target.Transform);
+                    layer.ApplyTransform(global: target.Transform);
 
                     _layers.Add(layer, target);
                 }
@@ -51,7 +51,7 @@ namespace Ibinimator.Service.Commands
             {
                 layer.Parent.Remove(layer);
 
-                layer.ApplyTransform(MathUtils.Invert(target.Transform));
+                layer.ApplyTransform(global: MathUtils.Invert(target.Transform));
 
                 target.Add(layer);
             }

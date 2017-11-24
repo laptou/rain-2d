@@ -21,6 +21,16 @@ namespace Ibinimator.Renderer.WPF
             _geometry = geometry.GetFlattenedPathGeometry(double.Epsilon, WPF.ToleranceType.Relative);
         }
 
+        public IEnumerable<PathNode> ReadNodes()
+        {
+            // we don't need to handle arcs below
+            // because Pathify() converts everything
+            // into line segments and cubic beziers
+
+            return GeometryHelper.NodesFromInstructions(Read());
+
+        }
+
         private IGeometry Combine(IGeometry other, WPF.GeometryCombineMode mode)
         {
             return new Geometry(new WPF.CombinedGeometry(mode, _geometry, (other as Geometry)?._geometry));

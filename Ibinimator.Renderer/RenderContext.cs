@@ -5,7 +5,6 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer
 {
@@ -52,6 +51,15 @@ namespace Ibinimator.Renderer
             float width,
             IBrush brush,
             IEnumerable<float> dashes);
+
+        public abstract IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit);
 
         public abstract IGeometry CreateRectangleGeometry(
             float x,
@@ -114,6 +122,13 @@ namespace Ibinimator.Renderer
             return CreatePen(width, brush, Enumerable.Empty<float>());
         }
 
+        public virtual void DrawCircle(Vector2 c, float r, IPen pen) { DrawEllipse(c, r, r, pen); }
+
+        public virtual void DrawCircle(float cx, float cy, float r, IPen pen)
+        {
+            DrawEllipse(cx, cy, r, r, pen);
+        }
+
         public virtual void DrawEllipse(Vector2 c, float rx, float ry, IPen pen)
         {
             DrawEllipse(c.X, c.Y, rx, ry, pen);
@@ -122,6 +137,13 @@ namespace Ibinimator.Renderer
         public virtual void DrawRectangle(RectangleF rect, IPen pen)
         {
             DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height, pen);
+        }
+
+        public virtual void FillCircle(Vector2 c, float r, IBrush brush) { FillEllipse(c, r, r, brush); }
+
+        public virtual void FillCircle(float cx, float cy, float r, IBrush brush)
+        {
+            FillEllipse(cx, cy, r, r, brush);
         }
 
         public virtual void FillEllipse(Vector2 c, float rx, float ry, IBrush brush)
@@ -139,15 +161,6 @@ namespace Ibinimator.Renderer
         public abstract void Dispose();
 
         #endregion
-
-        public abstract IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit);
     }
 
     internal class LineRenderCommand : GeometricRenderCommand

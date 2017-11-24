@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
@@ -18,7 +19,6 @@ namespace Ibinimator.View.Utility
             base.OnAttached();
             AssociatedObject.GotKeyboardFocus += OnAssociatedObjectGotFocus;
             AssociatedObject.GotMouseCapture += OnAssociatedObjectGotFocus;
-            // AssociatedObject.LostMouseCapture += OnAssiciatedObjectLostFocus;
             AssociatedObject.LostKeyboardFocus += OnAssiciatedObjectLostFocus;
             AssociatedObject.KeyDown += OnAssociatedObjectKeyDown;
         }
@@ -51,11 +51,16 @@ namespace Ibinimator.View.Utility
         {
             if (sender is FrameworkElement element)
             {
-                if (e.Key == Key.Return)
-                    element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-
-                if (e.Key == Key.Escape)
-                    Keyboard.ClearFocus();
+                switch (e.Key)
+                {
+                    case Key.Return:
+                        if (!element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)))
+                            Keyboard.ClearFocus();
+                        break;
+                    case Key.Escape:
+                        Keyboard.ClearFocus();
+                        break;
+                }
             }
         }
     }

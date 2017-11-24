@@ -141,6 +141,7 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseUp(Vector2 pos)
         {
+            /*
             if (!_moved)
             {
                 var tpos =
@@ -187,12 +188,12 @@ namespace Ibinimator.Service.Tools
                         new ModifyPathCommand(
                             Context.HistoryManager.Position + 1,
                             CurrentPath,
-                            new[] {newNode},
-                            CurrentPath.Instructions.Count,
-                            ModifyPathCommand.NodeOperation.Add));
+                            new[] { newNode },
+                            CurrentPath.Instructions.Count
+                            ));
                 }
             }
-
+            */
             Context.InvalidateSurface();
 
             _down = false;

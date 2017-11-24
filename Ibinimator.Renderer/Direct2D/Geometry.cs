@@ -161,7 +161,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public IGeometrySink Open()
         {
-            Pathify();
+            _geom = new D2D1.PathGeometry(_target.Factory);
 
             return new WritingSink(Path);
         }
@@ -192,6 +192,17 @@ namespace Ibinimator.Renderer.Direct2D
             return Read(Path);
         }
 
+        public IEnumerable<PathNode> ReadNodes()
+        {
+            Pathify();
+
+            // we don't need to handle arcs below
+            // because Pathify() converts everything
+            // into line segments and cubic beziers
+
+            return GeometryHelper.NodesFromInstructions(Read());
+        }
+
         public void Read(IGeometrySink sink) { Load(sink, Read()); }
 
         public bool StrokeContains(float x, float y, float width)
@@ -201,7 +212,8 @@ namespace Ibinimator.Renderer.Direct2D
 
         public IGeometry Transform(Matrix3x2 transform)
         {
-            return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geom, transform.Convert()));
+            return new Geometry(
+                _target, new D2D1.TransformedGeometry(_target.Factory, _geom, transform.Convert()));
         }
 
         public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
@@ -340,7 +352,8 @@ namespace Ibinimator.Renderer.Direct2D
 
             #region IGeometrySink Members
 
-            public void Arc(float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc)
+            public void Arc(
+                float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc)
             {
                 Begin();
 
@@ -350,7 +363,8 @@ namespace Ibinimator.Renderer.Direct2D
                     ArcSize = largeArc ? D2D1.ArcSize.Large : D2D1.ArcSize.Small,
                     Point = new RawVector2(x, y),
                     RotationAngle = angle,
-                    SweepDirection = clockwise ? D2D1.SweepDirection.Clockwise : D2D1.SweepDirection.CounterClockwise
+                    SweepDirection = clockwise ? D2D1.SweepDirection.Clockwise
+                        : D2D1.SweepDirection.CounterClockwise
                 });
 
                 (_x, _y) = (x, y);

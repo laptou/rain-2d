@@ -35,7 +35,7 @@ namespace Ibinimator.Svg
 
             StrokeLineCap = LazyGet(element, "stroke-linecap", LineCap.Butt, true);
             StrokeLineJoin = LazyGet(element, "stroke-linejoin", LineJoin.Miter, true);
-            StrokeMiterLimit = LazyGet(element, "stroke-linejoin", 4f, true);
+            StrokeMiterLimit = LazyGet(element, "stroke-miterlimit", 4f, true);
         }
 
         public override XElement ToXml(SvgContext context)
@@ -49,6 +49,9 @@ namespace Ibinimator.Svg
             LazySet(element, "stroke-dasharray", StrokeDashArray);
             LazySet(element, "stroke-dash-offset", StrokeDashOffset);
             LazySet(element, "stroke-opacity", StrokeOpacity, 1);
+            LazySet(element, "stroke-linecap", StrokeLineCap);
+            LazySet(element, "stroke-linejoin", StrokeLineJoin);
+            LazySet(element, "stroke-miterlimit", StrokeMiterLimit);
             LazySet(element, "stroke-width", StrokeWidth, new Length(1, LengthUnit.Pixels));
 
             return element;

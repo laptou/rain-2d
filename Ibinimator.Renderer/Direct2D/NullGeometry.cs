@@ -26,6 +26,7 @@ namespace Ibinimator.Renderer.Direct2D
         public IGeometrySink Open() { throw new InvalidOperationException(); }
         public IGeometry Outline(float width) { return new NullGeometry(); }
         public IEnumerable<PathInstruction> Read() { yield break; }
+        public IEnumerable<PathNode> ReadNodes() { yield break; }
         public void Read(IGeometrySink sink) { }
         public bool StrokeContains(float x, float y, float width) { return false; }
         public IGeometry Transform(Matrix3x2 transform) { return new NullGeometry(); }

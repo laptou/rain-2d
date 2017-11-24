@@ -3,12 +3,13 @@
              xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
              xmlns:util="clr-namespace:Ibinimator.View.Utility"
-             StartupUri="View/MainView.xaml">
+             ShutdownMode="OnMainWindowClose" StartupUri="View/MainView.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <util:DesignerTimeResourceDictionary DesignTimeSource="Theme.Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
             <FontFamily x:Key="UIFont">/Ibinimator;component/Resources/Font/#Roboto</FontFamily>
 
             <Style x:Key="Icon" TargetType="{x:Type control:SvgImage}">
@@ -925,7 +926,21 @@
                 </ControlTemplate.Triggers>
             </ControlTemplate>
 
+            <Style TargetType="{x:Type Separator}">
+                <Setter Property="BorderBrush" Value="{DynamicResource T2Brush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Opacity" Value="0.5" />
+                <Setter Property="Panel.ZIndex" Value="9999" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
 
+            <Style TargetType="{x:Type StatusBar}">
+                <Setter Property="Background" Value="{DynamicResource L1Brush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource T2Brush}" />
+                <Setter Property="BorderThickness" Value="0,1,0,0" />
+                <Setter Property="Padding" Value="5,0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

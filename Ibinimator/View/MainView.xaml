@@ -729,15 +729,16 @@
                             <TreeView.Resources>
                                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                                     <Setter Property="Focusable" Value="False" />
-                                    <Setter Property="Height" Value="16" />
+                                    <Setter Property="Height" Value="12" />
                                     <Setter Property="Margin" Value="0" />
                                     <Setter Property="Padding" Value="0" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                                <Border Width="16" Height="16"
+                                                <Border Width="12" Height="12"
                                                         Background="Transparent">
                                                     <control:SvgImage x:Name="ExpandPath"
+                                                                      Width="12" Height="12"
                                                                       Cursor="Hand" RenderTransformOrigin="0.5,0.5"
                                                                       Source="{DynamicResource IconExpander}"
                                                                       Style="{StaticResource Icon}">
@@ -758,7 +759,7 @@
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
-                                    <Setter Property="Width" Value="16" />
+                                    <Setter Property="Width" Value="12" />
                                 </Style>
                             </TreeView.Resources>
                             <i:Interaction.Triggers>
@@ -767,13 +768,13 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type model:Layer}" ItemsSource="{Binding SubLayers}">
+                                <HierarchicalDataTemplate DataType="{x:Type model:ILayer}" ItemsSource="{Binding SubLayers}">
                                     <TextBlock x:Name="layerName"
-                                               FontWeight="Normal"
+                                               FontWeight="Bold"
                                                Text="{Binding Name}" />
                                     <HierarchicalDataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
-                                            <Setter TargetName="layerName" Property="Opacity" Value="0.56" />
+                                            <Setter TargetName="layerName" Property="FontWeight" Value="Normal" />
                                             <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat=(\{0\})}" />
                                         </DataTrigger>
                                     </HierarchicalDataTemplate.Triggers>
@@ -798,7 +799,6 @@
                                                     <Grid Margin="19,0,0,0" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto" MinWidth="19" />
-                                                            <ColumnDefinition Width="Auto" />
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <Grid.RowDefinitions>
@@ -809,14 +809,19 @@
                                                                       ClickMode="Press"
                                                                       IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                                                                       Style="{StaticResource ExpandCollapseToggleStyle}" />
+
+                                                        <Separator Grid.ColumnSpan="2"
+                                                                   Margin="0,0,0,-10" VerticalAlignment="Bottom" />
+
                                                         <ContentPresenter x:Name="PART_Header"
                                                                           Grid.Column="1"
                                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                                           ContentSource="Header"
                                                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                                         <ItemsPresenter x:Name="ItemsHost"
-                                                                        Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                                                                        Grid.Row="1" Grid.Column="1"
                                                                         Margin="0,10,0,0" />
+
                                                     </Grid>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
@@ -871,6 +876,7 @@
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Foreground" Value="{DynamicResource T2Brush}" />
                                         <Style.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter Property="FontWeight" Value="Bold" />
@@ -885,14 +891,15 @@
                                 </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type renderer:IOperationCommand}">
-                                        <TextBlock x:Name="HistoryRecordDescription"
-                                                   Margin="8,4"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}}">
+                                        <TextBlock x:Name="HistoryRecordDescription" Margin="8,4">
                                             <Run Text="{Binding Description, Mode=OneWay}" />
-                                        </TextBlock>
+                                            [<Run Text="{Binding Id, Mode=OneWay}" />
+                                            ]</TextBlock>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
+                            <TextBlock Text="{Binding HistoryManager.Position}" />
+
                         </Grid>
                     </TabItem>
                 </TabControl>

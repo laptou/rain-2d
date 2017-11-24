@@ -28,6 +28,8 @@ namespace Ibinimator.Service
                 Brush = new SolidColorBrushInfo(new Color(0, 0, 0))
             };
 
+            Stroke.PropertyChanged += StrokeOnPropertyChanged;
+
             PropertyChanged += OnPropertyChanged;
         }
 
@@ -46,11 +48,20 @@ namespace Ibinimator.Service
                         Context.ToolManager.Tool?.ApplyFill(Fill);
                         break;
                     case nameof(Stroke):
+                        Stroke.PropertyChanged -= StrokeOnPropertyChanged;
+                        Stroke.PropertyChanged += StrokeOnPropertyChanged;
+
                         Context.ToolManager.Tool?.ApplyStroke(Stroke);
+
                         break;
                 }
             }
-            //});
+        }
+
+        private void StrokeOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            Context.ToolManager.Tool?.ApplyStroke(Stroke);
+            RaisePropertyChanged(nameof(Stroke));
         }
 
         private void OnUpdated(object sender, EventArgs args)
@@ -62,7 +73,11 @@ namespace Ibinimator.Service
                 Fill = filled.Fill;
 
             if (layer is IStrokedLayer stroked)
+            {
                 Stroke = stroked.Stroke;
+                Stroke.PropertyChanged -= StrokeOnPropertyChanged;
+                Stroke.PropertyChanged += StrokeOnPropertyChanged;
+            }
 
             _selecting = false;
         }

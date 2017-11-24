@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using static System.Math;
 
 namespace Ibinimator.Core.Utility
 {
     public static class MathUtils
     {
-        public const float TwoPi = (float) Math.PI * 2;
-        public const float PiOverTwo = (float) Math.PI / 2;
-        public const float Pi = (float) Math.PI;
+        public const float TwoPi = (float) PI * 2;
+        public const float PiOverTwo = (float) PI / 2;
+        public const float Pi = (float) PI;
         public const float PiOverFour = PiOverTwo / 2;
         public const float Epsilon = 0.0001f;
 
@@ -43,7 +44,7 @@ namespace Ibinimator.Core.Utility
 
         public static float Angle(Vector2 pos, bool reverse)
         {
-            return (float) Math.Atan2(reverse ? -pos.Y : pos.Y, pos.X);
+            return (float) Atan2(reverse ? -pos.Y : pos.Y, pos.X);
         }
 
         public static (float left, float top, float right, float bottom) Bounds(
@@ -93,10 +94,10 @@ namespace Ibinimator.Core.Utility
             Vector2 v2;
             var r = Abs(ray);
             var o = Abs(new Vector2(bounds.Right, bounds.Top));
-            var angle = Math.Atan2(-r.Y, r.X);
-            var tan = (float) Math.Tan(angle);
+            var angle = Atan2(-r.Y, r.X);
+            var tan = (float) Tan(angle);
 
-            if (Math.Abs(angle) > Math.Abs(Math.Atan2(-o.Y, o.X)))
+            if (Math.Abs(angle) > Math.Abs(Atan2(-o.Y, o.X)))
             {
                 v1 = new Vector2(bounds.Bottom / tan, bounds.Bottom);
                 v2 = new Vector2(bounds.Top / tan, bounds.Top);
@@ -116,10 +117,10 @@ namespace Ibinimator.Core.Utility
             var scale = m.GetScale();
             var translation = m.Translation;
             var skewx = m.GetRotation();
-            var skewy = (float) Math.Atan2(m.M22, m.M21) - PiOverTwo;
+            var skewy = (float) Atan2(m.M22, m.M21) - PiOverTwo;
             var rotation = Wrap(skewx, TwoPi);
             var skew = Wrap(skewy - skewx, TwoPi);
-            scale.Y *= (float) Math.Cos(skew);
+            scale.Y *= (float) Cos(skew);
 
             return (scale, rotation, translation, -skew);
         }
@@ -142,7 +143,7 @@ namespace Ibinimator.Core.Utility
 
         public static float GetRotation(this Matrix3x2 m)
         {
-            return Wrap((float) Math.Atan2(m.M12, m.M11), TwoPi);
+            return Wrap((float) Atan2(m.M12, m.M11), TwoPi);
         }
 
         public static Vector2 GetScale(this Matrix3x2 m)
@@ -154,7 +155,8 @@ namespace Ibinimator.Core.Utility
 
         public static float GetShear(this Matrix3x2 m)
         {
-            return Wrap((float) Math.Atan2(m.M22, m.M21) - PiOverTwo, TwoPi) - GetRotation(m);
+            var shear = (float) Atan2(m.M22, m.M21) - PiOverTwo;
+            return Wrap(GetRotation(m) - shear, -Pi, Pi);
         }
 
         public static Matrix3x2 Invert(Matrix3x2 mat)
@@ -181,8 +183,8 @@ namespace Ibinimator.Core.Utility
 
         public static Vector2 Rotate(Vector2 v, float theta)
         {
-            var cs = (float) Math.Cos(theta);
-            var sn = (float) Math.Sin(theta);
+            var cs = (float) Cos(theta);
+            var sn = (float) Sin(theta);
 
             var px = v.X * cs - v.Y * sn;
             var py = v.X * sn + v.Y * cs;
@@ -202,7 +204,7 @@ namespace Ibinimator.Core.Utility
 
         public static Vector2 ShearX(Vector2 v, float theta)
         {
-            return new Vector2(v.X + (float) Math.Tan(theta) * v.Y, v.Y);
+            return new Vector2(v.X + (float) Tan(theta) * v.Y, v.Y);
         }
 
         public static Vector2 ShearX(Vector2 v, Vector2 o, float theta)
@@ -227,16 +229,18 @@ namespace Ibinimator.Core.Utility
 
         public static Vector2 UnitVector(float angle)
         {
-            return new Vector2((float) Math.Cos(angle), (float) Math.Sin(angle));
+            return new Vector2((float) Cos(angle), (float) Sin(angle));
         }
 
-        public static float Wrap(float f, float r) { return (f % r + r) % r; }
+        public static float Wrap(float f, float r) => Wrap(f, 0, r);
+
+        public static float Wrap(float f, float min, float max) { return Math.Abs(f - min) % (max - min) + min; }
 
         public static int Wrap(int f, int r) { return (f % r + r) % r; }
 
         public static Vector2 Angle(float a)
         {
-            return new Vector2((float) Math.Cos(a), -(float) Math.Sin(a));
+            return new Vector2((float) Cos(a), -(float) Sin(a));
         }
 
         public static float Round(float rotate, float floor, float ceiling)
