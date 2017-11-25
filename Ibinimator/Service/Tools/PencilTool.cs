@@ -18,14 +18,16 @@ namespace Ibinimator.Service.Tools
         private IList<PathNode> _nodes;
         private (bool down, bool moved, Vector2 pos) _mouse;
         private (bool alt, bool shift) _kbd;
+        private Vector2? _start;
 
         private void Remove(int index)
         {
             Context.HistoryManager.Do(
                 new ModifyPathCommand(
                     Context.HistoryManager.Position + 1,
-                    CurrentPath,
-                    new[] { index }));
+                    SelectedPath,
+                    new[] {index},
+                    ModifyPathCommand.NodeOperation.Remove));
 
             _nodes = GetGeometricNodes().ToList();
         }
@@ -43,12 +45,12 @@ namespace Ibinimator.Service.Tools
 
         private IEnumerable<PathNode> GetGeometricNodes()
         {
-            if (CurrentPath == null) return Enumerable.Empty<PathNode>();
+            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
 
-            return Context.CacheManager.GetGeometry(CurrentPath).ReadNodes();
+            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
         }
 
-        public Path CurrentPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
+        public Path SelectedPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
 
         public IToolOption[] Options => new IToolOption[0]; // TODO: add actual tool options
 
@@ -59,19 +61,11 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush)
-        {
-            throw new NotImplementedException();
-        }
+        public void ApplyFill(BrushInfo brush) { throw new NotImplementedException(); }
 
-        public void ApplyStroke(PenInfo pen)
-        {
-            throw new NotImplementedException();
-        }
+        public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
         public bool KeyDown(Key key, ModifierKeys modifiers)
         {
@@ -108,7 +102,7 @@ namespace Ibinimator.Service.Tools
         {
             _mouse = (true, false, pos);
 
-            if (CurrentPath == null)
+            if (SelectedPath == null)
             {
                 var hit = Root.HitTest<Path>(Context.CacheManager, pos, 0);
 
@@ -117,22 +111,80 @@ namespace Ibinimator.Service.Tools
                     hit.Selected = true;
                     return true;
                 }
-
+                
                 Context.SelectionManager.ClearSelection();
+
+                if (_start == null)
+                {
+                    _start = pos;
+                    return true;
+                }
 
                 var path = new Path
                 {
                     Fill = Context.BrushManager.Fill,
-                    Stroke = Context.BrushManager.Stroke
+                    Stroke = Context.BrushManager.Stroke,
+                    Instructions =
+                    {
+                        new MovePathInstruction(_start.Value),
+                        new LinePathInstruction(_mouse.pos)
+                    }
                 };
 
                 Context.HistoryManager.Do(
                     new AddLayerCommand(Context.HistoryManager.Position + 1,
-                        Root,
-                        path));
+                                        Root,
+                                        path));
 
                 path.Selected = true;
+                _start = null;
             }
+            else
+            {
+                var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, SelectedPath.AbsoluteTransform));
+                var found = false;
+                foreach (var node in _nodes)
+                {
+                    if (Vector2.DistanceSquared(t(node.Position), pos) < 9)
+                    {
+                        found = true;
+
+                        if (_kbd.shift)
+                        {
+                            // shift + click = remove node
+                            Remove(node.Index);
+                        }
+                        else
+                        {
+                            // click on start node = close figure
+                            if (node.Index == 0 || _nodes[node.Index - 1].FigureEnd != null)
+                            {
+                                Context.HistoryManager.Do(
+                                    new ModifyPathCommand(
+                                        Context.HistoryManager.Position + 1,
+                                        SelectedPath, new[] { _nodes.Count - 1 }, 
+                                        ModifyPathCommand.NodeOperation.EndFigureClosed));
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                // if the user didn't click on any existing nodes, create a new one
+                if (!found)
+                {
+                    var tpos = Vector2.Transform(_mouse.pos,
+                                                 MathUtils.Invert(SelectedPath.AbsoluteTransform));
+
+                    Context.HistoryManager.Do(
+                        new ModifyPathCommand(
+                            Context.HistoryManager.Position + 1,
+                            SelectedPath, new[] {new PathNode(_nodes.Count, tpos)},
+                            _nodes.Count, ModifyPathCommand.NodeOperation.Add));
+                }
+            }
+
+            _nodes = GetGeometricNodes().ToList();
 
             Context.SelectionManager.Update(true);
 
@@ -157,24 +209,80 @@ namespace Ibinimator.Service.Tools
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
-            if (CurrentPath == null) return;
+            var zoom = view.Zoom;
 
-            var transform = CurrentPath.AbsoluteTransform;
+            var p = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.NodeOutline)));
+            var p2 = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+
+            var radius = 4f / zoom;
+
+            if (_start != null)
+            {
+                target.DrawLine(_start.Value, _mouse.pos, p);
+
+                var rect =
+                    new RectangleF(_start.Value.X - radius,
+                                   _start.Value.Y - radius,
+                                   radius * 2,
+                                   radius * 2);
+
+                target.FillRectangle(rect, GetBrush(false, false));
+                target.DrawRectangle(rect, p2);
+            }
+
+            if (SelectedPath == null)
+            {
+                p.Dispose();
+                p2.Dispose();
+                return;
+            }
+
+            var transform = SelectedPath.AbsoluteTransform;
             target.Transform(transform);
 
-            using (var geom = cache.GetGeometry(CurrentPath))
+            using (var geom = cache.GetGeometry(SelectedPath))
             using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
             {
                 target.DrawGeometry(geom, pen);
             }
 
             target.Transform(MathUtils.Invert(transform));
+
+            IBrush GetBrush(bool over, bool down)
+            {
+                if (over)
+                    if (down) return cache.GetBrush(nameof(EditorColors.NodeClick));
+                    else return cache.GetBrush(nameof(EditorColors.NodeHover));
+
+                return cache.GetBrush(nameof(EditorColors.Node));
+            }
+
+            
+
+            foreach (var node in _nodes)
+            {
+                var pos = Vector2.Transform(node.Position, transform);
+
+                var rect =
+                    new RectangleF(pos.X - radius,
+                                   pos.Y - radius,
+                                   radius * 2,
+                                   radius * 2);
+
+                var over = rect.Contains(_mouse.pos);
+
+                target.FillRectangle(rect, GetBrush(over, _mouse.down));
+
+                target.DrawRectangle(rect, node.Index == 0 ? p2 : p);
+            }
+
+            // do not dispose the brushes! they are being used by the cache manager
+            // and do not automatically regenerated b/c they are resource brushes
+            p.Dispose();
+            p2.Dispose();
         }
 
-        public bool TextInput(string text)
-        {
-            return false;
-        }
+        public bool TextInput(string text) { return false; }
 
         public string CursorImage => null;
 

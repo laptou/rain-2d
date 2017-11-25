@@ -83,18 +83,18 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     Context.HistoryManager.Do(new ApplyFormatCommand(
-                        Context.HistoryManager.Position + 1,
-                        new ITextLayer[] {CurrentText},
-                        _fontFamilyOption.Value,
-                        CurrentText.FontSize,
-                        CurrentText.FontStretch,
-                        CurrentText.FontStyle,
-                        CurrentText.FontWeight,
-                        new[] {CurrentText.FontFamilyName},
-                        new[] {CurrentText.FontSize},
-                        new[] {CurrentText.FontStretch},
-                        new[] {CurrentText.FontStyle},
-                        new[] {CurrentText.FontWeight}));
+                                                  Context.HistoryManager.Position + 1,
+                                                  new ITextLayer[] {CurrentText},
+                                                  _fontFamilyOption.Value,
+                                                  CurrentText.FontSize,
+                                                  CurrentText.FontStretch,
+                                                  CurrentText.FontStyle,
+                                                  CurrentText.FontWeight,
+                                                  new[] {CurrentText.FontFamilyName},
+                                                  new[] {CurrentText.FontSize},
+                                                  new[] {CurrentText.FontStretch},
+                                                  new[] {CurrentText.FontStyle},
+                                                  new[] {CurrentText.FontWeight}));
                 else
                     Format(new Format
                     {
@@ -128,18 +128,18 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     Context.HistoryManager.Do(new ApplyFormatCommand(
-                        Context.HistoryManager.Position + 1,
-                        new ITextLayer[] {CurrentText},
-                        CurrentText.FontFamilyName,
-                        _fontSizeOption.Value,
-                        CurrentText.FontStretch,
-                        CurrentText.FontStyle,
-                        CurrentText.FontWeight,
-                        new[] {CurrentText.FontFamilyName},
-                        new[] {CurrentText.FontSize},
-                        new[] {CurrentText.FontStretch},
-                        new[] {CurrentText.FontStyle},
-                        new[] {CurrentText.FontWeight}));
+                                                  Context.HistoryManager.Position + 1,
+                                                  new ITextLayer[] {CurrentText},
+                                                  CurrentText.FontFamilyName,
+                                                  _fontSizeOption.Value,
+                                                  CurrentText.FontStretch,
+                                                  CurrentText.FontStyle,
+                                                  CurrentText.FontWeight,
+                                                  new[] {CurrentText.FontFamilyName},
+                                                  new[] {CurrentText.FontSize},
+                                                  new[] {CurrentText.FontStretch},
+                                                  new[] {CurrentText.FontStyle},
+                                                  new[] {CurrentText.FontWeight}));
                 else
                     Format(new Format
                     {
@@ -167,18 +167,18 @@ namespace Ibinimator.Service.Tools
 
                 if (_selectionRange == 0)
                     Context.HistoryManager.Do(new ApplyFormatCommand(
-                        Context.HistoryManager.Position + 1,
-                        new ITextLayer[] {CurrentText},
-                        CurrentText.FontFamilyName,
-                        CurrentText.FontSize,
-                        stretch,
-                        style,
-                        weight,
-                        new[] {CurrentText.FontFamilyName},
-                        new[] {CurrentText.FontSize},
-                        new[] {CurrentText.FontStretch},
-                        new[] {CurrentText.FontStyle},
-                        new[] {CurrentText.FontWeight}));
+                                                  Context.HistoryManager.Position + 1,
+                                                  new ITextLayer[] {CurrentText},
+                                                  CurrentText.FontFamilyName,
+                                                  CurrentText.FontSize,
+                                                  stretch,
+                                                  style,
+                                                  weight,
+                                                  new[] {CurrentText.FontFamilyName},
+                                                  new[] {CurrentText.FontSize},
+                                                  new[] {CurrentText.FontStretch},
+                                                  new[] {CurrentText.FontStyle},
+                                                  new[] {CurrentText.FontWeight}));
                 else
                     Format(new Format
                     {
@@ -370,10 +370,7 @@ namespace Ibinimator.Service.Tools
         }
 
 
-        public void Dispose()
-        {
-            _dwFontCollection?.Dispose();
-        }
+        public void Dispose() { _dwFontCollection?.Dispose(); }
 
         public bool KeyDown(Key key, ModifierKeys mods)
         {
@@ -409,7 +406,7 @@ namespace Ibinimator.Service.Tools
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
                             var prev = text.Substring(0, _selectionIndex + _selectionRange)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var end = text.Substring(_selectionIndex + _selectionRange)
                                           .IndexOf("\n", StringComparison.Ordinal)
@@ -447,10 +444,10 @@ namespace Ibinimator.Service.Tools
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
                             var start = text.Substring(0, _selectionIndex)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var prev = text.Substring(0, start)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var pos = _selectionIndex - prev;
 
@@ -461,10 +458,10 @@ namespace Ibinimator.Service.Tools
                         else
                         {
                             var start = text.Substring(0, _selectionIndex)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var prev = text.Substring(0, start)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var pos = _selectionIndex - prev;
 
@@ -492,6 +489,9 @@ namespace Ibinimator.Service.Tools
                         _selectionIndex = 0;
                         break;
                     case Key.Escape:
+                        if (_selectionRange == 0)
+                            CurrentText.Selected = false;
+
                         _selectionRange = 0;
                         break;
 
@@ -578,8 +578,9 @@ namespace Ibinimator.Service.Tools
                         return false;
                 }
 
-                _selectionIndex = MathUtils.Clamp(0, CurrentText.Value.Length, _selectionIndex);
-                _selectionRange = MathUtils.Clamp(0, CurrentText.Value.Length - _selectionIndex, _selectionRange);
+                _selectionIndex = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0, _selectionIndex);
+                _selectionRange = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0 - _selectionIndex,
+                                                  _selectionRange);
 
                 Update();
 
@@ -589,10 +590,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
-        {
-            return false;
-        }
+        public bool KeyUp(Key key, ModifierKeys modifiers) { return false; }
 
         public bool MouseDown(Vector2 pos)
         {
@@ -617,7 +615,8 @@ namespace Ibinimator.Service.Tools
                 {
                     var layout = Context.CacheManager.GetTextLayout(CurrentText);
 
-                    _selectionIndex = layout.GetPosition(tlpos, out var isTrailingHit) + (isTrailingHit ? 1 : 0);
+                    _selectionIndex = layout.GetPosition(tlpos, out var isTrailingHit) +
+                                      (isTrailingHit ? 1 : 0);
 
                     var end = layout.GetPosition(tpos, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
@@ -658,8 +657,8 @@ namespace Ibinimator.Service.Tools
 
                     Manager.Context.HistoryManager.Do(
                         new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,
-                            root,
-                            text));
+                                            root,
+                                            text));
 
                     text.Selected = true;
                 }
@@ -731,7 +730,8 @@ namespace Ibinimator.Service.Tools
 
             if (_selectionRange == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
             {
-                using (var pen = target.CreatePen(_caretSize.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
+                using (var pen =
+                    target.CreatePen(_caretSize.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
                 {
                     target.DrawLine(
                         _caretPosition,

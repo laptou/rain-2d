@@ -32,7 +32,7 @@ namespace Ibinimator.Renderer.Direct2D
             _geom = new D2D1.GeometryGroup(_target.Factory, D2D1.FillMode.Winding, nativeGeometries);
         }
 
-        private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+        private D2D1.PathGeometry Path => (_geom != null ? _geom : null)?.QueryInterfaceOrNull<D2D1.PathGeometry>();
 
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
         {

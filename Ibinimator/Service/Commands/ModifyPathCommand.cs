@@ -24,26 +24,33 @@ namespace Ibinimator.Service.Commands
             Remove,
             Move,
             MoveInHandle,
-            MoveOutHandle
+            MoveOutHandle,
+            EndFigureClosed,
+            EndFigureOpen
         }
 
         #endregion
 
         /// <summary>
-        /// This will create a command with <see cref="NodeOperation.Add"/> that
-        /// inserts the nodes given by <paramref name="nodes"/>.
+        /// This will create a command with <see cref="NodeOperation.Add"/> 
+        /// that inserts the nodes given 
+        /// by <paramref name="nodes"/>.
         /// </summary>
         /// <param name="id">The command ID.</param>
         /// <param name="target">The path to modify.</param>
         /// <param name="nodes">The nodes to insert.</param>
         /// <param name="index">The index at which to insert them.</param>
+        /// <param name="operation">The operation to apply.</param>
         public ModifyPathCommand(
-            long id, Path target, IEnumerable<PathNode> nodes, int index) :
+            long id, Path target, IEnumerable<PathNode> nodes, int index, NodeOperation operation) :
             base(id, new[] {target})
         {
+            if (operation != NodeOperation.Add)
+                throw new ArgumentException(nameof(operation));
+
             Nodes = nodes.ToArray();
             Indices = new[] {index};
-            Operation = NodeOperation.Add;
+            Operation = operation;
         }
 
         /// <summary>
@@ -64,7 +71,7 @@ namespace Ibinimator.Service.Commands
             if (operation != NodeOperation.Move &&
                 operation != NodeOperation.MoveInHandle &&
                 operation != NodeOperation.MoveOutHandle)
-                throw new InvalidOperationException();
+                throw new ArgumentException(nameof(operation));
 
             Indices = indices;
             Array.Sort(Indices);
@@ -74,19 +81,26 @@ namespace Ibinimator.Service.Commands
         }
 
         /// <summary>
-        /// This will create a command with <see cref="NodeOperation.Remove"/> that
-        /// remove the nodes at indices given by <paramref name="indices"/>.
+        /// This will create a command with <see cref="NodeOperation.Remove"/>, 
+        /// <see cref="NodeOperation.EndFigureClosed"/> or x that
+        /// removes the nodes at indices given by <paramref name="indices"/> or closes
+        /// the path at those nodes.
         /// </summary>
         /// <param name="id">The command ID.</param>
         /// <param name="target">The path to modify.</param>
         /// <param name="indices">The indices of the nodes to remove.</param>
-        public ModifyPathCommand(long id, Path target, int[] indices) :
+        /// <param name="operation">The operation to apply.</param>
+        public ModifyPathCommand(long id, Path target, int[] indices, NodeOperation operation) :
             base(id, new[] {target})
         {
+            if (operation != NodeOperation.Remove &&
+                operation != NodeOperation.EndFigureClosed)
+                throw new ArgumentException(nameof(operation));
+
             Indices = indices;
             Array.Sort(Indices);
 
-            Operation = NodeOperation.Remove;
+            Operation = operation;
         }
 
         public Vector2 Delta { get; }
@@ -118,10 +132,7 @@ namespace Ibinimator.Service.Commands
 
         public NodeOperation Operation { get; }
 
-        public override void Do(IArtContext context)
-        {
-            Apply(context, Operation, Indices, Nodes, Delta);
-        }
+        public override void Do(IArtContext context) { Apply(context, Operation, Indices, Nodes, Delta); }
 
         private void Apply(
             IArtContext context, NodeOperation operation, IReadOnlyList<int> indices,
@@ -135,7 +146,18 @@ namespace Ibinimator.Service.Commands
             {
                 case NodeOperation.Add:
                     for (var i = 0; i < Indices.Length; i++)
+                    {
+                        if (nodes.Count == indices[i] + i)
+                            nodes[indices[i] + i - 1] =
+                                new PathNode(nodes[indices[i] + i - 1].Index,
+                                             nodes[indices[i] + i - 1].Position,
+                                             nodes[indices[i] + i - 1].IncomingControl,
+                                             nodes[indices[i] + i - 1].OutgoingControl,
+                                             null);
+
                         nodes.Insert(indices[i] + i, targetNodes[i]);
+                    }
+
                     break;
                 case NodeOperation.Remove:
                     Nodes = new PathNode[indices.Count];
@@ -143,7 +165,18 @@ namespace Ibinimator.Service.Commands
                     for (var i = 0; i < indices.Count; i++)
                     {
                         Nodes[i] = nodes[indices[i]];
-                        nodes.RemoveAt(indices[i] - i);
+
+                        var index = indices[i] - i;
+                        var node = nodes[index];
+                        nodes.RemoveAt(index);
+
+                        // update the node before the one that was removed with
+                        // the figure ending
+                        nodes[index - 1] = new PathNode(nodes[index - 1].Index,
+                                                        nodes[index - 1].Position + delta,
+                                                        nodes[index - 1].IncomingControl + delta,
+                                                        nodes[index - 1].OutgoingControl + delta,
+                                                        node.FigureEnd);
                     }
                     break;
                 case NodeOperation.Move:
@@ -169,6 +202,38 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].IncomingControl,
                                                     nodes[index].OutgoingControl + delta,
                                                     nodes[index].FigureEnd);
+                    break;
+                case NodeOperation.EndFigureClosed:
+                    Nodes = new PathNode[indices.Count];
+
+                    for (var i = 0; i < indices.Count; i++)
+                    {
+                        Nodes[i] = nodes[indices[i]];
+
+                        var index = indices[i];
+
+                        nodes[index] = new PathNode(nodes[index].Index,
+                                                    nodes[index].Position,
+                                                    nodes[index].IncomingControl,
+                                                    nodes[index].OutgoingControl,
+                                                    PathFigureEnd.Closed);
+                    }
+                    break;
+                case NodeOperation.EndFigureOpen:
+                    Nodes = new PathNode[indices.Count];
+
+                    for (var i = 0; i < indices.Count; i++)
+                    {
+                        Nodes[i] = nodes[indices[i]];
+
+                        var index = indices[i];
+
+                        nodes[index] = new PathNode(nodes[index].Index,
+                                                    nodes[index].Position,
+                                                    nodes[index].IncomingControl,
+                                                    nodes[index].OutgoingControl,
+                                                    PathFigureEnd.Open);
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -196,6 +261,12 @@ namespace Ibinimator.Service.Commands
                     break;
                 case NodeOperation.MoveOutHandle:
                     Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
+                    break;
+                case NodeOperation.EndFigureClosed:
+                    Apply(context, NodeOperation.EndFigureOpen, Indices, Nodes, -Delta);
+                    break;
+                case NodeOperation.EndFigureOpen:
+                    Apply(context, NodeOperation.EndFigureClosed, Indices, Nodes, -Delta);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

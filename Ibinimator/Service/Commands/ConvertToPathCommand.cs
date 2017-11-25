@@ -13,9 +13,10 @@ namespace Ibinimator.Service.Commands
         private Path[] _products;
         private IContainerLayer[] _targetParents;
 
-        public ConvertToPathCommand(long id, IGeometricLayer[] targets) : base(id, targets)
+        public ConvertToPathCommand(long id, IReadOnlyCollection<IGeometricLayer> targets) 
+            : base(id, targets.Where(l => !(l is Path)).ToArray())
         {
-            Description = $"Converted {targets.Length} layer(s) to paths";
+            Description = $"Converted {targets.Count} layer(s) to paths";
         }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)

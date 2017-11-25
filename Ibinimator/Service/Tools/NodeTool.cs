@@ -25,12 +25,18 @@ namespace Ibinimator.Service.Tools
         {
             Manager = toolManager;
 
-            _nodes = GetGeometricNodes().ToList();
+            UpdateNodes();
 
-            Manager.Context.SelectionManager.Updated += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
+            Manager.Context.SelectionManager.Updated += OnUpdated;
 
-            Manager.Context.HistoryManager.Traversed += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
+            Manager.Context.HistoryManager.Traversed += OnTraversed;
         }
+
+        private void OnTraversed(object sender, long e) { UpdateNodes(); }
+
+        private void OnUpdated(object sender, EventArgs e) { UpdateNodes(); }
+
+        private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }
 
         public IGeometricLayer SelectedLayer =>
             Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
@@ -117,7 +123,7 @@ namespace Ibinimator.Service.Tools
 
             newCmd.Do(Context);
 
-            _nodes = GetGeometricNodes().ToList();
+            UpdateNodes();
 
             MergeCommands(newCmd);
         }
@@ -130,9 +136,10 @@ namespace Ibinimator.Service.Tools
                 new ModifyPathCommand(
                     Context.HistoryManager.Position + 1,
                     SelectedLayer as Path,
-                    indices));
+                    indices,
+                    ModifyPathCommand.NodeOperation.Remove));
 
-            _nodes = GetGeometricNodes().ToList();
+            UpdateNodes();
 
             foreach (var index in indices)
                 _selection.Remove(index);
@@ -144,7 +151,14 @@ namespace Ibinimator.Service.Tools
 
         public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
 
-        public void Dispose() { _selection.Clear(); }
+        public void Dispose()
+        {
+            _selection.Clear();
+
+            Manager.Context.SelectionManager.Updated -= OnUpdated;
+
+            Manager.Context.HistoryManager.Traversed -= OnTraversed;
+        }
 
         public bool KeyDown(Key key, ModifierKeys modifiers)
         {
