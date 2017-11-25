@@ -361,6 +361,7 @@ namespace Ibinimator.ViewModel
                     return SelectionCommands.AlignCenterXCommand;
                 case "selection.align-center-y":
                     return SelectionCommands.AlignCenterYCommand;
+                case "help.license": return ViewCommands.LicenseCommand;
                 default: return null;
             }
         }

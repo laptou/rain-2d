@@ -28,7 +28,8 @@ namespace Ibinimator.Renderer.Direct2D
         public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries)
             : this(target)
         {
-            Load(geometries.SelectMany(g => g.Read()));
+            var nativeGeometries = geometries.Select(g => ((Geometry) g)._geom).ToArray();
+            _geom = new D2D1.GeometryGroup(_target.Factory, D2D1.FillMode.Winding, nativeGeometries);
         }
 
         private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
@@ -170,6 +171,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             // maybe do a geometry realization, but that transforms this into a device-dependent
             // resource
+
         }
 
         public IGeometry Outline(float width)

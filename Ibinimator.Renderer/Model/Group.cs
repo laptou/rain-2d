@@ -110,20 +110,20 @@ namespace Ibinimator.Renderer.Model
                 .Aggregate((r1, r2) => RectangleF.Union(r1, r2));
         }
 
-        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+        public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
         {
             var hit = default(T);
 
             foreach (var layer in SubLayers)
             {
-                var result = layer.Hit<T>(cache, point, includeMe);
+                var result = layer.HitTest<T>(cache, point, minimumDepth - 1);
                 if (result == null) continue;
 
                 hit = result;
                 break;
             }
 
-            if (includeMe && hit != null)
+            if (minimumDepth <= 0 && hit != null)
                 return this is T t ? t : hit;
 
             return hit;

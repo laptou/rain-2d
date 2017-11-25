@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
@@ -47,10 +48,7 @@ namespace Ibinimator.Renderer.Direct2D
             _virtualTarget.Clear(null);
         }
 
-        public override IBitmap CreateBitmap(Stream stream)
-        {
-            return new Bitmap(this, stream);
-        }
+        public override IBitmap CreateBitmap(Stream stream) { return new Bitmap(this, stream); }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -97,21 +95,21 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(
                 Target,
                 new D2D.EllipseGeometry(
-                    Factory2D,
-                    new D2D.Ellipse(
-                        new RawVector2(cx, cy),
-                        rx,
-                        ry))
-                {
-                    FlatteningTolerance = 0.01f
-                });
+                        Factory2D,
+                        new D2D.Ellipse(
+                            new RawVector2(cx, cy),
+                            rx,
+                            ry))
+                    {
+                        FlatteningTolerance = 0.01f
+                    });
         }
 
         public override IGeometry CreateGeometry() { return new Geometry(Target); }
 
         public override IGeometry CreateGeometryGroup(params IGeometry[] geometries)
         {
-            if(geometries.Length == 0)
+            if (geometries.Length == 0)
                 return new NullGeometry();
 
             return new Geometry(Target, geometries);
@@ -149,10 +147,7 @@ namespace Ibinimator.Renderer.Direct2D
                                         y + h)));
         }
 
-        public override ITextLayout CreateTextLayout()
-        {
-            return new DirectWriteTextLayout(this);
-        }
+        public override ITextLayout CreateTextLayout() { return new DirectWriteTextLayout(this); }
 
         public override void Dispose()
         {
@@ -312,6 +307,8 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void FillGeometry(IGeometry geometry, IBrush brush)
         {
+            if (geometry == null || brush == null) return;
+
             Target.FillGeometry(
                 geometry as Geometry,
                 brush as Brush);

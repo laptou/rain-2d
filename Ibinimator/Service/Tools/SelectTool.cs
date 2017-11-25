@@ -8,6 +8,7 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
@@ -196,13 +197,18 @@ namespace Ibinimator.Service.Tools
 
             var bottom = Transform((x1 + x2) / 2, y2);
             handles.Add(bottom);
-            handles.Add(top - Vector2.Normalize(bottom - top) * 15 / view.Zoom);
 
-            using (var pen = target.CreatePen(2, cache.GetBrush("L1")))
+            var rotate = top - Vector2.Normalize(bottom - top) * 15 / view.Zoom;
+            handles.Add(rotate);
+
+            using (var pen = target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
             {
+                target.DrawLine(top, rotate, pen);
+
                 foreach (var v in handles)
                 {
-                    target.FillEllipse(v, 5f / view.Zoom, 5f / view.Zoom, cache.GetBrush("A1"));
+                    target.FillEllipse(v, 5f / view.Zoom, 5f / view.Zoom,
+                                       cache.GetBrush(nameof(EditorColors.SelectionHandle)));
                     target.DrawEllipse(v, 5f / view.Zoom, 5f / view.Zoom, pen);
                 }
             }

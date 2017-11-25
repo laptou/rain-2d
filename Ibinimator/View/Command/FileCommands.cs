@@ -51,9 +51,9 @@ namespace Ibinimator.View.Command
                     vm.Pan = Vector2.One * 10;
 
                     var artDim = Math.Max(vm.Document.Bounds.Width, vm.Document.Bounds.Height);
-                    // var viewDim = Math.Min(artCtx.ActualWidth, artCtx.ActualHeight);
+                    var viewDim = Math.Min(artCtx.RenderContext.Height, artCtx.RenderContext.Width);
 
-                    vm.Zoom = 1; //(float)(viewDim / (artDim + 20));
+                    vm.Zoom = viewDim / (artDim + 20);
                 }
             }
         }

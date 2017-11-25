@@ -12,6 +12,7 @@ using Ibinimator.Core.Utility;
 using Ibinimator.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
@@ -563,7 +564,7 @@ namespace Ibinimator.Service.Tools
                         if (_selectionRange > 0)
                             Remove(_selectionIndex, _selectionRange);
 
-                        var pasted = Clipboard.GetText();
+                        var pasted = App.Dispatcher.Invoke(Clipboard.GetText);
 
                         Insert(_selectionIndex, pasted);
 
@@ -729,7 +730,8 @@ namespace Ibinimator.Service.Tools
             target.Transform(CurrentText.AbsoluteTransform);
 
             if (_selectionRange == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-                using (var pen = target.CreatePen(_caretSize.X / 2, cache.GetBrush("T2")))
+            {
+                using (var pen = target.CreatePen(_caretSize.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
                 {
                     target.DrawLine(
                         _caretPosition,
@@ -738,12 +740,13 @@ namespace Ibinimator.Service.Tools
                             _caretPosition.Y + _caretSize.Y),
                         pen);
                 }
+            }
 
             if (_selectionRange > 0)
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(
                         selectionRect,
-                        cache.GetBrush("A1A"));
+                        cache.GetBrush(nameof(EditorColors.TextHighlight)));
 
             target.Transform(MathUtils.Invert(CurrentText.AbsoluteTransform));
 

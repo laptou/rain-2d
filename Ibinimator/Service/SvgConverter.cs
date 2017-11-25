@@ -39,7 +39,7 @@ namespace Ibinimator.Utility
             };
 
             foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(FromSvg))
-                doc.Root.Add(child, 0);
+                    doc.Root.Add(child, 0);
 
             return doc;
         }
@@ -48,7 +48,7 @@ namespace Ibinimator.Utility
         {
             Layer layer = null;
 
-            if (element is IContainerElement containerElement)
+            if (element is Svg.Group containerElement)
             {
                 var group = new Group();
 
@@ -203,7 +203,7 @@ namespace Ibinimator.Utility
                                     s.Color.Red,
                                     s.Color.Green,
                                     s.Color.Blue,
-                                    s.Color.Alpha),
+                                    s.Color.Alpha * s.Opacity),
                                 Offset = s.Offset.To(Pixels, 1)
                             })),
                         StartPoint =
@@ -253,7 +253,6 @@ namespace Ibinimator.Utility
 
             return null;
         }
-
 
         public static Svg.Document ToSvg(Document doc)
         {
@@ -381,7 +380,7 @@ namespace Ibinimator.Utility
                             new Length?(new Length(format.FontSize.Value, Points)) :
                             null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
-                    Position = format.Range.Length,
+                    Position = format.Range.Index,
 
                     Fill = ToSvg(format.Fill),
                     FillOpacity = format.Fill?.Opacity ?? 1,

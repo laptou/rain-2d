@@ -124,7 +124,7 @@ namespace Ibinimator.Svg
             if (style != null)
             {
                 var rules =
-                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.\, ]+);?")
+                    from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.\, _]+);?")
                     select (name: match.Groups[1].Value, value: match.Groups[2].Value);
 
                 foreach (var rule in rules)

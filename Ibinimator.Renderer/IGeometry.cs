@@ -45,7 +45,8 @@ namespace Ibinimator.Renderer
             {
                 if (!start)
                 {
-                    switch (instruction) {
+                    switch (instruction)
+                    {
                         case CubicPathInstruction cubic:
                             previousNode = new PathNode(
                                 previousNode.Index,
@@ -136,7 +137,6 @@ namespace Ibinimator.Renderer
         }
     }
 
-    [DebuggerDisplay("{" + nameof(Position) + "}, {" + nameof(FigureEnd) + "}")]
     public struct PathNode
     {
         public Vector2 Position { get; }
@@ -177,6 +177,24 @@ namespace Ibinimator.Renderer
             IncomingControl = incomingControl;
             OutgoingControl = outgoingControl;
             FigureEnd = figureEnd;
+        }
+
+        public override string ToString()
+        {
+            var str = "[" + Index + "]:: ";
+
+            if (IncomingControl != null)
+                str += "In: " + IncomingControl.Value + " ";
+
+            str += "Position: " + Position + " ";
+
+            if (OutgoingControl != null)
+                str += "Out: " + OutgoingControl.Value + " ";
+
+            if (FigureEnd != null)
+                str += "End: " + FigureEnd.Value + " ";
+
+            return str.Trim();
         }
     }
 

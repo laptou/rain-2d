@@ -18,7 +18,7 @@ namespace Ibinimator.Renderer
         string Text { get; }
         IBrush GetBrushForGlyph(int index);
         Format GetFormat(int index);
-        IGeometry GetGeometryForGlyph(int index);
+        IGeometry GetGeometryForGlyphRun(int index);
         int GetGlyphCount();
         int GetGlyphCountForGeometry(int index);
         IPen GetPenForGlyph(int index);

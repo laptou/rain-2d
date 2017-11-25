@@ -32,7 +32,7 @@
             <Ellipse Grid.Column="1"
                      Width="10" Height="10"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                     Stroke="Black" />
+                     Stroke="{DynamicResource T2Brush}" />
         </Grid>
 
         <Path x:Name="Triangle"
@@ -50,7 +50,7 @@
             <Ellipse x:Name="triangleHandle"
                      Width="10" Height="10"
                      Margin="-5,-5,0,0"
-                     Stroke="Black" />
+                     Stroke="{DynamicResource T2Brush}" />
         </Canvas>
     </Grid>
 </UserControl>

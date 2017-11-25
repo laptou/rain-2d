@@ -155,8 +155,9 @@ namespace Ibinimator.Core.Utility
 
         public static float GetShear(this Matrix3x2 m)
         {
+            return 0;
             var shear = (float) Atan2(m.M22, m.M21) - PiOverTwo;
-            return Wrap(GetRotation(m) - shear, -Pi, Pi);
+            return -Wrap(shear - GetRotation(m), -Pi, Pi);
         }
 
         public static Matrix3x2 Invert(Matrix3x2 mat)

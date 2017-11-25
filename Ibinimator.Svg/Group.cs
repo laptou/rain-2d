@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Ibinimator.Svg
 {
-    public class Group : ContainerElement
+    public class Group : GraphicalContainerElement
     {
         public override XElement ToXml(SvgContext context)
         {

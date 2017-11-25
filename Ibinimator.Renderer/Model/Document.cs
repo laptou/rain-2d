@@ -42,7 +42,7 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public long Size => new FileInfo(Path).Length;
+        public long Size => Path == null ? 0 : new FileInfo(Path).Length;
 
         public ObservableList<BrushInfo> Swatches { get; set; }
             = new ObservableList<BrushInfo>();

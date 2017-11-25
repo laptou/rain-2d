@@ -19,8 +19,6 @@ namespace Ibinimator.Renderer.Direct2D
         private float _miterLimit;
 
         private float _width;
-        private IEnumerable<float> dashes;
-        private RenderTarget target;
 
         public Pen(Brush brush, RenderTarget target) : this(1, brush, target) { }
 

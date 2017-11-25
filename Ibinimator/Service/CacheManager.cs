@@ -10,6 +10,7 @@ using System.Windows;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Resources;
 using Color = System.Windows.Media.Color;
 
 namespace Ibinimator.Service
@@ -366,20 +367,27 @@ namespace Ibinimator.Service
 
         public void LoadBrushes(RenderContext target)
         {
-            foreach (var entry in new ResourceDictionary {  Source = new Uri("/Ibinimator;component/Theme.Light.xaml", UriKind.Relative)}
-                                             .Cast<DictionaryEntry>()
-                                             .Where(k => k.Value is Color))
-            {
-                var color = (Color)entry.Value;
+            _brushes[nameof(EditorColors.ArtSpace)] = target.CreateBrush(EditorColors.ArtSpace);
+            _brushes[nameof(EditorColors.Artboard)] = target.CreateBrush(EditorColors.Artboard);
 
-                _brushes[(string) entry.Key] =
-                    target.CreateBrush(
-                        new Core.Model.Color(
-                            color.R / 255f,
-                            color.G / 255f,
-                            color.B / 255f,
-                            color.A / 255f));
-            }
+            _brushes[nameof(EditorColors.SelectionHandle)] =
+                target.CreateBrush(EditorColors.SelectionHandle);
+            _brushes[nameof(EditorColors.SelectionHandleOutline)] =
+                target.CreateBrush(EditorColors.SelectionHandleOutline);
+            _brushes[nameof(EditorColors.SelectionOutline)] =
+                target.CreateBrush(EditorColors.SelectionOutline);
+
+            _brushes[nameof(EditorColors.Node)] = target.CreateBrush(EditorColors.Node);
+            _brushes[nameof(EditorColors.NodeClick)] = target.CreateBrush(EditorColors.NodeClick);
+            _brushes[nameof(EditorColors.NodeHover)] = target.CreateBrush(EditorColors.NodeHover);
+            _brushes[nameof(EditorColors.NodeOutline)] = target.CreateBrush(EditorColors.NodeOutline);
+            _brushes[nameof(EditorColors.NodeOutlineAlt)] = target.CreateBrush(EditorColors.NodeOutlineAlt);
+            _brushes[nameof(EditorColors.NodeSelected)] = target.CreateBrush(EditorColors.NodeSelected);
+
+            _brushes[nameof(EditorColors.TextCaret)] = target.CreateBrush(EditorColors.TextCaret);
+            _brushes[nameof(EditorColors.TextHighlight)] = target.CreateBrush(EditorColors.TextHighlight);
+
+            _brushes[nameof(EditorColors.Guide)] = target.CreateBrush(EditorColors.Guide);
         }
 
         public QuickLock Lock() { return new QuickLock(_renderLock); }

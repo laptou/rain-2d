@@ -352,8 +352,7 @@
                                 <RadioButton Grid.RowSpan="2" Grid.ColumnSpan="2"
                                              GroupName="colorPickerTarget"
                                              IsChecked="{Binding PickerTarget, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static viewmodel:ColorPickerTarget.Stroke}, Mode=TwoWay}">
-                                    <Path Fill="{Binding StrokeBrush, Mode=OneWay}"
-                                          Stretch="Uniform"
+                                    <Path Stretch="Uniform"
                                           Stroke="{DynamicResource T2Brush}"
                                           StrokeThickness="1">
                                         <Path.Data>
@@ -367,7 +366,8 @@
                                             </CombinedGeometry>
                                         </Path.Data>
                                         <Path.Style>
-                                            <Style TargetType="Shape">
+                                            <Style TargetType="Path">
+                                                <Setter Property="Fill" Value="{Binding StrokeBrush, Mode=OneWay}" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding StrokeBrush, Mode=OneWay}" Value="{x:Null}">
                                                         <Setter Property="Fill" Value="{DynamicResource NullBrush}" />
@@ -381,12 +381,12 @@
                                              Grid.ColumnSpan="2"
                                              GroupName="colorPickerTarget"
                                              IsChecked="{Binding PickerTarget, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static viewmodel:ColorPickerTarget.Fill}, Mode=TwoWay}">
-                                    <Ellipse Fill="{Binding FillBrush, Mode=OneWay}"
-                                             Stretch="Uniform"
+                                    <Ellipse Stretch="Uniform"
                                              Stroke="{DynamicResource T2Brush}"
                                              StrokeThickness="1">
                                         <Ellipse.Style>
                                             <Style TargetType="Shape">
+                                                <Setter Property="Fill" Value="{Binding FillBrush, Mode=OneWay}" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding FillBrush, Mode=OneWay}" Value="{x:Null}">
                                                         <Setter Property="Fill" Value="{DynamicResource NullBrush}" />
@@ -784,7 +784,7 @@
                                 <Style TargetType="{x:Type TreeViewItem}">
                                     <Setter Property="Background" Value="{DynamicResource L1Brush}" />
                                     <Setter Property="Foreground" Value="{DynamicResource T1Brush}" />
-                                    <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
                                     <Setter Property="Padding" Value="0,10,0,0" />
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -800,6 +800,7 @@
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto" MinWidth="19" />
                                                             <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="19" />
                                                         </Grid.ColumnDefinitions>
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition Height="Auto" />
@@ -810,7 +811,7 @@
                                                                       IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                                                                       Style="{StaticResource ExpandCollapseToggleStyle}" />
 
-                                                        <Separator Grid.ColumnSpan="2"
+                                                        <Separator Grid.ColumnSpan="3"
                                                                    Margin="0,0,0,-10" VerticalAlignment="Bottom" />
 
                                                         <ContentPresenter x:Name="PART_Header"
@@ -818,8 +819,11 @@
                                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                                           ContentSource="Header"
                                                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                                                        <CheckBox Grid.Column="2" IsChecked="{Binding Visible}" />
+
                                                         <ItemsPresenter x:Name="ItemsHost"
-                                                                        Grid.Row="1" Grid.Column="1"
+                                                                        Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
                                                                         Margin="0,10,0,0" />
 
                                                     </Grid>
@@ -865,43 +869,8 @@
                     <control:Pane DataContext="{Binding TransformViewModel}"
                                   Header="Transform" Source="Ibinimator;component/View/Panes/TransformPane.xaml" />
 
-                    <TabItem Header="History">
-                        <Grid MinHeight="128" MaxHeight="256">
-                            <ListBox x:Name="HistoryList"
-                                     Background="{DynamicResource L1Brush}"
-                                     BorderBrush="{x:Null}"
-                                     ItemsSource="{Binding HistoryManager}"
-                                     SelectedValue="{Binding HistoryManager.Position, Mode=TwoWay}"
-                                     SelectedValuePath="Id" SelectionMode="Single">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="Foreground" Value="{DynamicResource T2Brush}" />
-                                        <Style.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="FontWeight" Value="Bold" />
-                                                <Setter Property="Foreground">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="{Binding Path=(utility:Helper.Accent), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}" />
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type renderer:IOperationCommand}">
-                                        <TextBlock x:Name="HistoryRecordDescription" Margin="8,4">
-                                            <Run Text="{Binding Description, Mode=OneWay}" />
-                                            [<Run Text="{Binding Id, Mode=OneWay}" />
-                                            ]</TextBlock>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <TextBlock Text="{Binding HistoryManager.Position}" />
-
-                        </Grid>
-                    </TabItem>
+                    <control:Pane DataContext="{Binding HistoryManager}"
+                                  Header="History" Source="Ibinimator;component/View/Panes/HistoryPane.xaml" />
                 </TabControl>
             </Grid>
             <StatusBar Grid.Row="1" Grid.Column="1"

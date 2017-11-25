@@ -113,5 +113,13 @@ namespace Ibinimator.Core.Utility
         {
             return s.ToTitle().Replace("-", "");
         }
+
+        public static string Truncate(this string s, int length, string terminator = "...")
+        {
+            if (s.Length < length)
+                return s;
+
+            return s.Substring(0, length) + terminator;
+        }
     }
 }

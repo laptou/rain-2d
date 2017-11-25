@@ -41,9 +41,10 @@ namespace Ibinimator.Renderer.Model
 
         public abstract IGeometry GetGeometry(ICacheManager factory);
 
-        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+        public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
         {
             if (!(this is T t)) return default;
+            if (minimumDepth > 0) return default;
 
             var pt = Vector2.Transform(point, MathUtils.Invert(AbsoluteTransform));
 

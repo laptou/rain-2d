@@ -14,7 +14,7 @@ namespace Ibinimator.Renderer.Direct2D
         private readonly Direct2DRenderContext _ctx;
 
         private ObservableList<Format> _formats = new ObservableList<Format>();
-        private DW.TextLayout _layout;
+        private DW.TextLayout _dwLayout;
         private TextRenderer.Context _textContext;
 
         public DirectWriteTextLayout(Direct2DRenderContext ctx) { _ctx = ctx; }
@@ -32,46 +32,59 @@ namespace Ibinimator.Renderer.Direct2D
             index = 0;
 
             do
-            {
                 index++;
-            } while (index < sorted.Length && sorted[index].Range.Index <= position);
+            while (index < sorted.Length && sorted[index].Range.Index <= position);
 
             var format = sorted.ElementAtOrDefault(--index);
 
             if (format == null) return null;
 
-            return format.Range.Index + format.Range.Length > position && position >= format.Range.Index ?
-                format :
-                null;
+            var end = format.Range.Index + format.Range.Length;
+
+            return end > position &&
+                   position >= format.Range.Index ? format : null;
         }
 
         private void Update()
         {
-            _layout?.Dispose();
+            _dwLayout?.Dispose();
 
-            _layout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
-                                             _ctx.FactoryDW,
-                                             Text ?? "",
-                                             new DW.TextFormat(
-                                                 _ctx.FactoryDW,
-                                                 FontFamily,
-                                                 (DW.FontWeight) FontWeight,
-                                                 (DW.FontStyle) FontStyle,
-                                                 (DW.FontStretch) FontStretch,
-                                                 FontSize * 96 / 72),
-                                             IsBlock ? Width : float.PositiveInfinity,
-                                             IsBlock ? Height : float.PositiveInfinity))
-                // ReSharper disable once RedundantEmptyObjectOrCollectionInitializer
+            var dwFormat = new DW.TextFormat(
+                _ctx.FactoryDW,
+                FontFamily,
+                (DW.FontWeight) FontWeight,
+                (DW.FontStyle) FontStyle,
+                (DW.FontStretch) FontStretch,
+                FontSize * 96 / 72);
+
+            // calculate line height to use for offset
+            var families = dwFormat.FontCollection;
+            families.FindFamilyName(FontFamily, out var familyIndex);
+            var family = families.GetFontFamily(familyIndex);
+            var font = family.GetFirstMatchingFont((DW.FontWeight) FontWeight,
+                                                   (DW.FontStretch) FontStretch,
+                                                   (DW.FontStyle) FontStyle);
+            FontHeight = (float) (font.Metrics.Ascent + font.Metrics.LineGap) /
+                         font.Metrics.DesignUnitsPerEm *
+                         dwFormat.FontSize;
+
+            _dwLayout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
+                                               _ctx.FactoryDW,
+                                               Text ?? "",
+                                               dwFormat,
+                                               Width,
+                                               Height))
                 {
                     //TextAlignment = TextAlignment,
                     //ParagraphAlignment = ParagraphAlignment
+                    WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
                 };
 
             lock (_formats)
             {
                 foreach (var format in _formats)
                 {
-                    var typography = _layout.GetTypography(format.Range.Index);
+                    var typography = _dwLayout.GetTypography(format.Range.Index);
 
                     if (format.Superscript)
                         typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
@@ -81,22 +94,22 @@ namespace Ibinimator.Renderer.Direct2D
 
                     var range = new DW.TextRange(format.Range.Index, format.Range.Length);
 
-                    _layout.SetTypography(typography, range);
+                    _dwLayout.SetTypography(typography, range);
 
                     if (format.FontFamilyName != null)
-                        _layout.SetFontFamilyName(format.FontFamilyName, range);
+                        _dwLayout.SetFontFamilyName(format.FontFamilyName, range);
 
                     if (format.FontSize != null)
-                        _layout.SetFontSize(format.FontSize.Value, range);
+                        _dwLayout.SetFontSize(format.FontSize.Value, range);
 
                     if (format.FontStretch != null)
-                        _layout.SetFontStretch((DW.FontStretch) format.FontStretch.Value, range);
+                        _dwLayout.SetFontStretch((DW.FontStretch) format.FontStretch.Value, range);
 
                     if (format.FontStyle != null)
-                        _layout.SetFontStyle((DW.FontStyle) format.FontStyle.Value, range);
+                        _dwLayout.SetFontStyle((DW.FontStyle) format.FontStyle.Value, range);
 
                     if (format.FontWeight != null)
-                        _layout.SetFontWeight((DW.FontWeight) format.FontWeight.Value, range);
+                        _dwLayout.SetFontWeight((DW.FontWeight) format.FontWeight.Value, range);
 
                     //if (format.CharacterSpacing != null)
                     //    _layout.SetCharacterSpacing(
@@ -106,24 +119,23 @@ namespace Ibinimator.Renderer.Direct2D
                     //        range);
 
                     if (format.Fill != null)
-                        _layout.SetFormat(range, f => f.Fill = format.Fill);
+                        _dwLayout.SetFormat(range, f => f.Fill = format.Fill);
 
                     if (format.Stroke != null)
-                        _layout.SetFormat(range, f => f.Stroke = format.Stroke);
+                        _dwLayout.SetFormat(range, f => f.Stroke = format.Stroke);
                 }
             }
 
             using (var renderer = new TextRenderer())
-            {
-                _layout.Draw(_textContext = new TextRenderer.Context(_ctx), renderer, 0, 0);
-            }
+                _dwLayout.Draw(_textContext = new TextRenderer.Context(_ctx), renderer,
+                               0, -FontHeight);
         }
 
         #region ITextLayout Members
 
         public override void Dispose()
         {
-            _layout.Dispose();
+            _dwLayout.Dispose();
             _formats = null;
 
             base.Dispose();
@@ -144,7 +156,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public Format GetFormat(int index) { return GetFormat(index, out var _); }
 
-        public IGeometry GetGeometryForGlyph(int index)
+        public IGeometry GetGeometryForGlyphRun(int index)
         {
             var j = 0;
             for (var i = 0; i < _textContext.Geometries.Count; i++)
@@ -187,14 +199,14 @@ namespace Ibinimator.Renderer.Direct2D
 
         public int GetPosition(Vector2 point, out bool trailing)
         {
-            var metrics = _layout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
+            var metrics = _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
             trailing = isTrailingHit;
             return metrics.TextPosition;
         }
 
         public bool Hit(Vector2 point)
         {
-            _layout.HitTestPoint(point.X, point.Y, out var _, out var hit);
+            _dwLayout.HitTestPoint(point.X, point.Y + FontHeight, out var _, out var hit);
             return hit;
         }
 
@@ -230,23 +242,35 @@ namespace Ibinimator.Renderer.Direct2D
 
         public RectangleF Measure()
         {
-            return new RectangleF(_layout.Metrics.Top,
-                                  _layout.Metrics.Left,
-                                  _layout.Metrics.Width,
-                                  _layout.Metrics.Height);
+            var oMetrics = _dwLayout.OverhangMetrics;
+            var metrics = _dwLayout.Metrics;
+            
+            var rect = new RectangleF(0, -FontHeight, metrics.LayoutWidth, metrics.LayoutHeight);
+
+            if (!IsBlock)
+            {
+                rect.Left = -oMetrics.Left;
+                rect.Top = -oMetrics.Top;
+                rect.Right = oMetrics.Right;
+                rect.Bottom = oMetrics.Bottom;
+
+                rect.Offset(0, -FontHeight);
+            }
+
+            return rect;
         }
 
         public RectangleF MeasurePosition(int index)
         {
-            var m = _layout.HitTestTextPosition(index, false, out var _, out var _);
-            return new RectangleF(m.Left, m.Top, m.Width, m.Height);
+            var m = _dwLayout.HitTestTextPosition(index, false, out var _, out var _);
+            return new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height);
         }
 
         public RectangleF[] MeasureRange(int index, int length)
         {
-            return _layout
+            return _dwLayout
                 .HitTestTextRange(index, length, 0, 0)
-                .Select(m => new RectangleF(m.Left, m.Top, m.Width, m.Height))
+                .Select(m => new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height))
                 .ToArray();
         }
 
@@ -382,9 +406,9 @@ namespace Ibinimator.Renderer.Direct2D
         public string FontFamily { get; set; } = "Arial";
         public float FontSize { get; set; }
         public FontStretch FontStretch { get; set; }
-
         public FontStyle FontStyle { get; set; }
         public FontWeight FontWeight { get; set; }
+        public float FontHeight { get; private set; }
 
         public string Text { get; private set; } = "";
 

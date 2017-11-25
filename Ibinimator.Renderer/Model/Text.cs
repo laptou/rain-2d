@@ -122,15 +122,15 @@ namespace Ibinimator.Renderer.Model
         {
             var layout = cache.GetTextLayout(this);
 
-            var geometries =
-                Enumerable
-                    .Range(0, layout.GetGlyphCount())
-                    .Select(layout.GetGeometryForGlyph)
-                    .ToArray();
-
             if (layout.Text.Length == 0) return null;
 
-            return cache.Context.RenderContext.CreateGeometryGroup(geometries);
+
+            var geometries = new List<IGeometry>();
+
+            for (var i = 0; i < layout.GetGlyphCount(); i += layout.GetGlyphCountForGeometry(i))
+                geometries.Add(layout.GetGeometryForGlyphRun(i));
+
+            return cache.Context.RenderContext.CreateGeometryGroup(geometries.ToArray());
         }
 
         public ITextLayout GetLayout(IArtContext ctx)
@@ -143,19 +143,17 @@ namespace Ibinimator.Renderer.Model
             layout.FontStretch = FontStretch;
             layout.FontFamily = FontFamilyName;
             layout.InsertText(0, Value);
-
-            lock (Formats)
-            {
-                foreach (var format in Formats)
-                    layout.SetFormat(format);
-            }
+            
+            foreach (var format in Formats)
+                layout.SetFormat(format);
 
             return layout;
         }
 
-        public override T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+        public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
         {
             if (!(this is T t)) return default;
+            if (minimumDepth > 0) return default;
 
             point = Vector2.Transform(point, MathUtils.Invert(Transform));
 
@@ -253,7 +251,7 @@ namespace Ibinimator.Renderer.Model
 
             for (var i = 0; i < layout.GetGlyphCount(); i += layout.GetGlyphCountForGeometry(i))
             {
-                var geom = layout.GetGeometryForGlyph(i);
+                var geom = layout.GetGeometryForGlyphRun(i);
                 var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
                 var pen = layout.GetPenForGlyph(i) ?? cache.GetStroke(this);
 
@@ -347,7 +345,7 @@ namespace Ibinimator.Renderer.Model
 
         public float Baseline { get; private set; }
 
-        public override string DefaultName => $@"Text ""{Value}""";
+        public override string DefaultName => $@"Text ""{Value.Truncate(30)}""";
 
         public BrushInfo Fill
         {

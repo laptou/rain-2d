@@ -60,13 +60,8 @@ namespace Ibinimator.Renderer.Model
             return new RectangleF(0, 0, Width, Height);
         }
 
-        public abstract T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe)
+        public abstract T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
             where T : ILayer;
-
-        public ILayer Hit(ICacheManager cache, Vector2 point, bool includeMe)
-        {
-            return Hit<Layer>(cache, point, includeMe);
-        }
 
         public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
 

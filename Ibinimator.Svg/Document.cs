@@ -47,7 +47,7 @@ namespace Ibinimator.Svg
         }
     }
 
-    public class Document : ContainerElement
+    public class Document : GraphicalContainerElement
     {
         public Length Height { get; set; } = (100, LengthUnit.Percent);
 

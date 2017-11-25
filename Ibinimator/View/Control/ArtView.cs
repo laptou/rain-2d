@@ -8,14 +8,16 @@ using System.Numerics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
 using SharpDX.Direct2D1;
+using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.View.Control
 {
@@ -31,6 +33,9 @@ namespace Ibinimator.View.Control
         public ArtView()
         {
             RenderMode = RenderMode.Manual;
+            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+            UseLayoutRounding = true;
+            SnapsToDevicePixels = true;
             Focusable = true;
 
             RenderTargetBound += OnRenderTargetBound;
@@ -224,11 +229,12 @@ namespace Ibinimator.View.Control
             }
             else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                 vm.Pan += Vector2.UnitX * pan;
-            else vm.Pan += Vector2.UnitY * pan;
+            else
+                vm.Pan += Vector2.UnitY * pan;
 
             ArtContext.InvalidateSurface();
 
-            OnMouseWheel(e);
+            base.OnPreviewMouseWheel(e);
         }
 
         protected void OnRenderTargetBound(object sender, RenderTarget target)
@@ -367,15 +373,67 @@ namespace Ibinimator.View.Control
 
                 _eventFlag.Reset();
 
-                //Dispatcher.Invoke(() => Cursor = ToolManager?.Tool?.Cursor != null ? Cursors.None : Cursors.Arrow,
-                //    DispatcherPriority.Render);
-
                 _eventFlag.WaitOne(5000);
             }
         }
 
+        // ReSharper disable once InconsistentNaming
+        const int WM_MOUSEHWHEEL = 0x020E;
+
+        private IntPtr MessageLoop(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            // Handle window message here.
+            switch (msg)
+            {
+                case 0x020A:
+                case 0114:
+                case WM_MOUSEHWHEEL:
+                    int tilt = (short)HIWORD(wParam);
+                    OnMouseTilt(tilt);
+                    return (IntPtr)1;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Gets high bits values of the pointer.
+        /// </summary>
+        private static int HIWORD(IntPtr ptr)
+        {
+            var val32 = (int)ptr;
+            return (val32 >> 16) & 0xFFFF;
+        }
+
+        /// <summary>
+        /// Gets low bits values of the pointer.
+        /// </summary>
+        private static int LOWORD(IntPtr ptr)
+        {
+            var val32 = (int)ptr;
+            return val32 & 0xFFFF;
+        }
+
+        private void OnMouseTilt(int tilt)
+        {
+            if (ArtContext.ViewManager == null) return;
+
+            var vm = ArtContext.ViewManager;
+            var pan = tilt / (vm.Zoom * vm.Zoom);
+            
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                vm.Pan += Vector2.UnitY * pan;
+            else
+                vm.Pan += Vector2.UnitX * pan;
+
+            ArtContext.InvalidateSurface();
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            var source = PresentationSource.FromVisual(this);
+            ((HwndSource)source)?.AddHook(MessageLoop);
+            
             _eventLoop = true;
 
             var evtThread = new Thread(EventLoop);

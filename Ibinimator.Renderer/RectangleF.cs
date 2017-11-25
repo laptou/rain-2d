@@ -20,6 +20,19 @@ namespace Ibinimator.Renderer
         {
             Top = top;
             Left = left;
+
+            if (width < 0)
+            {
+                width = -width;
+                Left -= width;
+            }
+
+            if (height < 0)
+            {
+                height = -height;
+                Top -= height;
+            }
+
             Width = width;
             Height = height;
         }
@@ -73,8 +86,7 @@ namespace Ibinimator.Renderer
 
         public void Offset(Vector2 delta)
         {
-            Left += delta.X;
-            Top += delta.Y;
+            Offset(delta.X, delta.Y);
         }
 
         public static RectangleF Union(RectangleF r1, RectangleF r2)
@@ -97,6 +109,21 @@ namespace Ibinimator.Renderer
         public static implicit operator RectangleF((float Left, float Top, float Right, float Bottom) rect)
         {
             return new RectangleF(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+        }
+
+        public static bool Intersects(RectangleF r1, RectangleF r2)
+        {
+            if (r1.Right < r2.Left) return false;
+            if (r1.Left > r2.Right) return false;
+            if (r1.Bottom < r2.Top) return false;
+            if (r1.Top > r2.Bottom) return false;
+            return true;
+        }
+
+        public void Offset(float x, float y)
+        {
+            Left += x;
+            Top += y;
         }
     }
 }

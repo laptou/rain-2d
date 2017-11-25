@@ -8,7 +8,7 @@ namespace Ibinimator.Svg
 {
     public struct Iri
     {
-        private static readonly Regex IriSyntax = new Regex(@"#([A-Za-z][A-Za-z0-9]*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex IriSyntax = new Regex(@"url\(#([A-Za-z_][A-Za-z0-9_]*)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static bool TryParse(string input, out Iri iri)
         {

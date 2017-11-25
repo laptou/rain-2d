@@ -9,6 +9,7 @@ using System.Windows.Input;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service
@@ -144,37 +145,40 @@ namespace Ibinimator.Service
             SetHandle(0);
 
             var localPos = ToSelectionSpace(pos);
+            var localScale = SelectionTransform.GetScale();
+            var radiusx = 7.5f / localScale.X;
+            var radiusy = 7.5f / localScale.Y;
 
-            if (Math.Abs(localPos.X - SelectionBounds.Left) < 7.5)
+            if (Math.Abs(localPos.X - SelectionBounds.Left) < radiusx)
             {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy)
                     SetHandle(SelectionHandle.TopLeft);
 
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < radiusy)
                     SetHandle(SelectionHandle.Left);
 
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                     SetHandle(SelectionHandle.BottomLeft);
             }
 
-            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 7.5)
+            if (Math.Abs(localPos.X - SelectionBounds.Center.X) < radiusx)
             {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy)
                     SetHandle(SelectionHandle.Top);
 
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                     SetHandle(SelectionHandle.Bottom);
             }
 
-            if (Math.Abs(localPos.X - SelectionBounds.Right) < 7.5)
+            if (Math.Abs(localPos.X - SelectionBounds.Right) < radiusx)
             {
-                if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy)
                     SetHandle(SelectionHandle.TopRight);
 
-                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < radiusy)
                     SetHandle(SelectionHandle.Right);
 
-                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                     SetHandle(SelectionHandle.BottomRight);
             }
 
@@ -206,7 +210,7 @@ namespace Ibinimator.Service
 
             foreach (var layer in root.Flatten(_depth).Skip(1))
             {
-                var test = layer.Hit(Context.CacheManager, pos, true);
+                var test = layer.HitTest<ILayer>(Context.CacheManager, pos, 0);
 
                 if (test == null) continue;
 
@@ -246,32 +250,36 @@ namespace Ibinimator.Service
             {
                 Cursor = null;
 
-                if (Math.Abs(localPos.X - SelectionBounds.Left) < 7.5)
+                var localScale = SelectionTransform.GetScale();
+                var radiusx = 7.5f / localScale.X;
+                var radiusy = 7.5f / localScale.Y;
+
+                if (Math.Abs(localPos.X - SelectionBounds.Left) < radiusx)
                 {
-                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy)
                         Cursor = "cursor-resize-nwse";
 
-                    if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < radiusy)
                         Cursor = "cursor-resize-ew";
 
-                    if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                         Cursor = "cursor-resize-nesw";
                 }
 
-                if (Math.Abs(localPos.X - SelectionBounds.Center.X) < 7.5)
-                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5 ||
-                        Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                if (Math.Abs(localPos.X - SelectionBounds.Center.X) < radiusx)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy ||
+                        Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                         Cursor = "cursor-resize-ns";
 
-                if (Math.Abs(localPos.X - SelectionBounds.Right) < 7.5)
+                if (Math.Abs(localPos.X - SelectionBounds.Right) < radiusx)
                 {
-                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Top) < radiusy)
                         Cursor = "cursor-resize-nesw";
 
-                    if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Center.Y) < radiusy)
                         Cursor = "cursor-resize-ew";
 
-                    if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < 7.5)
+                    if (Math.Abs(localPos.Y - SelectionBounds.Bottom) < radiusy)
                         Cursor = "cursor-resize-nwse";
                 }
 
@@ -506,7 +514,7 @@ namespace Ibinimator.Service
 
                 target.Transform(shape.AbsoluteTransform);
 
-                using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
+                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
                     target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
 
                 target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
@@ -514,7 +522,7 @@ namespace Ibinimator.Service
 
             target.Transform(SelectionTransform);
 
-            using (var pen = target.CreatePen(1, cache.GetBrush("A1")))
+            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
                 target.DrawRectangle(SelectionBounds, pen);
 
             target.Transform(MathUtils.Invert(SelectionTransform));
@@ -524,22 +532,7 @@ namespace Ibinimator.Service
             {
                 target.PushEffect(target.CreateEffect<IGlowEffect>());
 
-                IBrush brush;
-
-                switch (guide.Type)
-                {
-                    case GuideType.Proportion:
-                        brush = cache.GetBrush("A1");
-                        break;
-                    case GuideType.Position:
-                        brush = cache.GetBrush("A2");
-                        break;
-                    case GuideType.Rotation:
-                        brush = cache.GetBrush("A3");
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                IBrush brush = cache.GetBrush(nameof(EditorColors.Guide));
 
                 if (guide.Type.HasFlag(GuideType.Linear))
                 {

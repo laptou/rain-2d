@@ -30,10 +30,11 @@ namespace Ibinimator.Renderer.WPF
             return new GradientStopCollection(Stops.Select(s => new System.Windows.Media.GradientStop
             {
                 Color = Color.FromArgb(
+                    (byte) (s.Color.A * 255),
                     (byte) (s.Color.R * 255),
                     (byte) (s.Color.G * 255),
-                    (byte) (s.Color.B * 255),
-                    (byte) (s.Color.A * 255))
+                    (byte) (s.Color.B * 255)),
+                Offset = s.Offset
             }));
         }
 

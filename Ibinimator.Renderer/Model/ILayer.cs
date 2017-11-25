@@ -55,7 +55,6 @@ namespace Ibinimator.Renderer.Model
         IEnumerable<ILayer> Flatten();
         IEnumerable<ILayer> Flatten(int depth);
 
-        ILayer Find(Guid id);
         IContainerLayer Parent { get; set; }
         IGeometricLayer Clip { get; set; }
 
@@ -68,8 +67,7 @@ namespace Ibinimator.Renderer.Model
         void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null);
         RectangleF GetBounds(ICacheManager cache);
 
-        ILayer Hit(ICacheManager cache, Vector2 point, bool includeMe);
-        T Hit<T>(ICacheManager cache, Vector2 point, bool includeMe) where T : ILayer;
+        T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth) where T : ILayer;
 
         void Render(RenderContext target, ICacheManager cache, IViewManager view);
     }

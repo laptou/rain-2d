@@ -31,18 +31,21 @@ namespace Ibinimator.Service.Commands
         {
             _targetParents = Targets.Select(t => t.Parent).ToArray();
 
-            _products = Targets.Select(t =>
-                               {
-                                   var path = new Path();
-                                   var geometry = artContext.CacheManager.GetGeometry(t);
-                                   path.Instructions.AddItems(geometry.Read());
-                                   path.Fill = t.Fill;
-                                   path.Stroke = t.Stroke;
-                                   path.ApplyTransform(t.Transform);
+            if (_products == null)
+            {
+                _products = Targets.Select(t =>
+                                   {
+                                       var path = new Path();
+                                       var geometry = artContext.CacheManager.GetGeometry(t);
+                                       path.Instructions.AddItems(geometry.Read());
+                                       path.Fill = t.Fill;
+                                       path.Stroke = t.Stroke;
+                                       path.ApplyTransform(t.Transform);
 
-                                   return path;
-                               })
-                               .ToArray();
+                                       return path;
+                                   })
+                                   .ToArray();
+            }
 
             for (var i = 0; i < _products.Length; i++)
             {

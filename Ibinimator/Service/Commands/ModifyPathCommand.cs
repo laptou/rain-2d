@@ -120,45 +120,54 @@ namespace Ibinimator.Service.Commands
 
         public override void Do(IArtContext context)
         {
+            Apply(context, Operation, Indices, Nodes, Delta);
+        }
+
+        private void Apply(
+            IArtContext context, NodeOperation operation, IReadOnlyList<int> indices,
+            IReadOnlyList<PathNode> targetNodes, Vector2 delta)
+        {
             var target = Targets[0];
             var geom = context.CacheManager.GetGeometry(target);
             var nodes = geom.ReadNodes().ToList();
 
-            // indices stored here do not matter - they will simply
-            // be discarded when the nodes are converted back into
-            // instructions
-            switch (Operation)
+            switch (operation)
             {
                 case NodeOperation.Add:
                     for (var i = 0; i < Indices.Length; i++)
-                        nodes.Insert(Indices[i] + i, Nodes[i]);
+                        nodes.Insert(indices[i] + i, targetNodes[i]);
                     break;
                 case NodeOperation.Remove:
-                    for (var i = 0; i < Indices.Length; i++)
-                        nodes.RemoveAt(Indices[i] - i);
+                    Nodes = new PathNode[indices.Count];
+
+                    for (var i = 0; i < indices.Count; i++)
+                    {
+                        Nodes[i] = nodes[indices[i]];
+                        nodes.RemoveAt(indices[i] - i);
+                    }
                     break;
                 case NodeOperation.Move:
-                    foreach (var index in Indices)
+                    foreach (var index in indices)
                         nodes[index] = new PathNode(nodes[index].Index,
-                                                nodes[index].Position + Delta,
-                                                nodes[index].IncomingControl + Delta,
-                                                nodes[index].OutgoingControl + Delta,
-                                                nodes[index].FigureEnd);
+                                                    nodes[index].Position + delta,
+                                                    nodes[index].IncomingControl + delta,
+                                                    nodes[index].OutgoingControl + delta,
+                                                    nodes[index].FigureEnd);
                     break;
                 case NodeOperation.MoveInHandle:
-                    foreach (var index in Indices)
+                    foreach (var index in indices)
                         nodes[index] = new PathNode(nodes[index].Index,
                                                     nodes[index].Position,
-                                                    nodes[index].IncomingControl + Delta,
+                                                    nodes[index].IncomingControl + delta,
                                                     nodes[index].OutgoingControl,
                                                     nodes[index].FigureEnd);
                     break;
                 case NodeOperation.MoveOutHandle:
-                    foreach (var index in Indices)
+                    foreach (var index in indices)
                         nodes[index] = new PathNode(nodes[index].Index,
                                                     nodes[index].Position,
                                                     nodes[index].IncomingControl,
-                                                    nodes[index].OutgoingControl + Delta,
+                                                    nodes[index].OutgoingControl + delta,
                                                     nodes[index].FigureEnd);
                     break;
                 default:
@@ -169,6 +178,28 @@ namespace Ibinimator.Service.Commands
             target.Instructions.AddItems(GeometryHelper.InstructionsFromNodes(nodes));
         }
 
-        public override void Undo(IArtContext artView) { throw new NotImplementedException(); }
+        public override void Undo(IArtContext context)
+        {
+            switch (Operation)
+            {
+                case NodeOperation.Add:
+                    Apply(context, NodeOperation.Remove, Indices, Nodes, Delta);
+                    break;
+                case NodeOperation.Remove:
+                    Apply(context, NodeOperation.Add, Indices, Nodes, Delta);
+                    break;
+                case NodeOperation.Move:
+                    Apply(context, NodeOperation.Move, Indices, Nodes, -Delta);
+                    break;
+                case NodeOperation.MoveInHandle:
+                    Apply(context, NodeOperation.MoveInHandle, Indices, Nodes, -Delta);
+                    break;
+                case NodeOperation.MoveOutHandle:
+                    Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
     }
 }

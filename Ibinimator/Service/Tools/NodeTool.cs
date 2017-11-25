@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
@@ -31,8 +32,8 @@ namespace Ibinimator.Service.Tools
             Manager.Context.HistoryManager.Traversed += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
         }
 
-        public Shape CurrentShape =>
-            Context.SelectionManager.Selection.LastOrDefault() as Shape;
+        public IGeometricLayer SelectedLayer =>
+            Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
 
         public IToolOption[] Options =>
             new IToolOption[0]; // TODO: add actual tool options
@@ -61,14 +62,14 @@ namespace Ibinimator.Service.Tools
 
         private void ConvertToPath()
         {
-            if (CurrentShape is Path) return;
+            if (SelectedLayer is Path) return;
 
-            var shape = CurrentShape;
+            var shape = SelectedLayer;
             shape.Selected = false;
 
             var ctp = new ConvertToPathCommand(
                 Context.HistoryManager.Position + 1,
-                new IGeometricLayer[] {shape});
+                new[] {shape});
             Context.HistoryManager.Do(ctp);
 
             ctp.Products[0].Selected = true;
@@ -76,9 +77,9 @@ namespace Ibinimator.Service.Tools
 
         private IEnumerable<PathNode> GetGeometricNodes()
         {
-            if (CurrentShape == null) return Enumerable.Empty<PathNode>();
+            if (SelectedLayer == null) return Enumerable.Empty<PathNode>();
 
-            return Context.CacheManager.GetGeometry(CurrentShape).ReadNodes();
+            return Context.CacheManager.GetGeometry(SelectedLayer).ReadNodes();
         }
 
         private void MergeCommands(ModifyPathCommand newCmd)
@@ -109,7 +110,7 @@ namespace Ibinimator.Service.Tools
             var newCmd =
                 new ModifyPathCommand(
                     history.Position + 1,
-                    CurrentShape as Path,
+                    SelectedLayer as Path,
                     delta,
                     indices,
                     op);
@@ -121,115 +122,20 @@ namespace Ibinimator.Service.Tools
             MergeCommands(newCmd);
         }
 
-        private void Remove(int index)
+        private void Remove(params int[] indices)
         {
             ConvertToPath();
 
             Context.HistoryManager.Do(
                 new ModifyPathCommand(
                     Context.HistoryManager.Position + 1,
-                    CurrentShape as Path,
-                    new[] {index}));
+                    SelectedLayer as Path,
+                    indices));
 
             _nodes = GetGeometricNodes().ToList();
 
-            _selection.Remove(index);
-        }
-
-        private void RenderGeometryHandles(
-            RenderContext target,
-            ICacheManager cacheManager,
-            Matrix3x2 transform,
-            float zoom)
-        {
-            var a =
-                new[]
-                {
-                    null,
-                    cacheManager.GetBrush("A1"),
-                    cacheManager.GetBrush("A2"),
-                    cacheManager.GetBrush("A3"),
-                    cacheManager.GetBrush("A4"),
-                    cacheManager.GetBrush("A5")
-                };
-
-            var l =
-                new[]
-                {
-                    cacheManager.GetBrush("L0"),
-                    cacheManager.GetBrush("L1"),
-                    cacheManager.GetBrush("L2")
-                };
-
-            var p2 = target.CreatePen(1, a[2]);
-            var p4 = target.CreatePen(1, a[4]);
-
-            IBrush GetBrush(bool over, bool down, bool selected)
-            {
-                if (over)
-                    if (down) return a[4];
-                    else return a[3];
-
-                if (selected) return l[0];
-
-                return l[2];
-            }
-
-            foreach (var node in _nodes)
-            {
-                var pos = Vector2.Transform(node.Position, transform);
-                var radius = 6f / zoom;
-                var selected = _selection.Contains(node.Index);
-
-                if (node.IncomingControl != null || node.OutgoingControl != null)
-                {
-                    if (selected)
-                    {
-                        if (node.IncomingControl != null)
-                        {
-                            var lPos = Vector2.Transform(node.IncomingControl.Value, transform);
-                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
-
-                            target.DrawLine(lPos, pos, p2);
-                            target.FillCircle(lPos, radius / 1.5f, GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.5f, p2);
-                        }
-
-                        if (node.OutgoingControl != null)
-                        {
-                            var lPos = Vector2.Transform(node.OutgoingControl.Value, transform);
-                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
-
-                            target.DrawLine(lPos, pos, p2);
-                            target.FillCircle(lPos, radius / 1.5f, GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.5f, p2);
-                        }
-                    }
-
-                    var over = Vector2.DistanceSquared(pos, _mouse.pos) < radius * radius;
-                    target.FillCircle(pos, radius, GetBrush(over, _mouse.down, selected));
-                    target.DrawCircle(pos, radius, node.Index == 0 ? p4 : p2);
-                }
-                else
-                {
-                    var rect =
-                        new RectangleF(pos.X - radius,
-                                       pos.Y - radius,
-                                       radius * 2,
-                                       radius * 2);
-
-                    var over = rect.Contains(_mouse.pos);
-
-                    target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
-
-                    target.DrawRectangle(rect, node.Index == 0 ? p4 : p2);
-                }
-            }
-
-            // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerated b/c they are resource brushes
-            p2.Dispose();
-            p4.Dispose();
+            foreach (var index in indices)
+                _selection.Remove(index);
         }
 
         #region ITool Members
@@ -253,7 +159,7 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 case Key.Delete:
-                    _selection.ToList().ForEach(Remove);
+                    Remove(_selection.ToArray());
                     Context.InvalidateSurface();
                     break;
 
@@ -280,9 +186,9 @@ namespace Ibinimator.Service.Tools
         {
             _mouse = (true, false, pos);
 
-            if (CurrentShape == null)
+            if (SelectedLayer == null)
             {
-                var hit = Root.Hit<Shape>(Context.CacheManager, pos, true);
+                var hit = Root.HitTest<IGeometricLayer>(Context.CacheManager, pos, 1);
 
                 if (hit != null)
                 {
@@ -295,15 +201,14 @@ namespace Ibinimator.Service.Tools
                 return false;
             }
 
-            var tpos = Vector2.Transform(pos,
-                                         MathUtils.Invert(CurrentShape.AbsoluteTransform));
+            var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, SelectedLayer.AbsoluteTransform));
 
             _handle = null;
             PathNode? target = null;
 
             foreach (var node in _nodes)
             {
-                if (Vector2.DistanceSquared(node.Position, tpos) < 36)
+                if (Vector2.DistanceSquared(t(node.Position), pos) < 9)
                 {
                     _handle = 0;
                     target = node;
@@ -311,7 +216,7 @@ namespace Ibinimator.Service.Tools
                 }
 
                 if (node.IncomingControl != null &&
-                    Vector2.DistanceSquared(node.IncomingControl.Value, tpos) < 16)
+                    Vector2.DistanceSquared(t(node.IncomingControl.Value), pos) < 2)
                 {
                     _handle = -1;
                     target = node;
@@ -319,7 +224,7 @@ namespace Ibinimator.Service.Tools
                 }
 
                 if (node.OutgoingControl != null &&
-                    Vector2.DistanceSquared(node.OutgoingControl.Value, tpos) < 16)
+                    Vector2.DistanceSquared(t(node.OutgoingControl.Value), pos) < 2)
                 {
                     _handle = +1;
                     target = node;
@@ -342,14 +247,14 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseMove(Vector2 pos)
         {
-            if (CurrentShape == null)
+            if (SelectedLayer == null)
                 return false;
 
             var tlpos = Vector2.Transform(_mouse.pos,
-                                          MathUtils.Invert(CurrentShape.AbsoluteTransform));
+                                          MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
             var tpos = Vector2.Transform(pos,
-                                         MathUtils.Invert(CurrentShape.AbsoluteTransform));
+                                         MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
             var delta = tpos - tlpos;
 
@@ -380,7 +285,7 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseUp(Vector2 pos)
         {
-            if (CurrentShape == null)
+            if (SelectedLayer == null)
                 return false;
 
             _mouse = (false, _mouse.moved, pos);
@@ -392,16 +297,84 @@ namespace Ibinimator.Service.Tools
 
         public void Render(
             RenderContext target,
-            ICacheManager cache,
+            ICacheManager cacheManager,
             IViewManager view)
         {
-            if (CurrentShape == null)
+            if (SelectedLayer == null)
                 return;
 
-            RenderGeometryHandles(target,
-                                  cache,
-                                  CurrentShape.AbsoluteTransform,
-                                  view.Zoom);
+            var transform = SelectedLayer.AbsoluteTransform;
+            var zoom = view.Zoom;
+
+            var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
+            var p2 = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+
+            IBrush GetBrush(bool over, bool down, bool selected)
+            {
+                if (over)
+                    if (down) return cacheManager.GetBrush(nameof(EditorColors.NodeClick));
+                    else return cacheManager.GetBrush(nameof(EditorColors.NodeHover));
+
+                if (selected) return cacheManager.GetBrush(nameof(EditorColors.NodeSelected));
+
+                return cacheManager.GetBrush(nameof(EditorColors.Node));
+            }
+
+            foreach (var node in _nodes)
+            {
+                var pos = Vector2.Transform(node.Position, transform);
+                var radius = 4f / zoom;
+                var selected = _selection.Contains(node.Index);
+
+                if (node.IncomingControl != null || node.OutgoingControl != null)
+                {
+                    if (selected)
+                    {
+                        if (node.IncomingControl != null)
+                        {
+                            var lPos = Vector2.Transform(node.IncomingControl.Value, transform);
+                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
+
+                            target.DrawLine(lPos, pos, p);
+                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.DrawCircle(lPos, radius / 1.2f, p);
+                        }
+
+                        if (node.OutgoingControl != null)
+                        {
+                            var lPos = Vector2.Transform(node.OutgoingControl.Value, transform);
+                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
+
+                            target.DrawLine(lPos, pos, p);
+                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.DrawCircle(lPos, radius / 1.2f, p);
+                        }
+                    }
+
+                    var over = Vector2.DistanceSquared(pos, _mouse.pos) < radius * radius;
+                    target.FillCircle(pos, radius, GetBrush(over, _mouse.down, selected));
+                    target.DrawCircle(pos, radius, node.Index == 0 ? p2 : p);
+                }
+                else
+                {
+                    var rect =
+                        new RectangleF(pos.X - radius,
+                                       pos.Y - radius,
+                                       radius * 2,
+                                       radius * 2);
+
+                    var over = rect.Contains(_mouse.pos);
+
+                    target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
+
+                    target.DrawRectangle(rect, node.Index == 0 ? p2 : p);
+                }
+            }
+
+            // do not dispose the brushes! they are being used by the cache manager
+            // and do not automatically regenerated b/c they are resource brushes
+            p.Dispose();
+            p2.Dispose();
         }
 
         public bool TextInput(string text) { return false; }
@@ -418,59 +391,6 @@ namespace Ibinimator.Service.Tools
             "<b>Shift Click</b> to multi-select.";
 
         public ToolType Type => ToolType.Node;
-
-        #endregion
-
-        #region Nested type: Node
-
-        private class Node
-        {
-            #region NodeType enum
-
-            public enum NodeType
-            {
-                Point,
-                Handle
-            }
-
-            #endregion
-
-            public Node(
-                int index,
-                int figureIndex,
-                Vector2 position)
-            {
-                Index = index;
-                FigureIndex = figureIndex;
-                Type = NodeType.Point;
-                Position = position;
-            }
-
-            public Node(
-                int index,
-                int figureIndex,
-                Node parentNode,
-                Vector2 position)
-            {
-                Index = index;
-                FigureIndex = figureIndex;
-                Type = NodeType.Handle;
-                Position = position;
-                Parent = parentNode;
-            }
-
-            public IReadOnlyList<Node> Children { get; }
-
-            public int FigureIndex { get; }
-
-            public int Index { get; }
-
-            public Node Parent { get; }
-
-            public Vector2 Position { get; }
-
-            public NodeType Type { get; }
-        }
 
         #endregion
     }
