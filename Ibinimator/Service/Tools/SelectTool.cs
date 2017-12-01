@@ -69,7 +69,7 @@ namespace Ibinimator.Service.Tools
             Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
         }
 
-        public IToolOption[] Options => new IToolOption[0];
+        public ToolOptions Options { get; } = new ToolOptions();
 
         private IList<ILayer> Selection => Manager.Context.SelectionManager.Selection;
 
@@ -126,6 +126,9 @@ namespace Ibinimator.Service.Tools
 
             Manager.Context.HistoryManager.Do(command);
         }
+
+        public BrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public PenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Dispose() { }
 

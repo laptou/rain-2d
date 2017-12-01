@@ -52,7 +52,7 @@ namespace Ibinimator.Service.Tools
 
         public Path SelectedPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
 
-        public IToolOption[] Options => new IToolOption[0]; // TODO: add actual tool options
+        public ToolOptions Options { get; } = new ToolOptions();
 
         private IArtContext Context => Manager.Context;
 
@@ -64,6 +64,8 @@ namespace Ibinimator.Service.Tools
         public void ApplyFill(BrushInfo brush) { throw new NotImplementedException(); }
 
         public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
+        public BrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public PenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Dispose() { }
 

@@ -166,8 +166,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\IToolOption.cs" />
-    <Compile Include="Model\ToolOption.cs" />
     <Compile Include="Resources\EditorColors.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\Commands\AddLayerCommand.cs" />

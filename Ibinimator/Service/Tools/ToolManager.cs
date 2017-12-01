@@ -19,6 +19,8 @@ namespace Ibinimator.Service.Tools
             Context = artView;
         }
 
+        public void RaiseStrokeUpdate() { throw new NotImplementedException(); }
+
         public void SetTool(ToolType type)
         {
             lock (this)
@@ -63,6 +65,9 @@ namespace Ibinimator.Service.Tools
             RaisePropertyChanged(nameof(Type));
             Context.InvalidateSurface();
         }
+
+        public event EventHandler<BrushInfo> FillUpdated;
+        public event EventHandler<BrushInfo> StrokeUpdated;
 
         #region IToolManager Members
 
@@ -118,6 +123,8 @@ namespace Ibinimator.Service.Tools
         {
             Context.Status = status;
         }
+
+        public void RaiseFillUpdate() { FillUpdated?.Invoke(this, Tool.ProvideFill()); }
 
         public IArtContext Context { get; }
 

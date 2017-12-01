@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using Ibinimator.Renderer.WPF;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace Ibinimator.View.Control
     {
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
         private readonly Queue<InputEvent> _events = new Queue<InputEvent>();
+        private Thread _evtThread;
         private bool _eventLoop;
 
         private Vector2 _lastPosition;
@@ -39,9 +41,28 @@ namespace Ibinimator.View.Control
             Focusable = true;
 
             RenderTargetBound += OnRenderTargetBound;
-            Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
+            IsVisibleChanged += OnIsVisibleChanged;
             ArtContext = new ArtContext(this);
+        }
+
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible)
+            {
+                _eventLoop = true;
+
+                if (_evtThread == null)
+                {
+                    _evtThread = new Thread(EventLoop);
+                    _evtThread.Start();
+                }
+            }
+            else
+            {
+                ArtContext.CacheManager?.ResetAll();
+                _eventLoop = false;
+                _evtThread = null;
+            }
         }
 
         protected override void OnLostMouseCapture(MouseEventArgs e)
@@ -325,6 +346,9 @@ namespace Ibinimator.View.Control
                 {
                     var evt = _events.Dequeue();
 
+                    // discard old events
+                    if (Time.Now - evt.Time > 500) continue;
+
                     var pos = ac.ViewManager.ToArtSpace(evt.Position);
 
                     switch (evt.Type)
@@ -385,8 +409,6 @@ namespace Ibinimator.View.Control
             // Handle window message here.
             switch (msg)
             {
-                case 0x020A:
-                case 0114:
                 case WM_MOUSEHWHEEL:
                     int tilt = (short)HIWORD(wParam);
                     OnMouseTilt(tilt);
@@ -427,23 +449,6 @@ namespace Ibinimator.View.Control
                 vm.Pan += Vector2.UnitX * pan;
 
             ArtContext.InvalidateSurface();
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            var source = PresentationSource.FromVisual(this);
-            ((HwndSource)source)?.AddHook(MessageLoop);
-            
-            _eventLoop = true;
-
-            var evtThread = new Thread(EventLoop);
-            evtThread.Start();
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            ArtContext.CacheManager?.ResetAll();
-            _eventLoop = false;
         }
 
         #region IArtContext Members

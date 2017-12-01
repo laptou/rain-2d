@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Ibinimator.Renderer.Direct2D;
 using System.Linq;
 using System.Numerics;
@@ -9,7 +10,6 @@ using System.Windows;
 using System.Windows.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
@@ -21,18 +21,13 @@ using FontWeight = Ibinimator.Core.Model.FontWeight;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class TextTool : Core.Model.Model, ITool
+    public sealed class TextTool : Model, ITool
     {
         private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
         private readonly Dictionary<string, (FontStyle style, FontStretch stretch, FontWeight weight)>
             _fontFaceDescriptions = new Dictionary<string, (FontStyle, FontStretch, FontWeight)>();
-
-        private readonly ToolOption<string> _fontFamilyOption;
-
-        private readonly ToolOption<string> _fontNameOption;
-        private readonly ToolOption<float> _fontSizeOption;
 
         private bool _autoSet;
 
@@ -57,155 +52,90 @@ namespace Ibinimator.Service.Tools
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
             _dwFontCollection = _dwFactory.GetSystemFontCollection(true);
 
-            var fontNames = new List<string>();
 
-            for (var i = 0; i < _dwFontCollection.FontFamilyCount; i++)
-                using (var dwFontFamily = _dwFontCollection.GetFontFamily(i))
-                {
-                    fontNames.Add(dwFontFamily.FamilyNames.ToCurrentCulture());
-                }
+            Options.Create("font-family", "Font Family");
+            Options.SetType("font-family", ToolOptionType.Font);
+            Options.SetValues("font-family",
+                              Enumerable.Range(0, _dwFontCollection.FontFamilyCount)
+                                        .Select(i =>
+                                        {
+                                            using (var dwFontFamily =
+                                                _dwFontCollection.GetFontFamily(i))
+                                                return dwFontFamily.FamilyNames
+                                                                   .ToCurrentCulture();
+                                        })
+                                        .OrderBy(n => n));
 
-            fontNames.Sort();
+            Options.Create("font-size", "Font Size");
+            Options.SetValues("font-size",
+                              new float[]
+                              {
+                                  8, 9, 10, 11, 12,
+                                  14, 16, 18, 20, 22, 24, 28,
+                                  32, 36, 40, 44, 48,
+                                  72, 96, 120, 144, 288, 352
+                              }.Cast<object>());
+            Options.SetUnit("font-size", Unit.Points);
+            Options.SetType("font-size", ToolOptionType.Length);
+            Options.SetMinimum("font-size", 6);
+            Options.SetMaximum("font-size", 60000);
 
-            _fontFamilyOption = new ToolOption<string>("Font Family", ToolOptionType.Dropdown)
-            {
-                Options = fontNames.ToArray(),
-                Value = fontNames.FirstOrDefault()
-            };
+            Options.Create("font-face", "Font Face");
+            Options.SetValues("font-face", new[] {"Regular"});
 
-            _fontFamilyOption.PropertyChanged += (s, e) =>
-            {
-                UpdateFontFaces();
-
-                if (CurrentText == null || _fontFamilyOption.Value == null) return;
-
-                if (_autoSet) return;
-
-                if (_selectionRange == 0)
-                    Context.HistoryManager.Do(new ApplyFormatCommand(
-                                                  Context.HistoryManager.Position + 1,
-                                                  new ITextLayer[] {CurrentText},
-                                                  _fontFamilyOption.Value,
-                                                  CurrentText.FontSize,
-                                                  CurrentText.FontStretch,
-                                                  CurrentText.FontStyle,
-                                                  CurrentText.FontWeight,
-                                                  new[] {CurrentText.FontFamilyName},
-                                                  new[] {CurrentText.FontSize},
-                                                  new[] {CurrentText.FontStretch},
-                                                  new[] {CurrentText.FontStyle},
-                                                  new[] {CurrentText.FontWeight}));
-                else
-                    Format(new Format
-                    {
-                        FontFamilyName = _fontFamilyOption.Value,
-                        Range = (_selectionIndex, _selectionRange)
-                    });
-
-                Update();
-            };
-
-            _fontSizeOption = new ToolOption<float>("Font Size", ToolOptionType.Length)
-            {
-                Options = new float[]
-                {
-                    8, 9, 10, 11, 12,
-                    14, 16, 18, 20, 22, 24, 28,
-                    32, 36, 40, 44, 48,
-                    72, 96, 120, 144, 288, 352
-                },
-                Minimum = 1,
-                Maximum = 10000,
-                Unit = Unit.Points,
-                Value = 12
-            };
-
-            _fontSizeOption.PropertyChanged += (s, e) =>
-            {
-                if (CurrentText == null) return;
-
-                if (_autoSet) return;
-
-                if (_selectionRange == 0)
-                    Context.HistoryManager.Do(new ApplyFormatCommand(
-                                                  Context.HistoryManager.Position + 1,
-                                                  new ITextLayer[] {CurrentText},
-                                                  CurrentText.FontFamilyName,
-                                                  _fontSizeOption.Value,
-                                                  CurrentText.FontStretch,
-                                                  CurrentText.FontStyle,
-                                                  CurrentText.FontWeight,
-                                                  new[] {CurrentText.FontFamilyName},
-                                                  new[] {CurrentText.FontSize},
-                                                  new[] {CurrentText.FontStretch},
-                                                  new[] {CurrentText.FontStyle},
-                                                  new[] {CurrentText.FontWeight}));
-                else
-                    Format(new Format
-                    {
-                        FontSize = _fontSizeOption.Value,
-                        Range = (_selectionIndex, _selectionRange)
-                    });
-
-                Update();
-            };
-
-            _fontNameOption = new ToolOption<string>("Font Face", ToolOptionType.Dropdown)
-            {
-                Value = "Regular"
-            };
-
-            _fontNameOption.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName != nameof(ToolOption.Value)) return;
-
-                if (CurrentText == null || _fontNameOption.Value == null) return;
-
-                if (_autoSet) return;
-
-                var (stretch, style, weight) = FromFontName(_fontNameOption.Value);
-
-                if (_selectionRange == 0)
-                    Context.HistoryManager.Do(new ApplyFormatCommand(
-                                                  Context.HistoryManager.Position + 1,
-                                                  new ITextLayer[] {CurrentText},
-                                                  CurrentText.FontFamilyName,
-                                                  CurrentText.FontSize,
-                                                  stretch,
-                                                  style,
-                                                  weight,
-                                                  new[] {CurrentText.FontFamilyName},
-                                                  new[] {CurrentText.FontSize},
-                                                  new[] {CurrentText.FontStretch},
-                                                  new[] {CurrentText.FontStyle},
-                                                  new[] {CurrentText.FontWeight}));
-                else
-                    Format(new Format
-                    {
-                        FontStretch = stretch,
-                        FontStyle = style,
-                        FontWeight = weight,
-                        Range = (_selectionIndex, _selectionRange)
-                    });
-
-                Update();
-            };
-
-            Options = new IToolOption[]
-            {
-                _fontFamilyOption,
-                _fontSizeOption,
-                _fontNameOption
-            };
+            Options.OptionChanged += OnOptionChanged;
 
             Context.SelectionManager.Updated += (_, e) => Update();
 
             Update();
         }
 
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            var option = (ToolOption) sender;
+            if (CurrentText == null) return;
+
+            switch (option.Id)
+            {
+                case "font-family":
+                case "font-face":
+                    UpdateFontFaces();
+
+                    if (_selectionRange == 0)
+                        Format(new Format
+                        {
+                            FontFamilyName = (string) option.Value,
+                            Range = (0, CurrentText.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontFamilyName = (string) option.Value,
+                            Range = (_selectionIndex, _selectionRange)
+                        });
+                    break;
+                case "font-size":
+                    if (_selectionRange == 0)
+                        Format(new Format
+                        {
+                            FontSize = (float) option.Value,
+                            Range = (0, CurrentText.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontSize = (float) option.Value,
+                            Range = (_selectionIndex, _selectionRange)
+                        });
+                    break;
+            }
+
+            Update();
+        }
+
         public Text CurrentText => Context.SelectionManager.Selection.LastOrDefault() as Text;
 
-        public IToolOption[] Options { get; }
+        public ToolOptions Options { get; } = new ToolOptions();
 
         private IArtContext Context => Manager.Context;
 
@@ -300,22 +230,18 @@ namespace Ibinimator.Service.Tools
             _caretPosition = new Vector2(metrics.Left, metrics.Top);
             _caretSize = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
 
-            if (_selectionRange > 0)
-                _selectionRects = layout.MeasureRange(_selectionIndex, _selectionRange);
-            else
-                _selectionRects = new RectangleF[0];
+            _selectionRects = _selectionRange > 0 ?
+                layout.MeasureRange(_selectionIndex, _selectionRange) :
+                new RectangleF[0];
 
             var format = CurrentText.GetFormat(_selectionIndex);
 
-            _fontFamilyOption.Value = format?.FontFamilyName ?? CurrentText.FontFamilyName;
-            _fontSizeOption.Value = format?.FontSize ?? CurrentText.FontSize;
-            _fontNameOption.Value =
-                ToFontName(
-                    format?.FontWeight ?? CurrentText.FontWeight,
-                    format?.FontStyle ?? CurrentText.FontStyle,
-                    format?.FontStretch ?? CurrentText.FontStretch);
-
-            _autoSet = false;
+            Options.Set("font-family", format?.FontFamilyName ?? CurrentText.FontFamilyName);
+            Options.Set("font-size", format?.FontSize ?? CurrentText.FontSize);
+            Options.Set("font-face", ToFontName(
+                            format?.FontWeight ?? CurrentText.FontWeight,
+                            format?.FontStyle ?? CurrentText.FontStyle,
+                            format?.FontStretch ?? CurrentText.FontStretch));
 
             Context.InvalidateSurface();
         }
@@ -325,7 +251,7 @@ namespace Ibinimator.Service.Tools
             var fontFaces = new List<string>();
             _fontFaceDescriptions.Clear();
 
-            if (_dwFontCollection.FindFamilyName(_fontFamilyOption.Value, out var index))
+            if (_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
             {
                 using (var dwFamily = _dwFontCollection.GetFontFamily(index))
                 {
@@ -341,8 +267,6 @@ namespace Ibinimator.Service.Tools
                         }
                 }
             }
-
-            _fontNameOption.Options = fontFaces.ToArray();
         }
 
         #region ITool Members
@@ -368,6 +292,9 @@ namespace Ibinimator.Service.Tools
                 Range = (_selectionIndex, _selectionRange)
             });
         }
+
+        public BrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public PenInfo ProvideStroke() { throw new NotImplementedException(); }
 
 
         public void Dispose() { _dwFontCollection?.Dispose(); }
@@ -638,12 +565,12 @@ namespace Ibinimator.Service.Tools
             {
                 if (Time.Now - _lastClickTime <= GetDoubleClickTime())
                 {
-                    var (stretch, style, weight) = FromFontName(_fontNameOption.Value);
+                    var (stretch, style, weight) = FromFontName(Options.Get<string>("font-face"));
 
                     var text = new Text
                     {
-                        FontFamilyName = _fontFamilyOption.Value,
-                        FontSize = _fontSizeOption.Value,
+                        FontFamilyName = Options.Get<string>("font-family"),
+                        FontSize = Options.Get<float>("font-size"),
                         FontStyle = style,
                         FontStretch = stretch,
                         FontWeight = weight,

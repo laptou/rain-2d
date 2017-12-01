@@ -16,6 +16,7 @@ namespace Ibinimator.Service.Commands
         }
 
         public override string Description => "Changed format of range";
+
         public Format[] NewFormats { get; }
 
         public Format[] OldFormats { get; }

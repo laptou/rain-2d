@@ -102,7 +102,7 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="2" SnapsToDevicePixels="True">
+                                    SnapsToDevicePixels="True">
                                 <ScrollViewer x:Name="PART_ContentHost"
                                               Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
                             </Border>
@@ -135,8 +135,6 @@
 
             <Style TargetType="{x:Type ComboBox}">
                 <Setter Property="Background" Value="{DynamicResource L3Brush}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource T2Brush}" />
-                <Setter Property="BorderThickness" Value="0,1" />
                 <Setter Property="FontFamily" Value="/Ibinimator;component/Resources/Font/#Roboto" />
                 <Setter Property="Height" Value="25.6" />
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -154,8 +152,16 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="0" MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
                                     </Grid.ColumnDefinitions>
+                                    <Border x:Name="Shadow"
+                                            Grid.Column="0" Grid.ColumnSpan="2"
+                                            Margin="-3">
+                                        <Border.Effect>
+                                            <DropShadowEffect x:Name="ShadowEffect"
+                                                              BlurRadius="0" ShadowDepth="0" />
+                                        </Border.Effect>
+                                    </Border>
                                     <Popup x:Name="PART_Popup"
-                                           Grid.ColumnSpan="2"
+                                           Grid.Column="0" Grid.ColumnSpan="2"
                                            Margin="1"
                                            AllowsTransparency="True"
                                            IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
@@ -189,7 +195,7 @@
                                         </themes:SystemDropShadowChrome>
                                     </Popup>
                                     <ToggleButton x:Name="toggleButton"
-                                                  Grid.ColumnSpan="2"
+                                                  Grid.Column="0" Grid.ColumnSpan="2"
                                                   Background="{TemplateBinding Background}"
                                                   BorderBrush="{TemplateBinding BorderBrush}"
                                                   BorderThickness="{TemplateBinding BorderThickness}"
@@ -221,6 +227,7 @@
                                         </ToggleButton.Style>
                                     </ToggleButton>
                                     <ContentPresenter x:Name="contentPresenter"
+                                                      Grid.Column="0"
                                                       Margin="{TemplateBinding Padding}"
                                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -231,6 +238,7 @@
                                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                       TextBlock.FontFamily="{TemplateBinding FontFamily}" />
                                     <TextBox x:Name="PART_EditableTextBox"
+                                             Grid.Column="0"
                                              MinWidth="25"
                                              Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                              VerticalContentAlignment="Center"
@@ -268,8 +276,26 @@
                                 <Trigger Property="IsEditable" Value="True">
                                     <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
                                 </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ShadowEffect" Storyboard.TargetProperty="BlurRadius" To="5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Setter TargetName="Shadow" Property="DropShadowEffect.BlurRadius" Value="5" />
+                                </Trigger>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ShadowEffect" Storyboard.TargetProperty="BlurRadius" To="5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                </Trigger>
                                 <MultiTrigger>
-
                                     <MultiTrigger.Conditions>
                                         <Condition Property="IsGrouping" Value="True" />
                                         <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False" />

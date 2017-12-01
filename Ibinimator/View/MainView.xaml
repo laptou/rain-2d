@@ -1,11 +1,9 @@
 ﻿<Window x:Class="Ibinimator.View.MainView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:command="clr-namespace:Ibinimator.View.Command" xmlns:control="clr-namespace:Ibinimator.View.Control"
-        xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
+        xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:model="clr-namespace:Ibinimator.Renderer.Model;assembly=Ibinimator.Renderer" xmlns:panes="clr-namespace:Ibinimator.View.Panes"
-        xmlns:renderer="clr-namespace:Ibinimator.Renderer;assembly=Ibinimator.Renderer" xmlns:tools="clr-namespace:Ibinimator.Service.Tools"
+        xmlns:model="clr-namespace:Ibinimator.Renderer.Model;assembly=Ibinimator.Renderer"
         xmlns:utility="clr-namespace:Ibinimator.View.Utility" xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         Title="Ibinimator"
         d:DesignHeight="1080" d:DesignWidth="1920" Icon="/Ibinimator;component/Resources/logo.png"
@@ -165,20 +163,27 @@
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
                                           utility:Helper.Accent="{DynamicResource A4}"
-                                          ItemsSource="{Binding Options}"
+                                          ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}" />
                             </StackPanel>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Name}" Value="Font Family">
-                                    <Setter TargetName="Dropdown" Property="ItemTemplate">
-                                        <Setter.Value>
-                                            <DataTemplate>
-                                                <TextBlock FontFamily="{Binding}" Text="{Binding}" />
-                                            </DataTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}">
+                            <StackPanel Margin="16,0" Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center">
+                                    <Run Text="{Binding Name}" />
+                                    :</TextBlock>
+                                <ComboBox x:Name="Dropdown"
+                                          Margin="8,0"
+                                          utility:Helper.Accent="{DynamicResource A4}"
+                                          ItemsSource="{Binding Values}"
+                                          SelectedValue="{Binding Value}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock FontFamily="{Binding}" Text="{Binding}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
                         </DataTemplate>
                         <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
@@ -188,7 +193,7 @@
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
                                           IsEditable="True"
-                                          ItemsSource="{Binding Options}">
+                                          ItemsSource="{Binding Values}">
                                     <ComboBox.Text>
                                         <MultiBinding Converter="{StaticResource PointConverter}" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="Value" />

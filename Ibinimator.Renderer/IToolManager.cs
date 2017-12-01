@@ -13,6 +13,7 @@ namespace Ibinimator.Renderer
     {
         ITool Tool { get; }
         ToolType Type { get; set; }
+
         bool KeyDown(Key key, ModifierKeys modifiers);
         bool KeyUp(Key key, ModifierKeys modifiers);
 
@@ -22,5 +23,11 @@ namespace Ibinimator.Renderer
         bool TextInput(string text);
 
         void RaiseStatus(Status status);
+        void RaiseFillUpdate();
+        void RaiseStrokeUpdate();
+
+
+        event EventHandler<BrushInfo> FillUpdated;
+        event EventHandler<BrushInfo> StrokeUpdated;
     }
 }

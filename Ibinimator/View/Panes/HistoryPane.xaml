@@ -4,8 +4,6 @@
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
               xmlns:renderer="clr-namespace:Ibinimator.Renderer;assembly=Ibinimator.Renderer" xmlns:service="clr-namespace:Ibinimator.Service"
               xmlns:utility="clr-namespace:Ibinimator.View.Utility"
-              d:DataContext="{d:DesignInstance Type=service:HistoryManager,
-                                               IsDesignTimeCreatable=False}"
               d:DesignHeight="300" d:DesignWidth="300" FocusManager.IsFocusScope="True"
               mc:Ignorable="d">
     <Grid MinHeight="128" MaxHeight="256">

@@ -13,7 +13,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class NodeTool : Core.Model.Model, ITool
+    public class NodeTool : Model, ITool
     {
         private readonly ISet<int> _selection = new HashSet<int>();
         private IList<PathNode> _nodes;
@@ -41,9 +41,8 @@ namespace Ibinimator.Service.Tools
         public IGeometricLayer SelectedLayer =>
             Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
 
-        public IToolOption[] Options =>
-            new IToolOption[0]; // TODO: add actual tool options
-
+        public ToolOptions Options { get; } = new ToolOptions();
+        
         private IArtContext Context => Manager.Context;
 
         private IContainerLayer Root => Context.ViewManager.Root;
@@ -147,9 +146,15 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush) { throw new NotImplementedException(); }
+        public void ApplyFill(BrushInfo brush)
+        {
+            
+        }
 
         public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
+
+        public BrushInfo ProvideFill() { return SelectedLayer.Fill; }
+        public PenInfo ProvideStroke() { return SelectedLayer.Stroke; }
 
         public void Dispose()
         {
@@ -222,12 +227,14 @@ namespace Ibinimator.Service.Tools
 
             foreach (var node in _nodes)
             {
-                if (Vector2.DistanceSquared(t(node.Position), pos) < 9)
+                if (Vector2.DistanceSquared(t(node.Position), pos) < 3)
                 {
                     _handle = 0;
                     target = node;
                     break;
                 }
+
+                if (!_selection.Contains(node.Index)) continue;
 
                 if (node.IncomingControl != null &&
                     Vector2.DistanceSquared(t(node.IncomingControl.Value), pos) < 2)
@@ -334,6 +341,7 @@ namespace Ibinimator.Service.Tools
                 return cacheManager.GetBrush(nameof(EditorColors.Node));
             }
 
+            var start = true;
             foreach (var node in _nodes)
             {
                 var pos = Vector2.Transform(node.Position, transform);
@@ -381,8 +389,10 @@ namespace Ibinimator.Service.Tools
 
                     target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
 
-                    target.DrawRectangle(rect, node.Index == 0 ? p2 : p);
+                    target.DrawRectangle(rect, start ? p2 : p);
                 }
+
+                start = node.FigureEnd != null;
             }
 
             // do not dispose the brushes! they are being used by the cache manager

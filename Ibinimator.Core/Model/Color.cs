@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model
 {
     public struct Color
     {
+        public Color(Vector4 v) : this(v.X, v.Y, v.Z, v.W)
+        {
+        }
+
         public Color(float r, float g, float b, float a) : this()
         {
             R = r;
@@ -28,7 +33,15 @@ namespace Ibinimator.Core.Model
         public float A { get; set; }
         public float B { get; set; }
         public float G { get; set; }
-
         public float R { get; set; }
+
+        public Vector4 AsVector()
+        {
+            return new Vector4(R, G, B, A);
+        }
+
+        public static Vector4 operator -(Color c1, Color c2) { return c1.AsVector() - c2.AsVector(); }
+
+        public static Color operator +(Color c, Vector4 v) { return new Color(c.AsVector() + v); }
     }
 }

@@ -170,18 +170,32 @@ namespace Ibinimator.Core.Utility
 
         public static T Min<T>(params T[] x) { return x.Min(); }
 
-        public static float NonZeroSign(float f) { return f > 0 ? 1 : -1; }
+        public static float NonZeroSign(float f) { return f >= 0 ? 1 : -1; }
 
         public static Vector2 NonZeroSign(Vector2 v)
         {
             return new Vector2(NonZeroSign(v.X), NonZeroSign(v.Y));
         }
 
+        /// <summary>
+        /// Returns the projection of vector <paramref name="a"/>
+        /// onto vector <paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">The vector to project.</param>
+        /// <param name="b">The vector to project onto.</param>
+        /// <returns>The projection of a onto b.</returns>
         public static Vector2 Project(Vector2 a, Vector2 b)
         {
             return Vector2.Dot(a, b) / Vector2.Dot(b, b) * b;
         }
 
+        /// <summary>
+        /// Rotates vector <paramref name="v"/> by 
+        /// <paramref name="theta"/> radians.
+        /// </summary>
+        /// <param name="v">The vector to rotate.</param>
+        /// <param name="theta">The angle to rotate the vector by.</param>
+        /// <returns>The rotated vector.</returns>
         public static Vector2 Rotate(Vector2 v, float theta)
         {
             var cs = (float) Cos(theta);
@@ -193,6 +207,15 @@ namespace Ibinimator.Core.Utility
             return new Vector2(px, py);
         }
 
+        /// <summary>
+        /// Rotates vector <paramref name="v"/> by
+        /// <paramref name="theta"/> radians around 
+        /// center of rotation <paramref name="c"/>.
+        /// </summary>
+        /// <param name="v">The vector to rotate.</param>
+        /// <param name="c">The center of rotation.</param>
+        /// <param name="theta">The angle to rotate the vector by.</param>
+        /// <returns>The rotated vector.</returns>
         public static Vector2 Rotate(Vector2 v, Vector2 c, float theta)
         {
             return Rotate(v - c, theta) + c;
@@ -208,9 +231,9 @@ namespace Ibinimator.Core.Utility
             return new Vector2(v.X + (float) Tan(theta) * v.Y, v.Y);
         }
 
-        public static Vector2 ShearX(Vector2 v, Vector2 o, float theta)
+        public static Vector2 ShearX(Vector2 v, Vector2 c, float theta)
         {
-            return ShearX(v - o, theta) + o;
+            return ShearX(v - c, theta) + c;
         }
 
         public static Vector2 Sign(Vector2 v)

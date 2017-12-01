@@ -54,7 +54,6 @@ namespace Ibinimator.ViewModel
             ToolManager.Type = ToolType.Select;
 
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
-            SelectToolCommand = new DelegateCommand<ToolType>(tt => ToolManager.Type = tt, null);
             JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
 
             MenuItems = LoadMenus(".menus").ToList();
