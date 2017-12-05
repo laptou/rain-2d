@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
+using Ibinimator.Renderer.Utility;
 using Ibinimator.Renderer.WPF;
 using WPF = System.Windows.Media;
 

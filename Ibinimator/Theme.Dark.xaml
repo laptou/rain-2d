@@ -5,6 +5,7 @@
     <Color x:Key="L0">#101010</Color>
     <Color x:Key="L1">#242424</Color>
     <Color x:Key="L2">#383838</Color>
+    <Color x:Key="L">#000000</Color>
 
     <Color x:Key="T1">#DFDFDF</Color>
     <Color x:Key="T2">#D4D4D4</Color>
@@ -26,6 +27,7 @@
     <!--#endregion-->
 
     <!--#region Brushes-->
+    <SolidColorBrush x:Key="LBrush" Color="{StaticResource L}" />
     <SolidColorBrush x:Key="L0Brush" Color="{StaticResource L0}" />
     <SolidColorBrush x:Key="L1Brush" Color="{StaticResource L1}" />
     <SolidColorBrush x:Key="L2Brush" Color="{StaticResource L2}" />

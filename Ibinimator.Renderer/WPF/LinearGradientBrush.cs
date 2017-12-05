@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using GradientStop = Ibinimator.Core.GradientStop;
 
 namespace Ibinimator.Renderer.WPF
 {

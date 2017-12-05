@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
@@ -85,10 +86,12 @@ namespace Ibinimator.Service.Tools
 
             Options.OptionChanged += OnOptionChanged;
 
-            Context.SelectionManager.Updated += (_, e) => Update();
+            Context.SelectionManager.Updated += OnSelectionUpdated;
 
             Update();
         }
+
+        private void OnSelectionUpdated(object sender, EventArgs e) { Update(); }
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
@@ -142,17 +145,12 @@ namespace Ibinimator.Service.Tools
         private void Format(Format format)
         {
             var history = Context.HistoryManager;
-
-            var old = CurrentText.Formats.Select(f => f.Clone()).ToArray();
-            CurrentText.SetFormat(format);
-            var @new = CurrentText.Formats.Select(f => f.Clone()).ToArray();
-
-            var current = new ApplyFormatRangeCommand(
+            var cmd = new ApplyFormatCommand(
                 Context.HistoryManager.Position + 1,
-                CurrentText, @new, old);
+                CurrentText, format);
 
             // no Do() b/c it's already done
-            history.Push(current);
+            history.Do(cmd);
         }
 
         private static (FontStretch stretch, FontStyle style, FontWeight weight) FromFontName(string name)
@@ -294,10 +292,14 @@ namespace Ibinimator.Service.Tools
         }
 
         public BrushInfo ProvideFill() { throw new NotImplementedException(); }
+
         public PenInfo ProvideStroke() { throw new NotImplementedException(); }
 
-
-        public void Dispose() { _dwFontCollection?.Dispose(); }
+        public void Dispose()
+        {
+            Context.SelectionManager.Updated -= OnSelectionUpdated;
+            _dwFontCollection?.Dispose();
+        }
 
         public bool KeyDown(Key key, ModifierKeys mods)
         {

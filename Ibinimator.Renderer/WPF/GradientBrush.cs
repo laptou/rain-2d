@@ -4,9 +4,11 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Color = System.Windows.Media.Color;
+using GradientStop = Ibinimator.Core.GradientStop;
 
 namespace Ibinimator.Renderer.WPF
 {

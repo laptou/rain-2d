@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using D2D = SharpDX.Direct2D1;
@@ -267,6 +268,21 @@ namespace Ibinimator.Renderer.Model
 
         public void SetFormat(Format format)
         {
+            // if the format covers everything, set the attributes of the layer itself
+            if (format.Range.Equals((0, Value.Length)))
+            {
+                FontSize = format.FontSize ?? FontSize;
+                FontFamilyName = format.FontFamilyName ?? FontFamilyName;
+                FontStyle = format.FontStyle ?? FontStyle;
+                FontStretch = format.FontStretch ?? FontStretch;
+                FontWeight = format.FontWeight ?? FontWeight;
+                Fill = format.Fill ?? Fill;
+                Stroke = format.Stroke ?? Stroke;
+                
+                // no return -- we still want it to override any conflicting properties
+                // set by other formats
+            }
+
             var range = format.Range;
             var start = range.Index;
             var current = range.Index;
@@ -347,9 +363,9 @@ namespace Ibinimator.Renderer.Model
 
         public override string DefaultName => $@"Text ""{Value.Truncate(30)}""";
 
-        public BrushInfo Fill
+        public IBrushInfo Fill
         {
-            get => Get<BrushInfo>();
+            get => Get<IBrushInfo>();
             set => Set(value);
         }
 
@@ -417,9 +433,9 @@ namespace Ibinimator.Renderer.Model
 
         public ObservableList<float> Offsets => Get<ObservableList<float>>();
 
-        public PenInfo Stroke
+        public IPenInfo Stroke
         {
-            get => Get<PenInfo>();
+            get => Get<IPenInfo>();
             set
             {
                 Set(value);

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;

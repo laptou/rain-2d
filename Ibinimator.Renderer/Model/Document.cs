@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model

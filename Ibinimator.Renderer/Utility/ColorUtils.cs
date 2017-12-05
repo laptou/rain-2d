@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Core.Utility
+namespace Ibinimator.Renderer.Utility
 {
     public static class ColorUtils
     {

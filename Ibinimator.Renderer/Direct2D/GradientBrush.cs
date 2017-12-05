@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
+using GradientStop = Ibinimator.Core.GradientStop;
 
 namespace Ibinimator.Renderer.Direct2D
 {

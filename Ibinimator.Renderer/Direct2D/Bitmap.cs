@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;

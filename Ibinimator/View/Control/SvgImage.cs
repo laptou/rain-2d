@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Xml.Linq;
+using Ibinimator.Core;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.WPF;

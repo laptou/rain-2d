@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using SharpDX.Mathematics.Interop;
@@ -272,7 +273,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var pen = iPen as Pen;
             Target.DrawRectangle(
-                new RectangleF(
+                new SharpDX.RectangleF(
                     left,
                     top,
                     width,
@@ -322,7 +323,7 @@ namespace Ibinimator.Renderer.Direct2D
             IBrush brush)
         {
             Target.FillRectangle(
-                new RectangleF(
+                new SharpDX.RectangleF(
                     left,
                     top,
                     width,

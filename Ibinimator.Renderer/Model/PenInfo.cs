@@ -2,18 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
-    public class PenInfo : Core.Model.Model
+    public class PenInfo : Core.Model.Model, IPenInfo
     {
         public PenInfo() { Dashes = new ObservableList<float>(); }
 
-        public BrushInfo Brush
+        public IBrushInfo Brush
         {
-            get => Get<BrushInfo>();
+            get => Get<IBrushInfo>();
             set => Set(value);
         }
 

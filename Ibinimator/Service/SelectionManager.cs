@@ -6,6 +6,8 @@ using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Input;
+using Ibinimator.Core;
+using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Renderer.Model;

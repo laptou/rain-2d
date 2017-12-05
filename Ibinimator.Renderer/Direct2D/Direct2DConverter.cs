@@ -31,5 +31,15 @@ namespace Ibinimator.Renderer.Direct2D
         {
             return new Matrix3x2(mat.M11, mat.M12, mat.M21, mat.M22, mat.M31, mat.M32);
         }
+
+        public static SharpDX.RectangleF Convert(this Core.Model.RectangleF r)
+        {
+            return new RectangleF(r.Left, r.Top, r.Width, r.Height);
+        }
+
+        public static Core.Model.RectangleF Convert(this RectangleF r)
+        {
+            return new Core.Model.RectangleF(r.Left, r.Top, r.Width, r.Height);
+        }
     }
 }

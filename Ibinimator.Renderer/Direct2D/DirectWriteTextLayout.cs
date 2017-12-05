@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer.Model;
 using DW = SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -119,10 +121,10 @@ namespace Ibinimator.Renderer.Direct2D
                     //        range);
 
                     if (format.Fill != null)
-                        _dwLayout.SetFormat(range, f => f.Fill = format.Fill);
+                        _dwLayout.SetFormat(range, f => f.Fill = format.Fill as BrushInfo);
 
                     if (format.Stroke != null)
-                        _dwLayout.SetFormat(range, f => f.Stroke = format.Stroke);
+                        _dwLayout.SetFormat(range, f => f.Stroke = format.Stroke as PenInfo);
                 }
             }
 

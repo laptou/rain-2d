@@ -172,7 +172,6 @@
     <Compile Include="Service\Commands\AlignCommand.cs" />
     <Compile Include="Service\Commands\ApplyFillCommand.cs" />
     <Compile Include="Service\Commands\ApplyFormatCommand.cs" />
-    <Compile Include="Service\Commands\ApplyFormatRangeCommand.cs" />
     <Compile Include="Service\Commands\ApplyStrokeCommand.cs" />
     <Compile Include="Service\Commands\BinaryOperationCommand.cs" />
     <Compile Include="Service\Commands\ChangeZIndexCommand.cs" />

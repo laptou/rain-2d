@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using SharpDX.Direct2D1;
 
@@ -86,24 +87,22 @@ namespace Ibinimator.Renderer.Model
 
         public override string DefaultName => "Shape";
 
-        public BrushInfo Fill
+        public IBrushInfo Fill
         {
-            get => Get<BrushInfo>();
+            get => Get<IBrushInfo>();
             set
             {
                 Set(value);
-
                 RaiseFillBrushChanged();
             }
         }
 
-        public PenInfo Stroke
+        public IPenInfo Stroke
         {
-            get => Get<PenInfo>();
+            get => Get<IPenInfo>();
             set
             {
                 Set(value);
-
                 RaiseStrokeChanged();
             }
         }

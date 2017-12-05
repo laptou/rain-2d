@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
 using Matrix3x2 = System.Numerics.Matrix3x2;
+using RectangleF = Ibinimator.Core.Model.RectangleF;
 using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Renderer.Direct2D

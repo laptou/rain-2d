@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Ibinimator.Core.Utility;
+using Ibinimator.Renderer.Utility;
 using Color = Ibinimator.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 

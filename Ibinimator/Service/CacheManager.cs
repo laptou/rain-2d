@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
@@ -15,7 +16,7 @@ using Color = System.Windows.Media.Color;
 
 namespace Ibinimator.Service
 {
-    public class CacheManager : Core.Model.Model, ICacheManager
+    public class CacheManager : Model, ICacheManager
     {
         private readonly Dictionary<string, IBitmap> _bitmaps =
             new Dictionary<string, IBitmap>();

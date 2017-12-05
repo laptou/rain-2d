@@ -158,8 +158,8 @@
                         <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" />
-                                    :</TextBlock>
+                                    <Run Text="{Binding Name}" /><Run Text=":" />
+                                </TextBlock>
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
                                           utility:Helper.Accent="{DynamicResource A4}"
@@ -170,8 +170,8 @@
                         <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" />
-                                    :</TextBlock>
+                                    <Run Text="{Binding Name}" /><Run Text=":" />
+                                </TextBlock>
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
                                           utility:Helper.Accent="{DynamicResource A4}"

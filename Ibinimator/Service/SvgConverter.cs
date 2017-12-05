@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Svg;
 using SharpDX.Direct2D1;
-using static Ibinimator.Core.Model.LengthUnit;
 using Color = Ibinimator.Core.Model.Color;
 using Document = Ibinimator.Renderer.Model.Document;
 using Ellipse = Ibinimator.Svg.Ellipse;
-using GradientStop = Ibinimator.Renderer.GradientStop;
+using GradientStop = Ibinimator.Core.GradientStop;
 using Group = Ibinimator.Renderer.Model.Group;
 using Layer = Ibinimator.Renderer.Model.Layer;
 using LineCap = Ibinimator.Core.Model.LineCap;
@@ -22,7 +21,7 @@ using Path = Ibinimator.Renderer.Model.Path;
 using Rectangle = Ibinimator.Svg.Rectangle;
 using Text = Ibinimator.Svg.Text;
 
-namespace Ibinimator.Utility
+namespace Ibinimator.Service
 {
     public static class SvgConverter
     {
@@ -69,10 +68,10 @@ namespace Ibinimator.Utility
                     case Ellipse ellipse:
                         shape = new Renderer.Model.Ellipse
                         {
-                            CenterX = ellipse.CenterX.To(Pixels),
-                            CenterY = ellipse.CenterY.To(Pixels),
-                            RadiusX = ellipse.RadiusX.To(Pixels),
-                            RadiusY = ellipse.RadiusY.To(Pixels)
+                            CenterX = ellipse.CenterX.To(LengthUnit.Pixels),
+                            CenterY = ellipse.CenterY.To(LengthUnit.Pixels),
+                            RadiusX = ellipse.RadiusX.To(LengthUnit.Pixels),
+                            RadiusY = ellipse.RadiusY.To(LengthUnit.Pixels)
                         };
                         break;
                     case Line line:
@@ -80,13 +79,13 @@ namespace Ibinimator.Utility
 
                         linePath.Instructions.Add(
                             new MovePathInstruction(
-                                line.X1.To(Pixels),
-                                line.Y1.To(Pixels)));
+                                line.X1.To(LengthUnit.Pixels),
+                                line.Y1.To(LengthUnit.Pixels)));
 
                         linePath.Instructions.Add(
                             new LinePathInstruction(
-                                line.X2.To(Pixels),
-                                line.Y2.To(Pixels)));
+                                line.X2.To(LengthUnit.Pixels),
+                                line.Y2.To(LengthUnit.Pixels)));
 
                         shape = linePath;
                         break;
@@ -122,19 +121,19 @@ namespace Ibinimator.Utility
                     case Rectangle rectangle:
                         shape = new Renderer.Model.Rectangle
                         {
-                            X = rectangle.X.To(Pixels),
-                            Y = rectangle.Y.To(Pixels),
-                            Width = rectangle.Width.To(Pixels),
-                            Height = rectangle.Height.To(Pixels)
+                            X = rectangle.X.To(LengthUnit.Pixels),
+                            Y = rectangle.Y.To(LengthUnit.Pixels),
+                            Width = rectangle.Width.To(LengthUnit.Pixels),
+                            Height = rectangle.Height.To(LengthUnit.Pixels)
                         };
                         break;
                     case Circle circle:
                         shape = new Renderer.Model.Ellipse
                         {
-                            CenterX = circle.CenterX.To(Pixels),
-                            CenterY = circle.CenterY.To(Pixels),
-                            RadiusX = circle.Radius.To(Pixels),
-                            RadiusY = circle.Radius.To(Pixels)
+                            CenterX = circle.CenterX.To(LengthUnit.Pixels),
+                            CenterY = circle.CenterY.To(LengthUnit.Pixels),
+                            RadiusX = circle.Radius.To(LengthUnit.Pixels),
+                            RadiusY = circle.Radius.To(LengthUnit.Pixels)
                         };
                         break;
                     case Text text:
@@ -143,7 +142,7 @@ namespace Ibinimator.Utility
                             FontFamilyName = text.FontFamily ?? "Arial",
                             FontStretch = text.FontStretch ?? FontStretch.Normal,
                             FontWeight = text.FontWeight ?? FontWeight.Normal,
-                            FontSize = text.FontSize?.To(Points) ?? 12,
+                            FontSize = text.FontSize?.To(LengthUnit.Points) ?? 12,
                             Value = text.Text
                         };
                         break;
@@ -152,14 +151,14 @@ namespace Ibinimator.Utility
                 }
 
                 var dashes = shapeElement
-                    .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(Pixels))
+                    .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(LengthUnit.Pixels))
                     .ToArray();
 
                 shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
                 shape.Stroke = FromSvg(
                     shapeElement.Stroke,
                     shapeElement.StrokeOpacity,
-                    shapeElement.StrokeWidth.To(Pixels),
+                    shapeElement.StrokeWidth.To(LengthUnit.Pixels),
                     dashes,
                     shapeElement.StrokeDashOffset,
                     shapeElement.StrokeLineCap,
@@ -204,14 +203,14 @@ namespace Ibinimator.Utility
                                     s.Color.Green,
                                     s.Color.Blue,
                                     s.Color.Alpha * s.Opacity),
-                                Offset = s.Offset.To(Pixels, 1)
+                                Offset = s.Offset.To(LengthUnit.Pixels, 1)
                             })),
                         StartPoint =
-                            new Vector2(linearGradient.X1.To(Pixels, 1),
-                                        linearGradient.Y1.To(Pixels, 1)),
+                            new Vector2(linearGradient.X1.To(LengthUnit.Pixels, 1),
+                                        linearGradient.Y1.To(LengthUnit.Pixels, 1)),
                         EndPoint =
-                            new Vector2(linearGradient.X2.To(Pixels, 1),
-                                        linearGradient.Y2.To(Pixels, 1)),
+                            new Vector2(linearGradient.X2.To(LengthUnit.Pixels, 1),
+                                        linearGradient.Y2.To(LengthUnit.Pixels, 1)),
                         Name = linearGradient.Id,
                         Transform = linearGradient.Transform,
                         ExtendMode = (ExtendMode) linearGradient.SpreadMethod,
@@ -230,19 +229,19 @@ namespace Ibinimator.Utility
                                     s.Color.Green,
                                     s.Color.Blue,
                                     s.Color.Alpha),
-                                Offset = s.Offset.To(Pixels, 1)
+                                Offset = s.Offset.To(LengthUnit.Pixels, 1)
                             })),
                         StartPoint = new Vector2(
-                            radialGradient.CenterX.To(Pixels, 1),
-                            radialGradient.CenterY.To(Pixels, 1)),
+                            radialGradient.CenterX.To(LengthUnit.Pixels, 1),
+                            radialGradient.CenterY.To(LengthUnit.Pixels, 1)),
                         Focus = new Vector2(
-                            radialGradient.FocusX.To(Pixels, 1),
-                            radialGradient.FocusY.To(Pixels, 1)),
+                            radialGradient.FocusX.To(LengthUnit.Pixels, 1),
+                            radialGradient.FocusY.To(LengthUnit.Pixels, 1)),
                         EndPoint = new Vector2(
-                            radialGradient.CenterX.To(Pixels, 1) +
-                            radialGradient.Radius.To(Pixels, 1),
-                            radialGradient.CenterX.To(Pixels, 1) +
-                            radialGradient.Radius.To(Pixels, 1)),
+                            radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
+                            radialGradient.Radius.To(LengthUnit.Pixels, 1),
+                            radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
+                            radialGradient.Radius.To(LengthUnit.Pixels, 1)),
                         Name = radialGradient.Id,
                         Transform = radialGradient.Transform,
                         ExtendMode = (ExtendMode) radialGradient.SpreadMethod,
@@ -295,10 +294,10 @@ namespace Ibinimator.Utility
                     case Renderer.Model.Ellipse ellipse:
                         shape = new Ellipse
                         {
-                            CenterX = new Length(ellipse.CenterX, Pixels),
-                            CenterY = new Length(ellipse.CenterY, Pixels),
-                            RadiusX = new Length(ellipse.RadiusX, Pixels),
-                            RadiusY = new Length(ellipse.RadiusY, Pixels)
+                            CenterX = new Length(ellipse.CenterX, LengthUnit.Pixels),
+                            CenterY = new Length(ellipse.CenterY, LengthUnit.Pixels),
+                            RadiusX = new Length(ellipse.RadiusX, LengthUnit.Pixels),
+                            RadiusY = new Length(ellipse.RadiusY, LengthUnit.Pixels)
                         };
                         break;
                     case Path path:
@@ -311,10 +310,10 @@ namespace Ibinimator.Utility
                     case Renderer.Model.Rectangle rectangle:
                         shape = new Rectangle
                         {
-                            X = new Length(rectangle.X, Pixels),
-                            Y = new Length(rectangle.Y, Pixels),
-                            Width = new Length(rectangle.Width, Pixels),
-                            Height = new Length(rectangle.Height, Pixels)
+                            X = new Length(rectangle.X, LengthUnit.Pixels),
+                            Y = new Length(rectangle.Y, LengthUnit.Pixels),
+                            Width = new Length(rectangle.Width, LengthUnit.Pixels),
+                            Height = new Length(rectangle.Height, LengthUnit.Pixels)
                         };
                         break;
                     case Renderer.Model.Text text:
@@ -334,7 +333,7 @@ namespace Ibinimator.Utility
                     .Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
                     .ToArray();
 
-                shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, Pixels);
+                shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, LengthUnit.Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
                 shape.StrokeDashOffset = shapeLayer.Stroke.DashOffset;
                 shape.StrokeLineCap = (LineCap) shapeLayer.Stroke.LineCap;
@@ -362,7 +361,7 @@ namespace Ibinimator.Utility
                 FontStretch = text.FontStretch,
                 FontWeight = text.FontWeight,
                 FontStyle = text.FontStyle,
-                FontSize = new Length(text.FontSize, Points),
+                FontSize = new Length(text.FontSize, LengthUnit.Points),
                 Text = text.Value,
                 Y = text.Baseline
             };
@@ -377,7 +376,7 @@ namespace Ibinimator.Utility
                     FontStyle = format.FontStyle,
                     FontSize =
                         format.FontSize != null ?
-                            new Length?(new Length(format.FontSize.Value, Points)) :
+                            new Length?(new Length(format.FontSize.Value, LengthUnit.Points)) :
                             null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
                     Position = format.Range.Index,
@@ -394,7 +393,7 @@ namespace Ibinimator.Utility
                     var dashes = format.Stroke.Dashes.Select(f => f * format.Stroke.Width)
                                        .ToArray();
 
-                    span.StrokeWidth = new Length(format.Stroke.Width, Pixels);
+                    span.StrokeWidth = new Length(format.Stroke.Width, LengthUnit.Pixels);
                     span.StrokeDashArray = dashes.ToArray();
                     span.StrokeDashOffset = format.Stroke.DashOffset;
                     span.StrokeLineCap = (LineCap) format.Stroke.LineCap;

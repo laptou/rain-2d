@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 
 namespace Ibinimator.Renderer.Model
 {
-    public abstract class BrushInfo : Resource
+    public abstract class BrushInfo : Resource, IBrushInfo
     {
         private static long _nextId = 1;
 
@@ -36,5 +37,6 @@ namespace Ibinimator.Renderer.Model
         }
 
         public abstract IBrush CreateBrush(RenderContext target);
+        
     }
 }

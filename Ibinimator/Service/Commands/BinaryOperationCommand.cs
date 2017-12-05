@@ -4,6 +4,7 @@ using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using SharpDX.Direct2D1;

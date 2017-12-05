@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;

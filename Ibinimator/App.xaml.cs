@@ -34,6 +34,14 @@ namespace Ibinimator
         {
             InitializeComponent();
 
+            SettingsManager.Load();
+
+            var themeUri =
+                new Uri($"/Ibinimator;component/theme.{SettingsManager.GetString(".theme")}.xaml",
+                        UriKind.Relative);
+
+            Resources.MergedDictionaries.Add((ResourceDictionary)LoadComponent(themeUri));
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }
 
@@ -46,47 +54,51 @@ namespace Ibinimator
         private static async Task LogError(object o, int level)
         {
             // log that bitch
-            using (var writer =
-                new StreamWriter(File.Open("ibinimator.log", FileMode.Append)))
+            using (var writer = new StreamWriter(File.Open("ibinimator.log", FileMode.Append)))
             {
-                var ex = o as Exception;
-
-                await writer.WriteLineAsync(
-                    new string('\t', level - 1) + $"Error [{DateTime.Now}]");
-                if (ex != null)
-                {
-                    await writer.WriteLineAsync(
-                        new string('\t', level) +
-                        $"Type: {ex.GetType().AssemblyQualifiedName}");
-                    await writer.WriteLineAsync(new string('\t', level) +
-                                                $"Message: {ex.Message}");
-                    await writer.WriteLineAsync(new string('\t', level) +
-                                                $"HResult: 0x{ex.HResult:X}");
-                    await writer.WriteLineAsync(new string('\t', level) +
-                                                $"Source: {ex.Source}");
-
-                    var stack = ex.StackTrace.Replace(Environment.NewLine,
-                                                      Environment.NewLine +
-                                                      new string('\t', level));
-
-                    await writer.WriteLineAsync(new string('\t', level) +
-                                                $"Stack Trace:\r\n{stack}");
-
-                    if (ex.InnerException != null)
-                    {
-                        await writer.WriteLineAsync(new string('\t', level) +
-                                                    "Inner Exception: ");
-                        await LogError(ex.InnerException, level + 1);
-                    }
-                }
-                else
-                {
-                    await writer.WriteLineAsync(
-                        new string('\t', level) + $"{o.ToString()}");
-                }
-
-                await writer.FlushAsync();
+                await LogError(o, level, writer);
             }
+        }
+
+        private static async Task LogError(object o, int level, StreamWriter writer)
+        {
+            var ex = o as Exception;
+
+            await writer.WriteLineAsync(
+                new string('\t', level - 1) + $"Error [{DateTime.Now}]");
+            if (ex != null)
+            {
+                await writer.WriteLineAsync(
+                    new string('\t', level) +
+                    $"Type: {ex.GetType().AssemblyQualifiedName}");
+                await writer.WriteLineAsync(new string('\t', level) +
+                                            $"Message: {ex.Message}");
+                await writer.WriteLineAsync(new string('\t', level) +
+                                            $"HResult: 0x{ex.HResult:X}");
+                await writer.WriteLineAsync(new string('\t', level) +
+                                            $"Source: {ex.Source}");
+
+                var stack = ex.StackTrace.Replace(Environment.NewLine,
+                                                  Environment.NewLine +
+                                                  new string('\t', level));
+
+                await writer.WriteLineAsync(new string('\t', level) +
+                                            $"Stack Trace:\r\n{stack}");
+
+                if (ex.InnerException != null)
+                {
+                    await writer.WriteLineAsync(new string('\t', level) +
+                                                "Inner Exception: ");
+                    await LogError(ex.InnerException, level + 1, writer);
+                }
+            }
+            else
+            {
+                await writer.WriteLineAsync(
+                    new string('\t', level) + $"{o.ToString()}");
+            }
+
+            await writer.FlushAsync();
         }
 
         public new static Dispatcher Dispatcher => Current.Dispatcher;
@@ -96,14 +108,6 @@ namespace Ibinimator
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            SettingsManager.Load();
-
-            var themeUri =
-                new Uri($"/Ibinimator;component/theme.{SettingsManager.GetString(".theme")}.xaml",
-                        UriKind.Relative);
-
-            Resources.MergedDictionaries.Add((ResourceDictionary) LoadComponent(themeUri));
-
             base.OnStartup(e);
 
             SetDefaultFont();

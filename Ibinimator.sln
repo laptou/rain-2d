@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+# Blend for Visual Studio 15
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator", "Ibinimator\Ibinimator.csproj", "{60561D00-30FE-4CE1-B598-D7CAEA9DC388}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Test", "Ibinimator.Test\Ibinimator.Test.csproj", "{7314B044-4843-4F01-9CBF-31E6F84CF7B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Svg", "Ibinimator.Svg\Ibinimator.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Svg", "Ibinimator.Svg\Ibinimator.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Core", "Ibinimator.Core\Ibinimator.Core.csproj", "{4524A7AF-6968-45DC-88EC-F50634E84FF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Core", "Ibinimator.Core\Ibinimator.Core.csproj", "{4524A7AF-6968-45DC-88EC-F50634E84FF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Renderer", "Ibinimator.Renderer\Ibinimator.Renderer.csproj", "{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}"
 EndProject
