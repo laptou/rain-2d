@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class ViewManager : Core.Model.Model, IViewManager
+    public class ViewManager : Model, IViewManager
     {
         public ViewManager(IArtContext artContext)
         {
@@ -78,7 +75,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public Group Root
+        public IContainerLayer Root
         {
             get => Document.Root;
             set => Document.Root = value;

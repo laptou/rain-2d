@@ -12,6 +12,7 @@ namespace Ibinimator.Core
     {
         Vector2 Pan { get; set; }
 
+        Document Document { get; set; }
         IContainerLayer Root { get; set; }
         Matrix3x2 Transform { get; }
         float Zoom { get; set; }

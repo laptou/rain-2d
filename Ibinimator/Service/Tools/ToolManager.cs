@@ -4,16 +4,12 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Media;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service.Tools
 {
-    public class ToolManager : Core.Model.Model, IToolManager
+    public class ToolManager : Model, IToolManager
     {
         public ToolManager(IArtContext artView, ISelectionManager selectionManager)
         {
@@ -32,7 +28,7 @@ namespace Ibinimator.Service.Tools
                 switch (type)
                 {
                     case ToolType.Select:
-                        Tool = new SelectTool(this, Context.SelectionManager);
+                        Tool = new SelectionTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Node:
                         Tool = new NodeTool(this);
@@ -67,8 +63,8 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateSurface();
         }
 
-        public event EventHandler<BrushInfo> FillUpdated;
-        public event EventHandler<BrushInfo> StrokeUpdated;
+        public event EventHandler<IBrushInfo> FillUpdated;
+        public event EventHandler<IBrushInfo> StrokeUpdated;
 
         #region IToolManager Members
 

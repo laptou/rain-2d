@@ -1,18 +1,14 @@
 ﻿using System.Collections.Generic;
 using System;
-using System.Collections;
 using System.ComponentModel;
 using Ibinimator.Core.Utility;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
-using Color = System.Windows.Media.Color;
 
 namespace Ibinimator.Service
 {
@@ -24,9 +20,9 @@ namespace Ibinimator.Service
         private readonly Dictionary<ILayer, RectangleF> _bounds =
             new Dictionary<ILayer, RectangleF>();
 
-        private readonly Dictionary<BrushInfo, (ILayer layer, IBrush brush)>
+        private readonly Dictionary<IBrushInfo, (ILayer layer, IBrush brush)>
             _brushBindings =
-                new Dictionary<BrushInfo, (ILayer, IBrush)>();
+                new Dictionary<IBrushInfo, (ILayer, IBrush)>();
 
         private readonly Dictionary<string, IBrush> _brushes =
             new Dictionary<string, IBrush>();
@@ -42,9 +38,9 @@ namespace Ibinimator.Service
         private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources =
             new Dictionary<(ILayer layer, int id), IDisposable>();
 
-        private readonly Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>
+        private readonly Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>
             _strokeBindings =
-                new Dictionary<PenInfo, (IStrokedLayer layer, IPen stroke)>();
+                new Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>();
 
         private readonly Dictionary<IStrokedLayer, IPen> _strokes =
             new Dictionary<IStrokedLayer, IPen>();
@@ -54,7 +50,7 @@ namespace Ibinimator.Service
 
         public CacheManager(IArtContext context) { Context = context; }
 
-        public IBrush BindBrush(ILayer shape, BrushInfo brush)
+        public IBrush BindBrush(ILayer shape, IBrushInfo brush)
         {
             if (brush == null) return null;
 
@@ -68,7 +64,7 @@ namespace Ibinimator.Service
             return fill;
         }
 
-        public IPen BindStroke(IStrokedLayer layer, PenInfo info)
+        public IPen BindStroke(IStrokedLayer layer, IPenInfo info)
         {
             if (info == null) return default;
 
@@ -160,7 +156,7 @@ namespace Ibinimator.Service
 
         private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var brush = (BrushInfo) sender;
+            var brush = (IBrushInfo) sender;
             var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
 
             if (fill == null) return;
@@ -185,7 +181,7 @@ namespace Ibinimator.Service
 
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var info = (PenInfo) sender;
+            var info = (IPenInfo) sender;
             if (info == null) return;
 
             var (layer, stroke) = Get(_strokeBindings, info, k => (null, default));
@@ -198,11 +194,11 @@ namespace Ibinimator.Service
 
             switch (e.PropertyName)
             {
-                case nameof(PenInfo.Width):
+                case nameof(IPenInfo.Width):
                     stroke.Width = info.Width;
                     break;
 
-                case nameof(PenInfo.Dashes):
+                case nameof(IPenInfo.Dashes):
                     stroke.Dashes.Clear();
                     // TODO: FIX dashes and stuff
                     break;
@@ -212,8 +208,6 @@ namespace Ibinimator.Service
         }
 
         #region ICacheManager Members
-
-        public void Bind(Document doc) { BindLayer(doc.Root); }
 
         public void BindLayer(ILayer layer)
         {
@@ -391,7 +385,6 @@ namespace Ibinimator.Service
             _brushes[nameof(EditorColors.Guide)] = target.CreateBrush(EditorColors.Guide);
         }
 
-        public QuickLock Lock() { return new QuickLock(_renderLock); }
 
         public void ResetAll()
         {
@@ -435,10 +428,10 @@ namespace Ibinimator.Service
 
             lock (_brushBindings)
             {
-                foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
+                foreach (var (IBrushInfo, (_, brush)) in _brushBindings.AsTuples())
                 {
-                    if (brushInfo != null)
-                        brushInfo.PropertyChanged -= OnBrushPropertyChanged;
+                    if (IBrushInfo != null)
+                        IBrushInfo.PropertyChanged -= OnBrushPropertyChanged;
                     brush?.Dispose();
                 }
                 _brushBindings.Clear();

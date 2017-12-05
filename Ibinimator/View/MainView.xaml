@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Ibinimator.View.MainView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
+        xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:core="clr-namespace:Ibinimator.Core;assembly=Ibinimator.Core"
+        xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:Ibinimator.Renderer.Model;assembly=Ibinimator.Renderer"
@@ -773,7 +774,7 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type model:ILayer}" ItemsSource="{Binding SubLayers}">
+                                <HierarchicalDataTemplate DataType="{x:Type core:ILayer}" ItemsSource="{Binding SubLayers}">
                                     <TextBlock x:Name="layerName"
                                                FontWeight="Bold"
                                                Text="{Binding Name}" />

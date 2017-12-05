@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using Ibinimator.Core;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.View.Utility
 {

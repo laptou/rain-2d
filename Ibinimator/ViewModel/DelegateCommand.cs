@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
-    public class DelegateCommand<T> : Core.Model.Model, ICommand
+    public class DelegateCommand<T> : Model, ICommand
     {
         private Action<T> _action;
         private Predicate<T> _predicate;

@@ -10,22 +10,12 @@ namespace Ibinimator.Core
 {
     public interface ISelectionManager : IArtContextManager
     {
-        string Cursor { get; set; }
-        IList<ILayer> Selection { get; }
+        IEnumerable<ILayer> Selection { get; }
         RectangleF SelectionBounds { get; }
         Matrix3x2 SelectionTransform { get; }
 
         event EventHandler Updated;
         void ClearSelection();
-        
-        void MouseDown(Vector2 pos);
-        void MouseMove(Vector2 pos);
-        void MouseUp(Vector2 pos);
-        
-        void KeyDown(Key key, ModifierKeys modifiers);
-        void KeyUp(Key key, ModifierKeys modifiers);
-
-        void Render(RenderContext target, ICacheManager cache);
 
         Vector2 FromSelectionSpace(Vector2 v);
         Vector2 ToSelectionSpace(Vector2 v);

@@ -5,13 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
 
 namespace Ibinimator.Service
 {
-    public class BrushManager : Core.Model.Model, IBrushManager
+    public class BrushManager : Model, IBrushManager
     {
         private bool _selecting;
 
@@ -87,15 +85,15 @@ namespace Ibinimator.Service
 
         public IArtContext Context { get; }
 
-        public BrushInfo Fill
+        public IBrushInfo Fill
         {
-            get => Get<BrushInfo>();
+            get => Get<IBrushInfo>();
             set => Set(value);
         }
 
-        public PenInfo Stroke
+        public IPenInfo Stroke
         {
-            get => Get<PenInfo>();
+            get => Get<IPenInfo>();
             set => Set(value);
         }
 

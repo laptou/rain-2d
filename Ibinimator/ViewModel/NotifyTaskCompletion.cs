@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
@@ -82,7 +82,7 @@ namespace Ibinimator.ViewModel
         #endregion
     }
 
-    public sealed class NotifyTaskCompletion : Core.Model.Model, IProgress<double>
+    public sealed class NotifyTaskCompletion : Model, IProgress<double>
     {
         public NotifyTaskCompletion(Task task)
         {

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -147,15 +146,15 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush)
+        public void ApplyFill(IBrushInfo brush)
         {
             
         }
 
-        public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
+        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
 
-        public BrushInfo ProvideFill() { return SelectedLayer.Fill; }
-        public PenInfo ProvideStroke() { return SelectedLayer.Stroke; }
+        public IBrushInfo ProvideFill() { return SelectedLayer.Fill; }
+        public IPenInfo ProvideStroke() { return SelectedLayer.Stroke; }
 
         public void Dispose()
         {
@@ -404,7 +403,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { return false; }
 
-        public string CursorImage => null;
+        public string Cursor => null;
 
         public float CursorRotate => 0;
 

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.View.Control
 {
@@ -43,7 +41,7 @@ namespace Ibinimator.View.Control
                     CacheManager.LoadBitmaps(_artView.RenderContext);
 
                     if (ViewManager?.Root != null)
-                        CacheManager.Bind(ViewManager.Document);
+                    CacheManager?.BindLayer(ViewManager.Document.Root);
                 }
             }
 
@@ -64,7 +62,7 @@ namespace Ibinimator.View.Control
 
                 CacheManager?.ResetDeviceResources();
                 if (ViewManager?.Root != null)
-                    CacheManager?.Bind(ViewManager.Document);
+                    CacheManager?.BindLayer(ViewManager.Document.Root);
             }
 
             InvalidateSurface();

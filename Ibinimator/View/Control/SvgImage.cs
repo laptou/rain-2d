@@ -9,14 +9,10 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Xml.Linq;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;
-using Ibinimator.Utility;
-using Color = Ibinimator.Core.Model.Color;
-using Document = Ibinimator.Renderer.Model.Document;
+using Document = Ibinimator.Core.Document;
 using WPF = System.Windows;
 
 // ReSharper disable PossibleInvalidOperationException

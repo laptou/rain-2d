@@ -7,7 +7,7 @@ using Ibinimator.Core;
 
 namespace Ibinimator.Renderer.Model
 {
-    public abstract class BrushInfo : Resource, IBrushInfo
+    public abstract class BrushInfo : Core.Model.Model, IBrushInfo
     {
         private static long _nextId = 1;
 

@@ -9,7 +9,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer.Model
 {
-    public abstract class Layer : Resource, ILayer
+    public abstract class Layer : Core.Model.Model, ILayer
     {
         protected Layer()
         {

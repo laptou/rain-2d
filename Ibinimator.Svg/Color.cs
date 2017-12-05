@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Regex = System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -10,15 +9,15 @@ namespace Ibinimator.Svg
     public struct Color
     {
         private static readonly Regex.Regex Hex = new Regex.Regex("(?:#(?:([0-9A-F]){3}){1,2})",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Rgb = new Regex.Regex(
             @"(?:rgb\(([+-]?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Percent = new Regex.Regex(
             @"(?:rgb\(([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%\))",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         public Color(float red, float green, float blue) : this(red, green, blue, 1)
         {
@@ -46,7 +45,7 @@ namespace Ibinimator.Svg
 
             if (hexMatch.Success)
             {
-                var digits = hexMatch.Groups[1].Captures.OfType<Capture>()
+                var digits = hexMatch.Groups[1].Captures.OfType<Regex.Capture>()
                     .Select(c => c.Value)
                     .ToArray();
 
@@ -81,7 +80,7 @@ namespace Ibinimator.Svg
 
             if (percentMatch.Success)
             {
-                var values = percentMatch.Groups[1].Captures.OfType<Capture>()
+                var values = percentMatch.Groups[1].Captures.OfType<Regex.Capture>()
                     .Select(c => c.Value)
                     .ToArray();
 
@@ -256,7 +255,7 @@ namespace Ibinimator.Svg
 
             if (hexMatch.Success)
             {
-                var digits = hexMatch.Groups[1].Captures.OfType<Capture>()
+                var digits = hexMatch.Groups[1].Captures.OfType<Regex.Capture>()
                     .Select(c => c.Value)
                     .ToArray();
 
@@ -299,7 +298,7 @@ namespace Ibinimator.Svg
             if (percentMatch.Success)
             {
                 var values = percentMatch.Groups
-                    .OfType<System.Text.RegularExpressions.Group>()
+                    .OfType<Regex.Group>()
                     .Skip(1)
                     .Select(g => g.Value)
                     .ToArray();

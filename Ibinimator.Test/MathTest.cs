@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using Ibinimator.Core.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Matrix3x2 = SharpDX.Matrix3x2;
 
 namespace Ibinimator.Test
 {
@@ -24,11 +25,11 @@ namespace Ibinimator.Test
 
             for (var i = 0; i < 100; i++)
             {
-                var mat = SharpDX.Matrix3x2.Identity;
+                var mat = Matrix3x2.Identity;
 
-                var s = SharpDX.Matrix3x2.Scaling(13);
-                var r = SharpDX.Matrix3x2.Rotation(13);
-                var t = SharpDX.Matrix3x2.Translation(13, 13);
+                var s = Matrix3x2.Scaling(13);
+                var r = Matrix3x2.Rotation(13);
+                var t = Matrix3x2.Translation(13, 13);
 
                 var sw = Stopwatch.StartNew();
 
@@ -71,7 +72,7 @@ namespace Ibinimator.Test
 
             TestContext.WriteLine($"SharpDX: {times1.Average()}ms\n" +
                                   $"System.Numerics: {times2.Average()}ms");
-            TestContext.WriteLine($"HW Acceleration: {System.Numerics.Vector.IsHardwareAccelerated}");
+            TestContext.WriteLine($"HW Acceleration: {Vector.IsHardwareAccelerated}");
             TestContext.WriteLine($"64-Bit CPU: {Environment.Is64BitOperatingSystem}");
             TestContext.WriteLine($"64-Bit Process: {Environment.Is64BitProcess}");
         }

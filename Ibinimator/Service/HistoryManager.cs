@@ -5,13 +5,11 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
-using Ibinimator.View.Control;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service
 {
-    public class HistoryManager : Core.Model.Model, IHistoryManager
+    public class HistoryManager : Model, IHistoryManager
     {
         private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
         private readonly Stack<IOperationCommand<ILayer>> _undo = new Stack<IOperationCommand<ILayer>>();

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class PencilTool : Core.Model.Model, ITool
+    public sealed class PencilTool : Model, ITool
     {
         private IList<PathNode> _nodes;
         private (bool down, bool moved, Vector2 pos) _mouse;
@@ -62,11 +61,11 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush) { throw new NotImplementedException(); }
+        public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
 
-        public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
-        public BrushInfo ProvideFill() { throw new NotImplementedException(); }
-        public PenInfo ProvideStroke() { throw new NotImplementedException(); }
+        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
+        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Dispose() { }
 
@@ -287,7 +286,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { return false; }
 
-        public string CursorImage => null;
+        public string Cursor => null;
 
         public float CursorRotate => 0;
 

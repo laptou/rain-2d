@@ -12,7 +12,6 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Direct2D;
 using SharpDX;
 using SharpDX.Direct3D;

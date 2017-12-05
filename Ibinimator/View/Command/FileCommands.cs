@@ -7,11 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Svg;
-using Ibinimator.Utility;
 using Ibinimator.ViewModel;
 using Document = Ibinimator.Svg.Document;
 
@@ -49,7 +46,7 @@ namespace Ibinimator.View.Command
                     artCtx.CacheManager.ResetAll();
                     artCtx.CacheManager.LoadBitmaps(artCtx.RenderContext);
                     artCtx.CacheManager.LoadBrushes(artCtx.RenderContext);
-                    artCtx.CacheManager.Bind(vm.Document);
+                    artCtx.CacheManager.BindLayer(vm.Document.Root);
                     vm.Pan = Vector2.One * 10;
 
                     var artDim = Math.Max(vm.Document.Bounds.Width, vm.Document.Bounds.Height);

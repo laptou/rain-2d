@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 

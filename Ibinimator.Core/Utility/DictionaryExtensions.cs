@@ -9,7 +9,7 @@ namespace Ibinimator.Core.Utility
     {
         public static TV TryGet<TK, TV>(this Dictionary<TK, TV> dict, TK key)
         {
-            return dict.TryGetValue(key, out var value) ? value : default(TV);
+            return dict.TryGetValue(key, out var value) ? value : default;
         }
     }
 }

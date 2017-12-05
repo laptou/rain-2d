@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
@@ -12,17 +10,17 @@ namespace Ibinimator.Service.Commands
     {
         public ApplyStrokeCommand(
             long id, IStrokedLayer[] targets,
-            PenInfo newPenInfo, IEnumerable<PenInfo> oldPenInfos) : base(id, targets)
+            IPenInfo newPenInfo, IEnumerable<IPenInfo> oldPenInfos) : base(id, targets)
         {
-            OldStrokes = oldPenInfos.Select(i => i?.Clone<PenInfo>()).ToArray();
+            OldStrokes = oldPenInfos.Select(i => i?.Clone<IPenInfo>()).ToArray();
 
-            NewStroke = newPenInfo?.Clone<PenInfo>();
+            NewStroke = newPenInfo?.Clone<IPenInfo>();
         }
 
         public override string Description => $"Stroked {Targets.Length} layer(s)";
 
-        public PenInfo NewStroke { get; }
-        public PenInfo[] OldStrokes { get; }
+        public IPenInfo NewStroke { get; }
+        public IPenInfo[] OldStrokes { get; }
 
         public override void Do(IArtContext artView)
         {

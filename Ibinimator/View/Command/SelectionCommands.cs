@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 
@@ -63,7 +62,7 @@ namespace Ibinimator.View.Command
 
         private static void Align(IArtContext artContext, Direction dir)
         {
-            if (artContext.SelectionManager.Selection.Count == 0)
+            if (!artContext.SelectionManager.Selection.Any())
                 return;
 
             var cmd = new AlignCommand(artContext.HistoryManager.Position + 1,
@@ -130,7 +129,7 @@ namespace Ibinimator.View.Command
 
         private static bool HasSelection(IArtContext artContext)
         {
-            return artContext.SelectionManager?.Selection.Count > 0;
+            return artContext.SelectionManager?.Selection.Any() == true;
         }
 
         private static void MoveDown(IArtContext artContext)
@@ -215,7 +214,7 @@ namespace Ibinimator.View.Command
         {
             var selectionManager = ctx.SelectionManager;
 
-            if (selectionManager.Selection.Count == 0)
+            if (!selectionManager.Selection.Any())
                 return;
 
             var command = new GroupCommand(
@@ -229,7 +228,7 @@ namespace Ibinimator.View.Command
         {
             var selectionManager = ctx.SelectionManager;
 
-            if (selectionManager.Selection.Count == 0)
+            if (!selectionManager.Selection.Any())
                 return;
 
             var command = new UngroupCommand(

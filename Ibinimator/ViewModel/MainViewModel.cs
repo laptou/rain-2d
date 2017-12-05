@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -10,8 +11,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
@@ -159,7 +158,6 @@ namespace Ibinimator.ViewModel
         public void Load()
         {
             ViewManager.Root = new Group();
-            ViewManager.Root.PropertyChanged += OnLayerPropertyChanged;
 
             var l = new Group();
 
@@ -366,26 +364,6 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        private void OnLayerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is Layer layer)
-            {
-                if (e.PropertyName == nameof(Layer.Selected))
-                {
-                    var contains = SelectionManager.Selection.Contains(layer);
-
-                    if (layer.Selected && !contains)
-                        SelectionManager.Selection.Add(layer);
-                    else if (!layer.Selected && contains)
-                        SelectionManager.Selection.Remove(layer);
-                }
-            }
-            else
-            {
-                throw new ArgumentException("What?!");
-            }
-        }
-
         private void SelectLayer(object param)
         {
             if (param is Layer layer)
@@ -395,16 +373,17 @@ namespace Ibinimator.ViewModel
                 }
                 else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
                 {
-                    if (SelectionManager.Selection.Count > 0)
+                    if (SelectionManager.Selection.Any())
                     {
                         var inRange = false;
+                        var first = SelectionManager.Selection.First();
 
-                        foreach (var l in SelectionManager.Selection[0].Parent.SubLayers)
+                        foreach (var l in first.Parent.SubLayers)
                         {
                             if (inRange)
                                 l.Selected = true;
 
-                            if (l == layer || l == SelectionManager.Selection[0])
+                            if (l == layer || l == first)
                                 inRange = !inRange;
                         }
                     }

@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.Utility;
 using Ibinimator.Renderer.WPF;
@@ -171,7 +169,7 @@ namespace Ibinimator.ViewModel
             .CreateBrush(new WpfRenderContext())
             .Unwrap<WPF.Brush>();
 
-        public PenInfo StrokeInfo => _parent.BrushManager.Stroke;
+        public IPenInfo StrokeInfo => _parent.BrushManager.Stroke;
 
         private void OnColorPickerPropertyChanged(
             object sender,

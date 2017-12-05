@@ -141,7 +141,7 @@ namespace Ibinimator.Core.Model
 
         public static bool TryParse(string input, out Length length)
         {
-            length = Length.Zero;
+            length = Zero;
 
             if (string.IsNullOrWhiteSpace(input)) return false;
 

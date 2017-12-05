@@ -12,14 +12,12 @@ using System.Threading.Tasks;
 namespace Ibinimator.Core.Model
 {
     public abstract class Model
-        : INotifyPropertyChanged,
-          INotifyPropertyChanging,
-          ICloneable
+        : IModel
     {
         private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
 
-        public T Clone<T>() where T : Model { return Clone(GetType()) as T; }
+        public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
 
         public object Clone(Type type)
         {

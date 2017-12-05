@@ -10,12 +10,11 @@ using Ibinimator.Renderer.Model;
 using Ibinimator.Svg;
 using SharpDX.Direct2D1;
 using Color = Ibinimator.Core.Model.Color;
-using Document = Ibinimator.Renderer.Model.Document;
+using Document = Ibinimator.Core.Document;
 using Ellipse = Ibinimator.Svg.Ellipse;
 using GradientStop = Ibinimator.Core.GradientStop;
 using Group = Ibinimator.Renderer.Model.Group;
 using Layer = Ibinimator.Renderer.Model.Layer;
-using LineCap = Ibinimator.Core.Model.LineCap;
 using LineJoin = Ibinimator.Core.Model.LineJoin;
 using Path = Ibinimator.Renderer.Model.Path;
 using Rectangle = Ibinimator.Svg.Rectangle;
@@ -31,8 +30,8 @@ namespace Ibinimator.Service
             {
                 Root = new Group(),
                 Bounds = new RectangleF(
-                    svgDocument.Viewbox.X,
-                    svgDocument.Viewbox.Y,
+                    svgDocument.Viewbox.Left,
+                    svgDocument.Viewbox.Top,
                     svgDocument.Viewbox.Width,
                     svgDocument.Viewbox.Height)
             };
@@ -178,7 +177,7 @@ namespace Ibinimator.Service
             return layer;
         }
 
-        public static BrushInfo FromSvg(Paint paint, float opacity)
+        public static IBrushInfo FromSvg(Paint paint, float opacity)
         {
             switch (paint)
             {
@@ -259,14 +258,8 @@ namespace Ibinimator.Service
 
             foreach (var child in doc.Root.SubLayers.Select(ToSvg))
                 svgDoc.Insert(0, child);
-
-            var bounds = doc.Bounds;
-
-            svgDoc.Viewbox = new System.Drawing.RectangleF(
-                bounds.Left,
-                bounds.Top,
-                bounds.Width,
-                bounds.Height);
+            
+            svgDoc.Viewbox = doc.Bounds;
 
             return svgDoc;
         }
@@ -336,8 +329,8 @@ namespace Ibinimator.Service
                 shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, LengthUnit.Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
                 shape.StrokeDashOffset = shapeLayer.Stroke.DashOffset;
-                shape.StrokeLineCap = (LineCap) shapeLayer.Stroke.LineCap;
-                shape.StrokeLineJoin = (LineJoin) shapeLayer.Stroke.LineJoin;
+                shape.StrokeLineCap = shapeLayer.Stroke.LineCap;
+                shape.StrokeLineJoin = shapeLayer.Stroke.LineJoin;
                 shape.StrokeMiterLimit = shapeLayer.Stroke.MiterLimit;
 
                 element = shape;
@@ -396,8 +389,8 @@ namespace Ibinimator.Service
                     span.StrokeWidth = new Length(format.Stroke.Width, LengthUnit.Pixels);
                     span.StrokeDashArray = dashes.ToArray();
                     span.StrokeDashOffset = format.Stroke.DashOffset;
-                    span.StrokeLineCap = (LineCap) format.Stroke.LineCap;
-                    span.StrokeLineJoin = (LineJoin) format.Stroke.LineJoin;
+                    span.StrokeLineCap = format.Stroke.LineCap;
+                    span.StrokeLineJoin = format.Stroke.LineJoin;
                     span.StrokeMiterLimit = format.Stroke.MiterLimit;
                 }
 
@@ -407,7 +400,7 @@ namespace Ibinimator.Service
             return svgText;
         }
 
-        public static Paint ToSvg(BrushInfo brush)
+        public static Paint ToSvg(IBrushInfo brush)
         {
             if (brush is SolidColorBrushInfo solidBrush)
                 return new SolidColor(
@@ -421,7 +414,7 @@ namespace Ibinimator.Service
             return null;
         }
 
-        private static PenInfo FromSvg(
+        private static IPenInfo FromSvg(
             Paint paint,
             float opacity,
             float width,

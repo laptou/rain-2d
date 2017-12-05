@@ -17,9 +17,4 @@ namespace Ibinimator.Core
         /// <returns>The native object representing the effect.</returns>
         T Unwrap<T>() where T : class;
     }
-
-    public interface IGlowEffect : IEffect
-    {
-        float Radius { get; set; }
-    }
 }

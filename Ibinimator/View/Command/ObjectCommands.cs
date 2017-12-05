@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
 using SharpDX.Direct2D1;

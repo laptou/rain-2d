@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command
 {
-    public class CommandManager : Core.Model.Model
+    public class CommandManager : Model
     {
         public static CommandManager Instance = new CommandManager();
 

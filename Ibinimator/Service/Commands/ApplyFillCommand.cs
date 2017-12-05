@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
     {
         public ApplyFillCommand(long id, IFilledLayer[] targets,
-            BrushInfo @new, BrushInfo[] old) : base(id, targets)
+            IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
         {
-            OldFills = old.Select(o => (BrushInfo) o?.Clone()).ToArray();
-            NewFill = (BrushInfo) @new?.Clone();
+            OldFills = old.Select(o => (IBrushInfo) o?.Clone()).ToArray();
+            NewFill = (IBrushInfo) @new?.Clone();
         }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)
@@ -28,8 +26,8 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Filled {Targets.Length} layer(s)";
 
-        public BrushInfo NewFill { get; }
-        public BrushInfo[] OldFills { get; }
+        public IBrushInfo NewFill { get; }
+        public IBrushInfo[] OldFills { get; }
 
         public override void Do(IArtContext artView)
         {

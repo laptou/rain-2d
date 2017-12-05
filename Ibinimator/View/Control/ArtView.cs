@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using Ibinimator.Renderer.WPF;
 using System.Linq;
@@ -9,15 +8,9 @@ using System.Numerics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Ibinimator.Core;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
-using Ibinimator.Service.Tools;
 using SharpDX.Direct2D1;
 using Color = Ibinimator.Core.Model.Color;
 
@@ -266,7 +259,7 @@ namespace Ibinimator.View.Control
             ArtContext.CacheManager?.LoadBitmaps(RenderContext);
 
             if (ArtContext.ViewManager?.Root != null)
-                ArtContext.CacheManager?.Bind(ArtContext.ViewManager.Document);
+                ArtContext.CacheManager?.BindLayer(ArtContext.ViewManager.Document.Root);
 
             InvalidateVisual();
         }
@@ -300,9 +293,7 @@ namespace Ibinimator.View.Control
             target.Clear(new Color(0.5f));
 
             if (ArtContext.ViewManager == null) return;
-
-            using (ArtContext.CacheManager.Lock())
-            {
+            
                 var ac = ArtContext;
 
                 target.Transform(ac.ViewManager.Transform, true);
@@ -311,15 +302,11 @@ namespace Ibinimator.View.Control
 
                 ac.ViewManager.Root.Render(target, ac.CacheManager, ac.ViewManager);
 
-                if (ac.SelectionManager == null) return;
-
-                ac.SelectionManager.Render(target, ac.CacheManager);
-
                 if (ac.ToolManager?.Tool == null) return;
 
                 ac.ToolManager.Tool.Render(target, ac.CacheManager, ac.ViewManager);
 
-                if (ac.ToolManager.Tool.CursorImage == null)
+                if (ac.ToolManager.Tool.Cursor == null)
                 {
                     Cursor = Cursors.Arrow;
                     return;
@@ -333,8 +320,7 @@ namespace Ibinimator.View.Control
                     Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)),
                     true);
 
-                target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.CursorImage));
-            }
+                target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.Cursor));
         }
 
         private void EventLoop()
@@ -355,16 +341,13 @@ namespace Ibinimator.View.Control
                     switch (evt.Type)
                     {
                         case InputEventType.MouseDown:
-                            if (!ac.ToolManager.MouseDown(pos))
-                                ac.SelectionManager.MouseDown(pos);
+                                ac.ToolManager.MouseDown(pos);
                             break;
                         case InputEventType.MouseUp:
-                            if (!ac.ToolManager.MouseUp(pos))
-                                ac.SelectionManager.MouseUp(pos);
+                                ac.ToolManager.MouseUp(pos);
                             break;
                         case InputEventType.MouseMove:
-                            if (Time.Now - evt.Time > 16
-                            ) // at 16ms, begin skipping mouse moves
+                            if (Time.Now - evt.Time > 16) // at 16ms, begin skipping mouse moves
                             {
                                 lock (_events)
                                 {
@@ -374,20 +357,17 @@ namespace Ibinimator.View.Control
                                 }
                             }
 
-                            if (!ac.ToolManager.MouseMove(pos))
-                                ac.SelectionManager.MouseMove(pos);
+                            ac.ToolManager.MouseMove(pos);
                             break;
 
                         case InputEventType.TextInput:
                             ac.ToolManager.TextInput(evt.Text);
                             break;
                         case InputEventType.KeyUp:
-                            if (!ac.ToolManager.KeyUp(evt.Key, evt.Modifier))
-                                ac.SelectionManager.KeyUp(evt.Key, evt.Modifier);
+                            ac.ToolManager.KeyUp(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.KeyDown:
-                            if (!ac.ToolManager.KeyDown(evt.Key, evt.Modifier))
-                                ac.SelectionManager.KeyDown(evt.Key, evt.Modifier);
+                            ac.ToolManager.KeyDown(evt.Key, evt.Modifier);
                             break;
                         case InputEventType.Scroll:
                             break;

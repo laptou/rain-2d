@@ -6,10 +6,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 using SharpDX.Mathematics.Interop;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
+using RectangleF = SharpDX.RectangleF;
 
 // ReSharper disable InconsistentNaming
 
@@ -273,7 +273,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var pen = iPen as Pen;
             Target.DrawRectangle(
-                new SharpDX.RectangleF(
+                new RectangleF(
                     left,
                     top,
                     width,
@@ -323,7 +323,7 @@ namespace Ibinimator.Renderer.Direct2D
             IBrush brush)
         {
             Target.FillRectangle(
-                new SharpDX.RectangleF(
+                new RectangleF(
                     left,
                     top,
                     width,

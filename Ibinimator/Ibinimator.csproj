@@ -198,7 +198,7 @@
     <Compile Include="View\Command\ObjectCommands.cs" />
     <Compile Include="Service\HistoryManager.cs" />
     <Compile Include="Service\Tools\PencilTool.cs" />
-    <Compile Include="Service\Tools\SelectTool.cs" />
+    <Compile Include="Service\Tools\SelectionTool.cs" />
     <Compile Include="Service\Tools\TextTool.cs" />
     <Compile Include="Service\Time.cs" />
     <Compile Include="Service\WeakLock.cs" />

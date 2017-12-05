@@ -11,7 +11,6 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -27,21 +26,10 @@ namespace Ibinimator.Service.Tools
         private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
-        private readonly Dictionary<string, (FontStyle style, FontStretch stretch, FontWeight weight)>
-            _fontFaceDescriptions = new Dictionary<string, (FontStyle, FontStretch, FontWeight)>();
-
-        private bool _autoSet;
-
-        private Vector2 _caretPosition;
-        private Vector2 _caretSize;
-        private long _inputTime;
-        private Vector2 _lastClickPos;
-
-        private long _lastClickTime;
-        private bool _mouseDown;
-
-        private int _selectionIndex;
-        private int _selectionRange;
+        private (Vector2 position, Vector2 size) _caret;
+        private (Vector2 position, bool down, long time) _mouse;
+        private (int index, int length) _selection;
+        
         private RectangleF[] _selectionRects = new RectangleF[0];
 
         public TextTool(IToolManager manager)
@@ -101,10 +89,11 @@ namespace Ibinimator.Service.Tools
             switch (option.Id)
             {
                 case "font-family":
+                    Options.SetValues("font-face", GetFontFaces());
+                    goto case "font-face";
                 case "font-face":
-                    UpdateFontFaces();
 
-                    if (_selectionRange == 0)
+                    if (_selection.length == 0)
                         Format(new Format
                         {
                             FontFamilyName = (string) option.Value,
@@ -114,11 +103,11 @@ namespace Ibinimator.Service.Tools
                         Format(new Format
                         {
                             FontFamilyName = (string) option.Value,
-                            Range = (_selectionIndex, _selectionRange)
+                            Range = (_selection.index, _selection.length)
                         });
                     break;
                 case "font-size":
-                    if (_selectionRange == 0)
+                    if (_selection.length == 0)
                         Format(new Format
                         {
                             FontSize = (float) option.Value,
@@ -128,7 +117,7 @@ namespace Ibinimator.Service.Tools
                         Format(new Format
                         {
                             FontSize = (float) option.Value,
-                            Range = (_selectionIndex, _selectionRange)
+                            Range = (_selection.index, _selection.length)
                         });
                     break;
             }
@@ -219,20 +208,18 @@ namespace Ibinimator.Service.Tools
         {
             if (CurrentText == null) return;
 
-            _autoSet = true;
-
             var layout = Context.CacheManager.GetTextLayout(CurrentText);
 
-            var metrics = layout.MeasurePosition(_selectionIndex);
+            var metrics = layout.MeasurePosition(_selection.index);
 
-            _caretPosition = new Vector2(metrics.Left, metrics.Top);
-            _caretSize = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
+            _caret.position = new Vector2(metrics.Left, metrics.Top);
+            _caret.size = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
 
-            _selectionRects = _selectionRange > 0 ?
-                layout.MeasureRange(_selectionIndex, _selectionRange) :
+            _selectionRects = _selection.length > 0 ?
+                layout.MeasureRange(_selection.index, _selection.length) :
                 new RectangleF[0];
 
-            var format = CurrentText.GetFormat(_selectionIndex);
+            var format = CurrentText.GetFormat(_selection.index);
 
             Options.Set("font-family", format?.FontFamilyName ?? CurrentText.FontFamilyName);
             Options.Set("font-size", format?.FontSize ?? CurrentText.FontSize);
@@ -244,10 +231,8 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateSurface();
         }
 
-        private void UpdateFontFaces()
+        private IEnumerable<string> GetFontFaces()
         {
-            var fontFaces = new List<string>();
-            _fontFaceDescriptions.Clear();
 
             if (_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
             {
@@ -256,12 +241,7 @@ namespace Ibinimator.Service.Tools
                     for (var i = 0; i < dwFamily.FontCount; i++)
                         using (var dwFont = dwFamily.GetFont(i))
                         {
-                            var name = dwFont.FaceNames.ToCurrentCulture();
-                            fontFaces.Add(name);
-                            _fontFaceDescriptions[name] =
-                                ((FontStyle) dwFont.Style,
-                                (FontStretch) dwFont.Stretch,
-                                (FontWeight) dwFont.Weight);
+                            yield return dwFont.FaceNames.ToCurrentCulture();
                         }
                 }
             }
@@ -269,36 +249,37 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush)
+        public void ApplyFill(IBrushInfo brush)
         {
             if (CurrentText == null || brush == null) return;
 
             Format(new Format
             {
                 Fill = brush,
-                Range = (_selectionIndex, _selectionRange)
+                Range = (_selection.index, _selection.length)
             });
         }
 
-        public void ApplyStroke(PenInfo pen)
+        public void ApplyStroke(IPenInfo pen)
         {
             if (CurrentText == null || pen == null) return;
 
             Format(new Format
             {
                 Stroke = pen,
-                Range = (_selectionIndex, _selectionRange)
+                Range = _selection
             });
         }
 
-        public BrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
 
-        public PenInfo ProvideStroke() { throw new NotImplementedException(); }
+        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Dispose()
         {
             Context.SelectionManager.Updated -= OnSelectionUpdated;
             _dwFontCollection?.Dispose();
+            _dwFactory?.Dispose();
         }
 
         public bool KeyDown(Key key, ModifierKeys mods)
@@ -313,115 +294,115 @@ namespace Ibinimator.Service.Tools
                     #region Navigation
 
                     case Key.Left:
-                        _selectionIndex--;
+                        _selection.index--;
 
                         if (mods.HasFlag(ModifierKeys.Shift))
-                            _selectionRange++;
+                            _selection.length++;
                         else
-                            _selectionRange = 0;
+                            _selection.length = 0;
                         break;
                     case Key.Right:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
-                            _selectionRange++;
+                            _selection.length++;
                         }
                         else
                         {
-                            _selectionIndex++;
-                            _selectionRange = 0;
+                            _selection.index++;
+                            _selection.length = 0;
                         }
                         break;
                     case Key.Down:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
-                            var prev = text.Substring(0, _selectionIndex + _selectionRange)
+                            var prev = text.Substring(0, _selection.index + _selection.length)
                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
-                            var end = text.Substring(_selectionIndex + _selectionRange)
+                            var end = text.Substring(_selection.index + _selection.length)
                                           .IndexOf("\n", StringComparison.Ordinal)
-                                      + _selectionIndex + _selectionRange;
+                                      + _selection.index + _selection.length;
 
                             var next = text.Substring(end + 1)
                                            .IndexOf("\n", StringComparison.Ordinal)
                                        + end + 1;
 
-                            var pos = _selectionIndex + _selectionRange - prev;
+                            var pos = _selection.index + _selection.length - prev;
 
-                            _selectionRange = Math.Min(next, end + pos) - _selectionIndex;
+                            _selection.length = Math.Min(next, end + pos) - _selection.index;
                         }
                         else
                         {
                             var prev = text
-                                .Substring(0, _selectionIndex)
+                                .Substring(0, _selection.index)
                                 .LastIndexOf("\n", StringComparison.Ordinal);
 
-                            var end = text.Substring(_selectionIndex)
+                            var end = text.Substring(_selection.index)
                                           .IndexOf("\n", StringComparison.Ordinal)
-                                      + _selectionIndex;
+                                      + _selection.index;
 
                             var next = text.Substring(end + 1)
                                            .IndexOf("\n", StringComparison.Ordinal)
                                        + end + 1;
 
-                            var pos = _selectionIndex - prev;
+                            var pos = _selection.index - prev;
 
-                            _selectionIndex = Math.Min(next, end + pos);
-                            _selectionRange = 0;
+                            _selection.index = Math.Min(next, end + pos);
+                            _selection.length = 0;
                         }
                         break;
                     case Key.Up:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
-                            var start = text.Substring(0, _selectionIndex)
+                            var start = text.Substring(0, _selection.index)
                                             .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var prev = text.Substring(0, start)
                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
-                            var pos = _selectionIndex - prev;
+                            var pos = _selection.index - prev;
 
-                            var selectionEnd = _selectionIndex + _selectionRange;
-                            _selectionIndex = Math.Max(0, start + pos);
-                            _selectionRange = selectionEnd - _selectionIndex;
+                            var selectionEnd = _selection.index + _selection.length;
+                            _selection.index = Math.Max(0, start + pos);
+                            _selection.length = selectionEnd - _selection.index;
                         }
                         else
                         {
-                            var start = text.Substring(0, _selectionIndex)
+                            var start = text.Substring(0, _selection.index)
                                             .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var prev = text.Substring(0, start)
                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
-                            var pos = _selectionIndex - prev;
+                            var pos = _selection.index - prev;
 
-                            _selectionIndex = Math.Max(0, start + pos);
-                            _selectionRange = 0;
+                            _selection.index = Math.Max(0, start + pos);
+                            _selection.length = 0;
                         }
                         break;
                     case Key.End:
                         if (mods.HasFlag(ModifierKeys.Shift))
                         {
-                            _selectionRange = text.Length - _selectionIndex;
+                            _selection.length = text.Length - _selection.index;
                         }
                         else
                         {
-                            _selectionIndex = text.Length;
-                            _selectionRange = 0;
+                            _selection.index = text.Length;
+                            _selection.length = 0;
                         }
                         break;
                     case Key.Home:
                         if (mods.HasFlag(ModifierKeys.Shift))
-                            _selectionRange += _selectionIndex;
+                            _selection.length += _selection.index;
                         else
-                            _selectionRange = 0;
+                            _selection.length = 0;
 
-                        _selectionIndex = 0;
+                        _selection.index = 0;
                         break;
                     case Key.Escape:
-                        if (_selectionRange == 0)
+                        if (_selection.length == 0)
                             CurrentText.Selected = false;
 
-                        _selectionRange = 0;
+                        _selection.length = 0;
                         break;
 
                     #endregion
@@ -429,25 +410,21 @@ namespace Ibinimator.Service.Tools
                     #region Manipulation
 
                     case Key.Back:
-                        if (_selectionIndex == 0 && _selectionRange == 0) break;
+                        if (_selection.index == 0 && _selection.length == 0) break;
 
-                        if (_selectionRange == 0)
-                            Remove(--_selectionIndex, 1);
+                        if (_selection.length == 0)
+                            Remove(--_selection.index, 1);
                         else
-                            Remove(_selectionIndex, _selectionRange);
+                            Remove(_selection.index, _selection.length);
 
-                        _selectionRange = 0;
-
-                        _inputTime = Time.Now;
+                        _selection.length = 0;
                         break;
                     case Key.Delete:
-                        if (_selectionIndex + Math.Max(_selectionRange, 1) > text.Length) break;
+                        if (_selection.index + Math.Max(_selection.length, 1) > text.Length) break;
 
-                        Remove(_selectionIndex, Math.Max(_selectionRange, 1));
+                        Remove(_selection.index, Math.Max(_selection.length, 1));
 
-                        _selectionRange = 0;
-
-                        _inputTime = Time.Now;
+                        _selection.length = 0;
                         break;
 
                     #endregion
@@ -455,50 +432,50 @@ namespace Ibinimator.Service.Tools
                     #region Shorcuts
 
                     case Key.A when mods.HasFlag(ModifierKeys.Control):
-                        _selectionIndex = 0;
-                        _selectionRange = CurrentText.Value.Length;
+                        _selection.index = 0;
+                        _selection.length = CurrentText.Value.Length;
                         break;
 
                     case Key.B when mods.HasFlag(ModifierKeys.Control):
-                        format = CurrentText.GetFormat(_selectionIndex);
+                        format = CurrentText.GetFormat(_selection.index);
                         var weight = format?.FontWeight ?? CurrentText.FontWeight;
 
                         Format(new Format
                         {
                             FontWeight = weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal,
-                            Range = (_selectionIndex, _selectionRange)
+                            Range = (_selection.index, _selection.length)
                         });
                         break;
 
                     case Key.I when mods.HasFlag(ModifierKeys.Control):
-                        format = CurrentText.GetFormat(_selectionIndex);
+                        format = CurrentText.GetFormat(_selection.index);
                         var style = format?.FontStyle ?? CurrentText.FontStyle;
 
                         Format(new Format
                         {
                             FontStyle = style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal,
-                            Range = (_selectionIndex, _selectionRange)
+                            Range = (_selection.index, _selection.length)
                         });
                         break;
 
                     case Key.C when mods.HasFlag(ModifierKeys.Control):
-                        Clipboard.SetText(text.Substring(_selectionIndex, _selectionRange));
+                        Clipboard.SetText(text.Substring(_selection.index, _selection.length));
                         break;
 
                     case Key.X when mods.HasFlag(ModifierKeys.Control):
-                        Clipboard.SetText(text.Substring(_selectionIndex, _selectionRange));
+                        Clipboard.SetText(text.Substring(_selection.index, _selection.length));
                         goto case Key.Back;
 
                     case Key.V when mods.HasFlag(ModifierKeys.Control):
-                        if (_selectionRange > 0)
-                            Remove(_selectionIndex, _selectionRange);
+                        if (_selection.length > 0)
+                            Remove(_selection.index, _selection.length);
 
                         var pasted = App.Dispatcher.Invoke(Clipboard.GetText);
 
-                        Insert(_selectionIndex, pasted);
+                        Insert(_selection.index, pasted);
 
-                        _selectionRange = 0;
-                        _selectionIndex += pasted.Length;
+                        _selection.length = 0;
+                        _selection.index += pasted.Length;
                         break;
 
                     #endregion
@@ -507,9 +484,9 @@ namespace Ibinimator.Service.Tools
                         return false;
                 }
 
-                _selectionIndex = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0, _selectionIndex);
-                _selectionRange = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0 - _selectionIndex,
-                                                  _selectionRange);
+                _selection.index = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0, _selection.index);
+                _selection.length = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0 - _selection.index,
+                                                  _selection.length);
 
                 Update();
 
@@ -523,8 +500,8 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseDown(Vector2 pos)
         {
-            _lastClickPos = pos;
-            _mouseDown = true;
+            _mouse.position = pos;
+            _mouse.down = true;
             return false;
         }
 
@@ -532,9 +509,9 @@ namespace Ibinimator.Service.Tools
         {
             if (CurrentText == null) return false;
 
-            if (_mouseDown)
+            if (_mouse.down)
             {
-                var tlpos = Vector2.Transform(_lastClickPos, MathUtils.Invert(CurrentText.AbsoluteTransform));
+                var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(CurrentText.AbsoluteTransform));
                 var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentText.AbsoluteTransform));
 
                 if (!Context.CacheManager.GetBounds(CurrentText).Contains(tlpos))
@@ -544,13 +521,13 @@ namespace Ibinimator.Service.Tools
                 {
                     var layout = Context.CacheManager.GetTextLayout(CurrentText);
 
-                    _selectionIndex = layout.GetPosition(tlpos, out var isTrailingHit) +
+                    _selection.index = layout.GetPosition(tlpos, out var isTrailingHit) +
                                       (isTrailingHit ? 1 : 0);
 
                     var end = layout.GetPosition(tpos, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
-                    _selectionRange = Math.Abs(end - _selectionIndex);
-                    _selectionIndex = Math.Min(_selectionIndex, end);
+                    _selection.length = Math.Abs(end - _selection.index);
+                    _selection.index = Math.Min(_selection.index, end);
 
                     Update();
                 }
@@ -561,11 +538,11 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseUp(Vector2 pos)
         {
-            _mouseDown = false;
+            _mouse.down = false;
 
             if (CurrentText == null)
             {
-                if (Time.Now - _lastClickTime <= GetDoubleClickTime())
+                if (Time.Now - _mouse.time <= GetDoubleClickTime())
                 {
                     var (stretch, style, weight) = FromFontName(Options.Get<string>("font-face"));
 
@@ -592,12 +569,12 @@ namespace Ibinimator.Service.Tools
                     text.Selected = true;
                 }
 
-                _lastClickTime = Time.Now;
+                _mouse.time = Time.Now;
 
                 return false;
             }
 
-            var tlpos = Vector2.Transform(_lastClickPos, MathUtils.Invert(CurrentText.AbsoluteTransform));
+            var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(CurrentText.AbsoluteTransform));
             var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentText.AbsoluteTransform));
 
             if (!Context.CacheManager.GetBounds(CurrentText).Contains(tlpos))
@@ -609,7 +586,7 @@ namespace Ibinimator.Service.Tools
                 // but in this case we don't want to go into the 
                 // else block
             }
-            else if (Time.Now - _lastClickTime <= GetDoubleClickTime())
+            else if (Time.Now - _mouse.time <= GetDoubleClickTime())
             {
                 // double click :D
                 var layout = Context.CacheManager.GetTextLayout(CurrentText);
@@ -619,8 +596,8 @@ namespace Ibinimator.Service.Tools
                 if (rect.Contains(tpos))
                 {
                     var str = CurrentText.Value;
-                    var start = _selectionIndex;
-                    var end = start + _selectionRange;
+                    var start = _selection.index;
+                    var end = start + _selection.length;
 
                     while (start > 0 && !char.IsLetterOrDigit(str[start])) start--;
                     while (start > 0 && char.IsLetterOrDigit(str[start])) start--;
@@ -628,25 +605,25 @@ namespace Ibinimator.Service.Tools
                     while (end < str.Length && !char.IsLetterOrDigit(str[end])) end++;
                     while (end < str.Length && char.IsLetterOrDigit(str[end])) end++;
 
-                    _selectionIndex = start;
-                    _selectionRange = end - start;
+                    _selection.index = start;
+                    _selection.length = end - start;
                     Update();
                 }
             }
             else
             {
-                _selectionRange = 0;
+                _selection.length = 0;
 
                 var layout = Context.CacheManager.GetTextLayout(CurrentText);
 
                 var textPosition = layout.GetPosition(tpos, out var isTrailingHit);
 
-                _selectionIndex = textPosition + (isTrailingHit ? 1 : 0);
+                _selection.index = textPosition + (isTrailingHit ? 1 : 0);
             }
 
             Update();
 
-            _lastClickTime = Time.Now;
+            _mouse.time = Time.Now;
 
             return true;
         }
@@ -657,21 +634,19 @@ namespace Ibinimator.Service.Tools
 
             target.Transform(CurrentText.AbsoluteTransform);
 
-            if (_selectionRange == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
+            if (_selection.length == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
             {
                 using (var pen =
-                    target.CreatePen(_caretSize.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
+                    target.CreatePen(_caret.size.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
                 {
                     target.DrawLine(
-                        _caretPosition,
-                        new Vector2(
-                            _caretPosition.X,
-                            _caretPosition.Y + _caretSize.Y),
+                        _caret.position,
+                        _caret.position + _caret.size,
                         pen);
                 }
             }
 
-            if (_selectionRange > 0)
+            if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(
                         selectionRect,
@@ -686,22 +661,20 @@ namespace Ibinimator.Service.Tools
         {
             if (CurrentText == null) return false;
 
-            if (_selectionRange > 0)
-                Remove(_selectionIndex, _selectionRange);
+            if (_selection.length > 0)
+                Remove(_selection.index, _selection.length);
 
-            Insert(_selectionIndex, text);
+            Insert(_selection.index, text);
 
-            _selectionIndex += text.Length;
-            _selectionRange = 0;
+            _selection.index += text.Length;
+            _selection.length = 0;
 
             Update();
-
-            _inputTime = Time.Now;
 
             return true;
         }
 
-        public string CursorImage { get; private set; }
+        public string Cursor { get; private set; }
 
         public float CursorRotate { get; private set; }
 

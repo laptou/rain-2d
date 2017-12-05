@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ibinimator.Core.Utility;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
-using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel

@@ -7,14 +7,13 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class GradientTool : Core.Model.Model, ITool
+    public class GradientTool : Model, ITool
     {
         private readonly ISet<int> _selection = new HashSet<int>();
         private (bool down, bool moved, Vector2 pos) _mouse;
@@ -54,11 +53,11 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(BrushInfo brush) { throw new NotImplementedException(); }
+        public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
 
-        public void ApplyStroke(PenInfo pen) { throw new NotImplementedException(); }
+        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
 
-        public BrushInfo ProvideFill()
+        public IBrushInfo ProvideFill()
         {
             if (SelectedBrush == null || _selection.Count == 0) return null;
 
@@ -66,7 +65,7 @@ namespace Ibinimator.Service.Tools
             return new SolidColorBrushInfo(stop.Color);
         }
 
-        public PenInfo ProvideStroke() { return null; }
+        public IPenInfo ProvideStroke() { return null; }
 
         public void Dispose()
         {
@@ -277,7 +276,7 @@ namespace Ibinimator.Service.Tools
 
         public bool TextInput(string text) { return false; }
 
-        public string CursorImage => null;
+        public string Cursor => null;
 
         public float CursorRotate => 0;
 

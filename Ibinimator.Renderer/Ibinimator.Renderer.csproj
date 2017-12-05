@@ -108,7 +108,6 @@
     <Compile Include="LineRenderCommand.cs" />
     <Compile Include="Model\BitmapBrushInfo.cs" />
     <Compile Include="Model\BrushInfo.cs" />
-    <Compile Include="Model\Document.cs" />
     <Compile Include="Model\Ellipse.cs" />
     <Compile Include="Model\GradientBrushInfo.cs" />
     <Compile Include="Model\GradientBrushType.cs" />
@@ -117,7 +116,6 @@
     <Compile Include="Model\Path.cs" />
     <Compile Include="Model\PenInfo.cs" />
     <Compile Include="Model\Rectangle.cs" />
-    <Compile Include="Model\Resource.cs" />
     <Compile Include="Model\Shape.cs" />
     <Compile Include="Model\SolidColorBrushInfo.cs" />
     <Compile Include="Model\Text.cs" />

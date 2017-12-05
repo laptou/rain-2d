@@ -4,12 +4,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
+using Format = SharpDX.DXGI.Format;
 
 namespace Ibinimator.Renderer.Direct2D
 {
@@ -25,7 +25,7 @@ namespace Ibinimator.Renderer.Direct2D
 
                 var bitmapProperties = new D2D1.BitmapProperties(
                     new D2D1.PixelFormat(
-                        SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                        Format.B8G8R8A8_UNorm,
                         D2D1.AlphaMode.Premultiplied),
                     bitmap.HorizontalResolution,
                     bitmap.VerticalResolution);

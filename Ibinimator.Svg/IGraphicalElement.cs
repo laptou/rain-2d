@@ -1,5 +1,8 @@
-﻿using System.Numerics;
-using System.Xml.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer.Model
+namespace Ibinimator.Core
 {
-    public abstract class Resource : Core.Model.Model
+    public abstract class Resource : Model.Model
     {
         #region ResoureScope enum
 
