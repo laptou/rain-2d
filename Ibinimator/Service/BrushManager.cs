@@ -11,28 +11,23 @@ namespace Ibinimator.Service
 {
     public class BrushManager : Model, IBrushManager
     {
-        private bool _selecting;
-
-        public BrushManager(IArtContext artContext, ISelectionManager selectionManager, IHistoryManager historyManager)
+        public BrushManager(IArtContext artContext, 
+            ISelectionManager selectionManager, 
+            IHistoryManager historyManager,
+            IToolManager toolManager)
         {
             Context = artContext;
 
             selectionManager.Updated += OnUpdated;
-
             historyManager.Traversed += (s, e) => OnUpdated(s, null);
+            toolManager.StrokeUpdated += (s, e) => OnUpdated(s, null);
+            toolManager.FillUpdated += (s, e) => OnUpdated(s, null);
 
             Fill = new SolidColorBrushInfo(new Color(0, 0, 0));
-            Stroke = new PenInfo
-            {
-                Brush = new SolidColorBrushInfo(new Color(0, 0, 0))
-            };
+            Stroke = null;
         }
 
-        private void OnUpdated(object sender, EventArgs args)
-        {
-            Fill = Context.ToolManager.Tool.ProvideFill();
-            Stroke = Context.ToolManager.Tool.ProvideStroke();
-        }
+        private void OnUpdated(object sender, EventArgs args) { Query(); }
 
         #region IBrushManager Members
 
@@ -48,6 +43,18 @@ namespace Ibinimator.Service
         {
             get => Get<IPenInfo>();
             set => Set(value);
+        }
+
+        public void Query()
+        {
+            Fill = Context.ToolManager.Tool.ProvideFill();
+            Stroke = Context.ToolManager.Tool.ProvideStroke();
+        }
+
+        public void Apply()
+        {
+            Context.ToolManager.Tool.ApplyFill(Fill);
+            Context.ToolManager.Tool.ApplyStroke(Stroke);
         }
 
         #endregion

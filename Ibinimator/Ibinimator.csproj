@@ -191,6 +191,7 @@
     <Compile Include="Service\SvgConverter.cs" />
     <Compile Include="Service\Tools\GradientTool.cs" />
     <Compile Include="Service\Tools\NodeTool.cs" />
+    <Compile Include="Service\Tools\SelectionToolBase.cs" />
     <Compile Include="Utility\ScreenExtensions.cs" />
     <Compile Include="View\Command\CommandManager.cs" />
     <Compile Include="View\Command\FileCommands.cs" />

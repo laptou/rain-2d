@@ -37,75 +37,78 @@ namespace Ibinimator.ViewModel
         public double Alpha
         {
             get => Color.A;
-            set => Color = ColorUtils.HslaToColor(Hue, Saturation, Lightness, value);
+            set => SetRGBA(Red, Green, Blue, value);
         }
 
         public double Blue
         {
             get => Color.B;
-            set => Color = ColorUtils.RgbaToColor(Red, Green, value, Alpha);
+            set => SetRGBA(Red, Green, value, Alpha);
         }
 
         public Color Color
         {
             get => Get<Color>();
-            set
-            {
-                Set(value);
-                (_hue, _saturation, _lightness, _) = ColorUtils.ColorToHsla(value);
-
-                RaisePropertyChanged(nameof(Red));
-                RaisePropertyChanged(nameof(Green));
-                RaisePropertyChanged(nameof(Blue));
-                RaisePropertyChanged(nameof(Hue));
-                RaisePropertyChanged(nameof(Saturation));
-                RaisePropertyChanged(nameof(Lightness));
-            }
+            set => SetRGBA(value.R, value.G, value.B, value.A);
         }
 
         public double Green
         {
             get => Color.G;
-            set => Color = ColorUtils.RgbaToColor(Red, value, Blue, Alpha);
+            set => SetRGBA(Red, value, Blue, Alpha);
         }
 
         public double Hue
         {
             get => _hue;
-            set => SetColor(
-                ColorUtils.HslaToColor(_hue = value, Saturation, Lightness, Alpha));
+            set => SetHSLA(value, Saturation, Lightness, Alpha);
         }
 
         public double Lightness
         {
             get => _lightness;
-            set => SetColor(
-                ColorUtils.HslaToColor(Hue, Saturation, _lightness = value, Alpha));
+            set => SetHSLA(Hue, Saturation, value, Alpha);
+
         }
 
         public double Red
         {
             get => Color.R;
-            set => Color = ColorUtils.RgbaToColor(value, Green, Blue, Alpha);
+            set => SetRGBA(value, Green, Blue, Alpha);
         }
 
         public double Saturation
         {
             get => _saturation;
-            set => SetColor(
-                ColorUtils.HslaToColor(Hue, _saturation = value, Lightness, Alpha));
+            set => SetHSLA(Hue, value, Lightness, Alpha);
         }
 
         public ColorPickerTarget Target { get; }
 
-        public void SetColor(Color color)
+        private void SetHSLA(double h, double s, double l, double a)
         {
-            Set(color, nameof(Color));
+            (_hue, _lightness, _saturation) = (h, s, l);
+            Set(ColorUtils.HslaToColor(h, s, l, a), nameof(Color));
 
             RaisePropertyChanged(nameof(Red));
             RaisePropertyChanged(nameof(Green));
             RaisePropertyChanged(nameof(Blue));
-            RaisePropertyChanged(nameof(Alpha));
+            RaisePropertyChanged(nameof(Hue));
+            RaisePropertyChanged(nameof(Saturation));
+            RaisePropertyChanged(nameof(Lightness));
+        }
+
+        private void SetRGBA(double r, double g, double b, double a)
+        {
+            Set(ColorUtils.RgbaToColor(r, g, b, a), nameof(Color));
+            (_hue, _lightness, _saturation) = ColorUtils.RgbToHsl(r, g, b);
+
+            RaisePropertyChanged(nameof(Red));
+            RaisePropertyChanged(nameof(Green));
+            RaisePropertyChanged(nameof(Blue));
+            RaisePropertyChanged(nameof(Hue));
+            RaisePropertyChanged(nameof(Saturation));
+            RaisePropertyChanged(nameof(Lightness));
         }
     }
 
@@ -130,10 +133,10 @@ namespace Ibinimator.ViewModel
                 _updating = true;
 
                 if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
-                    _fillPicker.SetColor(fill.Color);
+                    _fillPicker.Color = fill.Color;
 
                 if (_parent.BrushManager.Stroke?.Brush is SolidColorBrushInfo stroke)
-                    _strokePicker.SetColor(stroke.Color);
+                    _strokePicker.Color = stroke.Color;
 
                 RaisePropertyChanged(nameof(FillBrush));
                 RaisePropertyChanged(nameof(StrokeBrush));
@@ -195,6 +198,8 @@ namespace Ibinimator.ViewModel
             else
                 _parent.BrushManager.Stroke.Brush =
                     new SolidColorBrushInfo {Color = picker.Color};
+
+            _parent.BrushManager.Apply();
 
             _updating = false;
         }

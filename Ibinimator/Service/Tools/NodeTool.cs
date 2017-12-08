@@ -16,10 +16,10 @@ namespace Ibinimator.Service.Tools
     public class NodeTool : Model, ITool
     {
         private readonly ISet<int> _selection = new HashSet<int>();
-        private IList<PathNode> _nodes;
-        private (bool down, bool moved, Vector2 pos) _mouse;
-        private (bool alt, bool shift) _kbd;
         private int? _handle;
+        private (bool alt, bool shift) _kbd;
+        private (bool down, bool moved, Vector2 pos) _mouse;
+        private IList<PathNode> _nodes;
 
         public NodeTool(IToolManager toolManager)
         {
@@ -32,20 +32,19 @@ namespace Ibinimator.Service.Tools
             Manager.Context.HistoryManager.Traversed += OnTraversed;
         }
 
-        private void OnTraversed(object sender, long e) { UpdateNodes(); }
-
-        private void OnUpdated(object sender, EventArgs e) { UpdateNodes(); }
-
-        private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }
-
         public IGeometricLayer SelectedLayer =>
             Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
 
-        public ToolOptions Options { get; } = new ToolOptions();
+        public string Status =>
+            "<b>Click</b> to select, " +
+            "<b>Alt Click</b> to delete, " +
+            "<b>Shift Click</b> to multi-select.";
 
         private IArtContext Context => Manager.Context;
 
         private IContainerLayer Root => Context.ViewManager.Root;
+
+        private ISelectionManager SelectionManager => Context.SelectionManager;
 
         private Vector2 Constrain(Vector2 pos)
         {
@@ -127,6 +126,10 @@ namespace Ibinimator.Service.Tools
             MergeCommands(newCmd);
         }
 
+        private void OnTraversed(object sender, long e) { UpdateNodes(); }
+
+        private void OnUpdated(object sender, EventArgs e) { UpdateNodes(); }
+
         private void Remove(params int[] indices)
         {
             ConvertToPath();
@@ -144,9 +147,9 @@ namespace Ibinimator.Service.Tools
                 _selection.Remove(index);
         }
 
-        #region ITool Members
+        private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }
 
-        private ISelectionManager SelectionManager => Context.SelectionManager;
+        #region ITool Members
 
         public void ApplyFill(IBrushInfo brush)
         {
@@ -186,11 +189,7 @@ namespace Ibinimator.Service.Tools
                 targets.Select(t => t.Stroke).ToArray());
 
             Manager.Context.HistoryManager.Merge(command, 500);
-
         }
-
-        public IBrushInfo ProvideFill() { return SelectedLayer?.Fill; }
-        public IPenInfo ProvideStroke() { return SelectedLayer?.Stroke; }
 
         public void Dispose()
         {
@@ -352,6 +351,9 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
+        public IBrushInfo ProvideFill() { return SelectedLayer?.Fill; }
+        public IPenInfo ProvideStroke() { return SelectedLayer?.Stroke; }
+
         public void Render(
             RenderContext target,
             ICacheManager cacheManager,
@@ -445,10 +447,7 @@ namespace Ibinimator.Service.Tools
 
         public IToolManager Manager { get; }
 
-        public string Status =>
-            "<b>Click</b> to select, " +
-            "<b>Alt Click</b> to delete, " +
-            "<b>Shift Click</b> to multi-select.";
+        public ToolOptions Options { get; } = new ToolOptions();
 
         public ToolType Type => ToolType.Node;
 

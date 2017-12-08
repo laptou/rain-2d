@@ -11,12 +11,7 @@ namespace Ibinimator.Service.Tools
 {
     public class ToolManager : Model, IToolManager
     {
-        public ToolManager(IArtContext artView, ISelectionManager selectionManager)
-        {
-            Context = artView;
-        }
-
-        public void RaiseStrokeUpdate() { throw new NotImplementedException(); }
+        public ToolManager(IArtContext artView) { Context = artView; }
 
         public void SetTool(ToolType type)
         {
@@ -45,7 +40,7 @@ namespace Ibinimator.Service.Tools
                     case ToolType.Keyframe:
                         break;
                     case ToolType.Text:
-                        Tool = new TextTool(this);
+                        Tool = new TextTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Mask:
                         break;
@@ -63,10 +58,10 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateSurface();
         }
 
-        public event EventHandler<IBrushInfo> FillUpdated;
-        public event EventHandler<IBrushInfo> StrokeUpdated;
-
         #region IToolManager Members
+
+        public event EventHandler<IBrushInfo> FillUpdated;
+        public event EventHandler<IPenInfo> StrokeUpdated;
 
         public bool KeyDown(Key key, ModifierKeys modifiers)
         {
@@ -108,6 +103,12 @@ namespace Ibinimator.Service.Tools
             }
         }
 
+        public void RaiseFillUpdate() { FillUpdated?.Invoke(this, Tool?.ProvideFill()); }
+
+        public void RaiseStatus(Status status) { Context.Status = status; }
+
+        public void RaiseStrokeUpdate() { StrokeUpdated?.Invoke(this, Tool?.ProvideStroke()); }
+
         public bool TextInput(string text)
         {
             lock (this)
@@ -115,13 +116,6 @@ namespace Ibinimator.Service.Tools
                 return Tool?.TextInput(text) == true;
             }
         }
-
-        public void RaiseStatus(Status status)
-        {
-            Context.Status = status;
-        }
-
-        public void RaiseFillUpdate() { FillUpdated?.Invoke(this, Tool.ProvideFill()); }
 
         public IArtContext Context { get; }
 
@@ -143,6 +137,4 @@ namespace Ibinimator.Service.Tools
 
         #endregion
     }
-
-    
 }

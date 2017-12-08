@@ -12,7 +12,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class SelectionTool : Model, ITool
+    public sealed class SelectionTool : SelectionToolBase, ITool
     {
         private readonly Dictionary<string, string> _statuses = new Dictionary<string, string>
         {
@@ -36,15 +36,14 @@ namespace Ibinimator.Service.Tools
         private float _accumRotation;
         private Vector2 _deltaTranslation;
 
-        private int _depth = 1;
         private SelectionHandle _handle = 0;
 
-        private (bool alt, bool shift, bool ctrl) _modifiers = (false, false, false);
         private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
 
         public SelectionTool(IToolManager toolManager, ISelectionManager selectionManager)
+            : base(toolManager, selectionManager)
         {
-            Manager = toolManager;
+            Type = ToolType.Select;
 
             toolManager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
 
@@ -53,13 +52,11 @@ namespace Ibinimator.Service.Tools
 
         public GuideManager GuideManager { get; set; } = new GuideManager();
 
-        private IArtContext Context => Manager.Context;
-
-        private IEnumerable<ILayer> Selection => SelectionManager.Selection;
-
-        private ISelectionManager SelectionManager => Context.SelectionManager;
-
-        public void SetHandle(SelectionHandle value) { _handle = value; }
+        protected override void OnSelectionUpdated(object sender, EventArgs args)
+        {
+            base.OnSelectionUpdated(sender, args);
+            UpdateStatus();
+        }
 
         private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(float zoom)
         {
@@ -95,12 +92,6 @@ namespace Ibinimator.Service.Tools
             yield return (SelectionHandle.Rotation, rotate);
         }
 
-        private void OnSelectionUpdated(object sender, EventArgs args)
-        {
-            _depth = Selection.Any() ? 1 : Selection.Select(l => l.Depth).Min();
-            UpdateStatus();
-        }
-
         private void UpdateStatus()
         {
             if (Selection.Any())
@@ -130,61 +121,7 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(IBrushInfo brush)
-        {
-            if (!Selection.Any())
-                return;
-
-            var targets =
-                Selection.SelectMany(l => l.Flatten())
-                         .OfType<IFilledLayer>()
-                         .ToArray();
-
-            var command = new ApplyFillCommand(
-                Context.HistoryManager.Position + 1,
-                targets,
-                brush,
-                targets.Select(t => t.Fill).ToArray());
-
-            Context.HistoryManager.Merge(command, 500);
-        }
-
-        public void ApplyStroke(IPenInfo pen)
-        {
-            if (!Selection.Any())
-                return;
-
-            var targets =
-                Selection.SelectMany(l => l.Flatten())
-                         .OfType<IStrokedLayer>()
-                         .ToArray();
-
-            var command = new ApplyStrokeCommand(
-                Context.HistoryManager.Position + 1,
-                targets,
-                pen,
-                targets.Select(t => t.Stroke).ToArray());
-
-            var old = Context.HistoryManager.Current;
-
-            if (old is ApplyStrokeCommand oldStrokeCommand &&
-                command.Time - old.Time <= 500)
-            {
-                Context.HistoryManager.Pop();
-
-                command = new ApplyStrokeCommand(
-                    command.Id,
-                    command.Targets,
-                    command.NewStroke,
-                    oldStrokeCommand.OldStrokes);
-            }
-
-            Context.HistoryManager.Do(command);
-        }
-
-        public void Dispose() { SelectionManager.Updated -= OnSelectionUpdated; }
-
-        public bool KeyDown(Key key, ModifierKeys modifiers)
+        public override bool KeyDown(Key key, ModifierKeys modifiers)
         {
             if (key == Key.Delete)
             {
@@ -197,121 +134,37 @@ namespace Ibinimator.Service.Tools
                             Context.HistoryManager.Position + 1,
                             layer.Parent,
                             layer));
+
+                return true;
             }
 
-            if (modifiers.HasFlag(ModifierKeys.Alt))
-                _modifiers = (true, _modifiers.shift, _modifiers.ctrl);
-
-            if (modifiers.HasFlag(ModifierKeys.Shift))
-                _modifiers = (_modifiers.alt, true, _modifiers.ctrl);
-
-            if (modifiers.HasFlag(ModifierKeys.Control))
-                _modifiers = (_modifiers.alt, _modifiers.shift, true);
-
-            return true;
+            return base.KeyDown(key, modifiers);
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
+        public override bool MouseDown(Vector2 pos)
         {
-            switch (key)
-            {
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    _modifiers = (false, _modifiers.shift, _modifiers.ctrl);
-                    break;
-                case Key.LeftShift:
-                case Key.RightShift:
-                    _modifiers = (_modifiers.alt, false, _modifiers.ctrl);
-                    break;
-                case Key.LeftCtrl:
-                case Key.RightCtrl:
-                    _modifiers = (_modifiers.alt, _modifiers.shift, false);
-                    break;
-            }
-
-            return true;
-        }
-
-        public bool MouseDown(Vector2 pos)
-        {
-            UpdateStatus();
-
-            var deltaTime = Time.Now - _mouse.time;
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
-
-            #region handle testing
-
-            SetHandle(0);
 
             foreach (var handle in GetHandles(Context.ViewManager.Zoom))
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
-                    SetHandle(handle.handle);
-                    break;
+                    _handle = handle.handle;
+                    return true;
                 }
 
-            var bounds = SelectionManager.SelectionBounds;
-
-            var vertical = SelectionManager.FromSelectionSpace(bounds.BottomCenter) -
-                           SelectionManager.FromSelectionSpace(bounds.TopCenter);
-
-            var rotationHandle = SelectionManager.FromSelectionSpace(bounds.TopCenter) -
-                                 Vector2.Normalize(vertical) * 15;
-
-            if (Vector2.Distance(rotationHandle, pos) < 7.5)
-                SetHandle(SelectionHandle.Rotation);
-
-            if (_handle != 0)
-                return true;
-
-            #endregion
-
-            if (deltaTime < 500)
-                _depth++;
-
-            #region hit testing
-
-            // for every element in the scene, perform a hit-test
-            var root = Context.ViewManager.Root;
-
-            // start by hit-testing in the existing selection, and if we find nothing,
-            // then hit-test in the root
-            ILayer hit = null;
-
-            foreach (var layer in root.Flatten(_depth).Skip(1))
+            if (base.MouseDown(pos))
             {
-                var test = layer.HitTest<ILayer>(Context.CacheManager, pos, 0);
-
-                if (test == null) continue;
-
-                hit = test;
-
-                if (hit.Depth < _depth) continue;
-
-                if (_modifiers.alt && hit.Selected) continue;
-
-                break;
+                _handle = SelectionHandle.Translation;
+                return true;
             }
 
-            #endregion
+            UpdateStatus();
 
-            if (deltaTime < 500 && hit == null)
-                _depth--;
-
-            if (hit != null && _handle == 0)
-                SetHandle(SelectionHandle.Translation);
-
-            if (!_modifiers.shift && hit?.Selected != true)
-                SelectionManager.ClearSelection();
-
-            if (hit != null)
-                hit.Selected = true;
-
-            return true;
+            return false;
         }
 
-        public bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos)
         {
             Context.InvalidateSurface();
 
@@ -384,7 +237,7 @@ namespace Ibinimator.Service.Tools
 
                 #region segmented rotation
 
-                if (_modifiers.shift)
+                if (Modifiers.shift)
                 {
                     GuideManager.AddGuide(
                         new Guide(
@@ -425,7 +278,7 @@ namespace Ibinimator.Service.Tools
 
                 #region snapped translation
 
-                if (_modifiers.shift)
+                if (Modifiers.shift)
                 {
                     var localCenter = bounds.TopLeft +
                                       relativeOrigin * bounds.Size;
@@ -440,7 +293,7 @@ namespace Ibinimator.Service.Tools
 
                     Vector2 axisX, axisY;
 
-                    if (_modifiers.alt) // local axes
+                    if (Modifiers.alt) // local axes
                     {
                         axisX = xaxis - center;
                         axisY = yaxis - center;
@@ -509,7 +362,7 @@ namespace Ibinimator.Service.Tools
 
             #region proportional scaling
 
-            if (_modifiers.shift &&
+            if (Modifiers.shift &&
                 (_handle == SelectionHandle.BottomLeft ||
                  _handle == SelectionHandle.BottomRight ||
                  _handle == SelectionHandle.TopRight ||
@@ -562,52 +415,30 @@ namespace Ibinimator.Service.Tools
 
             SelectionManager.TransformSelection(scale, translate, rotate, shear, relativeOrigin);
 
-            _mouse.position = pos;
-
             #endregion
 
-            return true;
-        }
-
-        public bool MouseUp(Vector2 pos)
-        {
             _mouse.position = pos;
-            _mouse.down = false;
-            Context.InvalidateSurface();
+
             return true;
         }
 
-        public IBrushInfo ProvideFill()
+        public override bool MouseUp(Vector2 pos)
         {
-            var layer = SelectionManager.Selection.LastOrDefault();
-
-            if (layer is IFilledLayer filled)
-                return filled.Fill;
-
-            return null;
+            _mouse.down = false;
+            _mouse.position = pos;
+            base.MouseUp(pos);
+            return true;
         }
 
-        public IPenInfo ProvideStroke()
-        {
-            var layer = SelectionManager.Selection.LastOrDefault();
-
-            if (layer is IStrokedLayer stroked)
-                return stroked.Stroke;
-
-            return null;
-        }
-
-        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             var rect = SelectionManager.SelectionBounds;
 
             if (rect.IsEmpty) return;
 
-            SelectionManager.RenderBoundingBox(target, cache, view);
+            RenderBoundingBox(target, cache, view);
+            RenderPathOutlines(target, cache, view);
 
-            // path outlines
-            SelectionManager.RenderPathOutlines(target, cache, view);
-            
             // transform guides
             GuideManager.Render(target, cache, view);
             GuideManager.ClearVirtualGuides();
@@ -628,17 +459,15 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        public bool TextInput(string text) { return false; }
+        public override bool TextInput(string text) { return false; }
 
-        public string Cursor { get; set; }
+        public override string Cursor { get; protected set; }
 
-        public float CursorRotate => SelectionManager.SelectionTransform.GetRotation();
-
-        public IToolManager Manager { get; }
-
-        public ToolOptions Options { get; } = new ToolOptions();
-
-        public ToolType Type => ToolType.Select;
+        public override float CursorRotate
+        {
+            get => SelectionManager.SelectionTransform.GetRotation();
+            protected set { }
+        }
 
         #endregion
     }

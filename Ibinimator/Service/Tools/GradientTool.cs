@@ -16,9 +16,9 @@ namespace Ibinimator.Service.Tools
     public class GradientTool : Model, ITool
     {
         private readonly ISet<int> _selection = new HashSet<int>();
-        private (bool down, bool moved, Vector2 pos) _mouse;
-        private (bool alt, bool shift) _kbd;
         private int? _handle;
+        private (bool alt, bool shift) _kbd;
+        private (bool down, bool moved, Vector2 pos) _mouse;
 
         public GradientTool(IToolManager toolManager)
         {
@@ -29,13 +29,16 @@ namespace Ibinimator.Service.Tools
 //            Manager.Context.HistoryManager.Traversed += OnTraversed;
         }
 
-        public IFilledLayer SelectedLayer =>
-            Context.SelectionManager.Selection.LastOrDefault() as IFilledLayer;
-
         public GradientBrushInfo SelectedBrush =>
             SelectedLayer?.Fill as GradientBrushInfo;
 
-        public ToolOptions Options { get; } = new ToolOptions();
+        public IFilledLayer SelectedLayer =>
+            Context.SelectionManager.Selection.LastOrDefault() as IFilledLayer;
+
+        public string Status =>
+            "<b>Click</b> to select, " +
+            "<b>Alt Click</b> to delete, " +
+            "<b>Shift Click</b> to multi-select.";
 
         private IArtContext Context => Manager.Context;
 
@@ -46,26 +49,13 @@ namespace Ibinimator.Service.Tools
             throw new NotImplementedException();
         }
 
-        private void Remove(params int[] indices)
-        {
-            throw new NotImplementedException();
-        }
+        private void Remove(params int[] indices) { throw new NotImplementedException(); }
 
         #region ITool Members
 
         public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
 
         public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
-
-        public IBrushInfo ProvideFill()
-        {
-            if (SelectedBrush == null || _selection.Count == 0) return null;
-
-            var stop = SelectedBrush.Stops[_selection.Last()];
-            return new SolidColorBrushInfo(stop.Color);
-        }
-
-        public IPenInfo ProvideStroke() { return null; }
 
         public void Dispose()
         {
@@ -231,6 +221,16 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
+        public IBrushInfo ProvideFill()
+        {
+            if (SelectedBrush == null || _selection.Count == 0) return null;
+
+            var stop = SelectedBrush.Stops[_selection.Last()];
+            return new SolidColorBrushInfo(stop.Color);
+        }
+
+        public IPenInfo ProvideStroke() { return null; }
+
         public void Render(
             RenderContext target,
             ICacheManager cacheManager,
@@ -265,7 +265,9 @@ namespace Ibinimator.Service.Tools
                 target.DrawCircle(pos, 7, p);
 
                 using (var brush = target.CreateBrush(stop.Color))
+                {
                     target.FillCircle(pos, 4, brush);
+                }
             }
 
             // do not dispose the brushes! they are being used by the cache manager
@@ -282,10 +284,7 @@ namespace Ibinimator.Service.Tools
 
         public IToolManager Manager { get; }
 
-        public string Status =>
-            "<b>Click</b> to select, " +
-            "<b>Alt Click</b> to delete, " +
-            "<b>Shift Click</b> to multi-select.";
+        public ToolOptions Options { get; } = new ToolOptions();
 
         public ToolType Type => ToolType.Gradient;
 

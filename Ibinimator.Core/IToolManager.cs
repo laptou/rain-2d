@@ -25,8 +25,7 @@ namespace Ibinimator.Core
         void RaiseFillUpdate();
         void RaiseStrokeUpdate();
 
-
         event EventHandler<IBrushInfo> FillUpdated;
-        event EventHandler<IBrushInfo> StrokeUpdated;
+        event EventHandler<IPenInfo> StrokeUpdated;
     }
 }

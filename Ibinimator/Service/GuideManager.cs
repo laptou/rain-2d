@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Ibinimator.Core;
 using Ibinimator.Core.Utility;
+using Ibinimator.Resources;
 
 namespace Ibinimator.Service
 {
@@ -79,6 +81,75 @@ namespace Ibinimator.Service
         {
             foreach (var guide in _guides.Where(g => g.Value.Virtual).ToList())
                 _guides.Remove(guide.Key);
+        }
+
+        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        {
+            foreach (var guide in GetGuides(GuideType.All))
+            {
+                target.PushEffect(target.CreateEffect<IGlowEffect>());
+
+                var brush = cache.GetBrush(nameof(EditorColors.Guide));
+
+                if (guide.Type.HasFlag(GuideType.Linear))
+                {
+                    var origin = guide.Origin;
+                    var slope = Math.Tan(guide.Angle);
+                    var diagonal = target.Height / target.Width;
+                    Vector2 p1, p2;
+
+                    if (slope > diagonal)
+                    {
+                        p1 = new Vector2(
+                            (float)(origin.X + (origin.Y - target.Height) / slope),
+                            target.Height);
+                        p2 = new Vector2((float)(origin.X + origin.Y / slope), 0);
+                    }
+                    else
+                    {
+                        p1 = new Vector2(
+                            target.Width,
+                            (float)(origin.Y + (origin.X - target.Width) * slope));
+                        p2 = new Vector2(0, (float)(origin.Y + origin.X * slope));
+                    }
+
+                    using (var pen = target.CreatePen(2, brush))
+                    {
+                        target.DrawLine(p1, p2, pen);
+                    }
+                }
+
+                if (guide.Type.HasFlag(GuideType.Radial))
+                {
+                    var origin = guide.Origin;
+                    var axes = new[]
+                    {
+                        guide.Angle,
+                        guide.Angle + MathUtils.PiOverFour * 1,
+                        guide.Angle + MathUtils.PiOverFour * 2,
+                        guide.Angle + MathUtils.PiOverFour * 3
+                    };
+
+                    using (var pen = target.CreatePen(1, brush))
+                    {
+                        target.DrawEllipse(origin, 20, 20, pen);
+
+                        foreach (var x in axes)
+                            target.DrawLine(origin + MathUtils.Angle(x) * 20,
+                                            origin - MathUtils.Angle(x) * 20,
+                                            pen);
+                    }
+
+                    using (var pen = target.CreatePen(2, brush))
+                    {
+                        target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25,
+                                        origin,
+                                        pen);
+                    }
+                }
+
+                target.PopEffect();
+            }
         }
     }
 }

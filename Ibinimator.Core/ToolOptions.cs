@@ -31,7 +31,14 @@ namespace Ibinimator.Core {
 
         public T Get<T>(string id)
         {
-            return _options[id].Value is T t ? t : (T) Convert.ChangeType(_options[id], typeof(T));
+            switch (_options[id].Value) {
+                case T t:
+                    return t;
+                case null:
+                    return default;
+                default:
+                    return (T) Convert.ChangeType(_options[id].Value, typeof(T));
+            }
         }
         
         public void SetMaximum(string id, float maximum) { _options[id].Maximum = maximum; }
@@ -57,6 +64,7 @@ namespace Ibinimator.Core {
         #endregion
 
         public event PropertyChangedEventHandler OptionChanged;
+
         public void SetUnit(string id, Unit unit) { _options[id].Unit = unit; }
 
         public void Set<T>(string id, T value) { _options[id].Value = value; }

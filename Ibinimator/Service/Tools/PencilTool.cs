@@ -15,10 +15,36 @@ namespace Ibinimator.Service.Tools
 {
     public sealed class PencilTool : Model, ITool
     {
-        private IList<PathNode> _nodes;
-        private (bool down, bool moved, Vector2 pos) _mouse;
         private (bool alt, bool shift) _kbd;
+        private (bool down, bool moved, Vector2 pos) _mouse;
+        private IList<PathNode> _nodes;
         private Vector2? _start;
+
+        public PencilTool(IToolManager toolManager)
+        {
+            Manager = toolManager;
+
+            _nodes = GetGeometricNodes().ToList();
+
+            Manager.Context.SelectionManager.Updated += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
+
+            Manager.Context.HistoryManager.Traversed += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
+        }
+
+        public Path SelectedPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
+
+        public string Status => "";
+
+        private IArtContext Context => Manager.Context;
+
+        private IContainerLayer Root => Context.ViewManager.Root;
+
+        private IEnumerable<PathNode> GetGeometricNodes()
+        {
+            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
+
+            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
+        }
 
         private void Remove(int index)
         {
@@ -32,40 +58,11 @@ namespace Ibinimator.Service.Tools
             _nodes = GetGeometricNodes().ToList();
         }
 
-        public PencilTool(IToolManager toolManager)
-        {
-            Manager = toolManager;
-
-            _nodes = GetGeometricNodes().ToList();
-
-            Manager.Context.SelectionManager.Updated += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
-
-            Manager.Context.HistoryManager.Traversed += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
-        }
-
-        private IEnumerable<PathNode> GetGeometricNodes()
-        {
-            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
-
-            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
-        }
-
-        public Path SelectedPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
-
-        public ToolOptions Options { get; } = new ToolOptions();
-
-        private IArtContext Context => Manager.Context;
-
-        private IContainerLayer Root => Context.ViewManager.Root;
-
-
         #region ITool Members
 
         public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
 
         public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
-        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
-        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Dispose() { }
 
@@ -113,7 +110,7 @@ namespace Ibinimator.Service.Tools
                     hit.Selected = true;
                     return true;
                 }
-                
+
                 Context.SelectionManager.ClearSelection();
 
                 if (_start == null)
@@ -160,13 +157,11 @@ namespace Ibinimator.Service.Tools
                         {
                             // click on start node = close figure
                             if (node.Index == 0 || _nodes[node.Index - 1].FigureEnd != null)
-                            {
                                 Context.HistoryManager.Do(
                                     new ModifyPathCommand(
                                         Context.HistoryManager.Position + 1,
-                                        SelectedPath, new[] { _nodes.Count - 1 }, 
+                                        SelectedPath, new[] {_nodes.Count - 1},
                                         ModifyPathCommand.NodeOperation.EndFigureClosed));
-                            }
                         }
                     }
                     break;
@@ -208,6 +203,9 @@ namespace Ibinimator.Service.Tools
 
             return true;
         }
+
+        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
@@ -259,7 +257,6 @@ namespace Ibinimator.Service.Tools
                 return cache.GetBrush(nameof(EditorColors.Node));
             }
 
-            
 
             foreach (var node in _nodes)
             {
@@ -292,7 +289,7 @@ namespace Ibinimator.Service.Tools
 
         public IToolManager Manager { get; }
 
-        public string Status => "";
+        public ToolOptions Options { get; } = new ToolOptions();
 
         public ToolType Type => ToolType.Pencil;
 

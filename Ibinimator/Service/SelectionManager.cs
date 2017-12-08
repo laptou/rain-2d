@@ -6,6 +6,7 @@ using System.Numerics;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
+using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service
@@ -42,7 +43,7 @@ namespace Ibinimator.Service
             Selection = new ObservableList<ILayer>();
             Selection.CollectionChanged += (sender, args) =>
             {
-                Update(true);
+                UpdateBounds(true);
                 Updated?.Invoke(this, null);
             };
 
@@ -67,9 +68,9 @@ namespace Ibinimator.Service
                 }
             };
 
-            historyManager.Traversed += (sender, args) => { Update(true); };
+            historyManager.Traversed += (sender, args) => { UpdateBounds(true); };
 
-            cacheManager.BoundsChanged += (sender, args) => { Update(true); };
+            cacheManager.BoundsChanged += (sender, args) => { UpdateBounds(true); };
         }
 
         public ObservableList<ILayer> Selection { get; }
@@ -85,13 +86,12 @@ namespace Ibinimator.Service
 
         public Vector2 FromSelectionSpace(Vector2 v) { return Vector2.Transform(v, SelectionTransform); }
 
-
         public Vector2 ToSelectionSpace(Vector2 v)
         {
             return Vector2.Transform(v, MathUtils.Invert(SelectionTransform));
         }
 
-        public void Transform(
+        public void TransformSelection(
             Vector2 scale,
             Vector2 translate,
             float rotate,
@@ -130,7 +130,7 @@ namespace Ibinimator.Service
             Context.InvalidateSurface();
         }
 
-        public void Update(bool reset)
+        public void UpdateBounds(bool reset)
         {
             if (Selection.Count == 0)
             {
@@ -156,8 +156,9 @@ namespace Ibinimator.Service
             Context.InvalidateSurface();
         }
 
-        public IArtContext Context { get; }
+        
 
+        public IArtContext Context { get; }
 
         public RectangleF SelectionBounds
         {

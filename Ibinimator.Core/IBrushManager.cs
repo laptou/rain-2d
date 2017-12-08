@@ -9,5 +9,7 @@ namespace Ibinimator.Core
     {
         IBrushInfo Fill { get; set; }
         IPenInfo Stroke { get; set; }
+        void Query();
+        void Apply();
     }
 }

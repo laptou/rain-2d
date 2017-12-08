@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model
 {
+    [DebuggerDisplay("R: {R}, G: {G}, B: {B}, A: {A}")]
     public struct Color
     {
         public Color(Vector4 v) : this(v.X, v.Y, v.Z, v.W)

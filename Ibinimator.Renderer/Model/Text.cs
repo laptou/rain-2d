@@ -75,7 +75,7 @@ namespace Ibinimator.Renderer.Model
                 null;
         }
 
-        protected void RaiseFillBrushChanged() { FillChanged?.Invoke(this, null); }
+        protected void RaiseFillChanged() { FillChanged?.Invoke(this, null); }
 
         protected void RaiseGeometryChanged()
         {
@@ -366,7 +366,11 @@ namespace Ibinimator.Renderer.Model
         public IBrushInfo Fill
         {
             get => Get<IBrushInfo>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                RaiseFillChanged();
+            }
         }
 
         public string FontFamilyName
