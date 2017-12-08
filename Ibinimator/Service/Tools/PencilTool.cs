@@ -188,7 +188,7 @@ namespace Ibinimator.Service.Tools
 
             _nodes = GetGeometricNodes().ToList();
 
-            Context.SelectionManager.Update(true);
+            Context.SelectionManager.UpdateBounds(true);
 
             return true;
         }

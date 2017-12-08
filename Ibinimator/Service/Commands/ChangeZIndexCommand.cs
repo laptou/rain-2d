@@ -36,7 +36,7 @@ namespace Ibinimator.Service.Commands
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index + Delta));
             }
 
-            artContext.SelectionManager.Update(true);
+            artContext.SelectionManager.UpdateBounds(true);
         }
 
         public override void Undo(IArtContext artContext)
@@ -48,7 +48,7 @@ namespace Ibinimator.Service.Commands
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index - Delta));
             }
 
-            artContext.SelectionManager.Update(true);
+            artContext.SelectionManager.UpdateBounds(true);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Ibinimator.ViewModel
 
         private void SetSize(Vector2 size)
         {
-            ArtContext.SelectionManager?.Transform(
+            ArtContext.SelectionManager?.TransformSelection(
                 size / GetSize(),
                 Vector2.Zero,
                 0,
@@ -54,7 +54,7 @@ namespace Ibinimator.ViewModel
 
         private void SetPosition(Vector2 position)
         {
-            ArtContext.SelectionManager?.Transform(
+            ArtContext.SelectionManager?.TransformSelection(
                 Vector2.One,
                 position - GetPosition(),
                 0,
@@ -77,7 +77,7 @@ namespace Ibinimator.ViewModel
         public float Rotation
         {
             get => ArtContext.SelectionManager?.SelectionTransform.GetRotation() ?? 0;
-            set => ArtContext.SelectionManager?.Transform(
+            set => ArtContext.SelectionManager?.TransformSelection(
                 Vector2.One,
                 Vector2.Zero,
                 value - Rotation,
@@ -88,7 +88,7 @@ namespace Ibinimator.ViewModel
         public float Shear
         {
             get => ArtContext.SelectionManager?.SelectionTransform.GetShear() ?? 0;
-            set => ArtContext.SelectionManager?.Transform(
+            set => ArtContext.SelectionManager?.TransformSelection(
                 Vector2.One,
                 Vector2.Zero,
                 0,

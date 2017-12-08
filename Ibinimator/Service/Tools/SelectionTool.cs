@@ -53,17 +53,19 @@ namespace Ibinimator.Service.Tools
 
         public GuideManager GuideManager { get; set; } = new GuideManager();
 
-
         private IArtContext Context => Manager.Context;
 
-        private IEnumerable<ILayer> Selection => Manager.Context.SelectionManager.Selection;
-        private ISelectionManager SelectionManager => Manager.Context.SelectionManager;
+        private IEnumerable<ILayer> Selection => SelectionManager.Selection;
+
+        private ISelectionManager SelectionManager => Context.SelectionManager;
 
         public void SetHandle(SelectionHandle value) { _handle = value; }
 
-        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandlePositions(float zoom)
+        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(float zoom)
         {
-            var rect = Manager.Context.SelectionManager.SelectionBounds;
+            var rect = SelectionManager.SelectionBounds;
+
+            if (rect.IsEmpty) yield break;
 
             float x1 = rect.Left,
                   y1 = rect.Top,
@@ -72,7 +74,7 @@ namespace Ibinimator.Service.Tools
 
             Vector2 Transform(float x, float y)
             {
-                return Manager.Context.SelectionManager.FromSelectionSpace(new Vector2(x, y));
+                return SelectionManager.FromSelectionSpace(new Vector2(x, y));
             }
 
             yield return (SelectionHandle.TopLeft, Transform(x1, y1));
@@ -139,12 +141,12 @@ namespace Ibinimator.Service.Tools
                          .ToArray();
 
             var command = new ApplyFillCommand(
-                Manager.Context.HistoryManager.Position + 1,
+                Context.HistoryManager.Position + 1,
                 targets,
                 brush,
                 targets.Select(t => t.Fill).ToArray());
 
-            Manager.Context.HistoryManager.Merge(command, 500);
+            Context.HistoryManager.Merge(command, 500);
         }
 
         public void ApplyStroke(IPenInfo pen)
@@ -158,17 +160,17 @@ namespace Ibinimator.Service.Tools
                          .ToArray();
 
             var command = new ApplyStrokeCommand(
-                Manager.Context.HistoryManager.Position + 1,
+                Context.HistoryManager.Position + 1,
                 targets,
                 pen,
                 targets.Select(t => t.Stroke).ToArray());
 
-            var old = Manager.Context.HistoryManager.Current;
+            var old = Context.HistoryManager.Current;
 
             if (old is ApplyStrokeCommand oldStrokeCommand &&
                 command.Time - old.Time <= 500)
             {
-                Manager.Context.HistoryManager.Pop();
+                Context.HistoryManager.Pop();
 
                 command = new ApplyStrokeCommand(
                     command.Id,
@@ -177,22 +179,25 @@ namespace Ibinimator.Service.Tools
                     oldStrokeCommand.OldStrokes);
             }
 
-            Manager.Context.HistoryManager.Do(command);
+            Context.HistoryManager.Do(command);
         }
 
-        public void Dispose() { Manager.Context.SelectionManager.Updated -= OnSelectionUpdated; }
+        public void Dispose() { SelectionManager.Updated -= OnSelectionUpdated; }
 
         public bool KeyDown(Key key, ModifierKeys modifiers)
         {
-            var delete = Selection.ToArray();
-            Manager.Context.SelectionManager.ClearSelection();
+            if (key == Key.Delete)
+            {
+                var delete = Selection.ToArray();
+                SelectionManager.ClearSelection();
 
-            foreach (var layer in delete)
-                Manager.Context.HistoryManager.Do(
-                    new RemoveLayerCommand(
-                        Manager.Context.HistoryManager.Position + 1,
-                        layer.Parent,
-                        layer));
+                foreach (var layer in delete)
+                    Context.HistoryManager.Do(
+                        new RemoveLayerCommand(
+                            Context.HistoryManager.Position + 1,
+                            layer.Parent,
+                            layer));
+            }
 
             if (modifiers.HasFlag(ModifierKeys.Alt))
                 _modifiers = (true, _modifiers.shift, _modifiers.ctrl);
@@ -227,7 +232,6 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-
         public bool MouseDown(Vector2 pos)
         {
             UpdateStatus();
@@ -240,43 +244,12 @@ namespace Ibinimator.Service.Tools
 
             SetHandle(0);
 
-            var localPos = SelectionManager.ToSelectionSpace(pos);
-            var localScale = SelectionManager.SelectionTransform.GetScale();
-            var radiusx = 7.5f / localScale.X;
-            var radiusy = 7.5f / localScale.Y;
-
-            if (Math.Abs(localPos.X - SelectionManager.SelectionBounds.Left) < radiusx)
-            {
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Top) < radiusy)
-                    SetHandle(SelectionHandle.TopLeft);
-
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Center.Y) < radiusy)
-                    SetHandle(SelectionHandle.Left);
-
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Bottom) < radiusy)
-                    SetHandle(SelectionHandle.BottomLeft);
-            }
-
-            if (Math.Abs(localPos.X - SelectionManager.SelectionBounds.Center.X) < radiusx)
-            {
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Top) < radiusy)
-                    SetHandle(SelectionHandle.Top);
-
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Bottom) < radiusy)
-                    SetHandle(SelectionHandle.Bottom);
-            }
-
-            if (Math.Abs(localPos.X - SelectionManager.SelectionBounds.Right) < radiusx)
-            {
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Top) < radiusy)
-                    SetHandle(SelectionHandle.TopRight);
-
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Center.Y) < radiusy)
-                    SetHandle(SelectionHandle.Right);
-
-                if (Math.Abs(localPos.Y - SelectionManager.SelectionBounds.Bottom) < radiusy)
-                    SetHandle(SelectionHandle.BottomRight);
-            }
+            foreach (var handle in GetHandles(Context.ViewManager.Zoom))
+                if (Vector2.Distance(handle.position, pos) < 7.5f)
+                {
+                    SetHandle(handle.handle);
+                    break;
+                }
 
             var bounds = SelectionManager.SelectionBounds;
 
@@ -340,7 +313,7 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseMove(Vector2 pos)
         {
-            Manager.Context.InvalidateSurface();
+            Context.InvalidateSurface();
 
             var localPos = SelectionManager.ToSelectionSpace(pos);
             var bounds = SelectionManager.SelectionBounds;
@@ -350,12 +323,10 @@ namespace Ibinimator.Service.Tools
             if (!_mouse.down)
             {
                 Cursor = null;
-                
-                var handles = GetHandlePositions(Manager.Context.ViewManager.Zoom);
 
-                foreach (var handle in handles)
+                foreach (var handle in GetHandles(Context.ViewManager.Zoom))
                 {
-                    if (Vector2.Distance(handle.position, _mouse.position) > 7.5f) continue;
+                    if (Vector2.Distance(handle.position, pos) > 7.5f) continue;
 
                     switch (handle.handle)
                     {
@@ -589,7 +560,7 @@ namespace Ibinimator.Service.Tools
             if (Math.Abs(scale.Y) < Math.Abs(min.Y))
                 scale.Y = min.Y * MathUtils.NonZeroSign(scale.Y);
 
-            SelectionManager.Transform(scale, translate, rotate, shear, relativeOrigin);
+            SelectionManager.TransformSelection(scale, translate, rotate, shear, relativeOrigin);
 
             _mouse.position = pos;
 
@@ -606,109 +577,43 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
-        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
+        public IBrushInfo ProvideFill()
+        {
+            var layer = SelectionManager.Selection.LastOrDefault();
+
+            if (layer is IFilledLayer filled)
+                return filled.Fill;
+
+            return null;
+        }
+
+        public IPenInfo ProvideStroke()
+        {
+            var layer = SelectionManager.Selection.LastOrDefault();
+
+            if (layer is IStrokedLayer stroked)
+                return stroked.Stroke;
+
+            return null;
+        }
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
-            var rect = Manager.Context.SelectionManager.SelectionBounds;
+            var rect = SelectionManager.SelectionBounds;
 
             if (rect.IsEmpty) return;
 
+            SelectionManager.RenderBoundingBox(target, cache, view);
+
             // path outlines
-            foreach (var shape in Selection.OfType<IGeometricLayer>())
-            {
-                target.Transform(shape.AbsoluteTransform);
-
-                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-                {
-                    target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
-                }
-
-                target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
-            }
-
-            // bounding box outlines
-            target.Transform(SelectionManager.SelectionTransform);
-
-            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-            {
-                target.DrawRectangle(SelectionManager.SelectionBounds, pen);
-            }
-
-            target.Transform(MathUtils.Invert(SelectionManager.SelectionTransform));
-
+            SelectionManager.RenderPathOutlines(target, cache, view);
+            
             // transform guides
-            foreach (var guide in GuideManager.GetGuides(GuideType.All))
-            {
-                target.PushEffect(target.CreateEffect<IGlowEffect>());
-
-                var brush = cache.GetBrush(nameof(EditorColors.Guide));
-
-                if (guide.Type.HasFlag(GuideType.Linear))
-                {
-                    var origin = guide.Origin;
-                    var slope = Math.Tan(guide.Angle);
-                    var diagonal = target.Height / target.Width;
-                    Vector2 p1, p2;
-
-                    if (slope > diagonal)
-                    {
-                        p1 = new Vector2(
-                            (float) (origin.X + (origin.Y - target.Height) / slope),
-                            target.Height);
-                        p2 = new Vector2((float) (origin.X + origin.Y / slope), 0);
-                    }
-                    else
-                    {
-                        p1 = new Vector2(
-                            target.Width,
-                            (float) (origin.Y + (origin.X - target.Width) * slope));
-                        p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
-                    }
-
-                    using (var pen = target.CreatePen(2, brush))
-                    {
-                        target.DrawLine(p1, p2, pen);
-                    }
-                }
-
-                if (guide.Type.HasFlag(GuideType.Radial))
-                {
-                    var origin = guide.Origin;
-                    var axes = new[]
-                    {
-                        guide.Angle,
-                        guide.Angle + MathUtils.PiOverFour * 1,
-                        guide.Angle + MathUtils.PiOverFour * 2,
-                        guide.Angle + MathUtils.PiOverFour * 3
-                    };
-
-                    using (var pen = target.CreatePen(1, brush))
-                    {
-                        target.DrawEllipse(origin, 20, 20, pen);
-
-                        foreach (var x in axes)
-                            target.DrawLine(origin + MathUtils.Angle(x) * 20,
-                                            origin - MathUtils.Angle(x) * 20,
-                                            pen);
-                    }
-
-                    using (var pen = target.CreatePen(2, brush))
-                    {
-                        target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25,
-                                        origin,
-                                        pen);
-                    }
-                }
-
-                target.PopEffect();
-            }
-
+            GuideManager.Render(target, cache, view);
             GuideManager.ClearVirtualGuides();
 
             // handles
-            var handles = GetHandlePositions(view.Zoom).ToDictionary();
+            var handles = GetHandles(view.Zoom).ToDictionary();
 
             using (var pen = target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
             {

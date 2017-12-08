@@ -161,7 +161,7 @@ namespace Ibinimator.Service.Tools
                 }
             }
 
-            Context.SelectionManager.Update(true);
+            Context.SelectionManager.UpdateBounds(true);
 
             return true;
         }

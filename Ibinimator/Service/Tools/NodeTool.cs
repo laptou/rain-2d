@@ -42,7 +42,7 @@ namespace Ibinimator.Service.Tools
             Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
 
         public ToolOptions Options { get; } = new ToolOptions();
-        
+
         private IArtContext Context => Manager.Context;
 
         private IContainerLayer Root => Context.ViewManager.Root;
@@ -146,15 +146,51 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
+        private ISelectionManager SelectionManager => Context.SelectionManager;
+
         public void ApplyFill(IBrushInfo brush)
         {
-            
+            if (!SelectionManager.Selection.Any())
+                return;
+
+            var targets =
+                SelectionManager.Selection
+                                .SelectMany(l => l.Flatten())
+                                .OfType<IFilledLayer>()
+                                .ToArray();
+
+            var command = new ApplyFillCommand(
+                Manager.Context.HistoryManager.Position + 1,
+                targets,
+                brush,
+                targets.Select(t => t.Fill).ToArray());
+
+            Manager.Context.HistoryManager.Merge(command, 500);
         }
 
-        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
+        public void ApplyStroke(IPenInfo pen)
+        {
+            if (!SelectionManager.Selection.Any())
+                return;
 
-        public IBrushInfo ProvideFill() { return SelectedLayer.Fill; }
-        public IPenInfo ProvideStroke() { return SelectedLayer.Stroke; }
+            var targets =
+                SelectionManager.Selection
+                                .SelectMany(l => l.Flatten())
+                                .OfType<IStrokedLayer>()
+                                .ToArray();
+
+            var command = new ApplyStrokeCommand(
+                Manager.Context.HistoryManager.Position + 1,
+                targets,
+                pen,
+                targets.Select(t => t.Stroke).ToArray());
+
+            Manager.Context.HistoryManager.Merge(command, 500);
+
+        }
+
+        public IBrushInfo ProvideFill() { return SelectedLayer?.Fill; }
+        public IPenInfo ProvideStroke() { return SelectedLayer?.Stroke; }
 
         public void Dispose()
         {
@@ -261,7 +297,7 @@ namespace Ibinimator.Service.Tools
                 _selection.Add(target.Value.Index);
             }
 
-            Context.SelectionManager.Update(true);
+            Context.SelectionManager.UpdateBounds(true);
 
             return true;
         }

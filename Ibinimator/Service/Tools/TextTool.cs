@@ -29,7 +29,7 @@ namespace Ibinimator.Service.Tools
         private (Vector2 position, Vector2 size) _caret;
         private (Vector2 position, bool down, long time) _mouse;
         private (int index, int length) _selection;
-        
+
         private RectangleF[] _selectionRects = new RectangleF[0];
 
         public TextTool(IToolManager manager)
@@ -84,7 +84,7 @@ namespace Ibinimator.Service.Tools
         private void OnOptionChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
             var option = (ToolOption) sender;
-            if (CurrentText == null) return;
+            if (SelectedLayer == null) return;
 
             switch (option.Id)
             {
@@ -97,7 +97,7 @@ namespace Ibinimator.Service.Tools
                         Format(new Format
                         {
                             FontFamilyName = (string) option.Value,
-                            Range = (0, CurrentText.Value.Length)
+                            Range = (0, SelectedLayer.Value.Length)
                         });
                     else
                         Format(new Format
@@ -111,7 +111,7 @@ namespace Ibinimator.Service.Tools
                         Format(new Format
                         {
                             FontSize = (float) option.Value,
-                            Range = (0, CurrentText.Value.Length)
+                            Range = (0, SelectedLayer.Value.Length)
                         });
                     else
                         Format(new Format
@@ -125,7 +125,7 @@ namespace Ibinimator.Service.Tools
             Update();
         }
 
-        public Text CurrentText => Context.SelectionManager.Selection.LastOrDefault() as Text;
+        public Text SelectedLayer => Context.SelectionManager.Selection.LastOrDefault() as Text;
 
         public ToolOptions Options { get; } = new ToolOptions();
 
@@ -136,7 +136,7 @@ namespace Ibinimator.Service.Tools
             var history = Context.HistoryManager;
             var cmd = new ApplyFormatCommand(
                 Context.HistoryManager.Position + 1,
-                CurrentText, format);
+                SelectedLayer, format);
 
             // no Do() b/c it's already done
             history.Do(cmd);
@@ -178,7 +178,7 @@ namespace Ibinimator.Service.Tools
             var history = Context.HistoryManager;
             var current = new InsertTextCommand(
                 Context.HistoryManager.Position + 1,
-                CurrentText, text, index);
+                SelectedLayer, text, index);
 
             history.Do(current);
         }
@@ -188,8 +188,8 @@ namespace Ibinimator.Service.Tools
             var history = Context.HistoryManager;
             var current = new RemoveTextCommand(
                 Context.HistoryManager.Position + 1,
-                CurrentText,
-                CurrentText.Value.Substring(index, length),
+                SelectedLayer,
+                SelectedLayer.Value.Substring(index, length),
                 index);
 
             history.Do(current);
@@ -206,9 +206,9 @@ namespace Ibinimator.Service.Tools
 
         private void Update()
         {
-            if (CurrentText == null) return;
+            if (SelectedLayer == null) return;
 
-            var layout = Context.CacheManager.GetTextLayout(CurrentText);
+            var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
             var metrics = layout.MeasurePosition(_selection.index);
 
@@ -219,21 +219,20 @@ namespace Ibinimator.Service.Tools
                 layout.MeasureRange(_selection.index, _selection.length) :
                 new RectangleF[0];
 
-            var format = CurrentText.GetFormat(_selection.index);
+            var format = SelectedLayer.GetFormat(_selection.index);
 
-            Options.Set("font-family", format?.FontFamilyName ?? CurrentText.FontFamilyName);
-            Options.Set("font-size", format?.FontSize ?? CurrentText.FontSize);
+            Options.Set("font-family", format?.FontFamilyName ?? SelectedLayer.FontFamilyName);
+            Options.Set("font-size", format?.FontSize ?? SelectedLayer.FontSize);
             Options.Set("font-face", ToFontName(
-                            format?.FontWeight ?? CurrentText.FontWeight,
-                            format?.FontStyle ?? CurrentText.FontStyle,
-                            format?.FontStretch ?? CurrentText.FontStretch));
+                            format?.FontWeight ?? SelectedLayer.FontWeight,
+                            format?.FontStyle ?? SelectedLayer.FontStyle,
+                            format?.FontStretch ?? SelectedLayer.FontStretch));
 
             Context.InvalidateSurface();
         }
 
         private IEnumerable<string> GetFontFaces()
         {
-
             if (_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
             {
                 using (var dwFamily = _dwFontCollection.GetFontFamily(index))
@@ -251,7 +250,7 @@ namespace Ibinimator.Service.Tools
 
         public void ApplyFill(IBrushInfo brush)
         {
-            if (CurrentText == null || brush == null) return;
+            if (SelectedLayer == null || brush == null) return;
 
             Format(new Format
             {
@@ -262,7 +261,7 @@ namespace Ibinimator.Service.Tools
 
         public void ApplyStroke(IPenInfo pen)
         {
-            if (CurrentText == null || pen == null) return;
+            if (SelectedLayer == null || pen == null) return;
 
             Format(new Format
             {
@@ -271,9 +270,19 @@ namespace Ibinimator.Service.Tools
             });
         }
 
-        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
+        public IBrushInfo ProvideFill()
+        {
+            var format = SelectedLayer?.GetFormat(_selection.index);
 
-        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
+            return format?.Fill ?? SelectedLayer?.Fill;
+        }
+
+        public IPenInfo ProvideStroke()
+        {
+            var format = SelectedLayer?.GetFormat(_selection.index);
+
+            return format?.Stroke ?? SelectedLayer?.Stroke;
+        }
 
         public void Dispose()
         {
@@ -284,9 +293,9 @@ namespace Ibinimator.Service.Tools
 
         public bool KeyDown(Key key, ModifierKeys mods)
         {
-            if (CurrentText != null)
+            if (SelectedLayer != null)
             {
-                var text = CurrentText.Value;
+                var text = SelectedLayer.Value;
 
                 Format format;
                 switch (key)
@@ -400,7 +409,7 @@ namespace Ibinimator.Service.Tools
                         break;
                     case Key.Escape:
                         if (_selection.length == 0)
-                            CurrentText.Selected = false;
+                            SelectedLayer.Selected = false;
 
                         _selection.length = 0;
                         break;
@@ -433,12 +442,12 @@ namespace Ibinimator.Service.Tools
 
                     case Key.A when mods.HasFlag(ModifierKeys.Control):
                         _selection.index = 0;
-                        _selection.length = CurrentText.Value.Length;
+                        _selection.length = SelectedLayer.Value.Length;
                         break;
 
                     case Key.B when mods.HasFlag(ModifierKeys.Control):
-                        format = CurrentText.GetFormat(_selection.index);
-                        var weight = format?.FontWeight ?? CurrentText.FontWeight;
+                        format = SelectedLayer.GetFormat(_selection.index);
+                        var weight = format?.FontWeight ?? SelectedLayer.FontWeight;
 
                         Format(new Format
                         {
@@ -448,8 +457,8 @@ namespace Ibinimator.Service.Tools
                         break;
 
                     case Key.I when mods.HasFlag(ModifierKeys.Control):
-                        format = CurrentText.GetFormat(_selection.index);
-                        var style = format?.FontStyle ?? CurrentText.FontStyle;
+                        format = SelectedLayer.GetFormat(_selection.index);
+                        var style = format?.FontStyle ?? SelectedLayer.FontStyle;
 
                         Format(new Format
                         {
@@ -484,9 +493,9 @@ namespace Ibinimator.Service.Tools
                         return false;
                 }
 
-                _selection.index = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0, _selection.index);
-                _selection.length = MathUtils.Clamp(0, CurrentText?.Value?.Length ?? 0 - _selection.index,
-                                                  _selection.length);
+                _selection.index = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0, _selection.index);
+                _selection.length = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0 - _selection.index,
+                                                    _selection.length);
 
                 Update();
 
@@ -507,22 +516,23 @@ namespace Ibinimator.Service.Tools
 
         public bool MouseMove(Vector2 pos)
         {
-            if (CurrentText == null) return false;
+            if (SelectedLayer == null) return false;
 
             if (_mouse.down)
             {
-                var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(CurrentText.AbsoluteTransform));
-                var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentText.AbsoluteTransform));
+                var tlpos =
+                    Vector2.Transform(_mouse.position, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+                var tpos = Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
-                if (!Context.CacheManager.GetBounds(CurrentText).Contains(tlpos))
+                if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tlpos))
                     return false;
 
                 if (Vector2.Distance(tlpos, tpos) > 18)
                 {
-                    var layout = Context.CacheManager.GetTextLayout(CurrentText);
+                    var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
                     _selection.index = layout.GetPosition(tlpos, out var isTrailingHit) +
-                                      (isTrailingHit ? 1 : 0);
+                                       (isTrailingHit ? 1 : 0);
 
                     var end = layout.GetPosition(tpos, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
@@ -540,7 +550,7 @@ namespace Ibinimator.Service.Tools
         {
             _mouse.down = false;
 
-            if (CurrentText == null)
+            if (SelectedLayer == null)
             {
                 if (Time.Now - _mouse.time <= GetDoubleClickTime())
                 {
@@ -574,10 +584,10 @@ namespace Ibinimator.Service.Tools
                 return false;
             }
 
-            var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(CurrentText.AbsoluteTransform));
-            var tpos = Vector2.Transform(pos, MathUtils.Invert(CurrentText.AbsoluteTransform));
+            var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var tpos = Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
-            if (!Context.CacheManager.GetBounds(CurrentText).Contains(tlpos))
+            if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tlpos))
                 return false;
 
             if (Vector2.Distance(tlpos, tpos) > 18)
@@ -589,13 +599,13 @@ namespace Ibinimator.Service.Tools
             else if (Time.Now - _mouse.time <= GetDoubleClickTime())
             {
                 // double click :D
-                var layout = Context.CacheManager.GetTextLayout(CurrentText);
+                var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
                 var rect = layout.Measure();
 
                 if (rect.Contains(tpos))
                 {
-                    var str = CurrentText.Value;
+                    var str = SelectedLayer.Value;
                     var start = _selection.index;
                     var end = start + _selection.length;
 
@@ -614,7 +624,7 @@ namespace Ibinimator.Service.Tools
             {
                 _selection.length = 0;
 
-                var layout = Context.CacheManager.GetTextLayout(CurrentText);
+                var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
                 var textPosition = layout.GetPosition(tpos, out var isTrailingHit);
 
@@ -630,9 +640,9 @@ namespace Ibinimator.Service.Tools
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
-            if (CurrentText == null) return;
+            if (SelectedLayer == null) return;
 
-            target.Transform(CurrentText.AbsoluteTransform);
+            target.Transform(SelectedLayer.AbsoluteTransform);
 
             if (_selection.length == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
             {
@@ -652,14 +662,14 @@ namespace Ibinimator.Service.Tools
                         selectionRect,
                         cache.GetBrush(nameof(EditorColors.TextHighlight)));
 
-            target.Transform(MathUtils.Invert(CurrentText.AbsoluteTransform));
+            target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
             Context.InvalidateSurface();
         }
 
         public bool TextInput(string text)
         {
-            if (CurrentText == null) return false;
+            if (SelectedLayer == null) return false;
 
             if (_selection.length > 0)
                 Remove(_selection.index, _selection.length);

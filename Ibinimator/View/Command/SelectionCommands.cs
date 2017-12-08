@@ -71,7 +71,7 @@ namespace Ibinimator.View.Command
 
             artContext.HistoryManager.Do(cmd);
 
-            artContext.SelectionManager.Update(true);
+            artContext.SelectionManager.UpdateBounds(true);
         }
 
         private static void AlignBottom(IArtContext artContext)
@@ -111,7 +111,7 @@ namespace Ibinimator.View.Command
 
         private static void FlipHorizontal(IArtContext artContext)
         {
-            artContext.SelectionManager.Transform(new Vector2(-1, 1),
+            artContext.SelectionManager.TransformSelection(new Vector2(-1, 1),
                                                   Vector2.Zero,
                                                   0,
                                                   0,
@@ -120,7 +120,7 @@ namespace Ibinimator.View.Command
 
         private static void FlipVertical(IArtContext artContext)
         {
-            artContext.SelectionManager.Transform(new Vector2(1, -1),
+            artContext.SelectionManager.TransformSelection(new Vector2(1, -1),
                                                   Vector2.Zero,
                                                   0,
                                                   0,
@@ -178,7 +178,7 @@ namespace Ibinimator.View.Command
 
         private static void RotateClockwise(IArtContext artContext)
         {
-            artContext.SelectionManager.Transform(Vector2.One,
+            artContext.SelectionManager.TransformSelection(Vector2.One,
                                                   Vector2.Zero,
                                                   MathUtils.PiOverTwo,
                                                   0,
@@ -187,7 +187,7 @@ namespace Ibinimator.View.Command
 
         private static void RotateCounterClockwise(IArtContext artContext)
         {
-            artContext.SelectionManager.Transform(Vector2.One,
+            artContext.SelectionManager.TransformSelection(Vector2.One,
                                                   Vector2.Zero,
                                                   -MathUtils.PiOverTwo,
                                                   0,
