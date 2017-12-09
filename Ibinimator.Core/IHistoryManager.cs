@@ -17,7 +17,7 @@ namespace Ibinimator.Core
         /// </summary>
         /// <param name="newCommand">The command containing the new data.</param>
         /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
-        void Merge(IOperationCommand<ILayer> newCommand, int timeLimit);
+        void Merge(IOperationCommand<ILayer> newCommand, long timeLimit);
 
 
         /// <summary>

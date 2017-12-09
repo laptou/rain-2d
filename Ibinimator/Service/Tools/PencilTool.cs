@@ -13,64 +13,33 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class PencilTool : Model, ITool
+    public sealed class PencilTool : SelectionToolBase
     {
-        private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode> _nodes;
         private Vector2? _start;
 
-        public PencilTool(IToolManager toolManager)
+        public PencilTool(IToolManager toolManager, ISelectionManager selectionManager) :
+            base(toolManager, selectionManager)
         {
-            Manager = toolManager;
+            Type = ToolType.Pencil;
 
             _nodes = GetGeometricNodes().ToList();
-
-            Manager.Context.SelectionManager.Updated += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
-
-            Manager.Context.HistoryManager.Traversed += (s, e) => { _nodes = GetGeometricNodes().ToList(); };
         }
 
-        public Path SelectedPath => Manager.Context.SelectionManager.Selection.LastOrDefault() as Path;
+        public Path SelectedPath => Selection.LastOrDefault() as Path;
 
         public string Status => "";
 
-        private IArtContext Context => Manager.Context;
-
         private IContainerLayer Root => Context.ViewManager.Root;
 
-        private IEnumerable<PathNode> GetGeometricNodes()
+        public Vector2 FromWorldSpace(Vector2 v)
         {
-            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
-
-            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
+            return Vector2.Transform(v, MathUtils.Invert(SelectedPath.AbsoluteTransform));
         }
 
-        private void Remove(int index)
+        public override bool KeyDown(Key key, ModifierKeys modifiers)
         {
-            Context.HistoryManager.Do(
-                new ModifyPathCommand(
-                    Context.HistoryManager.Position + 1,
-                    SelectedPath,
-                    new[] {index},
-                    ModifyPathCommand.NodeOperation.Remove));
-
-            _nodes = GetGeometricNodes().ToList();
-        }
-
-        #region ITool Members
-
-        public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
-
-        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
-
-        public void Dispose() { }
-
-        public bool KeyDown(Key key, ModifierKeys modifiers)
-        {
-            _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
             switch (key)
             {
                 case Key.Escape:
@@ -83,21 +52,13 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 default:
-                    return false;
+                    return base.KeyDown(key, modifiers);
             }
 
             return true;
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
-        {
-            _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            return true;
-        }
-
-        public bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos)
         {
             _mouse = (true, false, pos);
 
@@ -140,15 +101,14 @@ namespace Ibinimator.Service.Tools
             }
             else
             {
-                var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, SelectedPath.AbsoluteTransform));
                 var found = false;
                 foreach (var node in _nodes)
                 {
-                    if (Vector2.DistanceSquared(t(node.Position), pos) < 9)
+                    if (Vector2.DistanceSquared(ToWorldSpace(node.Position), pos) < 9)
                     {
                         found = true;
 
-                        if (_kbd.shift)
+                        if (Modifiers.shift)
                         {
                             // shift + click = remove node
                             Remove(node.Index);
@@ -170,8 +130,7 @@ namespace Ibinimator.Service.Tools
                 // if the user didn't click on any existing nodes, create a new one
                 if (!found)
                 {
-                    var tpos = Vector2.Transform(_mouse.pos,
-                                                 MathUtils.Invert(SelectedPath.AbsoluteTransform));
+                    var tpos = FromWorldSpace(_mouse.pos);
 
                     Context.HistoryManager.Do(
                         new ModifyPathCommand(
@@ -188,7 +147,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos)
         {
             _mouse = (_mouse.down, true, pos);
 
@@ -197,17 +156,16 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos)
         {
             Context.InvalidateSurface();
 
             return true;
         }
 
-        public IBrushInfo ProvideFill() { throw new NotImplementedException(); }
-        public IPenInfo ProvideStroke() { throw new NotImplementedException(); }
+        public override bool TextInput(string text) { return false; }
 
-        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             var zoom = view.Zoom;
 
@@ -281,18 +239,34 @@ namespace Ibinimator.Service.Tools
             p2.Dispose();
         }
 
-        public bool TextInput(string text) { return false; }
+        public Vector2 ToWorldSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, SelectedPath.AbsoluteTransform);
+        }
 
-        public string Cursor => null;
+        protected override void OnSelectionUpdated(object sender, EventArgs args)
+        {
+            _nodes = GetGeometricNodes().ToList();
+            base.OnSelectionUpdated(sender, args);
+        }
 
-        public float CursorRotate => 0;
+        private IEnumerable<PathNode> GetGeometricNodes()
+        {
+            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
 
-        public IToolManager Manager { get; }
+            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
+        }
 
-        public ToolOptions Options { get; } = new ToolOptions();
+        private void Remove(int index)
+        {
+            Context.HistoryManager.Do(
+                new ModifyPathCommand(
+                    Context.HistoryManager.Position + 1,
+                    SelectedPath,
+                    new[] {index},
+                    ModifyPathCommand.NodeOperation.Remove));
 
-        public ToolType Type => ToolType.Pencil;
-
-        #endregion
+            _nodes = GetGeometricNodes().ToList();
+        }
     }
 }

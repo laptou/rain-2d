@@ -13,7 +13,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class NodeTool : Model, ITool
+    public class NodeTool : SelectionToolBase
     {
         private readonly ISet<int> _selection = new HashSet<int>();
         private int? _handle;
@@ -21,9 +21,10 @@ namespace Ibinimator.Service.Tools
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode> _nodes;
 
-        public NodeTool(IToolManager toolManager)
+        public NodeTool(IToolManager toolManager, ISelectionManager selectionManager)
+            : base(toolManager, selectionManager)
         {
-            Manager = toolManager;
+            Type = ToolType.Node;
 
             UpdateNodes();
 
@@ -39,30 +40,6 @@ namespace Ibinimator.Service.Tools
             "<b>Click</b> to select, " +
             "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
-
-        private IArtContext Context => Manager.Context;
-
-        private IContainerLayer Root => Context.ViewManager.Root;
-
-        private ISelectionManager SelectionManager => Context.SelectionManager;
-
-        private Vector2 Constrain(Vector2 pos)
-        {
-            //var lastNode = CurrentPath.Nodes.Last();
-            //var lpos = Vector2.Transform(CurrentPath.AbsoluteTransform, lastNode.Position);
-
-            //var delta = pos - lpos;
-
-            //if (Math.Abs(delta.Y / delta.X) > MathUtils.Sqrt3)
-            //    delta = new Vector2(0, delta.Y);
-            //else if (Math.Abs(delta.Y / delta.X) > MathUtils.InverseSqrt3)
-            //    delta = MathUtils.Project(delta, new Vector2(1, Math.Sign(delta.Y / delta.X)));
-            //else
-            //    delta = new Vector2(delta.X, 0);
-
-            //return lpos + delta;
-            throw new Exception();
-        }
 
         private void ConvertToPath()
         {
@@ -151,56 +128,17 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public void ApplyFill(IBrushInfo brush)
-        {
-            if (!SelectionManager.Selection.Any())
-                return;
-
-            var targets =
-                SelectionManager.Selection
-                                .SelectMany(l => l.Flatten())
-                                .OfType<IFilledLayer>()
-                                .ToArray();
-
-            var command = new ApplyFillCommand(
-                Manager.Context.HistoryManager.Position + 1,
-                targets,
-                brush,
-                targets.Select(t => t.Fill).ToArray());
-
-            Manager.Context.HistoryManager.Merge(command, 500);
-        }
-
-        public void ApplyStroke(IPenInfo pen)
-        {
-            if (!SelectionManager.Selection.Any())
-                return;
-
-            var targets =
-                SelectionManager.Selection
-                                .SelectMany(l => l.Flatten())
-                                .OfType<IStrokedLayer>()
-                                .ToArray();
-
-            var command = new ApplyStrokeCommand(
-                Manager.Context.HistoryManager.Position + 1,
-                targets,
-                pen,
-                targets.Select(t => t.Stroke).ToArray());
-
-            Manager.Context.HistoryManager.Merge(command, 500);
-        }
-
-        public void Dispose()
+        public override void Dispose()
         {
             _selection.Clear();
 
             Manager.Context.SelectionManager.Updated -= OnUpdated;
-
             Manager.Context.HistoryManager.Traversed -= OnTraversed;
+
+            base.Dispose();
         }
 
-        public bool KeyDown(Key key, ModifierKeys modifiers)
+        public override bool KeyDown(Key key, ModifierKeys modifiers)
         {
             _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
             _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
@@ -222,47 +160,33 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 default:
-                    return false;
+                    return base.KeyDown(key, modifiers);
             }
 
             return true;
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
+        public override bool KeyUp(Key key, ModifierKeys modifiers)
         {
             _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
             _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
 
-            return true;
+            return base.KeyUp(key, modifiers);
         }
 
-        public bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos)
         {
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-            {
-                var hit = Root.HitTest<IGeometricLayer>(Context.CacheManager, pos, 1);
-
-                if (hit != null)
-                {
-                    hit.Selected = true;
-                    return true;
-                }
-
-                Context.SelectionManager.ClearSelection();
-
-                return false;
-            }
-
-            var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, SelectedLayer.AbsoluteTransform));
+                return base.MouseDown(pos);
 
             _handle = null;
             PathNode? target = null;
 
             foreach (var node in _nodes)
             {
-                if (Vector2.DistanceSquared(t(node.Position), pos) < 3)
+                if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position), pos) < 3)
                 {
                     _handle = 0;
                     target = node;
@@ -272,7 +196,8 @@ namespace Ibinimator.Service.Tools
                 if (!_selection.Contains(node.Index)) continue;
 
                 if (node.IncomingControl != null &&
-                    Vector2.DistanceSquared(t(node.IncomingControl.Value), pos) < 2)
+                    Vector2.DistanceSquared(
+                        SelectionManager.FromSelectionSpace(node.IncomingControl.Value), pos) < 2)
                 {
                     _handle = -1;
                     target = node;
@@ -280,7 +205,8 @@ namespace Ibinimator.Service.Tools
                 }
 
                 if (node.OutgoingControl != null &&
-                    Vector2.DistanceSquared(t(node.OutgoingControl.Value), pos) < 2)
+                    Vector2.DistanceSquared(
+                        SelectionManager.FromSelectionSpace(node.OutgoingControl.Value), pos) < 2)
                 {
                     _handle = +1;
                     target = node;
@@ -301,7 +227,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos)
         {
             if (SelectedLayer == null)
                 return false;
@@ -339,10 +265,10 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos)
         {
             if (SelectedLayer == null)
-                return false;
+                return base.MouseUp(pos);
 
             _mouse = (false, _mouse.moved, pos);
 
@@ -351,16 +277,16 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public IBrushInfo ProvideFill() { return SelectedLayer?.Fill; }
-        public IPenInfo ProvideStroke() { return SelectedLayer?.Stroke; }
-
-        public void Render(
+        public override void Render(
             RenderContext target,
             ICacheManager cacheManager,
             IViewManager view)
         {
             if (SelectedLayer == null)
                 return;
+
+            RenderBoundingBox(target, cacheManager, view);
+            RenderPathOutlines(target, cacheManager, view);
 
             var transform = SelectedLayer.AbsoluteTransform;
             var zoom = view.Zoom;
@@ -439,17 +365,7 @@ namespace Ibinimator.Service.Tools
             p2.Dispose();
         }
 
-        public bool TextInput(string text) { return false; }
-
-        public string Cursor => null;
-
-        public float CursorRotate => 0;
-
-        public IToolManager Manager { get; }
-
-        public ToolOptions Options { get; } = new ToolOptions();
-
-        public ToolType Type => ToolType.Node;
+        public override bool TextInput(string text) { return false; }
 
         #endregion
     }

@@ -26,10 +26,10 @@ namespace Ibinimator.Service.Tools
                         Tool = new SelectionTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Node:
-                        Tool = new NodeTool(this);
+                        Tool = new NodeTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Pencil:
-                        Tool = new PencilTool(this);
+                        Tool = new PencilTool(this, Context.SelectionManager);
                         break;
                     case ToolType.Pen:
                         break;

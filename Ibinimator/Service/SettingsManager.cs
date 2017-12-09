@@ -17,7 +17,7 @@ namespace Ibinimator.Service
 
         public static T GetEnum<T>(string path) where T : struct
         {
-            return Enum.TryParse(GetString(path).Pascalize(), out T e) ? e : default;
+            return Enum.TryParse(GetString(path).Dedash(), out T e) ? e : default;
         }
 
         public static float GetFloat(string path)

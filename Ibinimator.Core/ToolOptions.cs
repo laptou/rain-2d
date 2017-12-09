@@ -44,9 +44,11 @@ namespace Ibinimator.Core {
         public void SetMaximum(string id, float maximum) { _options[id].Maximum = maximum; }
         public void SetMinimum(string id, float minimum) { _options[id].Minimum = minimum; }
         public void SetType(string id, ToolOptionType type) { _options[id].Type = type; }
-        public void SetValues(string id, IEnumerable<object> values)
+        public void SetValues<T>(string id, IEnumerable<T> values)
         {
-            _options[id].Values = values.ToArray();
+            _reentrancyFlag = true;
+            _options[id].Values = values.Cast<object>();
+            _reentrancyFlag = false;
         }
 
         #region IEnumerable<ToolOption> Members
@@ -67,6 +69,11 @@ namespace Ibinimator.Core {
 
         public void SetUnit(string id, Unit unit) { _options[id].Unit = unit; }
 
-        public void Set<T>(string id, T value) { _options[id].Value = value; }
+        public void Set<T>(string id, T value)
+        {
+            _reentrancyFlag = true;
+            _options[id].Value = value;
+            _reentrancyFlag = false;
+        }
     }
 }

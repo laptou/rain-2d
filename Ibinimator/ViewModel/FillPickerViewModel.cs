@@ -68,7 +68,6 @@ namespace Ibinimator.ViewModel
         {
             get => _lightness;
             set => SetHSLA(Hue, Saturation, value, Alpha);
-
         }
 
         public double Red
@@ -169,8 +168,8 @@ namespace Ibinimator.ViewModel
 
         public WPF.Brush StrokeBrush =>
             StrokeInfo?.Brush?
-            .CreateBrush(new WpfRenderContext())
-            .Unwrap<WPF.Brush>();
+                      .CreateBrush(new WpfRenderContext())
+                      .Unwrap<WPF.Brush>();
 
         public IPenInfo StrokeInfo => _parent.BrushManager.Stroke;
 
@@ -193,11 +192,32 @@ namespace Ibinimator.ViewModel
             }
 
             if (picker.Target == ColorPickerTarget.Fill)
-                _parent.BrushManager.Fill =
-                    new SolidColorBrushInfo {Color = picker.Color};
+            {
+                switch (_parent.BrushManager.Fill)
+                {
+                    //case SolidColorBrushInfo s:
+                    //    s.Color = picker.Color;
+                    //    break;
+                    default:
+                        _parent.BrushManager.Fill = new SolidColorBrushInfo(picker.Color);
+                        break;
+                }
+            }
             else
-                _parent.BrushManager.Stroke.Brush =
-                    new SolidColorBrushInfo {Color = picker.Color};
+            {
+                switch (_parent.BrushManager.Stroke?.Brush)
+                {
+                    //case SolidColorBrushInfo s:
+                    //    s.Color = picker.Color;
+                    //    break;
+                    case null:
+                        if (_parent.BrushManager.Stroke == null)
+                            _parent.BrushManager.Stroke = new PenInfo {Width = 1};
+
+                        _parent.BrushManager.Stroke.Brush = new SolidColorBrushInfo(picker.Color);
+                        break;
+                }
+            }
 
             _parent.BrushManager.Apply();
 

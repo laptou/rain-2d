@@ -15,5 +15,11 @@ namespace Ibinimator.Renderer.Direct2D
 
             return ls.GetString(i);
         }
+
+        public static FontFamily GetFamilyByName(this FontCollection collection, string name)
+        {
+            return collection.FindFamilyName(name, out var index) ?
+                collection.GetFontFamily(index) : null;
+        }
     }
 }

@@ -21,14 +21,77 @@ using FontWeight = Ibinimator.Core.Model.FontWeight;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class TextTool : SelectionToolBase, ITool
+    public sealed class TextTool : SelectionToolBase
     {
+        private struct FontFace : IEquatable<FontFace>
+        {
+            public FontFace(FontStretch stretch, FontStyle style, FontWeight weight) : this()
+            {
+                Weight = weight;
+                Style = style;
+                Stretch = stretch;
+            }
+
+            public FontWeight Weight { get; }
+            public FontStyle Style { get; }
+            public FontStretch Stretch { get; }
+
+            public override bool Equals(object obj) { return obj is FontFace face && Equals(face); }
+
+            public bool Equals(FontFace other)
+            {
+                return Weight == other.Weight &&
+                       Style == other.Style &&
+                       Stretch == other.Stretch;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -404071;
+                hashCode = hashCode * -1521134295 + base.GetHashCode();
+                hashCode = hashCode * -1521134295 + Weight.GetHashCode();
+                hashCode = hashCode * -1521134295 + Style.GetHashCode();
+                hashCode = hashCode * -1521134295 + Stretch.GetHashCode();
+                return hashCode;
+            }
+
+            public override string ToString()
+            {
+                if (this == (FontStretch.Normal, FontStyle.Normal, FontWeight.Normal))
+                    return "Regular";
+
+                IEnumerable<string> G(FontFace f)
+                {
+                    if (f.Stretch != FontStretch.Normal) yield return f.Stretch.DePascalize();
+                    if (f.Weight != FontWeight.Normal) yield return f.Weight.DePascalize();
+                    if (f.Style != FontStyle.Normal) yield return f.Style.DePascalize();
+                }
+
+                return string.Join(" ", G(this));
+            }
+
+            public static implicit operator (FontStretch, FontStyle, FontWeight)(FontFace face)
+            {
+                return (face.Stretch, face.Style, face.Weight);
+            }
+
+            public static implicit operator FontFace((FontStretch, FontStyle, FontWeight) face)
+            {
+                return new FontFace(face.Item1, face.Item2, face.Item3);
+            }
+
+            public static bool operator ==(FontFace face1, FontFace face2) { return face1.Equals(face2); }
+
+            public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
+        }
+
         private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
         private (Vector2 position, Vector2 size) _caret;
 
-        private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
+        private (Vector2 position, bool down, long time, long previousTime) _mouse;
+        private (Vector2 start, Vector2 end, long time) _drag;
         private (int index, int length) _selection;
 
         private RectangleF[] _selectionRects = new RectangleF[0];
@@ -42,7 +105,6 @@ namespace Ibinimator.Service.Tools
 
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
             _dwFontCollection = _dwFactory.GetSystemFontCollection(true);
-
 
             Options.Create("font-family", "Font Family");
             Options.SetType("font-family", ToolOptionType.Font);
@@ -67,14 +129,32 @@ namespace Ibinimator.Service.Tools
                                   14, 16, 18, 20, 22, 24, 28,
                                   32, 36, 40, 44, 48,
                                   72, 96, 120, 144, 288, 352
-                              }.Cast<object>());
+                              });
             Options.SetUnit("font-size", Unit.Points);
             Options.SetType("font-size", ToolOptionType.Length);
             Options.SetMinimum("font-size", 6);
             Options.SetMaximum("font-size", 60000);
 
-            Options.Create("font-face", "Font Face");
-            Options.SetValues("font-face", new[] {"Regular"});
+            Options.Create("font-stretch", "Stretch");
+            Options.Set("font-stretch", FontStretch.Normal);
+            Options.SetValues("font-stretch", new[]
+            {
+                FontStretch.Normal
+            });
+
+            Options.Create("font-weight", "Weight");
+            Options.Set("font-weight", FontWeight.Normal);
+            Options.SetValues("font-weight", new[]
+            {
+                FontWeight.Normal
+            });
+
+            Options.Create("font-style", "Style");
+            Options.Set("font-style", FontStyle.Normal);
+            Options.SetValues("font-style", new[]
+            {
+                FontStyle.Normal
+            });
 
             Options.OptionChanged += OnOptionChanged;
 
@@ -89,68 +169,51 @@ namespace Ibinimator.Service.Tools
             private set => Set(value);
         }
 
-        public Vector2 FromWorldSpace(Vector2 v)
+        public Vector2 ToWorldSpace(Vector2 v)
         {
             return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
         }
 
-        public Vector2 ToWorldSpace(Vector2 v)
+        public Vector2 FromWorldSpace(Vector2 v)
         {
             return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
         protected override void OnSelectionUpdated(object sender, EventArgs e) { Update(); }
 
-        private void Format(Format format)
+        private void Format(Format format, bool merge = false)
         {
             var history = Context.HistoryManager;
             var cmd = new ApplyFormatCommand(
                 Context.HistoryManager.Position + 1,
                 SelectedLayer, format);
 
-            // no Do() b/c it's already done
-            history.Do(cmd);
-        }
+            if (merge)
 
-        private static (FontStretch stretch, FontStyle style, FontWeight weight) FromFontName(string name)
-        {
-            var desc = name.Split(' ');
-            var (stretch, style, weight) =
-                (FontStretch.Normal, FontStyle.Normal, FontWeight.Normal);
-
-            foreach (var modifier in desc)
-            {
-                // all enums contain "Normal", so this would cause problems
-                if (string.Equals("Normal", modifier, StringComparison.InvariantCultureIgnoreCase))
-                    continue;
-
-                if (Enum.TryParse(modifier, true, out FontStretch mStretch))
-                    stretch = mStretch;
-
-                if (Enum.TryParse(modifier, true, out FontStyle mStyle))
-                    style = mStyle;
-
-                if (Enum.TryParse(modifier, true, out FontWeight mWeight))
-                    weight = mWeight;
-            }
-
-            return (stretch, style, weight);
+                history.Merge(cmd, Time.DoubleClick);
+            else history.Do(cmd);
         }
 
         [DllImport("user32.dll")]
         private static extern uint GetCaretBlinkTime();
 
-        private IEnumerable<string> GetFontFaces()
+        private IEnumerable<FontFace> GetFontFaces()
         {
-            if (_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
-                using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
+                yield break;
+
+            using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+            {
+                for (var i = 0; i < dwFamily.FontCount; i++)
                 {
-                    for (var i = 0; i < dwFamily.FontCount; i++)
-                        using (var dwFont = dwFamily.GetFont(i))
-                        {
-                            yield return dwFont.FaceNames.ToCurrentCulture();
-                        }
+                    using (var dwFont = dwFamily.GetFont(i))
+                    {
+                        yield return new FontFace((FontStretch) dwFont.Stretch,
+                                                  (FontStyle) dwFont.Style,
+                                                  (FontWeight) dwFont.Weight);
+                    }
                 }
+            }
         }
 
 
@@ -164,17 +227,24 @@ namespace Ibinimator.Service.Tools
             history.Do(current);
         }
 
-        private void OnOptionChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
         {
             var option = (ToolOption) sender;
             if (SelectedLayer == null) return;
+            if (!(e.PropertyName == nameof(ToolOption.Value) ||
+                  e.PropertyName == nameof(ToolOption.Values)))
+                return;
 
+            var updated = false;
             switch (option.Id)
             {
                 case "font-family":
-                    Options.SetValues("font-face", GetFontFaces());
-                    goto case "font-face";
-                case "font-face":
+                    UpdateOptions(Options.Get<string>("font-family"),
+                                  Options.Get<float>("font-size"),
+                                  Options.Get<FontStretch>("font-stretch"),
+                                  Options.Get<FontWeight>("font-weight"),
+                                  Options.Get<FontStyle>("font-style"));
+                    updated = true;
 
                     if (_selection.length == 0)
                         Format(new Format
@@ -188,7 +258,87 @@ namespace Ibinimator.Service.Tools
                             FontFamilyName = (string) option.Value,
                             Range = (_selection.index, _selection.length)
                         });
+                    goto case "font-stretch";
+
+                case "font-stretch":
+                    if (!updated)
+                    {
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+                        updated = true;
+                    }
+
+                    var stretch = Options.Get<FontStretch>("font-stretch");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontStretch = stretch,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontStretch = stretch,
+                            Range = (_selection.index, _selection.length)
+                        });
+                    goto case "font-weight";
+
+                case "font-weight":
+                    if (!updated)
+                    {
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+                        updated = true;
+                    }
+
+                    var weight = Options.Get<FontWeight>("font-weight");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontWeight = weight,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontWeight = weight,
+                            Range = (_selection.index, _selection.length)
+                        });
+
+
+                    goto case "font-style";
+
+                case "font-style":
+                    if (!updated)
+                    {
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+                    }
+
+                    var style = Options.Get<FontStyle>("font-style");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontStyle = style,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontStyle = style,
+                            Range = (_selection.index, _selection.length)
+                        });
                     break;
+
                 case "font-size":
                     if (_selection.length == 0)
                         Format(new Format
@@ -220,13 +370,39 @@ namespace Ibinimator.Service.Tools
             history.Do(current);
         }
 
-        private static string ToFontName(FontWeight weight, FontStyle style, FontStretch stretch)
+        private void UpdateOptions(
+            string family, float size, FontStretch stretch,
+            FontWeight weight, FontStyle style)
         {
-            var str = "";
-            if (weight != FontWeight.Normal) str += weight + " ";
-            if (style != FontStyle.Normal) str += style + " ";
-            if (stretch != FontStretch.Normal) str += stretch + " ";
-            return str == "" ? "Regular" : str.Trim();
+            Options.Set("font-family", family);
+            Options.Set("font-size", size);
+
+            var stretches = GetFontFaces()
+                .Select(f => f.Stretch)
+                .Distinct()
+                .ToArray();
+
+            Options.SetValues("font-stretch", stretches);
+            Options.Set("font-stretch", stretch);
+
+            var weights = GetFontFaces()
+                .Where(f => f.Stretch == stretch)
+                .Select(f => f.Weight)
+                .Distinct()
+                .ToArray();
+
+            Options.SetValues("font-weight", weights);
+            Options.Set("font-weight", weight);
+
+            var styles = GetFontFaces()
+                .Where(f => f.Stretch == stretch &&
+                            f.Weight == weight)
+                .Select(f => f.Style)
+                .Distinct()
+                .ToArray();
+
+            Options.SetValues("font-style", styles);
+            Options.Set("font-style", style);
         }
 
         private void Update()
@@ -246,12 +422,11 @@ namespace Ibinimator.Service.Tools
 
             var format = SelectedLayer.GetFormat(_selection.index);
 
-            Options.Set("font-family", format?.FontFamilyName ?? SelectedLayer.FontFamilyName);
-            Options.Set("font-size", format?.FontSize ?? SelectedLayer.FontSize);
-            Options.Set("font-face", ToFontName(
-                            format?.FontWeight ?? SelectedLayer.FontWeight,
-                            format?.FontStyle ?? SelectedLayer.FontStyle,
-                            format?.FontStretch ?? SelectedLayer.FontStretch));
+            UpdateOptions(format?.FontFamilyName ?? SelectedLayer.FontFamilyName,
+                          format?.FontSize ?? SelectedLayer.FontSize,
+                          format?.FontStretch ?? SelectedLayer.FontStretch,
+                          format?.FontWeight ?? SelectedLayer.FontWeight,
+                          format?.FontStyle ?? SelectedLayer.FontStyle);
 
             if (Manager.Tool == this) // evaluates to false when Update() called in constructor
             {
@@ -272,7 +447,7 @@ namespace Ibinimator.Service.Tools
             {
                 Fill = brush,
                 Range = (_selection.index, _selection.length)
-            });
+            }, true);
         }
 
         public override void ApplyStroke(IPenInfo pen)
@@ -283,7 +458,7 @@ namespace Ibinimator.Service.Tools
             {
                 Stroke = pen,
                 Range = _selection
-            });
+            }, true);
         }
 
         public override void Dispose()
@@ -509,6 +684,12 @@ namespace Ibinimator.Service.Tools
 
         public override bool KeyUp(Key key, ModifierKeys modifiers) { return false; }
 
+        public override bool MouseDown(Vector2 pos)
+        {
+            _mouse = (pos, true, Time.Now, _mouse.time);
+            _drag = (pos, pos, Time.Now);
+            return base.MouseDown(pos);
+        }
 
         public override bool MouseMove(Vector2 pos)
         {
@@ -518,32 +699,26 @@ namespace Ibinimator.Service.Tools
                 return false;
             }
 
-            if (_mouse.down)
+            _drag.end = pos;
+
+            var bounds = Context.CacheManager.GetAbsoluteBounds(SelectedLayer);
+
+            if (_mouse.down && bounds.Contains(_drag.start))
             {
-                var tlpos =
-                    Vector2.Transform(_mouse.position, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-                var tpos = Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+                var start = FromWorldSpace(_drag.start);
+                var end = FromWorldSpace(_drag.end);
 
-                if (!Context.CacheManager.GetAbsoluteBounds(SelectedLayer).Contains(pos))
-                {
-                    _mouse.position = pos;
-                    return false;
-                }
+                var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
-                if (Vector2.Distance(tlpos, tpos) > 18)
-                {
-                    var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
+                var selectionStart = layout.GetPosition(start, out var isTrailingHit) +
+                                     (isTrailingHit ? 1 : 0);
 
-                    _selection.index = layout.GetPosition(tlpos, out var isTrailingHit) +
-                                       (isTrailingHit ? 1 : 0);
+                var selectionEnd = layout.GetPosition(end, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
-                    var end = layout.GetPosition(tpos, out isTrailingHit) + (isTrailingHit ? 1 : 0);
+                _selection.index = Math.Min(selectionStart, selectionEnd);
+                _selection.length = Math.Max(selectionStart, selectionEnd) - _selection.index;
 
-                    _selection.length = Math.Abs(end - _selection.index);
-                    _selection.index = Math.Min(_selection.index, end);
-
-                    Update();
-                }
+                Update();
             }
 
             _mouse.position = pos;
@@ -553,54 +728,47 @@ namespace Ibinimator.Service.Tools
 
         public override bool MouseUp(Vector2 pos)
         {
+            _mouse.down = false;
+            _drag.end = pos;
+
             if (SelectedLayer == null)
             {
-                if (Time.Now - _mouse.time <= Time.DoubleClick)
+                if (_mouse.time - _mouse.previousTime > Time.DoubleClick)
+                    return base.MouseUp(pos);
+
+                // if double click, make a new text object
+                var text = new Text
                 {
-                    var (stretch, style, weight) = FromFontName(Options.Get<string>("font-face"));
+                    FontFamilyName = Options.Get<string>("font-family"),
+                    FontSize = Options.Get<float>("font-size"),
+                    FontStyle = Options.Get<FontStyle>("font-style"),
+                    FontStretch = Options.Get<FontStretch>("font-stretch"),
+                    FontWeight = Options.Get<FontWeight>("font-weight"),
+                    Fill = Context.BrushManager.Fill,
+                    Stroke = Context.BrushManager.Stroke
+                };
+                text.ApplyTransform(Matrix3x2.CreateTranslation(pos));
 
-                    var text = new Text
-                    {
-                        FontFamilyName = Options.Get<string>("font-family"),
-                        FontSize = Options.Get<float>("font-size"),
-                        FontStyle = style,
-                        FontStretch = stretch,
-                        FontWeight = weight,
-                        Fill = Context.BrushManager.Fill,
-                        Stroke = Context.BrushManager.Stroke
-                    };
-                    text.ApplyTransform(Matrix3x2.CreateTranslation(pos));
+                var root = Context.SelectionManager.Selection.OfType<Group>().LastOrDefault() ??
+                           Context.ViewManager.Root;
 
-                    var root = Context.SelectionManager.Selection.OfType<Group>().LastOrDefault() ??
-                               Context.ViewManager.Root;
+                Manager.Context.HistoryManager.Do(
+                    new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,
+                                        root,
+                                        text));
 
-                    Manager.Context.HistoryManager.Do(
-                        new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,
-                                            root,
-                                            text));
-
-                    text.Selected = true;
-                    return true;
-                }
-
-                return base.MouseUp(pos);
+                text.Selected = true;
+                return true;
             }
 
-            var tlpos = Vector2.Transform(_mouse.position, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-            var tpos = Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var tpos = FromWorldSpace(pos);
 
-            if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tlpos))
+            if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tpos))
                 return base.MouseUp(pos);
 
-            if (Vector2.Distance(tlpos, tpos) > 18)
+            if (_mouse.time - _mouse.previousTime <= Time.DoubleClick)
             {
-                // do nothing, this was handled in MouseMove()
-                // but in this case we don't want to go into the 
-                // else block
-            }
-            else if (Time.Now - _mouse.time <= Time.DoubleClick)
-            {
-                // double click :D
+                // double click, select more
                 var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
                 var rect = layout.Measure();
@@ -611,7 +779,10 @@ namespace Ibinimator.Service.Tools
                     var start = _selection.index;
                     var end = start + _selection.length;
 
+                    // move backwards until we encounter an alphanumeric character
                     while (start > 0 && !char.IsLetterOrDigit(str[start])) start--;
+
+                    // continue moving backwards a non-alphanumeric character (word boundary)
                     while (start > 0 && char.IsLetterOrDigit(str[start])) start--;
 
                     while (end < str.Length && !char.IsLetterOrDigit(str[end])) end++;
@@ -622,7 +793,7 @@ namespace Ibinimator.Service.Tools
                     Update();
                 }
             }
-            else
+            else if (_drag.start == _drag.end)
             {
                 _selection.length = 0;
 
@@ -635,8 +806,6 @@ namespace Ibinimator.Service.Tools
 
             Update();
 
-            base.MouseUp(pos);
-
             return true;
         }
 
@@ -644,14 +813,14 @@ namespace Ibinimator.Service.Tools
         {
             var format = SelectedLayer?.GetFormat(_selection.index);
 
-            return format?.Fill ?? SelectedLayer?.Fill;
+            return format?.Fill ?? base.ProvideFill();
         }
 
         public override IPenInfo ProvideStroke()
         {
             var format = SelectedLayer?.GetFormat(_selection.index);
 
-            return format?.Stroke ?? SelectedLayer?.Stroke;
+            return format?.Stroke ?? base.ProvideStroke();
         }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)

@@ -108,7 +108,7 @@ namespace Ibinimator.Service.Tools
                 brush,
                 targets.Select(t => t.Fill).ToArray());
 
-            Context.HistoryManager.Merge(command, 500);
+            Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
 
         public virtual void ApplyStroke(IPenInfo pen)
@@ -127,21 +127,7 @@ namespace Ibinimator.Service.Tools
                 pen,
                 targets.Select(t => t.Stroke).ToArray());
 
-            var old = Context.HistoryManager.Current;
-
-            if (old is ApplyStrokeCommand oldStrokeCommand &&
-                command.Time - old.Time <= 500)
-            {
-                Context.HistoryManager.Pop();
-
-                command = new ApplyStrokeCommand(
-                    command.Id,
-                    command.Targets,
-                    command.NewStroke,
-                    oldStrokeCommand.OldStrokes);
-            }
-
-            Context.HistoryManager.Do(command);
+            Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
 
         public virtual void Dispose() { SelectionManager.Updated -= OnSelectionUpdated; }

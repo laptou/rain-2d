@@ -13,6 +13,10 @@ namespace Ibinimator.Svg
     {
         private readonly List<IInlineTextElement> _spans = new List<IInlineTextElement>();
 
+        public float X { get; set; }
+
+        public float Y { get; set; }
+
         #region ITextElement Members
 
         public IInlineTextElement this[int index]
@@ -21,25 +25,13 @@ namespace Ibinimator.Svg
             set => _spans[index] = value;
         }
 
-        public void Add(IInlineTextElement item)
-        {
-            _spans.Add(item);
-        }
+        public void Add(IInlineTextElement item) { _spans.Add(item); }
 
-        public void Clear()
-        {
-            _spans.Clear();
-        }
+        public void Clear() { _spans.Clear(); }
 
-        public bool Contains(IInlineTextElement item)
-        {
-            return _spans.Contains(item);
-        }
+        public bool Contains(IInlineTextElement item) { return _spans.Contains(item); }
 
-        public void CopyTo(IInlineTextElement[] array, int arrayIndex)
-        {
-            _spans.CopyTo(array, arrayIndex);
-        }
+        public void CopyTo(IInlineTextElement[] array, int arrayIndex) { _spans.CopyTo(array, arrayIndex); }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -47,81 +39,63 @@ namespace Ibinimator.Svg
 
             FontFamily = LazyGet(element, "font-family", true);
             FontSize = LazyGet(element, "font-size", new Length(12, LengthUnit.Pixels), true);
-            FontStretch = LazyGet(element, "font-stretch", Core.Model.FontStretch.Normal, inherit: true);
-            FontStyle = LazyGet(element, "font-style", Core.Model.FontStyle.Normal, inherit: true);
-            FontWeight = LazyGet(element, "font-weight", Core.Model.FontWeight.Normal, inherit: true);
+            FontStretch = LazyGet(element, "font-stretch", Core.Model.FontStretch.Normal, true);
+            FontStyle = LazyGet(element, "font-style", Core.Model.FontStyle.Normal, true);
+            FontWeight = LazyGet(element, "font-weight", Core.Model.FontWeight.Normal, true);
             AlignmentBaseline = LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
 
             Text = element.Value;
 
-            _spans.AddRange(element.Elements().Select(spanElement =>
-            {
-                IInlineTextElement span;
+            _spans.AddRange(element.Elements()
+                                   .Select(spanElement =>
+                                   {
+                                       IInlineTextElement span;
 
-                switch (spanElement.Name.LocalName)
-                {
-                    case "tspan":
-                        span = new Span();
-                        span.FromXml(spanElement, context);
-                        break;
-                    default:
-                        throw new InvalidDataException();
-                }
+                                       switch (spanElement.Name.LocalName)
+                                       {
+                                           case "tspan":
+                                               span = new Span();
+                                               span.FromXml(spanElement, context);
+                                               break;
+                                           default:
+                                               throw new InvalidDataException();
+                                       }
 
-                span.Position = spanElement.ElementsBeforeSelf().Select(x => x.Value.Length).Sum();
+                                       span.Position = spanElement
+                                           .ElementsBeforeSelf()
+                                           .Select(x => x.Value.Length)
+                                           .Sum();
 
-                return span;
-            }));
+                                       return span;
+                                   }));
         }
 
-        public IEnumerator<IInlineTextElement> GetEnumerator()
-        {
-            return _spans.GetEnumerator();
-        }
+        public IEnumerator<IInlineTextElement> GetEnumerator() { return _spans.GetEnumerator(); }
 
-        public int IndexOf(IInlineTextElement item)
-        {
-            return _spans.IndexOf(item);
-        }
+        public int IndexOf(IInlineTextElement item) { return _spans.IndexOf(item); }
 
-        public void Insert(int index, IInlineTextElement item)
-        {
-            _spans.Insert(index, item);
-        }
+        public void Insert(int index, IInlineTextElement item) { _spans.Insert(index, item); }
 
-        public bool Remove(IInlineTextElement item)
-        {
-            return _spans.Remove(item);
-        }
+        public bool Remove(IInlineTextElement item) { return _spans.Remove(item); }
 
-        public void RemoveAt(int index)
-        {
-            _spans.RemoveAt(index);
-        }
-
-        public float X { get; set; }
-
-        public float Y { get; set; }
+        public void RemoveAt(int index) { _spans.RemoveAt(index); }
 
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
-            
+
             LazySet(element, "alignment-baseline", AlignmentBaseline.Svgify());
             LazySet(element, "baseline-shift", BaselineShift);
             LazySet(element, "font-family", FontFamily);
             LazySet(element, "font-size", FontSize, (12, LengthUnit.Points));
             LazySet(element, "font-stretch", FontStretch);
             LazySet(element, "font-style", FontStyle);
-            LazySet(element, "font-weight", FontWeight);
+            LazySet(element, "font-weight", (int?) FontWeight);
 
             LazySet(element, "x", X);
             LazySet(element, "y", Y);
 
-            var indices = 
-                new Queue<(int Start, IInlineTextElement Span)>(
-                    _spans.Select(s => (Start: s.Position, Span: s))
-                          .OrderBy(s => s.Start));
+            var indices = new Queue<IInlineTextElement>(_spans.OrderBy(s => s.Position));
 
             var text = "";
 
@@ -129,17 +103,17 @@ namespace Ibinimator.Svg
 
             while (i < Text.Length)
             {
-                if(indices.Count > 0 && indices.Peek().Start == i)
+                if (indices.Count > 0 && indices.Peek().Position == i)
                 {
                     element.Add(new XText(text));
 
                     text = "";
 
-                    var index = indices.Dequeue();
+                    var span = indices.Dequeue();
 
-                    element.Add(index.Span.ToXml(context));
+                    element.Add(span.ToXml(context));
 
-                    i += index.Span.Text.Length;
+                    i += span.Text.Length;
 
                     continue;
                 }
@@ -153,12 +127,7 @@ namespace Ibinimator.Svg
             return element;
         }
 
-        public FontStyle? FontStyle { get; set; }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) _spans).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _spans).GetEnumerator(); }
 
         public AlignmentBaseline AlignmentBaseline { get; set; }
 
@@ -171,6 +140,8 @@ namespace Ibinimator.Svg
         public Length? FontSize { get; set; } = (12, LengthUnit.Points);
 
         public FontStretch? FontStretch { get; set; } = Core.Model.FontStretch.Normal;
+
+        public FontStyle? FontStyle { get; set; }
 
         public FontWeight? FontWeight { get; set; } = Core.Model.FontWeight.Normal;
 
@@ -195,15 +166,19 @@ namespace Ibinimator.Svg
 
     public class Span : TextElement, IInlineTextElement
     {
-        public int Position { get; set; }
+        #region IInlineTextElement Members
 
         public override XElement ToXml(SvgContext context)
         {
             var element = base.ToXml(context);
 
             element.Name = SvgNames.Tspan;
-            
+
             return element;
         }
+
+        public int Position { get; set; }
+
+        #endregion
     }
 }

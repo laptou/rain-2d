@@ -457,7 +457,7 @@ namespace Ibinimator.Service
 
             lock (_strokes)
             {
-                foreach (var (_, stroke) in _strokes.AsTuples()) stroke.Dispose();
+                foreach (var (_, stroke) in _strokes.AsTuples()) stroke?.Dispose();
                 _strokes.Clear();
             }
         }

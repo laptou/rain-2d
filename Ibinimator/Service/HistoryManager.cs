@@ -50,7 +50,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public void Merge(IOperationCommand<ILayer> command, int timeLimit)
+        public void Merge(IOperationCommand<ILayer> command, long timeLimit)
         {
             lock (this)
             {

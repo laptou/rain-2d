@@ -306,7 +306,7 @@ namespace Ibinimator.Renderer.Model
                         int nStart;
                         int nLen;
 
-                        var newFormat = oldFormat.Union(format);
+                        var newFormat = oldFormat.Merge(format);
 
                         if (oStart < start) nStart = start;
                         else nStart = oStart;
