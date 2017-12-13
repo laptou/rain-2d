@@ -13,20 +13,17 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class GradientTool : Model, ITool
+    public class GradientTool : SelectionToolBase
     {
         private readonly ISet<int> _selection = new HashSet<int>();
         private int? _handle;
         private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
 
-        public GradientTool(IToolManager toolManager)
+        public GradientTool(IToolManager toolManager, ISelectionManager selectionManager) : base(
+            toolManager, selectionManager)
         {
-            Manager = toolManager;
-
-//            Manager.Context.SelectionManager.Updated += OnUpdated;
-//
-//            Manager.Context.HistoryManager.Traversed += OnTraversed;
+            Type = ToolType.Gradient;
         }
 
         public GradientBrushInfo SelectedBrush =>
@@ -40,33 +37,60 @@ namespace Ibinimator.Service.Tools
             "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
 
-        private IArtContext Context => Manager.Context;
-
-        private IContainerLayer Root => Context.ViewManager.Root;
-
-        private void Move(int[] indices, float delta, ModifyGradientCommand.GradientOperation op)
+        private void Move(IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
         {
-            throw new NotImplementedException();
+            Context.HistoryManager.Merge(
+                new ModifyGradientCommand(
+                        Context.HistoryManager.Position + 1,
+                        delta,
+                        indices,
+                        SelectedBrush
+                    ), Time.DoubleClick);
         }
 
-        private void Remove(params int[] indices) { throw new NotImplementedException(); }
+        private void Remove(params int[] indices)
+        {
+            Context.HistoryManager.Merge(
+                new ModifyGradientCommand(
+                        Context.HistoryManager.Position + 1,
+                        indices,
+                        ModifyGradientCommand.GradientOperation.RemoveStop,
+                        SelectedBrush
+                    ), Time.DoubleClick);
+        }
 
         #region ITool Members
 
-        public void ApplyFill(IBrushInfo brush) { throw new NotImplementedException(); }
-
-        public void ApplyStroke(IPenInfo pen) { throw new NotImplementedException(); }
-
-        public void Dispose()
+        public override void ApplyFill(IBrushInfo brush)
         {
-            _selection.Clear();
-
-//            Manager.Context.SelectionManager.Updated -= OnUpdated;
-//
-//            Manager.Context.HistoryManager.Traversed -= OnTraversed;
+            if (brush is SolidColorBrushInfo solid)
+            {
+                foreach (var handle in _selection)
+                {
+                    Context.HistoryManager.Merge(
+                        new ModifyGradientCommand(
+                                Context.HistoryManager.Position + 1,
+                                solid.Color - SelectedBrush.Stops[handle].Color,
+                                new[] {handle},
+                                SelectedBrush
+                            ), Time.DoubleClick);
+                }
+            }
+            else throw new ArgumentException(nameof(brush));
         }
 
-        public bool KeyDown(Key key, ModifierKeys modifiers)
+        public override void ApplyStroke(IPenInfo pen)
+        {
+            // no-op on this tool
+        }
+
+        public override void Dispose()
+        {
+            _selection.Clear();
+            base.Dispose();
+        }
+
+        public override bool KeyDown(Key key, ModifierKeys modifiers)
         {
             _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
             _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
@@ -84,38 +108,26 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 default:
-                    return false;
+                    return base.KeyDown(key, modifiers);
             }
 
             return true;
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
+        public override bool KeyUp(Key key, ModifierKeys modifiers)
         {
             _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
             _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
 
-            return true;
+            return base.KeyUp(key, modifiers);
         }
 
-        public bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos)
         {
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-            {
-                var hit = Root.HitTest<IFilledLayer>(Context.CacheManager, pos, 1);
-
-                if (hit != null)
-                {
-                    hit.Selected = true;
-                    return true;
-                }
-
-                Context.SelectionManager.ClearSelection();
-
-                return false;
-            }
+                return base.MouseDown(pos);
 
             if (SelectedBrush != null)
             {
@@ -131,7 +143,7 @@ namespace Ibinimator.Service.Tools
 
                 foreach (var stop in SelectedBrush.Stops)
                 {
-                    if (Vector2.DistanceSquared(t(stop.Offset), pos) < 3)
+                    if (Vector2.DistanceSquared(t(stop.Offset), pos) < 16)
                     {
                         _handle = 0;
                         target = (stop, index);
@@ -141,13 +153,14 @@ namespace Ibinimator.Service.Tools
                     index++;
                 }
 
+                if (!_kbd.shift)
+                    _selection.Clear();
 
                 if (target != null)
                 {
-                    if (!_kbd.shift)
-                        _selection.Clear();
-
                     _selection.Add(target.Value.index);
+
+                    Manager.RaiseFillUpdate();
                 }
             }
 
@@ -156,7 +169,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos)
         {
             Context.InvalidateSurface();
 
@@ -209,7 +222,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos)
         {
             if (SelectedLayer == null)
                 return false;
@@ -221,7 +234,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public IBrushInfo ProvideFill()
+        public override IBrushInfo ProvideFill()
         {
             if (SelectedBrush == null || _selection.Count == 0) return null;
 
@@ -229,9 +242,9 @@ namespace Ibinimator.Service.Tools
             return new SolidColorBrushInfo(stop.Color);
         }
 
-        public IPenInfo ProvideStroke() { return null; }
+        public override IPenInfo ProvideStroke() { return null; }
 
-        public void Render(
+        public override void Render(
             RenderContext target,
             ICacheManager cacheManager,
             IViewManager view)
@@ -257,18 +270,24 @@ namespace Ibinimator.Service.Tools
             target.FillCircle(end, 3, cacheManager.GetBrush(nameof(EditorColors.Node)));
             target.DrawCircle(end, 3, p);
 
-            foreach (var stop in SelectedBrush.Stops)
+            target.PushEffect(target.CreateEffect<IDropShadowEffect>());
+
+            for (var i = 0; i < SelectedBrush.Stops.Count; i++)
             {
+                var stop = SelectedBrush.Stops[i];
                 var pos = Vector2.Lerp(start, end, stop.Offset);
 
-                target.FillCircle(pos, 7, cacheManager.GetBrush(nameof(EditorColors.Node)));
-                target.DrawCircle(pos, 7, p);
+                target.FillCircle(pos, 4, cacheManager.GetBrush(nameof(EditorColors.Node)));
+
+                target.DrawCircle(pos, 4, _selection.Contains(i) ? p2 : p);
 
                 using (var brush = target.CreateBrush(stop.Color))
                 {
-                    target.FillCircle(pos, 4, brush);
+                    target.FillCircle(pos, 2.5f, brush);
                 }
             }
+
+            target.PopEffect();
 
             // do not dispose the brushes! they are being used by the cache manager
             // and do not automatically regenerated b/c they are resource brushes
@@ -276,17 +295,7 @@ namespace Ibinimator.Service.Tools
             p2?.Dispose();
         }
 
-        public bool TextInput(string text) { return false; }
-
-        public string Cursor => null;
-
-        public float CursorRotate => 0;
-
-        public IToolManager Manager { get; }
-
-        public ToolOptions Options { get; } = new ToolOptions();
-
-        public ToolType Type => ToolType.Gradient;
+        public override bool TextInput(string text) { return false; }
 
         #endregion
     }

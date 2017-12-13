@@ -17,15 +17,14 @@ namespace Ibinimator.Service.Commands
 
         public Format Format { get; }
 
-        private Format[] OldFormats;
+        private Format[] _oldFormats;
 
         public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
             {
-                OldFormats = target.Formats.ToArray();
+                _oldFormats = target.Formats.ToArray();
                 target.SetFormat(Format);
-                
             }
         }
 
@@ -35,11 +34,20 @@ namespace Ibinimator.Service.Commands
             {
                 target.ClearFormat();
 
-                foreach (var format in OldFormats)
+                foreach (var format in _oldFormats)
                     target.SetFormat(format);
             }
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand) { return null; }
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (newCommand is ApplyFormatCommand cmd)
+            {
+                return new ApplyFormatCommand(newCommand.Id, cmd.Targets[0],
+                                              Format.Merge(cmd.Format));
+            }
+
+            return null;
+        }
     }
 }

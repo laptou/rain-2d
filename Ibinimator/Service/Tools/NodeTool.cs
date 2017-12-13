@@ -21,6 +21,11 @@ namespace Ibinimator.Service.Tools
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode> _nodes;
 
+        protected override ILayer HitTest(ILayer layer, Vector2 position)
+        {
+            return layer.HitTest<IGeometricLayer>(Context.CacheManager, position, 0);
+        }
+
         public NodeTool(IToolManager toolManager, ISelectionManager selectionManager)
             : base(toolManager, selectionManager)
         {

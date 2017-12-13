@@ -51,9 +51,13 @@ namespace Ibinimator.Service
             Stroke = Context.ToolManager.Tool.ProvideStroke();
         }
 
-        public void Apply()
+        public void ApplyFill()
         {
             Context.ToolManager.Tool.ApplyFill(Fill);
+        }
+
+        public void ApplyStroke()
+        {
             Context.ToolManager.Tool.ApplyStroke(Stroke);
         }
 

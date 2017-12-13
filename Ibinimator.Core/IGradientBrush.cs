@@ -8,5 +8,12 @@ namespace Ibinimator.Core
     public interface IGradientBrush : IBrush
     {
         IList<GradientStop> Stops { get; }
+        GradientSpace Space { get; set; }
+    }
+
+    public enum GradientSpace
+    {
+        Absolute,
+        Relative
     }
 }

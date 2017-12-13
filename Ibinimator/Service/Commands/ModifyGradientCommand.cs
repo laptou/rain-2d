@@ -42,6 +42,15 @@ namespace Ibinimator.Service.Commands
             Operation = operation;
         }
 
+        public ModifyGradientCommand(
+            long id, IReadOnlyList<int> indices,
+            GradientOperation operation, GradientBrushInfo target)
+            : this(id, target)
+        {
+            StopIndices = indices;
+            Operation = operation;
+        }
+
         public GradientBrushInfo Target { get; }
 
         public float ScalarDelta { get; }

@@ -47,7 +47,7 @@ namespace Ibinimator.Service.Tools
                     case ToolType.Zoom:
                         break;
                     case ToolType.Gradient:
-                        Tool = new GradientTool(this);
+                        Tool = new GradientTool(this, Context.SelectionManager);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);

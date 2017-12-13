@@ -14,6 +14,8 @@ namespace Ibinimator.Renderer.WPF
 {
     internal abstract class GradientBrush : Brush, IGradientBrush
     {
+        private GradientSpace _space;
+
         protected GradientBrush(IEnumerable<GradientStop> stops)
         {
             var list = new ObservableList<GradientStop>(stops);
@@ -41,6 +43,16 @@ namespace Ibinimator.Renderer.WPF
         }
 
         #region IGradientBrush Members
+
+        public GradientSpace Space
+        {
+            get => _space;
+            set
+            {
+                _space = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public IList<GradientStop> Stops { get; }
 

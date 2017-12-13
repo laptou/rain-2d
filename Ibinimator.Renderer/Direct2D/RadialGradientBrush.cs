@@ -50,7 +50,8 @@ namespace Ibinimator.Renderer.Direct2D
             object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
-            RecreateBrush();
+            if (Stops.Count > 0) // avoid access violation exceptions when the list is cleared
+                RecreateBrush();
         }
 
         private void RecreateBrush()

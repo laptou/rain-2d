@@ -26,40 +26,19 @@ namespace Ibinimator.Service.Tools
         }
 
         protected IArtContext Context => Manager.Context;
+
         protected IEnumerable<ILayer> Selection => SelectionManager.Selection;
 
         protected ISelectionManager SelectionManager => Context.SelectionManager;
 
-        protected virtual void OnSelectionUpdated(object sender, EventArgs args)
+        protected virtual ILayer HitTest(ILayer layer, Vector2 position)
         {
-            _depth = Selection.Any() ? 1 : Selection.Select(l => l.Depth).Min();
+            return layer.HitTest<ILayer>(Context.CacheManager, position, 0);
         }
 
-        protected ILayer HitTest(Vector2 pos)
+        protected virtual void OnSelectionUpdated(object sender, EventArgs args)
         {
-            // for every element in the scene, perform a hit-test
-            var root = Context.ViewManager.Root;
-
-            // start by hit-testing in the existing selection, and if we find nothing,
-            // then hit-test in the root
-            ILayer hit = null;
-
-            foreach (var layer in root.Flatten(_depth).Skip(1))
-            {
-                var test = layer.HitTest<ILayer>(Context.CacheManager, pos, 0);
-
-                if (test == null) continue;
-
-                hit = test;
-
-                if (hit.Depth < _depth) continue;
-
-                if (Modifiers.alt && hit.Selected) continue;
-
-                break;
-            }
-
-            return hit;
+            _depth = Selection.Any() ? Selection.Select(l => l.Depth).Min() : 1;
         }
 
         protected void RenderBoundingBox(RenderContext target, ICacheManager cache, IViewManager view)
@@ -88,6 +67,33 @@ namespace Ibinimator.Service.Tools
 
                 target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
             }
+        }
+
+        private ILayer HitTest(Vector2 position)
+        {
+            // for every element in the scene, perform a hit-test
+            var root = Context.ViewManager.Root;
+
+            // start by hit-testing in the existing selection, and if we find nothing,
+            // then hit-test in the root
+            ILayer hit = null;
+
+            foreach (var layer in root.Flatten(_depth).Skip(1))
+            {
+                var test = HitTest(layer, position);
+
+                if (test == null) continue;
+
+                hit = test;
+
+                if (hit.Depth < _depth) continue;
+
+                if (Modifiers.alt && hit.Selected) continue;
+
+                break;
+            }
+
+            return hit;
         }
 
         #region ITool Members

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
+using System.Windows;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -148,10 +150,7 @@ namespace Ibinimator.ViewModel
             _fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
         }
 
-        public WPF.Brush FillBrush => _parent
-            .BrushManager.Fill?
-            .CreateBrush(new WpfRenderContext())
-            .Unwrap<WPF.Brush>();
+        public WPF.Brush FillBrush => GetBrush(_parent.BrushManager.Fill);
 
         public ColorPickerViewModel Picker =>
             PickerTarget == ColorPickerTarget.Fill ? _fillPicker : _strokePicker;
@@ -167,9 +166,39 @@ namespace Ibinimator.ViewModel
         }
 
         public WPF.Brush StrokeBrush =>
-            StrokeInfo?.Brush?
-                      .CreateBrush(new WpfRenderContext())
-                      .Unwrap<WPF.Brush>();
+            GetBrush(StrokeInfo?.Brush);
+
+        private WPF.Brush GetBrush(IBrushInfo brushInfo)
+        {
+            var brush = brushInfo?
+                .CreateBrush(new WpfRenderContext())
+                .Unwrap<WPF.Brush>();
+
+            if (brush is WPF.GradientBrush gradient)
+            {
+                gradient.Transform = WPF.Transform.Identity;
+                gradient.MappingMode = WPF.BrushMappingMode.RelativeToBoundingBox;
+
+                if (gradient is WPF.LinearGradientBrush linear)
+                {
+                    var end = linear.EndPoint - linear.StartPoint;
+                    end.Normalize();
+
+                    linear.EndPoint = new Point(end.X, end.Y);
+                    linear.StartPoint = new Point();
+                }
+
+                if (gradient is WPF.RadialGradientBrush radial)
+                {
+                    var radius = Math.Max(radial.RadiusX, radial.RadiusY);
+                    radial.RadiusX /= radius;
+                    radial.RadiusY /= radius;
+                    radial.Center = new Point(.5, .5);
+                }
+            }
+
+            return brush;
+        }
 
         public IPenInfo StrokeInfo => _parent.BrushManager.Stroke;
 
@@ -202,6 +231,7 @@ namespace Ibinimator.ViewModel
                         _parent.BrushManager.Fill = new SolidColorBrushInfo(picker.Color);
                         break;
                 }
+                _parent.BrushManager.ApplyFill();
             }
             else
             {
@@ -210,16 +240,16 @@ namespace Ibinimator.ViewModel
                     //case SolidColorBrushInfo s:
                     //    s.Color = picker.Color;
                     //    break;
-                    case null:
+                    default:
                         if (_parent.BrushManager.Stroke == null)
                             _parent.BrushManager.Stroke = new PenInfo {Width = 1};
 
                         _parent.BrushManager.Stroke.Brush = new SolidColorBrushInfo(picker.Color);
                         break;
                 }
+                _parent.BrushManager.ApplyStroke();
             }
 
-            _parent.BrushManager.Apply();
 
             _updating = false;
         }

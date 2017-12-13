@@ -18,6 +18,8 @@ namespace Ibinimator.Renderer.Direct2D
     public class Direct2DRenderContext : RenderContext
     {
         private readonly Stack<Effect> _effects = new Stack<Effect>();
+
+        private readonly D2D.RenderTarget _target;
         private readonly D2D.BitmapRenderTarget _virtualTarget;
 
         public Direct2DRenderContext(D2D.RenderTarget target)
@@ -25,7 +27,8 @@ namespace Ibinimator.Renderer.Direct2D
             _target = target;
             _virtualTarget =
                 new D2D.BitmapRenderTarget(target,
-                                           D2D.CompatibleRenderTargetOptions.None);
+                                           D2D.CompatibleRenderTargetOptions.None,
+                                           _target.Size);
             FactoryDW = new DW.Factory(DW.FactoryType.Shared);
         }
 
@@ -33,9 +36,10 @@ namespace Ibinimator.Renderer.Direct2D
 
         public DW.Factory FactoryDW { get; }
 
-        private readonly D2D.RenderTarget _target;
+        public override float Height => Target.Size.Height;
 
         public D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
+        public override float Width => Target.Size.Width;
 
         public override void Begin(object ctx)
         {
@@ -87,6 +91,16 @@ namespace Ibinimator.Renderer.Direct2D
                 new RawVector2(focusX, focusY));
         }
 
+        public override T CreateEffect<T>()
+        {
+            if (typeof(T) == typeof(IGlowEffect))
+                return new GlowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
+            if (typeof(T) == typeof(IDropShadowEffect))
+                return new DropShadowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
+
+            return default;
+        }
+
         public override IGeometry CreateEllipseGeometry(
             float cx,
             float cy,
@@ -116,20 +130,24 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(Target, geometries);
         }
 
-        public override T CreateEffect<T>()
-        {
-            if (typeof(T) == typeof(IGlowEffect))
-                return new GlowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
-
-            return default;
-        }
-
         public override IPen CreatePen(
             float width,
             IBrush brush,
             IEnumerable<float> dashes)
         {
             return CreatePen(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4);
+        }
+
+        public override IPen CreatePen(
+            float width,
+            IBrush brush,
+            IEnumerable<float> dashes,
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
+        {
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, Target);
         }
 
         public override IGeometry CreateRectangleGeometry(
@@ -155,48 +173,6 @@ namespace Ibinimator.Renderer.Direct2D
             Target.Dispose();
             FactoryDW.Dispose();
         }
-
-        public override IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
-        {
-            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, Target);
-        }
-
-        public override float GetDpi() { return Target.DotsPerInch.Width; }
-
-        public override void PopEffect()
-        {
-            _virtualTarget.Flush();
-
-            var d2dEffect = _effects.Pop();
-
-            if (_effects.Count == 0)
-                _target.QueryInterface<D2D.DeviceContext>()
-                       .DrawImage(d2dEffect.GetOutput());
-        }
-
-        public override void PushEffect(IEffect effect)
-        {
-            if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
-
-            _virtualTarget.Flush();
-
-            fx.SetInput(0, new Bitmap(_virtualTarget.Bitmap));
-
-            if (_effects.Count > 0)
-                _effects.Peek().SetInput(0, fx);
-
-            _effects.Push(fx);
-        }
-
-        public override float Height => Target.Size.Height;
-        public override float Width => Target.Size.Width;
 
         public override void DrawBitmap(IBitmap iBitmap)
         {
@@ -331,6 +307,38 @@ namespace Ibinimator.Renderer.Direct2D
                 brush as Brush);
         }
 
+        public override float GetDpi() { return Target.DotsPerInch.Width; }
+
+        public override void PopEffect()
+        {
+            _virtualTarget.Flush();
+
+            var d2dEffect = _effects.Pop();
+
+            if (_effects.Count == 0)
+                _target.DrawBitmap(_virtualTarget.Bitmap,
+                                   new RawRectangleF(0, 0, _target.Size.Width, _target.Size.Height), 
+                                   1,
+                                   D2D.BitmapInterpolationMode.NearestNeighbor,
+                                   new RawRectangleF(0, 0, _target.Size.Width, _target.Size.Height));
+
+
+        }
+
+        public override void PushEffect(IEffect effect)
+        {
+            if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
+
+            _virtualTarget.Flush();
+
+            fx.SetInput(0, new Bitmap(_virtualTarget.Bitmap));
+
+            if (_effects.Count > 0)
+                _effects.Peek().SetInput(0, fx);
+
+            _effects.Push(fx);
+        }
+
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             if (absolute)
@@ -340,16 +348,76 @@ namespace Ibinimator.Renderer.Direct2D
         }
     }
 
+    public class DropShadowEffect : Effect, IDropShadowEffect
+    {
+        private readonly D2D.Effect shadow;
+        private readonly D2D.Effect composite;
+        private readonly D2D.Effect dpi;
+
+        public DropShadowEffect(D2D.DeviceContext dc)
+        {
+            shadow = new D2D.Effect(dc, D2D.Effect.Shadow);
+
+            composite = new D2D.Effect(dc, D2D.Effect.Composite);
+            composite.SetInputEffect(0, shadow, false);
+
+            dpi = new D2D.Effect(dc, D2D.Effect.DpiCompensation);
+            dpi.SetInputEffect(0, composite);
+        }
+
+        public override D2D.Image GetOutput() { return dpi.Output; }
+
+        #region IDropShadowEffect Members
+
+        public override void SetInput(int index, IBitmap bitmap)
+        {
+            if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
+
+            shadow.SetInput(0, bitmap.Unwrap<D2D.Bitmap>(), true);
+            composite.SetInput(1, bitmap.Unwrap<D2D.Bitmap>(), true);
+
+            dpi.SetValue((int) D2D.DpiCompensationProperties.InputDpi,
+                         new RawVector2(bitmap.Dpi, bitmap.Dpi));
+        }
+
+        public override void SetInput(int index, IEffect effect)
+        {
+            if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
+
+            shadow.SetInputEffect(0, effect.Unwrap<D2D.Effect>());
+            composite.SetInputEffect(1, effect.Unwrap<D2D.Effect>());
+        }
+
+        public override T Unwrap<T>() { return shadow as T; }
+
+        public float Radius
+        {
+            get => shadow.GetFloatValue((int) D2D.ShadowProperties.BlurStandardDeviation);
+            set => shadow.SetValue((int) D2D.ShadowProperties.BlurStandardDeviation,
+                                   value);
+        }
+
+        #endregion
+    }
+
     public abstract class Effect : IEffect
     {
         public abstract D2D.Image GetOutput();
+
+        #region IEffect Members
+
         public abstract void SetInput(int index, IBitmap bitmap);
         public abstract void SetInput(int index, IEffect effect);
         public abstract T Unwrap<T>() where T : class;
+
+        #endregion
     }
 
     public class GlowEffect : Effect, IGlowEffect
     {
+        private readonly D2D.Effect blur;
+        private readonly D2D.Effect composite;
+
         public GlowEffect(D2D.DeviceContext dc)
         {
             blur = new D2D.Effect(dc, D2D.Effect.GaussianBlur);
@@ -358,15 +426,9 @@ namespace Ibinimator.Renderer.Direct2D
             composite.SetInputEffect(0, blur, false);
         }
 
-        private readonly D2D.Effect blur;
-        private readonly D2D.Effect composite;
+        public override D2D.Image GetOutput() { return composite.Output; }
 
-        public float Radius
-        {
-            get => blur.GetFloatValue((int) D2D.GaussianBlurProperties.StandardDeviation);
-            set => blur.SetValue((int) D2D.GaussianBlurProperties.StandardDeviation,
-                                 value);
-        }
+        #region IGlowEffect Members
 
         public override void SetInput(int index, IBitmap bitmap)
         {
@@ -384,8 +446,15 @@ namespace Ibinimator.Renderer.Direct2D
             composite.SetInputEffect(1, effect.Unwrap<D2D.Effect>());
         }
 
-        public override D2D.Image GetOutput() { return composite.Output; }
-
         public override T Unwrap<T>() { return composite as T; }
+
+        public float Radius
+        {
+            get => blur.GetFloatValue((int) D2D.GaussianBlurProperties.StandardDeviation);
+            set => blur.SetValue((int) D2D.GaussianBlurProperties.StandardDeviation,
+                                 value);
+        }
+
+        #endregion
     }
 }

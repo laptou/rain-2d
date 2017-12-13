@@ -72,7 +72,7 @@ namespace Ibinimator.View.Control
 
         public event EventHandler StatusChanged;
 
-        public void InvalidateSurface() { _artView.InvalidateSurface(null); }
+        public void InvalidateSurface() { _artView.InvalidateSurface(); }
 
         public RenderContext RenderContext => _artView.RenderContext;
 

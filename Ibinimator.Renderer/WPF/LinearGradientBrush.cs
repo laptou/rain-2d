@@ -18,13 +18,19 @@ namespace Ibinimator.Renderer.WPF
             Point start,
             Point end) : base(stops)
         {
-            WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end);
+            WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end)
+            {
+                MappingMode = Space == GradientSpace.Absolute ?
+                    BrushMappingMode.Absolute :
+                    BrushMappingMode.RelativeToBoundingBox
+            };
         }
 
         public override SpreadMethod SpreadMethod
         {
             get => (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
-            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod = (GradientSpreadMethod) value;
+            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
+                (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(

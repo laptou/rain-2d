@@ -9,7 +9,7 @@ namespace Ibinimator.Core
     public interface IHistoryManager
         : IArtContextManager,
           INotifyCollectionChanged,
-          IEnumerable<IOperationCommand<ILayer>>
+          IEnumerable<IOperationCommand>
     {
         /// <summary>
         /// Merges the command with the previous command, provided that they are logically mergeable
@@ -17,13 +17,13 @@ namespace Ibinimator.Core
         /// </summary>
         /// <param name="newCommand">The command containing the new data.</param>
         /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
-        void Merge(IOperationCommand<ILayer> newCommand, long timeLimit);
+        void Merge(IOperationCommand newCommand, long timeLimit);
 
 
         /// <summary>
         ///     Returns the last operation that was performed.
         /// </summary>
-        IOperationCommand<ILayer> Current { get; }
+        IOperationCommand Current { get; }
 
         /// <summary>
         ///     Returns the position in the stack.
@@ -46,21 +46,21 @@ namespace Ibinimator.Core
         ///     This clears the redo stack.
         /// </summary>
         /// <param name="command">The command to do.</param>
-        void Do(IOperationCommand<ILayer> command);
+        void Do(IOperationCommand command);
 
         /// <summary>
         ///     Removes the current operation from the top of the stack.
         ///     This clears the redo stack.
         /// </summary>
         /// <returns></returns>
-        IOperationCommand<ILayer> Pop();
+        IOperationCommand Pop();
 
         /// <summary>
         ///     Pushes an operation to the top of the stack.
         ///     This clears the redo stack.
         /// </summary>
         /// <param name="command">The command to add.</param>
-        void Push(IOperationCommand<ILayer> command);
+        void Push(IOperationCommand command);
 
         /// <summary>
         ///     Increments Time by 1, does the next command in the redo stack.
@@ -72,7 +72,7 @@ namespace Ibinimator.Core
         ///     This clears the redo stack.
         /// </summary>
         /// <param name="command">The command to replace.</param>
-        void Replace(IOperationCommand<ILayer> command);
+        void Replace(IOperationCommand command);
 
         /// <summary>
         ///     Decrements Time by 1, undoes the next command in the undo stack.

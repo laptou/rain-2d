@@ -15,6 +15,7 @@ namespace Ibinimator.Renderer.Direct2D
     internal abstract class GradientBrush : Brush, IGradientBrush
     {
         protected readonly RenderTarget Target;
+        private GradientSpace _space;
 
         protected GradientBrush(RenderTarget target, IEnumerable<GradientStop> stops)
         {
@@ -49,6 +50,15 @@ namespace Ibinimator.Renderer.Direct2D
         #region IGradientBrush Members
 
         public IList<GradientStop> Stops { get; }
+        public GradientSpace Space
+        {
+            get => _space;
+            set
+            {
+                _space = value;
+                RaisePropertyChanged();
+            }
+        }
 
         #endregion
     }

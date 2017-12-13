@@ -21,11 +21,11 @@ namespace Ibinimator.Renderer.Direct2D
             RawVector2 start,
             RawVector2 end) : base(target, stops)
         {
-            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(target,
+            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
                                                                       new LinearGradientBrushProperties
                                                                       {
-                                                                          StartPoint = start,
-                                                                          EndPoint = end
+                                                                          StartPoint = new RawVector2(start.X, start.Y),
+                                                                          EndPoint = new RawVector2(end.X, end.Y)
                                                                       },
                                                                       ConvertStops());
         }
@@ -45,6 +45,7 @@ namespace Ibinimator.Renderer.Direct2D
             object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
+            if(Stops.Count > 0) // avoid access violation exceptions when the list is cleared
             RecreateBrush();
         }
 

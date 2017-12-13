@@ -11,8 +11,8 @@ namespace Ibinimator.Service
 {
     public class HistoryManager : Model, IHistoryManager
     {
-        private readonly Stack<IOperationCommand<ILayer>> _redo = new Stack<IOperationCommand<ILayer>>();
-        private readonly Stack<IOperationCommand<ILayer>> _undo = new Stack<IOperationCommand<ILayer>>();
+        private readonly Stack<IOperationCommand> _redo = new Stack<IOperationCommand>();
+        private readonly Stack<IOperationCommand> _undo = new Stack<IOperationCommand>();
 
         public HistoryManager(IArtContext context) { Context = context; }
 
@@ -37,7 +37,7 @@ namespace Ibinimator.Service
                 this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        public void Do(IOperationCommand<ILayer> command)
+        public void Do(IOperationCommand command)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public void Merge(IOperationCommand<ILayer> command, long timeLimit)
+        public void Merge(IOperationCommand command, long timeLimit)
         {
             lock (this)
             {
@@ -62,7 +62,7 @@ namespace Ibinimator.Service
                     command.Do(Context);
 
                     if (command.Time - old.Time < timeLimit &&
-                        old.Merge(command) is IOperationCommand<ILayer> newCmd)
+                        old.Merge(command) is IOperationCommand newCmd)
                         Replace(newCmd);
                     else Push(command);
                 }
@@ -78,7 +78,7 @@ namespace Ibinimator.Service
             
         }
 
-        public IEnumerator<IOperationCommand<ILayer>> GetEnumerator()
+        public IEnumerator<IOperationCommand> GetEnumerator()
         {
             lock (this)
             {
@@ -86,9 +86,9 @@ namespace Ibinimator.Service
             }
         }
 
-        public IOperationCommand<ILayer> Pop()
+        public IOperationCommand Pop()
         {
-            IOperationCommand<ILayer> result;
+            IOperationCommand result;
 
             lock (this)
             {
@@ -107,7 +107,7 @@ namespace Ibinimator.Service
             return result;
         }
 
-        public void Push(IOperationCommand<ILayer> command)
+        public void Push(IOperationCommand command)
         {
             lock (this)
             {
@@ -126,7 +126,7 @@ namespace Ibinimator.Service
 
         public void Redo() { Position++; }
 
-        public void Replace(IOperationCommand<ILayer> command)
+        public void Replace(IOperationCommand command)
         {
             lock (this)
             {
@@ -150,7 +150,7 @@ namespace Ibinimator.Service
 
         public IArtContext Context { get; }
 
-        public IOperationCommand<ILayer> Current
+        public IOperationCommand Current
         {
             get
             {

@@ -3,8 +3,10 @@ using System;
 using System.ComponentModel;
 using Ibinimator.Core.Utility;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using Catel.Collections;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -174,6 +176,10 @@ namespace Ibinimator.Service
                 case "Color":
                     ((ISolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
                     break;
+
+                case "Stops":
+                    ((IGradientBrush)fill).Stops.ReplaceRange(((GradientBrushInfo)brush).Stops);
+                    break;
             }
 
             Context.InvalidateSurface();
@@ -199,8 +205,27 @@ namespace Ibinimator.Service
                     break;
 
                 case nameof(IPenInfo.Dashes):
+                case nameof(IPenInfo.HasDashes):
                     stroke.Dashes.Clear();
-                    // TODO: FIX dashes and stuff
+                    if (info.HasDashes)
+                        stroke.Dashes.AddRange(info.Dashes);
+                    break;
+
+                case nameof(IPenInfo.DashOffset):
+                    stroke.DashOffset = info.DashOffset;
+                    break;
+
+
+                case nameof(IPenInfo.LineCap):
+                    stroke.LineCap = info.LineCap;
+                    break;
+
+                case nameof(IPenInfo.LineJoin):
+                    stroke.LineJoin = info.LineJoin;
+                    break;
+
+                case nameof(IPenInfo.MiterLimit):
+                    stroke.MiterLimit = info.MiterLimit;
                     break;
             }
 
@@ -236,7 +261,7 @@ namespace Ibinimator.Service
                     _strokes.TryGet(stroked)?.Dispose();
                     _strokes[stroked] = BindStroke(stroked, stroked.Stroke);
                 }
-
+                
                 stroked.StrokeChanged += (s, e) =>
                 {
                     lock (_renderLock)
@@ -362,27 +387,8 @@ namespace Ibinimator.Service
 
         public void LoadBrushes(RenderContext target)
         {
-            _brushes[nameof(EditorColors.ArtSpace)] = target.CreateBrush(EditorColors.ArtSpace);
-            _brushes[nameof(EditorColors.Artboard)] = target.CreateBrush(EditorColors.Artboard);
-
-            _brushes[nameof(EditorColors.SelectionHandle)] =
-                target.CreateBrush(EditorColors.SelectionHandle);
-            _brushes[nameof(EditorColors.SelectionHandleOutline)] =
-                target.CreateBrush(EditorColors.SelectionHandleOutline);
-            _brushes[nameof(EditorColors.SelectionOutline)] =
-                target.CreateBrush(EditorColors.SelectionOutline);
-
-            _brushes[nameof(EditorColors.Node)] = target.CreateBrush(EditorColors.Node);
-            _brushes[nameof(EditorColors.NodeClick)] = target.CreateBrush(EditorColors.NodeClick);
-            _brushes[nameof(EditorColors.NodeHover)] = target.CreateBrush(EditorColors.NodeHover);
-            _brushes[nameof(EditorColors.NodeOutline)] = target.CreateBrush(EditorColors.NodeOutline);
-            _brushes[nameof(EditorColors.NodeOutlineAlt)] = target.CreateBrush(EditorColors.NodeOutlineAlt);
-            _brushes[nameof(EditorColors.NodeSelected)] = target.CreateBrush(EditorColors.NodeSelected);
-
-            _brushes[nameof(EditorColors.TextCaret)] = target.CreateBrush(EditorColors.TextCaret);
-            _brushes[nameof(EditorColors.TextHighlight)] = target.CreateBrush(EditorColors.TextHighlight);
-
-            _brushes[nameof(EditorColors.Guide)] = target.CreateBrush(EditorColors.Guide);
+            foreach (var field in typeof(EditorColors).GetFields())
+                _brushes[field.Name] = target.CreateBrush((Color) field.GetValue(null));
         }
 
 

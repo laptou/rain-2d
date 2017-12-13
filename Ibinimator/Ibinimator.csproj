@@ -93,6 +93,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Catel.Core, Version=5.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Catel.Core.5.2.0\lib\net47\Catel.Core.dll</HintPath>
@@ -166,6 +169,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Native\NativeHelper.cs" />
+    <Compile Include="Native\WindowMessage.cs" />
+    <Compile Include="Native\WindowStyle.cs" />
+    <Compile Include="Native\WndClass.cs" />
     <Compile Include="Resources\EditorColors.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\Commands\AddLayerCommand.cs" />
@@ -214,6 +221,9 @@
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\Control\ArtContext.cs" />
+    <Compile Include="View\Control\D2DImage2.cs" />
+    <Compile Include="View\Control\InputEvent.cs" />
+    <Compile Include="View\Control\InputEventType.cs" />
     <Compile Include="View\Control\SvgImage.cs" />
     <Compile Include="View\Control\Pane.cs" />
     <Compile Include="View\Panes\HistoryPane.xaml.cs">
@@ -271,6 +281,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -299,7 +312,9 @@
     <Resource Include="Resources\Font\ROBOTOCONDENSED-REGULAR.TTF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Theme.Dark.xaml">

@@ -81,19 +81,19 @@ namespace Ibinimator.Core
                    $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
         }
 
-        public Format Union(Format f)
+        public Format Merge(Format newFormat)
         {
             return new Format
             {
-                FontFamilyName = f.FontFamilyName ?? FontFamilyName,
-                FontStyle = f.FontStyle ?? FontStyle,
-                FontSize = f.FontSize ?? FontSize,
-                FontStretch = f.FontStretch ?? FontStretch,
-                FontWeight = f.FontWeight ?? FontWeight,
-                Subscript = f.Subscript || Subscript,
-                Superscript = f.Superscript || Superscript,
-                Fill = f.Fill ?? Fill,
-                Stroke = f.Stroke ?? Stroke
+                FontFamilyName = newFormat.FontFamilyName ?? FontFamilyName,
+                FontStyle = newFormat.FontStyle ?? FontStyle,
+                FontSize = newFormat.FontSize ?? FontSize,
+                FontStretch = newFormat.FontStretch ?? FontStretch,
+                FontWeight = newFormat.FontWeight ?? FontWeight,
+                Subscript = newFormat.Subscript || Subscript,
+                Superscript = newFormat.Superscript || Superscript,
+                Fill = newFormat.Fill ?? Fill,
+                Stroke = newFormat.Stroke ?? Stroke
             };
         }
     }

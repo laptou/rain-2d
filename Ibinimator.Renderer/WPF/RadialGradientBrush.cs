@@ -24,14 +24,18 @@ namespace Ibinimator.Renderer.WPF
                 Center = center,
                 GradientOrigin = focus,
                 RadiusX = radii.Width,
-                RadiusY = radii.Height
+                RadiusY = radii.Height,
+                MappingMode = Space == GradientSpace.Absolute ?
+                    BrushMappingMode.Absolute :
+                    BrushMappingMode.RelativeToBoundingBox
             };
         }
 
         public override SpreadMethod SpreadMethod
         {
             get => (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
-            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod = (GradientSpreadMethod) value;
+            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
+                (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(
@@ -68,7 +72,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin.X;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin = new Point(value, FocusY);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin =
+                    new Point(value, FocusY);
                 RaisePropertyChanged();
             }
         }
@@ -78,7 +83,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin.Y;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin = new Point(FocusX, value);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin =
+                    new Point(FocusX, value);
                 RaisePropertyChanged();
             }
         }
