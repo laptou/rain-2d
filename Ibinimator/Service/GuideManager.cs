@@ -85,9 +85,10 @@ namespace Ibinimator.Service
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
+            target.PushEffect(target.CreateEffect<IGlowEffect>());
+
             foreach (var guide in GetGuides(GuideType.All))
             {
-                target.PushEffect(target.CreateEffect<IGlowEffect>());
 
                 var brush = cache.GetBrush(nameof(EditorColors.Guide));
 
@@ -147,9 +148,9 @@ namespace Ibinimator.Service
                                         pen);
                     }
                 }
-
-                target.PopEffect();
             }
+
+            target.PopEffect();
         }
     }
 }

@@ -25,32 +25,6 @@ namespace Ibinimator.Native
 
         [MarshalAs(UnmanagedType.LPTStr)] public string lpszClassName;
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr DefWindowProc(
-            IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        public static extern ushort RegisterClass(ref WndClass lpWndClass);
-
-        [DllImport("user32.dll")]
-        public static extern ushort UnregisterClass(
-            [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
-            [Optional] IntPtr hInstance);
-
-        [DllImport("user32.dll", EntryPoint = "CreateWindowEx", CharSet = CharSet.Unicode)]
-        public static extern IntPtr CreateWindowEx(
-            uint dwExStyle,
-            ushort lpszClassName,
-            string lpszWindowName,
-            WindowStyles style,
-            int x, int y,
-            int width, int height,
-            IntPtr hwndParent,
-            IntPtr hMenu,
-            IntPtr hInst,
-            [MarshalAs(UnmanagedType.AsAny)] object pvParam);
-
-        [DllImport("user32.dll", EntryPoint = "DestroyWindow", CharSet = CharSet.Unicode)]
-        internal static extern bool DestroyWindow(IntPtr hwnd);
+        
     }
 }

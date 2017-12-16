@@ -9,7 +9,7 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service
 {
-    public class HistoryManager : Model, IHistoryManager
+    public class HistoryManager : Core.Model.Model, IHistoryManager
     {
         private readonly Stack<IOperationCommand> _redo = new Stack<IOperationCommand>();
         private readonly Stack<IOperationCommand> _undo = new Stack<IOperationCommand>();

@@ -51,12 +51,12 @@ namespace Ibinimator.Core
 
         #region Events
 
-        bool KeyDown(Key key, ModifierKeys modifiers);
-        bool KeyUp(Key key, ModifierKeys modifiers);
+        bool KeyDown(Key key, ModifierState modifiers);
+        bool KeyUp(Key key, ModifierState modifiers);
 
-        bool MouseDown(Vector2 pos);
-        bool MouseMove(Vector2 pos);
-        bool MouseUp(Vector2 pos);
+        bool MouseDown(Vector2 pos, ModifierState state);
+        bool MouseMove(Vector2 pos, ModifierState state);
+        bool MouseUp(Vector2 pos, ModifierState state);
 
         bool TextInput(string text);
 

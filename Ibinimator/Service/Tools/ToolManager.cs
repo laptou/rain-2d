@@ -5,10 +5,11 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ibinimator.Core;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service.Tools
 {
+    using Core.Model;
+
     public class ToolManager : Model, IToolManager
     {
         public ToolManager(IArtContext artView) { Context = artView; }
@@ -63,43 +64,43 @@ namespace Ibinimator.Service.Tools
         public event EventHandler<IBrushInfo> FillUpdated;
         public event EventHandler<IPenInfo> StrokeUpdated;
 
-        public bool KeyDown(Key key, ModifierKeys modifiers)
+        public bool KeyDown(Key key, ModifierState state)
         {
             lock (this)
             {
-                return Tool?.KeyDown(key, modifiers) == true;
+                return Tool?.KeyDown(key, state) == true;
             }
         }
 
-        public bool KeyUp(Key key, ModifierKeys modifiers)
+        public bool KeyUp(Key key, ModifierState state)
         {
             lock (this)
             {
-                return Tool?.KeyUp(key, modifiers) == true;
+                return Tool?.KeyUp(key, state) == true;
             }
         }
 
-        public bool MouseDown(Vector2 pos)
+        public bool MouseDown(Vector2 pos, ModifierState state)
         {
             lock (this)
             {
-                return Tool?.MouseDown(pos) == true;
+                return Tool?.MouseDown(pos, state) == true;
             }
         }
 
-        public bool MouseMove(Vector2 pos)
+        public bool MouseMove(Vector2 pos, ModifierState state)
         {
             lock (this)
             {
-                return Tool?.MouseMove(pos) == true;
+                return Tool?.MouseMove(pos, state) == true;
             }
         }
 
-        public bool MouseUp(Vector2 pos)
+        public bool MouseUp(Vector2 pos, ModifierState state)
         {
             lock (this)
             {
-                return Tool?.MouseUp(pos) == true;
+                return Tool?.MouseUp(pos, state) == true;
             }
         }
 

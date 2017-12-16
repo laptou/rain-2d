@@ -14,7 +14,7 @@ using Ibinimator.Resources;
 
 namespace Ibinimator.Service
 {
-    public class CacheManager : Model, ICacheManager
+    public class CacheManager : Core.Model.Model, ICacheManager
     {
         private readonly Dictionary<string, IBitmap> _bitmaps =
             new Dictionary<string, IBitmap>();

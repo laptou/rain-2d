@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Ibinimator.Renderer.Direct2D;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -10,9 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Native;
+using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Service;
 using DX = SharpDX;
 using D2D = SharpDX.Direct2D1;
@@ -23,24 +24,25 @@ namespace Ibinimator.View.Control
 {
     public abstract class D2DImage2 : HwndHost
     {
-        // Direct2D stuff
-        private D2D.RenderTarget _renderTarget;
-
-        private D2D.Factory _d2dFactory;
-        private DW.Factory _dwFactory;
-        private bool _invalidated;
-
-        // Windows stuff
-        private IntPtr _host;
-
-        private WndProc _proc;
-
         // Event loop stuff
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
 
         private readonly Queue<InputEvent> _events = new Queue<InputEvent>();
         private bool _eventLoop;
         private Thread _evtThread;
+
+        // Win32 stuff
+        private IntPtr _host;
+
+        private IntPtr _parent;
+        private bool _invalidated;
+        private WndProc _proc;
+
+        // Direct2D stuff
+        private D2D.RenderTarget _renderTarget;
+
+        private D2D.Factory _d2dFactory;
+        private DW.Factory _dwFactory;
 
         protected D2DImage2()
         {
@@ -53,62 +55,6 @@ namespace Ibinimator.View.Control
             IsVisibleChanged += OnIsVisibleChanged;
         }
 
-        private void OnIsVisibleChanged(
-            object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (IsVisible)
-            {
-                _eventLoop = true;
-
-                if (_evtThread == null)
-                {
-                    _evtThread = new Thread(EventLoop);
-                    _evtThread.Start();
-                }
-            }
-            else
-            {
-                _eventLoop = false;
-                _evtThread = null;
-            }
-        }
-
-        private void EventLoop()
-        {
-            while (_eventLoop)
-            {
-                while (_events.Count > 0)
-                {
-                    InputEvent evt;
-
-                    lock (_events)
-                        evt = _events.Dequeue();
-
-                    // discard old events
-                    if (Time.Now - evt.Time > 500) continue;
-
-                    HandleInput(evt);
-                }
-
-                _eventFlag.Reset();
-
-                _eventFlag.WaitOne(5000);
-            }
-        }
-
-        public event EventHandler RenderTargetCreated;
-        protected abstract void HandleInput(InputEvent evt);
-
-        protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
-
-        protected override Size MeasureOverride(Size constraint) { return constraint; }
-
-        public RenderContext RenderContext { get; set; }
-
-        protected abstract void Render(RenderContext renderContext);
-
-        public virtual void InvalidateSurface() { _invalidated = true; }
-
         public D2D.Factory Direct2DFactory => _d2dFactory;
 
         public DW.Factory DirectWriteFactory => _dwFactory;
@@ -120,6 +66,18 @@ namespace Ibinimator.View.Control
                 value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
+        public RenderContext RenderContext { get; set; }
+
+        public event EventHandler RenderTargetCreated;
+
+        protected abstract void HandleInput(InputEvent evt);
+
+        protected abstract void Render(RenderContext renderContext);
+
+        public virtual void InvalidateSurface() { _invalidated = true; }
+
+        protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
+
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
             var wndClass = new WndClass
@@ -129,9 +87,10 @@ namespace Ibinimator.View.Control
                 lpfnWndProc = _proc = WndProc
             };
 
-            var cls = WndClass.RegisterClass(ref wndClass);
+            var cls = NativeHelper.RegisterClass(ref wndClass);
 
-            _host = WndClass.CreateWindowEx(
+            _parent = hwndParent.Handle;
+            _host = NativeHelper.CreateWindowEx(
                 0, cls, "",
                 WindowStyles.Child |
                 WindowStyles.Visible,
@@ -156,8 +115,35 @@ namespace Ibinimator.View.Control
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
-            WndClass.DestroyWindow(hwnd.Handle);
+            NativeHelper.DestroyWindow(hwnd.Handle);
             _proc = null;
+        }
+
+        protected override Size MeasureOverride(Size constraint) { return constraint; }
+
+        private void EventLoop()
+        {
+            while (_eventLoop)
+            {
+                while (_events.Count > 0)
+                {
+                    InputEvent evt;
+
+                    lock (_events)
+                    {
+                        evt = _events.Dequeue();
+                    }
+
+                    // discard old events
+                    if (Time.Now - evt.Time > 500) continue;
+
+                    HandleInput(evt);
+                }
+
+                _eventFlag.Reset();
+
+                _eventFlag.WaitOne(5000);
+            }
         }
 
         private void Initialize()
@@ -195,6 +181,26 @@ namespace Ibinimator.View.Control
             RenderTargetCreated?.Invoke(this, null);
         }
 
+        private void OnIsVisibleChanged(
+            object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible)
+            {
+                _eventLoop = true;
+
+                if (_evtThread == null)
+                {
+                    _evtThread = new Thread(EventLoop);
+                    _evtThread.Start();
+                }
+            }
+            else
+            {
+                _eventLoop = false;
+                _evtThread = null;
+            }
+        }
+
         private void OnSizeChanged(object sender, SizeChangedEventArgs e) { Initialize(); }
 
         private IntPtr WndProc(IntPtr hwnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
@@ -202,6 +208,7 @@ namespace Ibinimator.View.Control
             switch (msg)
             {
                 case WindowMessage.Paint:
+
                     if (_renderTarget == null) return IntPtr.Zero;
 
                     try
@@ -209,9 +216,9 @@ namespace Ibinimator.View.Control
                         if (_invalidated)
                         {
                             _invalidated = false;
-                            _renderTarget.BeginDraw();
+                            RenderContext.Begin(null);
                             Render(RenderContext);
-                            _renderTarget.EndDraw();
+                            RenderContext.End();
                         }
                     }
                     catch (DX.SharpDXException ex) when
@@ -224,26 +231,36 @@ namespace Ibinimator.View.Control
                 case WindowMessage.MouseWheelHorizontal:
                 case WindowMessage.MouseWheel:
                     var delta = NativeHelper.HighWord(wParam);
-                    var x = NativeHelper.LowWord(lParam);
-                    var y = NativeHelper.HighWord(lParam);
+                    var mod = NativeHelper.LowWord(wParam);
+                    var x = NativeHelper.LowWord(lParam) / _d2dFactory.DesktopDpi.Width * 96f;
+                    var y = NativeHelper.HighWord(lParam) / _d2dFactory.DesktopDpi.Height * 96f;
 
-                    _events.Enqueue(
-                        new InputEvent(msg == WindowMessage.MouseWheel ?
-                                           InputEventType.ScrollVertical :
-                                           InputEventType.ScrollHorizontal,
-                                       delta, new Vector2(x, y)));
+                    var scrollEvt = new InputEvent(msg == WindowMessage.MouseWheel ?
+                                                       InputEventType.ScrollVertical :
+                                                       InputEventType.ScrollHorizontal,
+                                                   delta, new Vector2(x, y),
+                                                   NativeHelper.GetModifierState(wParam));
+
+                    _events.Enqueue(scrollEvt);
+                    _eventFlag.Set();
                     return IntPtr.Zero;
 
-                case WindowMessage.LeftButtonDoubleClick:
+                case WindowMessage.MouseMove:
                 case WindowMessage.LeftButtonDown:
                 case WindowMessage.LeftButtonUp:
-                    x = NativeHelper.LowWord(lParam);
-                    y = NativeHelper.HighWord(lParam);
+                    // set focus to this if the mouse enters
+                    NativeHelper.SetFocus(hwnd);
+
+                    x = NativeHelper.LowWord(lParam) / _d2dFactory.DesktopDpi.Width * 96f;
+                    y = NativeHelper.HighWord(lParam) / _d2dFactory.DesktopDpi.Height * 96f;
 
                     var clickType = InputEventType.MouseDoubleClick;
 
                     switch (msg)
                     {
+                        case WindowMessage.MouseMove:
+                            clickType = InputEventType.MouseMove;
+                            break;
                         case WindowMessage.LeftButtonDown:
                             clickType = InputEventType.MouseDown;
                             break;
@@ -252,18 +269,48 @@ namespace Ibinimator.View.Control
                             break;
                     }
 
-                    var btns =
-                        (left: Mouse.LeftButton == MouseButtonState.Pressed,
-                        middle: Mouse.MiddleButton == MouseButtonState.Pressed,
-                        right: Mouse.RightButton == MouseButtonState.Pressed);
-
                     _events.Enqueue(
                         new InputEvent(clickType,
-                                       btns.left, btns.middle, btns.right,
-                                       new Vector2(x, y)));
+                                       new Vector2(x, y),
+                                       NativeHelper.GetModifierState(wParam)));
+                    _eventFlag.Set();
+                    return IntPtr.Zero;
+                case WindowMessage.MouseLeave:
+                    // lose focus when mouse isn't over this
+                    NativeHelper.SetFocus(_parent);
+                    return IntPtr.Zero;
+                case WindowMessage.KeyDown:
+                case WindowMessage.SysKeyDown:
+                    var key = KeyInterop.KeyFromVirtualKey((int) wParam);
+                    _events.Enqueue(
+                        new InputEvent(InputEventType.KeyDown,
+                                       key, NativeHelper.GetModifierState()));
+                    _eventFlag.Set();
+
+                    // since the messages are processed asynchronously, 
+                    // return 1, meaning it was not handled yet
+                    return (IntPtr) 1;
+                case WindowMessage.KeyUp:
+                case WindowMessage.SysKeyUp:
+                    key = KeyInterop.KeyFromVirtualKey((int) wParam);
+                    _events.Enqueue(
+                        new InputEvent(InputEventType.KeyUp,
+                                       key, NativeHelper.GetModifierState()));
+                    _eventFlag.Set();
+
+                    return (IntPtr) 1;
+                case WindowMessage.Char:
+                case WindowMessage.UniChar:
+                    var str = char.ConvertFromUtf32((int) wParam);
+
+                    if (str.Length == 1 && char.IsControl(str[0]))
+                        return IntPtr.Zero;
+
+                    _events.Enqueue(new InputEvent(InputEventType.TextInput, str));
+                    _eventFlag.Set();
                     return IntPtr.Zero;
                 default:
-                    return WndClass.DefWindowProc(hwnd, msg, wParam, lParam);
+                    return NativeHelper.DefWindowProc(hwnd, msg, wParam, lParam);
             }
         }
     }

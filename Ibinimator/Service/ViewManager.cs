@@ -10,7 +10,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Service
 {
-    public class ViewManager : Model, IViewManager
+    public class ViewManager : Core.Model.Model, IViewManager
     {
         public ViewManager(IArtContext artContext)
         {

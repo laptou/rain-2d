@@ -111,9 +111,6 @@ namespace Ibinimator.Core
 
         public abstract float GetDpi();
 
-        public abstract void PopEffect();
-
-        public abstract void PushEffect(IEffect effect);
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 
@@ -161,5 +158,8 @@ namespace Ibinimator.Core
         public abstract void Dispose();
 
         #endregion
+
+        public abstract void PopEffect();
+        public abstract void PushEffect(IEffect effect);
     }
 }

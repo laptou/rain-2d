@@ -12,7 +12,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class SelectionTool : SelectionToolBase, ITool
+    public sealed class SelectionTool : SelectionToolBase
     {
         private readonly Dictionary<string, string> _statuses = new Dictionary<string, string>
         {
@@ -121,7 +121,7 @@ namespace Ibinimator.Service.Tools
 
         #region ITool Members
 
-        public override bool KeyDown(Key key, ModifierKeys modifiers)
+        public override bool KeyDown(Key key, ModifierState modifiers)
         {
             if (key == Key.Delete)
             {
@@ -141,7 +141,7 @@ namespace Ibinimator.Service.Tools
             return base.KeyDown(key, modifiers);
         }
 
-        public override bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos, ModifierState state)
         {
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
@@ -153,7 +153,7 @@ namespace Ibinimator.Service.Tools
                     return true;
                 }
 
-            if (base.MouseDown(pos))
+            if (base.MouseDown(pos, state))
             {
                 _handle = SelectionHandle.Translation;
                 return true;
@@ -164,7 +164,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public override bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos, ModifierState state)
         {
             Context.InvalidateSurface();
 
@@ -237,7 +237,7 @@ namespace Ibinimator.Service.Tools
 
                 #region segmented rotation
 
-                if (Modifiers.shift)
+                if (state.Shift)
                 {
                     GuideManager.AddGuide(
                         new Guide(
@@ -278,7 +278,7 @@ namespace Ibinimator.Service.Tools
 
                 #region snapped translation
 
-                if (Modifiers.shift)
+                if (state.Shift)
                 {
                     var localCenter = bounds.TopLeft +
                                       relativeOrigin * bounds.Size;
@@ -293,7 +293,7 @@ namespace Ibinimator.Service.Tools
 
                     Vector2 axisX, axisY;
 
-                    if (Modifiers.alt) // local axes
+                    if (state.Alt) // local axes
                     {
                         axisX = xaxis - center;
                         axisY = yaxis - center;
@@ -362,7 +362,7 @@ namespace Ibinimator.Service.Tools
 
             #region proportional scaling
 
-            if (Modifiers.shift &&
+            if (state.Shift &&
                 (_handle == SelectionHandle.BottomLeft ||
                  _handle == SelectionHandle.BottomRight ||
                  _handle == SelectionHandle.TopRight ||
@@ -422,11 +422,11 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos, ModifierState state)
         {
             _mouse.down = false;
             _mouse.position = pos;
-            base.MouseUp(pos);
+            base.MouseUp(pos, state);
             return true;
         }
 

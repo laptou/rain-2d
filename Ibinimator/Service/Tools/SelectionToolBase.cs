@@ -12,11 +12,11 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public abstract class SelectionToolBase : Model, ITool
+    public abstract class SelectionToolBase : Core.Model.Model, ITool
     {
         private int _depth = 1;
         private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
-        protected (bool alt, bool shift, bool ctrl) Modifiers = (false, false, false);
+        protected ModifierState State;
 
         protected SelectionToolBase(IToolManager manager, ISelectionManager selectionManager)
         {
@@ -88,7 +88,7 @@ namespace Ibinimator.Service.Tools
 
                 if (hit.Depth < _depth) continue;
 
-                if (Modifiers.alt && hit.Selected) continue;
+                if (State.Alt && hit.Selected) continue;
 
                 break;
             }
@@ -138,42 +138,21 @@ namespace Ibinimator.Service.Tools
 
         public virtual void Dispose() { SelectionManager.Updated -= OnSelectionUpdated; }
 
-        public virtual bool KeyDown(Key key, ModifierKeys modifiers)
+        public virtual bool KeyDown(Key key, ModifierState modifiers)
         {
-            if (modifiers.HasFlag(ModifierKeys.Alt))
-                Modifiers = (true, Modifiers.shift, Modifiers.ctrl);
-
-            if (modifiers.HasFlag(ModifierKeys.Shift))
-                Modifiers = (Modifiers.alt, true, Modifiers.ctrl);
-
-            if (modifiers.HasFlag(ModifierKeys.Control))
-                Modifiers = (Modifiers.alt, Modifiers.shift, true);
+            State = modifiers;
 
             return true;
         }
 
-        public virtual bool KeyUp(Key key, ModifierKeys modifiers)
+        public virtual bool KeyUp(Key key, ModifierState modifiers)
         {
-            switch (key)
-            {
-                case Key.LeftAlt:
-                case Key.RightAlt:
-                    Modifiers = (false, Modifiers.shift, Modifiers.ctrl);
-                    break;
-                case Key.LeftShift:
-                case Key.RightShift:
-                    Modifiers = (Modifiers.alt, false, Modifiers.ctrl);
-                    break;
-                case Key.LeftCtrl:
-                case Key.RightCtrl:
-                    Modifiers = (Modifiers.alt, Modifiers.shift, false);
-                    break;
-            }
+            State = modifiers;
 
             return true;
         }
 
-        public virtual bool MouseDown(Vector2 pos)
+        public virtual bool MouseDown(Vector2 pos, ModifierState state)
         {
             var deltaTime = Time.Now - _mouse.time;
             _mouse = (pos, true, Time.Now);
@@ -186,7 +165,7 @@ namespace Ibinimator.Service.Tools
             if (deltaTime < 500 && hit == null)
                 _depth--;
 
-            if (!Modifiers.shift && hit?.Selected != true)
+            if (!state.Shift && hit?.Selected != true)
                 SelectionManager.ClearSelection();
 
             if (hit != null)
@@ -195,7 +174,7 @@ namespace Ibinimator.Service.Tools
             return hit != null;
         }
 
-        public virtual bool MouseUp(Vector2 pos)
+        public virtual bool MouseUp(Vector2 pos, ModifierState state)
         {
             _mouse.position = pos;
             _mouse.down = false;
@@ -224,7 +203,7 @@ namespace Ibinimator.Service.Tools
             return null;
         }
 
-        public abstract bool MouseMove(Vector2 pos);
+        public abstract bool MouseMove(Vector2 pos, ModifierState state);
 
         public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
 

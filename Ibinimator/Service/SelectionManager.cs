@@ -26,7 +26,7 @@ namespace Ibinimator.Service
         BottomRight = Bottom | Right
     }
 
-    public sealed class SelectionManager : Model, ISelectionManager
+    public sealed class SelectionManager : Core.Model.Model, ISelectionManager
     {
         private RectangleF _selectionBounds;
         private Matrix3x2 _selectionTransform = Matrix3x2.Identity;

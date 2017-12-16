@@ -9,7 +9,7 @@ using Ibinimator.Renderer.Model;
 
 namespace Ibinimator.Service
 {
-    public class BrushManager : Model, IBrushManager
+    public class BrushManager : Core.Model.Model, IBrushManager
     {
         public BrushManager(IArtContext artContext, 
             ISelectionManager selectionManager, 

@@ -122,26 +122,37 @@ namespace Ibinimator.View.Control
             switch (evt.Type)
             {
                 case InputEventType.MouseDown:
-                    ac.ToolManager.MouseDown(pos);
+                    _lastPosition = pos;
+                    ac.ToolManager.MouseDown(pos, evt.State);
                     break;
                 case InputEventType.MouseUp:
-                    ac.ToolManager.MouseUp(pos);
+                    _lastPosition = pos;
+                    ac.ToolManager.MouseUp(pos, evt.State);
                     break;
                 case InputEventType.MouseMove:
-                    ac.ToolManager.MouseMove(pos);
+                    _lastPosition = pos;
+                    ac.ToolManager.MouseMove(pos, evt.State);
                     break;
-
                 case InputEventType.TextInput:
                     ac.ToolManager.TextInput(evt.Text);
                     break;
                 case InputEventType.KeyUp:
-                    ac.ToolManager.KeyUp(evt.Key, evt.Modifier);
+                    ac.ToolManager.KeyUp(evt.Key, evt.State);
                     break;
                 case InputEventType.KeyDown:
-                    ac.ToolManager.KeyDown(evt.Key, evt.Modifier);
+                    ac.ToolManager.KeyDown(evt.Key, evt.State);
                     break;
-                //case InputEventType.Scroll:
-                //    break;
+                case InputEventType.ScrollVertical:
+                    if (evt.State.Shift)
+                        goto case InputEventType.ScrollHorizontal;
+
+                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom);
+                    ac.InvalidateSurface();
+                    break;
+                case InputEventType.ScrollHorizontal:
+                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom, 0);
+                    ac.InvalidateSurface();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

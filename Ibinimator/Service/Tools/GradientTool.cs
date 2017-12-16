@@ -17,7 +17,7 @@ namespace Ibinimator.Service.Tools
     {
         private readonly ISet<int> _selection = new HashSet<int>();
         private int? _handle;
-        private (bool alt, bool shift) _kbd;
+        //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
 
         public GradientTool(IToolManager toolManager, ISelectionManager selectionManager) : base(
@@ -90,10 +90,10 @@ namespace Ibinimator.Service.Tools
             base.Dispose();
         }
 
-        public override bool KeyDown(Key key, ModifierKeys modifiers)
+        public override bool KeyDown(Key key, ModifierState modifiers)
         {
-            _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
+            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
+            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
 
             switch (key)
             {
@@ -114,20 +114,20 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool KeyUp(Key key, ModifierKeys modifiers)
+        public override bool KeyUp(Key key, ModifierState modifiers)
         {
-            _kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            _kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
+            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
+            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
 
             return base.KeyUp(key, modifiers);
         }
 
-        public override bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos, ModifierState state)
         {
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-                return base.MouseDown(pos);
+                return base.MouseDown(pos, state);
 
             if (SelectedBrush != null)
             {
@@ -153,7 +153,7 @@ namespace Ibinimator.Service.Tools
                     index++;
                 }
 
-                if (!_kbd.shift)
+                if (!state.Shift)
                     _selection.Clear();
 
                 if (target != null)
@@ -169,7 +169,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos, ModifierState state)
         {
             Context.InvalidateSurface();
 
@@ -222,7 +222,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public override bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos, ModifierState state)
         {
             if (SelectedLayer == null)
                 return false;

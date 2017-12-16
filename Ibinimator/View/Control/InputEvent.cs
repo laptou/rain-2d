@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ibinimator.Core.Model;
+using Ibinimator.Native;
 
-namespace Ibinimator.View.Control {
+namespace Ibinimator.View.Control
+{
     public struct InputEvent
     {
-        public InputEvent(InputEventType type, Key key, ModifierKeys modifier) : this(
-            Service.Time.Now)
+        public InputEvent(InputEventType type, Key key, ModifierState state) : this(
+            Service.Time.Now, state)
         {
             if (type != InputEventType.KeyDown &&
                 type != InputEventType.KeyUp)
@@ -17,7 +21,7 @@ namespace Ibinimator.View.Control {
 
             Type = type;
             Key = key;
-            Modifier = modifier;
+            State = state;
         }
 
         public InputEvent(InputEventType type, string text) : this(Service.Time.Now)
@@ -28,26 +32,8 @@ namespace Ibinimator.View.Control {
             Type = type;
             Text = text;
         }
-
-        public InputEvent(
-            InputEventType type,
-            bool left,
-            bool middle,
-            bool right,
-            Vector2 position) : this(Service.Time.Now)
-        {
-            if (type != InputEventType.MouseUp &&
-                type != InputEventType.MouseDown)
-                throw new ArgumentException(nameof(type));
-
-            Type = type;
-            LeftMouse = left;
-            MiddleMouse = middle;
-            RightMouse = right;
-            Position = position;
-        }
-
-        public InputEvent(InputEventType type, Vector2 position) : this(Service.Time.Now)
+        
+        public InputEvent(InputEventType type, Vector2 position, ModifierState modifiers) : this(Service.Time.Now, modifiers)
         {
             if (type != InputEventType.MouseMove)
                 throw new ArgumentException(nameof(type));
@@ -56,7 +42,7 @@ namespace Ibinimator.View.Control {
             Position = position;
         }
 
-        public InputEvent(InputEventType type, float delta, Vector2 position) : this(Service.Time.Now)
+        public InputEvent(InputEventType type, float delta, Vector2 position, ModifierState modifiers) : this(Service.Time.Now, modifiers)
         {
             if (type != InputEventType.ScrollVertical &&
                 type != InputEventType.ScrollHorizontal)
@@ -67,17 +53,18 @@ namespace Ibinimator.View.Control {
             Position = position;
         }
 
-        private InputEvent(long time) : this() { Time = time; }
+        private InputEvent(long time, [Optional] ModifierState state) : this()
+        {
+            Time = time;
+            State = state;
+        }
 
         public Key Key { get; }
-        public bool LeftMouse { get; }
-        public bool MiddleMouse { get; }
-        public ModifierKeys Modifier { get; }
+        public ModifierState State { get; }
         public Vector2 Position { get; }
-        public bool RightMouse { get; }
+        public float ScrollDelta { get; }
         public string Text { get; }
         public long Time { get; }
-        public float ScrollDelta { get; }
         public InputEventType Type { get; }
     }
 }

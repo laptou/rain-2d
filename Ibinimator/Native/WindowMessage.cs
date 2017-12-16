@@ -401,11 +401,11 @@ namespace Ibinimator.Native
         /// <summary>
         /// The WM_KEYDOWN message is posted to the window with the keyboard focus when a nonsystem key is pressed. A nonsystem key is a key that is pressed when the ALT key is not pressed.
         /// </summary>
-        Keydown = 0x0100,
+        KeyDown = 0x0100,
         /// <summary>
         /// The WM_KEYUP message is posted to the window with the keyboard focus when a nonsystem key is released. A nonsystem key is a key that is pressed when the ALT key is not pressed, or a keyboard key that is pressed when a window has the keyboard focus.
         /// </summary>
-        Keyup = 0x0101,
+        KeyUp = 0x0101,
         /// <summary>
         /// The WM_CHAR message is posted to the window with the keyboard focus when a WM_KEYDOWN message is translated by the TranslateMessage function. The WM_CHAR message contains the character code of the key that was pressed.
         /// </summary>
@@ -417,11 +417,11 @@ namespace Ibinimator.Native
         /// <summary>
         /// The WM_SYSKEYDOWN message is posted to the window with the keyboard focus when the user presses the F10 key (which activates the menu bar) or holds down the ALT key and then presses another key. It also occurs when no window currently has the keyboard focus; in this case, the WM_SYSKEYDOWN message is sent to the active window. The window that receives the message can distinguish between these two contexts by checking the context code in the lParam parameter.
         /// </summary>
-        Syskeydown = 0x0104,
+        SysKeyDown = 0x0104,
         /// <summary>
         /// The WM_SYSKEYUP message is posted to the window with the keyboard focus when the user releases a key that was pressed while the ALT key was held down. It also occurs when no window currently has the keyboard focus; in this case, the WM_SYSKEYUP message is sent to the active window. The window that receives the message can distinguish between these two contexts by checking the context code in the lParam parameter.
         /// </summary>
-        Syskeyup = 0x0105,
+        SysKeyUp = 0x0105,
         /// <summary>
         /// The WM_SYSCHAR message is posted to the window with the keyboard focus when a WM_SYSKEYDOWN message is translated by the TranslateMessage function. It specifies the character code of a system character key — that is, a character key that is pressed while the ALT key is down.
         /// </summary>
@@ -434,7 +434,7 @@ namespace Ibinimator.Native
         /// The WM_UNICHAR message is posted to the window with the keyboard focus when a WM_KEYDOWN message is translated by the TranslateMessage function. The WM_UNICHAR message contains the character code of the key that was pressed.
         /// The WM_UNICHAR message is equivalent to WM_CHAR, but it uses Unicode Transformation Format (UTF)-32, whereas WM_CHAR uses UTF-16. It is designed to send or post Unicode characters to ANSI windows and it can can handle Unicode Supplementary Plane characters.
         /// </summary>
-        Unichar = 0x0109,
+        UniChar = 0x0109,
         /// <summary>
         /// This message filters for keyboard messages.
         /// </summary>
@@ -563,7 +563,7 @@ namespace Ibinimator.Native
         /// <summary>
         /// The WM_MOUSEMOVE message is posted to a window when the cursor moves. If the mouse is not captured, the message is posted to the window that contains the cursor. Otherwise, the message is posted to the window that has captured the mouse.
         /// </summary>
-        Mousemove = 0x0200,
+        MouseMove = 0x0200,
         /// <summary>
         /// The WM_LBUTTONDOWN message is posted when the user presses the left mouse button while the cursor is in the client area of a window. If the mouse is not captured, the message is posted to the window beneath the cursor. Otherwise, the message is posted to the window that has captured the mouse.
         /// </summary>
@@ -724,7 +724,7 @@ namespace Ibinimator.Native
         /// <summary>
         /// Sent to an application when a window is activated. A window receives this message through its WindowProc function.
         /// </summary>
-        ImeSetcontext = 0x0281,
+        ImeSetContext = 0x0281,
         /// <summary>
         /// Sent to an application to notify it of changes to the IME window. A window receives this message through its WindowProc function.
         /// </summary>
@@ -764,7 +764,7 @@ namespace Ibinimator.Native
         /// <summary>
         /// The WM_MOUSELEAVE message is posted to a window when the cursor leaves the client area of the window specified in a prior call to TrackMouseEvent.
         /// </summary>
-        Mouseleave = 0x02A3,
+        MouseLeave = 0x02A3,
         /// <summary>
         /// The WM_NCMOUSEHOVER message is posted to a window when the cursor hovers over the nonclient area of the window for the period of time specified in a prior call to TrackMouseEvent.
         /// </summary>

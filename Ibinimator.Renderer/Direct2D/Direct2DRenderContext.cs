@@ -311,25 +311,16 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void PopEffect()
         {
-            _virtualTarget.Flush();
-
             var d2dEffect = _effects.Pop();
 
             if (_effects.Count == 0)
-                _target.DrawBitmap(_virtualTarget.Bitmap,
-                                   new RawRectangleF(0, 0, _target.Size.Width, _target.Size.Height), 
-                                   1,
-                                   D2D.BitmapInterpolationMode.NearestNeighbor,
-                                   new RawRectangleF(0, 0, _target.Size.Width, _target.Size.Height));
-
-
+                _target.QueryInterface<D2D.DeviceContext>()
+                       .DrawImage(d2dEffect.GetOutput());
         }
 
         public override void PushEffect(IEffect effect)
         {
             if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
-
-            _virtualTarget.Flush();
 
             fx.SetInput(0, new Bitmap(_virtualTarget.Bitmap));
 
@@ -352,7 +343,6 @@ namespace Ibinimator.Renderer.Direct2D
     {
         private readonly D2D.Effect shadow;
         private readonly D2D.Effect composite;
-        private readonly D2D.Effect dpi;
 
         public DropShadowEffect(D2D.DeviceContext dc)
         {
@@ -360,12 +350,9 @@ namespace Ibinimator.Renderer.Direct2D
 
             composite = new D2D.Effect(dc, D2D.Effect.Composite);
             composite.SetInputEffect(0, shadow, false);
-
-            dpi = new D2D.Effect(dc, D2D.Effect.DpiCompensation);
-            dpi.SetInputEffect(0, composite);
         }
 
-        public override D2D.Image GetOutput() { return dpi.Output; }
+        public override D2D.Image GetOutput() { return composite.Output; }
 
         #region IDropShadowEffect Members
 
@@ -375,9 +362,6 @@ namespace Ibinimator.Renderer.Direct2D
 
             shadow.SetInput(0, bitmap.Unwrap<D2D.Bitmap>(), true);
             composite.SetInput(1, bitmap.Unwrap<D2D.Bitmap>(), true);
-
-            dpi.SetValue((int) D2D.DpiCompensationProperties.InputDpi,
-                         new RawVector2(bitmap.Dpi, bitmap.Dpi));
         }
 
         public override void SetInput(int index, IEffect effect)

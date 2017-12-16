@@ -38,7 +38,7 @@ namespace Ibinimator.Service.Tools
             return Vector2.Transform(v, MathUtils.Invert(SelectedPath.AbsoluteTransform));
         }
 
-        public override bool KeyDown(Key key, ModifierKeys modifiers)
+        public override bool KeyDown(Key key, ModifierState modifiers)
         {
             switch (key)
             {
@@ -58,7 +58,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos, ModifierState state)
         {
             _mouse = (true, false, pos);
 
@@ -108,7 +108,7 @@ namespace Ibinimator.Service.Tools
                     {
                         found = true;
 
-                        if (Modifiers.shift)
+                        if (state.Shift)
                         {
                             // shift + click = remove node
                             Remove(node.Index);
@@ -147,7 +147,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos, ModifierState state)
         {
             _mouse = (_mouse.down, true, pos);
 
@@ -156,7 +156,7 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public override bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos, ModifierState state)
         {
             Context.InvalidateSurface();
 

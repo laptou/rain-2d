@@ -13,12 +13,12 @@ namespace Ibinimator.Core
         ITool Tool { get; }
         ToolType Type { get; set; }
 
-        bool KeyDown(Key key, ModifierKeys modifiers);
-        bool KeyUp(Key key, ModifierKeys modifiers);
+        bool KeyDown(Key key, ModifierState state);
+        bool KeyUp(Key key, ModifierState state);
 
-        bool MouseDown(Vector2 pos);
-        bool MouseMove(Vector2 pos);
-        bool MouseUp(Vector2 pos);
+        bool MouseDown(Vector2 pos, ModifierState state);
+        bool MouseMove(Vector2 pos, ModifierState state);
+        bool MouseUp(Vector2 pos, ModifierState state);
         bool TextInput(string text);
 
         void RaiseStatus(Status status);

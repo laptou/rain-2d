@@ -7,7 +7,7 @@ using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command
 {
-    public class CommandManager : Model
+    public class CommandManager : Core.Model.Model
     {
         public static CommandManager Instance = new CommandManager();
 

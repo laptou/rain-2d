@@ -8,7 +8,7 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
-    public abstract class ViewModel : Model
+    public abstract class ViewModel : Core.Model.Model
     {
         public event Action CloseRequested;
 

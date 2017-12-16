@@ -114,6 +114,8 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override void Dispose() { _ctx = null; }
+        public override void PopEffect() { throw new NotImplementedException(); }
+        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
 
         public override IPen CreatePen(
             float width,
@@ -128,12 +130,6 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override float GetDpi() { return 0; }
-        public override void PopEffect() { throw new NotImplementedException(); }
-
-        public override void PushEffect(IEffect effect)
-        {
-            throw new NotImplementedException();
-        }
 
         public override float Height { get; }
         public override float Width { get; }

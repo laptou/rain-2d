@@ -219,6 +219,8 @@ namespace Ibinimator.Service.Tools
 
         private void Insert(int index, string text)
         {
+            if (text.Length == 0) return;
+
             var history = Context.HistoryManager;
             var current = new InsertTextCommand(
                 Context.HistoryManager.Position + 1,
@@ -360,6 +362,8 @@ namespace Ibinimator.Service.Tools
 
         private void Remove(int index, int length)
         {
+            if (length == 0) return;
+
             var history = Context.HistoryManager;
             var current = new RemoveTextCommand(
                 Context.HistoryManager.Position + 1,
@@ -468,7 +472,7 @@ namespace Ibinimator.Service.Tools
             _dwFactory?.Dispose();
         }
 
-        public override bool KeyDown(Key key, ModifierKeys mods)
+        public override bool KeyDown(Key key, ModifierState mods)
         {
             if (SelectedLayer != null)
             {
@@ -482,13 +486,13 @@ namespace Ibinimator.Service.Tools
                     case Key.Left:
                         _selection.index--;
 
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                             _selection.length++;
                         else
                             _selection.length = 0;
                         break;
                     case Key.Right:
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                         {
                             _selection.length++;
                         }
@@ -499,7 +503,7 @@ namespace Ibinimator.Service.Tools
                         }
                         break;
                     case Key.Down:
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                         {
                             var prev = text.Substring(0, _selection.index + _selection.length)
                                            .LastIndexOf("\n", StringComparison.Ordinal);
@@ -537,7 +541,7 @@ namespace Ibinimator.Service.Tools
                         }
                         break;
                     case Key.Up:
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                         {
                             var start = text.Substring(0, _selection.index)
                                             .LastIndexOf("\n", StringComparison.Ordinal);
@@ -566,7 +570,7 @@ namespace Ibinimator.Service.Tools
                         }
                         break;
                     case Key.End:
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                         {
                             _selection.length = text.Length - _selection.index;
                         }
@@ -577,7 +581,7 @@ namespace Ibinimator.Service.Tools
                         }
                         break;
                     case Key.Home:
-                        if (mods.HasFlag(ModifierKeys.Shift))
+                        if (mods.Shift)
                             _selection.length += _selection.index;
                         else
                             _selection.length = 0;
@@ -605,6 +609,7 @@ namespace Ibinimator.Service.Tools
 
                         _selection.length = 0;
                         break;
+
                     case Key.Delete:
                         if (_selection.index + Math.Max(_selection.length, 1) > text.Length) break;
 
@@ -613,16 +618,20 @@ namespace Ibinimator.Service.Tools
                         _selection.length = 0;
                         break;
 
+                    case Key.Return:
+                        TextInput(Environment.NewLine);
+                        break;
+
                     #endregion
 
                     #region Shorcuts
 
-                    case Key.A when mods.HasFlag(ModifierKeys.Control):
+                    case Key.A when mods.Control:
                         _selection.index = 0;
                         _selection.length = SelectedLayer.Value.Length;
                         break;
 
-                    case Key.B when mods.HasFlag(ModifierKeys.Control):
+                    case Key.B when mods.Control:
                         format = SelectedLayer.GetFormat(_selection.index);
                         var weight = format?.FontWeight ?? SelectedLayer.FontWeight;
 
@@ -633,7 +642,7 @@ namespace Ibinimator.Service.Tools
                         });
                         break;
 
-                    case Key.I when mods.HasFlag(ModifierKeys.Control):
+                    case Key.I when mods.Control:
                         format = SelectedLayer.GetFormat(_selection.index);
                         var style = format?.FontStyle ?? SelectedLayer.FontStyle;
 
@@ -644,15 +653,15 @@ namespace Ibinimator.Service.Tools
                         });
                         break;
 
-                    case Key.C when mods.HasFlag(ModifierKeys.Control):
+                    case Key.C when mods.Control:
                         Clipboard.SetText(text.Substring(_selection.index, _selection.length));
                         break;
 
-                    case Key.X when mods.HasFlag(ModifierKeys.Control):
+                    case Key.X when mods.Control:
                         Clipboard.SetText(text.Substring(_selection.index, _selection.length));
                         goto case Key.Back;
 
-                    case Key.V when mods.HasFlag(ModifierKeys.Control):
+                    case Key.V when mods.Control:
                         if (_selection.length > 0)
                             Remove(_selection.index, _selection.length);
 
@@ -682,16 +691,16 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public override bool KeyUp(Key key, ModifierKeys modifiers) { return false; }
+        public override bool KeyUp(Key key, ModifierState modifiers) { return false; }
 
-        public override bool MouseDown(Vector2 pos)
+        public override bool MouseDown(Vector2 pos, ModifierState state)
         {
             _mouse = (pos, true, Time.Now, _mouse.time);
             _drag = (pos, pos, Time.Now);
-            return base.MouseDown(pos);
+            return base.MouseDown(pos, state);
         }
 
-        public override bool MouseMove(Vector2 pos)
+        public override bool MouseMove(Vector2 pos, ModifierState state)
         {
             if (SelectedLayer == null)
             {
@@ -726,7 +735,7 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool MouseUp(Vector2 pos)
+        public override bool MouseUp(Vector2 pos, ModifierState state)
         {
             _mouse.down = false;
             _drag.end = pos;
@@ -734,7 +743,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
             {
                 if (_mouse.time - _mouse.previousTime > Time.DoubleClick)
-                    return base.MouseUp(pos);
+                    return base.MouseUp(pos, state);
 
                 // if double click, make a new text object
                 var text = new Text
@@ -764,7 +773,7 @@ namespace Ibinimator.Service.Tools
             var tpos = FromWorldSpace(pos);
 
             if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tpos))
-                return base.MouseUp(pos);
+                return base.MouseUp(pos, state);
 
             if (_mouse.time - _mouse.previousTime <= Time.DoubleClick)
             {
@@ -832,14 +841,13 @@ namespace Ibinimator.Service.Tools
             target.Transform(SelectedLayer.AbsoluteTransform);
 
             if (_selection.length == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-                using (var pen =
-                    target.CreatePen(_caret.size.X / 2, cache.GetBrush(nameof(EditorColors.TextCaret))))
-                {
-                    target.DrawLine(
-                        _caret.position,
-                        _caret.position + _caret.size,
-                        pen);
-                }
+                
+                    target.FillRectangle(
+                        _caret.position.X,
+                        _caret.position.Y,
+                        _caret.size.X,
+                        _caret.size.Y,
+                        cache.GetBrush(nameof(EditorColors.TextCaret)));
 
             if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
