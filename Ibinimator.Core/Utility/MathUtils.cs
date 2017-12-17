@@ -39,10 +39,11 @@ namespace Ibinimator.Core.Utility
 
         public static float Angle(Vector2 pos, bool reverse)
         {
-            return (float) Atan2(reverse ? -pos.Y : pos.Y, pos.X);
+            return Atan2(reverse ? -pos.Y : pos.Y, pos.X);
         }
 
         public static Vector2 Angle(float a) { return new Vector2((float) Cos(a), -(float) Sin(a)); }
+        public static float Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
 
         public static (float left, float top, float right, float bottom) Bounds(
             RectangleF rect,
@@ -130,7 +131,7 @@ namespace Ibinimator.Core.Utility
             var scale = m.GetScale();
             var translation = m.Translation;
             var skewx = m.GetRotation();
-            var skewy = (float) Atan2(m.M22, m.M21) - PiOverTwo;
+            var skewy = Atan2(m.M22, m.M21) - PiOverTwo;
             var rotation = Wrap(skewx, TwoPi);
             var skew = Wrap(skewy - skewx, TwoPi);
             scale.Y *= (float) Cos(skew);
@@ -138,7 +139,7 @@ namespace Ibinimator.Core.Utility
             return (scale, rotation, translation, -skew);
         }
 
-        public static float GetRotation(this Matrix3x2 m) { return Wrap((float) Atan2(m.M12, m.M11), TwoPi); }
+        public static float GetRotation(this Matrix3x2 m) { return Wrap(Atan2(m.M12, m.M11), -Pi, Pi); }
 
         public static Vector2 GetScale(this Matrix3x2 m)
         {
@@ -149,8 +150,7 @@ namespace Ibinimator.Core.Utility
 
         public static float GetShear(this Matrix3x2 m)
         {
-            return 0;
-            var shear = (float) Atan2(m.M22, m.M21) - PiOverTwo;
+            var shear = Atan2(m.M22, m.M21) - PiOverTwo;
             return -Wrap(shear - GetRotation(m), -Pi, Pi);
         }
 

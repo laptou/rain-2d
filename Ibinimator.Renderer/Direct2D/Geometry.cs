@@ -13,7 +13,7 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.Renderer.Direct2D
 {
-    internal class Geometry : ResourceBase, IGeometry
+    internal class Geometry : ResourceBase, IGeometry, IEquatable<Geometry>
     {
         private readonly D2D1.RenderTarget _target;
         private D2D1.Geometry _geom;
@@ -121,6 +121,13 @@ namespace Ibinimator.Renderer.Direct2D
 
         public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
 
+        public static bool operator ==(Geometry g1, Geometry g2) { return g1?._geom == g2?._geom; }
+
+        public static bool operator !=(Geometry geometry1, Geometry geometry2)
+        {
+            return !(geometry1 == geometry2);
+        }
+
         #region IGeometry Members
 
         public RectangleF Bounds()
@@ -223,6 +230,15 @@ namespace Ibinimator.Renderer.Direct2D
         public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
 
         public IGeometry Xor(IGeometry other) { return Combine(other, D2D1.CombineMode.Xor); }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Geometry);
+        }
+
+        public bool Equals(Geometry other) { return other == this; }
+
+        public override int GetHashCode() { return (int) _geom.NativePointer; }
 
         #endregion
 

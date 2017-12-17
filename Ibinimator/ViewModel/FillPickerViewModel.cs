@@ -88,7 +88,7 @@ namespace Ibinimator.ViewModel
 
         private void SetHSLA(double h, double s, double l, double a)
         {
-            (_hue, _lightness, _saturation) = (h, s, l);
+            (_hue, _saturation, _lightness) = (h, s, l);
             Set(ColorUtils.HslaToColor(h, s, l, a), nameof(Color));
 
             RaisePropertyChanged(nameof(Red));
@@ -102,7 +102,7 @@ namespace Ibinimator.ViewModel
         private void SetRGBA(double r, double g, double b, double a)
         {
             Set(ColorUtils.RgbaToColor(r, g, b, a), nameof(Color));
-            (_hue, _lightness, _saturation) = ColorUtils.RgbToHsl(r, g, b);
+            (_hue, _saturation, _lightness) = ColorUtils.RgbToHsl(r, g, b);
 
             RaisePropertyChanged(nameof(Red));
             RaisePropertyChanged(nameof(Green));

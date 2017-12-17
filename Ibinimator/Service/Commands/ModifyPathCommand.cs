@@ -238,8 +238,7 @@ namespace Ibinimator.Service.Commands
                     throw new ArgumentOutOfRangeException();
             }
 
-            target.Instructions.Clear();
-            target.Instructions.AddItems(GeometryHelper.InstructionsFromNodes(nodes));
+            target.Instructions.ReplaceRange(GeometryHelper.InstructionsFromNodes(nodes));
         }
 
         public override void Undo(IArtContext context)

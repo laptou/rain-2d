@@ -45,6 +45,8 @@ namespace Ibinimator.Renderer.Direct2D
         {
             _target.BeginDraw();
             _virtualTarget.BeginDraw();
+            _target.Transform = SharpDX.Matrix3x2.Identity;
+            _virtualTarget.Transform = SharpDX.Matrix3x2.Identity;
         }
 
         public override void Clear(Color color)
@@ -314,8 +316,19 @@ namespace Ibinimator.Renderer.Direct2D
             var d2dEffect = _effects.Pop();
 
             if (_effects.Count == 0)
+            {
+                _virtualTarget.EndDraw(out var tag1, out var tag2);
+
+                var t = _target.Transform;
+
+                _target.Transform = SharpDX.Matrix3x2.Identity;
                 _target.QueryInterface<D2D.DeviceContext>()
                        .DrawImage(d2dEffect.GetOutput());
+                _target.Transform = t;
+
+                _virtualTarget.BeginDraw();
+                _virtualTarget.Clear(null);
+            }
         }
 
         public override void PushEffect(IEffect effect)
@@ -333,9 +346,9 @@ namespace Ibinimator.Renderer.Direct2D
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             if (absolute)
-                Target.Transform = transform.Convert();
+                _virtualTarget.Transform = _target.Transform = transform.Convert();
             else
-                Target.Transform = transform.Convert() * Target.Transform;
+                _virtualTarget.Transform = _target.Transform = transform.Convert() * _target.Transform;
         }
     }
 

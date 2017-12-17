@@ -156,5 +156,17 @@ namespace Ibinimator.Core.Utility
                 }
             }
         }
+
+        public void ReplaceRange(IEnumerable<T> items)
+        {
+            lock (_locker)
+            {
+                SuspendCollectionChangeNotification();
+                Clear();
+                foreach (var i in items)
+                    InsertItem(Count, i);
+                NotifyChanges();
+            }
+        }
     }
 }

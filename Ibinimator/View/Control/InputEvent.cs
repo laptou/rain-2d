@@ -35,9 +35,6 @@ namespace Ibinimator.View.Control
         
         public InputEvent(InputEventType type, Vector2 position, ModifierState modifiers) : this(Service.Time.Now, modifiers)
         {
-            if (type != InputEventType.MouseMove)
-                throw new ArgumentException(nameof(type));
-
             Type = type;
             Position = position;
         }

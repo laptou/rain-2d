@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -35,11 +36,11 @@ namespace Ibinimator.View.Control
         private IntPtr _host;
 
         private IntPtr _parent;
-        private bool _invalidated;
-        private WndProc _proc;
+        private bool _invalidated = true;
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")] private WndProc _proc;
 
         // Direct2D stuff
-        private D2D.RenderTarget _renderTarget;
+        private D2D.WindowRenderTarget _renderTarget;
 
         private D2D.Factory _d2dFactory;
         private DW.Factory _dwFactory;
@@ -74,7 +75,11 @@ namespace Ibinimator.View.Control
 
         protected abstract void Render(RenderContext renderContext);
 
-        public virtual void InvalidateSurface() { _invalidated = true; }
+        public virtual void InvalidateSurface()
+        {
+            _invalidated = true;
+            NativeHelper.InvalidateRect(_host, IntPtr.Zero, false);
+        }
 
         protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
 
@@ -208,12 +213,13 @@ namespace Ibinimator.View.Control
             switch (msg)
             {
                 case WindowMessage.Paint:
+                    if (_renderTarget == null) goto default;
 
-                    if (_renderTarget == null) return IntPtr.Zero;
+                    NativeHelper.BeginPaint(hwnd, out var paintStruct);
 
                     try
                     {
-                        if (_invalidated)
+                        if (_invalidated && _renderTarget.CheckWindowState() == D2D.WindowState.None)
                         {
                             _invalidated = false;
                             RenderContext.Begin(null);
@@ -225,13 +231,17 @@ namespace Ibinimator.View.Control
                         (ex.Descriptor == D2D.ResultCode.RecreateTarget)
                     {
                         Initialize();
+                        RenderContext.Begin(null);
+                        Render(RenderContext);
+                        RenderContext.End();
                     }
+
+                    NativeHelper.EndPaint(hwnd, ref paintStruct);
 
                     return IntPtr.Zero;
                 case WindowMessage.MouseWheelHorizontal:
                 case WindowMessage.MouseWheel:
                     var delta = NativeHelper.HighWord(wParam);
-                    var mod = NativeHelper.LowWord(wParam);
                     var x = NativeHelper.LowWord(lParam) / _d2dFactory.DesktopDpi.Width * 96f;
                     var y = NativeHelper.HighWord(lParam) / _d2dFactory.DesktopDpi.Height * 96f;
 
@@ -303,6 +313,7 @@ namespace Ibinimator.View.Control
                 case WindowMessage.UniChar:
                     var str = char.ConvertFromUtf32((int) wParam);
 
+                    // ignore control characters such as backspace
                     if (str.Length == 1 && char.IsControl(str[0]))
                         return IntPtr.Zero;
 

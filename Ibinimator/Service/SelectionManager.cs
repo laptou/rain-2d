@@ -128,6 +128,8 @@ namespace Ibinimator.Service
             Context.HistoryManager.Merge(command, 500);
 
             Context.InvalidateSurface();
+
+            Updated?.Invoke(this, null);
         }
 
         public void UpdateBounds(bool reset)
@@ -154,9 +156,9 @@ namespace Ibinimator.Service
             }
 
             Context.InvalidateSurface();
-        }
 
-        
+            Updated?.Invoke(this, null);
+        }
 
         public IArtContext Context { get; }
 

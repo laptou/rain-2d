@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -208,6 +209,9 @@ namespace Ibinimator.Service.Tools
                                         Vector2.Distance(
                                             SelectedBrush.StartPoint,
                                             SelectedBrush.EndPoint);
+
+                        if (localStopPos.X < SelectedBrush.StartPoint.X)
+                            newOffset = -newOffset;
 
                         Move(_selection.ToArray(), newOffset - stop.Offset,
                              ModifyGradientCommand.GradientOperation.ChangeOffset);
