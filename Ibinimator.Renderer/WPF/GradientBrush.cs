@@ -54,7 +54,7 @@ namespace Ibinimator.Renderer.WPF
             }
         }
 
-        public IList<GradientStop> Stops { get; }
+        public ObservableList<GradientStop> Stops { get; }
 
         #endregion
     }

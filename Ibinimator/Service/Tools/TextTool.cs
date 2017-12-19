@@ -88,13 +88,14 @@ namespace Ibinimator.Service.Tools
         private readonly DW.Factory _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
-        private (Vector2 position, Vector2 size) _caret;
+        private (Vector2 position, Vector2 size, bool visible) _caret;
 
         private (Vector2 position, bool down, long time, long previousTime) _mouse;
         private (Vector2 start, Vector2 end, long time) _drag;
         private (int index, int length) _selection;
 
         private RectangleF[] _selectionRects = new RectangleF[0];
+        private bool _updatingOptions = false;
 
         public TextTool(IToolManager manager, ISelectionManager selectionManager)
             : base(manager, selectionManager)
@@ -120,6 +121,8 @@ namespace Ibinimator.Service.Tools
                                             }
                                         })
                                         .OrderBy(n => n));
+            using (var defaultFont = _dwFontCollection.GetFontFamily(0))
+                Options.Set("font-family", defaultFont.FamilyNames.ToCurrentCulture());
 
             Options.Create("font-size", "Font Size");
             Options.SetValues("font-size",
@@ -134,9 +137,11 @@ namespace Ibinimator.Service.Tools
             Options.SetType("font-size", ToolOptionType.Length);
             Options.SetMinimum("font-size", 6);
             Options.SetMaximum("font-size", 60000);
+            Options.Set("font-size", 12);
 
             Options.Create("font-stretch", "Stretch");
             Options.Set("font-stretch", FontStretch.Normal);
+            Options.SetType("font-stretch", ToolOptionType.Dropdown);
             Options.SetValues("font-stretch", new[]
             {
                 FontStretch.Normal
@@ -144,6 +149,7 @@ namespace Ibinimator.Service.Tools
 
             Options.Create("font-weight", "Weight");
             Options.Set("font-weight", FontWeight.Normal);
+            Options.SetType("font-weight", ToolOptionType.Dropdown);
             Options.SetValues("font-weight", new[]
             {
                 FontWeight.Normal
@@ -151,6 +157,7 @@ namespace Ibinimator.Service.Tools
 
             Options.Create("font-style", "Style");
             Options.Set("font-style", FontStyle.Normal);
+            Options.SetType("font-style", ToolOptionType.Dropdown);
             Options.SetValues("font-style", new[]
             {
                 FontStyle.Normal
@@ -231,6 +238,8 @@ namespace Ibinimator.Service.Tools
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (_updatingOptions) return;
+
             var option = (ToolOption) sender;
             if (SelectedLayer == null) return;
             if (!(e.PropertyName == nameof(ToolOption.Value) ||
@@ -378,6 +387,10 @@ namespace Ibinimator.Service.Tools
             string family, float size, FontStretch stretch,
             FontWeight weight, FontStyle style)
         {
+            if (_updatingOptions) return;
+
+            _updatingOptions = true;
+
             Options.Set("font-family", family);
             Options.Set("font-size", size);
 
@@ -407,11 +420,15 @@ namespace Ibinimator.Service.Tools
 
             Options.SetValues("font-style", styles);
             Options.Set("font-style", style);
+
+            _updatingOptions = false;
         }
 
         private void Update()
         {
             if (SelectedLayer == null) return;
+
+            // if (!_caret.visible) 
 
             var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
@@ -841,13 +858,13 @@ namespace Ibinimator.Service.Tools
             target.Transform(SelectedLayer.AbsoluteTransform);
 
             if (_selection.length == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-                
-                    target.FillRectangle(
-                        _caret.position.X,
-                        _caret.position.Y,
-                        _caret.size.X,
-                        _caret.size.Y,
-                        cache.GetBrush(nameof(EditorColors.TextCaret)));
+
+                target.FillRectangle(
+                    _caret.position.X,
+                    _caret.position.Y,
+                    _caret.size.X,
+                    _caret.size.Y,
+                    cache.GetBrush(nameof(EditorColors.TextCaret)));
 
             if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
@@ -856,8 +873,6 @@ namespace Ibinimator.Service.Tools
                         cache.GetBrush(nameof(EditorColors.TextHighlight)));
 
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-
-            Context.InvalidateSurface();
         }
 
         public override bool TextInput(string text)

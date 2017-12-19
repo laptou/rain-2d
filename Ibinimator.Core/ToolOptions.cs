@@ -11,7 +11,6 @@ namespace Ibinimator.Core {
     public class ToolOptions : INotifyCollectionChanged, IEnumerable<ToolOption>
     {
         private readonly Dictionary<string, ToolOption> _options = new Dictionary<string, ToolOption>();
-        private bool _reentrancyFlag;
 
         public void Create(string id, string name)
         {
@@ -22,11 +21,7 @@ namespace Ibinimator.Core {
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (_reentrancyFlag) return;
-
-            _reentrancyFlag = true;
             OptionChanged?.Invoke(sender, e);
-            _reentrancyFlag = false;
         }
 
         public T Get<T>(string id)
@@ -46,9 +41,7 @@ namespace Ibinimator.Core {
         public void SetType(string id, ToolOptionType type) { _options[id].Type = type; }
         public void SetValues<T>(string id, IEnumerable<T> values)
         {
-            _reentrancyFlag = true;
             _options[id].Values = values.Cast<object>();
-            _reentrancyFlag = false;
         }
 
         #region IEnumerable<ToolOption> Members
@@ -71,9 +64,7 @@ namespace Ibinimator.Core {
 
         public void Set<T>(string id, T value)
         {
-            _reentrancyFlag = true;
             _options[id].Value = value;
-            _reentrancyFlag = false;
         }
     }
 }

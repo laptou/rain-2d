@@ -113,7 +113,39 @@ namespace Ibinimator.Service.Commands
             }
         }
 
-        public void Undo(IArtContext artContext) { throw new NotImplementedException(); }
+        public void Undo(IArtContext artContext)
+        {
+            switch (Operation)
+            {
+                case GradientOperation.ChangeOffset:
+                    foreach (var stopIndex in StopIndices)
+                        Target.Stops[stopIndex] =
+                            new GradientStop(Target.Stops[stopIndex].Color,
+                                             Target.Stops[stopIndex].Offset - ScalarDelta);
+                    break;
+                case GradientOperation.ChangeColor:
+                    foreach (var stopIndex in StopIndices)
+                        Target.Stops[stopIndex] =
+                            new GradientStop(Target.Stops[stopIndex].Color - ColorDelta,
+                                             Target.Stops[stopIndex].Offset);
+                    break;
+                case GradientOperation.ChangeFocus:
+                    Target.Focus -= VectorDelta;
+                    break;
+                case GradientOperation.ChangeEnd:
+                    Target.EndPoint -= VectorDelta;
+                    break;
+                case GradientOperation.ChangeStart:
+                    Target.StartPoint -= VectorDelta;
+                    break;
+                case GradientOperation.RemoveStop:
+                    throw new NotImplementedException();
+                case GradientOperation.AddStop:
+                    throw new NotImplementedException();
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         public IOperationCommand Merge(IOperationCommand newCommand)
         {
@@ -145,7 +177,7 @@ namespace Ibinimator.Service.Commands
             return null;
         }
 
-        public string Description { get; }
+        public string Description => "Modified gradient";
 
         public long Id { get; }
 

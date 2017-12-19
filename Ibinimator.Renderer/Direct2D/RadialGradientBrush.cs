@@ -22,17 +22,18 @@ namespace Ibinimator.Renderer.Direct2D
             RawVector2 radii,
             RawVector2 focus) : base(target, stops)
         {
-            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(target,
-                                                                      new RadialGradientBrushProperties
-                                                                      {
-                                                                          Center = center,
-                                                                          GradientOriginOffset = new RawVector2(
-                                                                              focus.X - center.X,
-                                                                              focus.Y - center.Y),
-                                                                          RadiusX = radii.X,
-                                                                          RadiusY = radii.Y
-                                                                      },
-                                                                      ConvertStops());
+            NativeBrush = new SharpDX.Direct2D1.RadialGradientBrush(target,
+                                                                    new RadialGradientBrushProperties
+                                                                    {
+                                                                        Center = center,
+                                                                        GradientOriginOffset =
+                                                                            new RawVector2(
+                                                                                focus.X - center.X,
+                                                                                focus.Y - center.Y),
+                                                                        RadiusX = radii.X,
+                                                                        RadiusY = radii.Y
+                                                                    },
+                                                                    ConvertStops());
         }
 
         public override SpreadMethod SpreadMethod
@@ -56,47 +57,57 @@ namespace Ibinimator.Renderer.Direct2D
 
         private void RecreateBrush()
         {
-            Direct2DBrush = new SharpDX.Direct2D1.RadialGradientBrush(Target,
-                                                                      new RadialGradientBrushProperties
-                                                                      {
-                                                                          Center = new RawVector2(CenterX, CenterY),
-                                                                          GradientOriginOffset = new RawVector2(
-                                                                              FocusX - CenterX,
-                                                                              FocusY - CenterY),
-                                                                          RadiusX = RadiusX,
-                                                                          RadiusY = RadiusY
-                                                                      },
-                                                                      ConvertStops());
+            // using() b/c it gets disposed at the end, avoiding temporary variable
+            var old = NativeBrush;
+            NativeBrushLock.EnterWriteLock();
+            NativeBrush = new SharpDX.Direct2D1.RadialGradientBrush(
+                Target,
+                new RadialGradientBrushProperties
+                {
+                    Center = new RawVector2(
+                        CenterX, CenterY),
+                    GradientOriginOffset =
+                        new RawVector2(
+                            FocusX - CenterX,
+                            FocusY - CenterY),
+                    RadiusX = RadiusX,
+                    RadiusY = RadiusY
+                },
+                ConvertStops());
+            NativeBrushLock.ExitWriteLock();
+            old.Dispose();
         }
 
         #region IRadialGradientBrush Members
 
         public float CenterX
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).Center.X;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center.X;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).Center = new RawVector2(value, CenterY);
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center =
+                    new RawVector2(value, CenterY);
                 RaisePropertyChanged();
             }
         }
 
         public float CenterY
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).Center.Y;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center.Y;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).Center = new RawVector2(CenterX, value);
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center =
+                    new RawVector2(CenterX, value);
                 RaisePropertyChanged();
             }
         }
 
         public float FocusX
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset.X + CenterX;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.X + CenterX;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset =
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset =
                     new RawVector2(value - CenterX, FocusY);
                 RaisePropertyChanged();
             }
@@ -104,10 +115,10 @@ namespace Ibinimator.Renderer.Direct2D
 
         public float FocusY
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset.Y + CenterY;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.Y + CenterY;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).GradientOriginOffset =
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset =
                     new RawVector2(FocusX, value - CenterY);
                 RaisePropertyChanged();
             }
@@ -115,20 +126,20 @@ namespace Ibinimator.Renderer.Direct2D
 
         public float RadiusX
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).RadiusX;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).RadiusX;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).RadiusX = value;
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).RadiusX = value;
                 RaisePropertyChanged();
             }
         }
 
         public float RadiusY
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).RadiusY;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).RadiusY;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) Direct2DBrush).RadiusY = value;
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).RadiusY = value;
                 RaisePropertyChanged();
             }
         }

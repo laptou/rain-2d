@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
@@ -310,6 +311,7 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }
+        public override void HideCursor() { NativeHelper.HideCaret(); }
 
         public override void PopEffect()
         {
@@ -317,13 +319,14 @@ namespace Ibinimator.Renderer.Direct2D
 
             if (_effects.Count == 0)
             {
-                _virtualTarget.EndDraw(out var tag1, out var tag2);
+                _virtualTarget.EndDraw();
 
                 var t = _target.Transform;
 
                 _target.Transform = SharpDX.Matrix3x2.Identity;
-                _target.QueryInterface<D2D.DeviceContext>()
-                       .DrawImage(d2dEffect.GetOutput());
+                using (var output = d2dEffect.GetOutput())
+                    _target.QueryInterface<D2D.DeviceContext>()
+                            .DrawImage(output);
                 _target.Transform = t;
 
                 _virtualTarget.BeginDraw();
@@ -343,6 +346,10 @@ namespace Ibinimator.Renderer.Direct2D
             _effects.Push(fx);
         }
 
+        public override void SetCaretPosition(int x, int y) { NativeHelper.SetCaretPos(x, y); }
+
+        public override void ShowCaret() { NativeHelper.ShowCaret(); }
+
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             if (absolute)
@@ -352,10 +359,22 @@ namespace Ibinimator.Renderer.Direct2D
         }
     }
 
+    internal class NativeHelper
+    {
+        [DllImport("user32.dll")]
+        public static extern bool HideCaret([Optional] IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetCaretPos(int x, int y);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowCaret([Optional] IntPtr hWnd);
+    }
+
     public class DropShadowEffect : Effect, IDropShadowEffect
     {
-        private readonly D2D.Effect shadow;
         private readonly D2D.Effect composite;
+        private readonly D2D.Effect shadow;
 
         public DropShadowEffect(D2D.DeviceContext dc)
         {
@@ -387,11 +406,24 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override T Unwrap<T>() { return shadow as T; }
 
+        public override void Dispose()
+        {
+            shadow.Dispose();
+            composite.Dispose();
+        }
+
         public float Radius
         {
             get => shadow.GetFloatValue((int) D2D.ShadowProperties.BlurStandardDeviation);
             set => shadow.SetValue((int) D2D.ShadowProperties.BlurStandardDeviation,
                                    value);
+        }
+
+        public Color Color
+        {
+            get => shadow.GetColor4Value((int)D2D.ShadowProperties.Color).Convert();
+            set => shadow.SetValue((int)D2D.ShadowProperties.Color,
+                                   (RawColor4)value.Convert());
         }
 
         #endregion
@@ -408,6 +440,8 @@ namespace Ibinimator.Renderer.Direct2D
         public abstract T Unwrap<T>() where T : class;
 
         #endregion
+
+        public abstract void Dispose();
     }
 
     public class GlowEffect : Effect, IGlowEffect
@@ -444,6 +478,12 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override T Unwrap<T>() { return composite as T; }
+
+        public override void Dispose()
+        {
+            blur.Dispose();
+            composite.Dispose();
+        }
 
         public float Radius
         {

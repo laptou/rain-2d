@@ -17,24 +17,7 @@ namespace Ibinimator.Native
         public static extern IntPtr BeginPaint(IntPtr hwnd, out PaintStruct lpPaint);
 
         [DllImport("user32.dll")]
-        public static extern bool EndPaint(IntPtr hWnd, [In] ref PaintStruct lpPaint);
-
-        [DllImport("user32.dll")]
-        public static extern bool InvalidateRect(
-            [In] IntPtr hWnd,
-            [In] IntPtr lpRect,
-            [In] bool bErase);
-
-        [DllImport("user32.dll")]
-        public static extern bool InvalidateRect(
-            [In] IntPtr hWnd,
-            [In] ref NativeRect lpRect,
-            [In] bool bErase);
-
-        [DllImport("user32.dll")]
-        public static extern bool ValidateRect(
-            [In] IntPtr hWnd,
-            [In] ref NativeRect lpRect);
+        public static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitap, int width, int height);
 
         [DllImport("user32.dll", EntryPoint = "CreateWindowEx", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateWindowEx(
@@ -53,8 +36,14 @@ namespace Ibinimator.Native
         public static extern IntPtr DefWindowProc(
             IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        public static extern bool DestroyCaret();
+
         [DllImport("user32.dll", EntryPoint = "DestroyWindow", CharSet = CharSet.Unicode)]
         public static extern bool DestroyWindow(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool EndPaint(IntPtr hWnd, [In] ref PaintStruct lpPaint);
 
         [DllImport("user32.dll")]
         public static extern ushort GetAsyncKeyState([In] int vKey);
@@ -115,6 +104,12 @@ namespace Ibinimator.Native
         }
 
         [DllImport("user32.dll")]
+        public static extern bool InvalidateRect(
+            [In] IntPtr hWnd,
+            [In] IntPtr lpRect,
+            [In] bool bErase);
+
+        [DllImport("user32.dll")]
         public static extern bool IsWindowUnicode(IntPtr hWnd);
 
         /// <summary>
@@ -126,8 +121,12 @@ namespace Ibinimator.Native
             return (short) (val32 & 0x0000FFFF);
         }
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern ushort RegisterClass(ref WndClass lpWndClass);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr GetModuleHandle([In, Optional, MarshalAs(UnmanagedType.LPTStr)] string lpModuleName);
+
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetFocus([Optional] IntPtr hWnd);
@@ -138,21 +137,9 @@ namespace Ibinimator.Native
             [Optional] IntPtr hInstance);
 
         [DllImport("user32.dll")]
-        public static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitap, int width, int height);
-
-        [DllImport("user32.dll")]
-        public static extern bool DestroyCaret();
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct PaintStruct
-    {
-        public bool fErase;
-        public bool fIncUpdate;
-        public bool fRestore;
-        public IntPtr hdc;
-        public NativeRect rcPaint;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)] public byte[] rgbReserved;
+        public static extern bool ValidateRect(
+            [In] IntPtr hWnd,
+            [In] ref NativeRect lpRect);
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -236,7 +223,7 @@ namespace Ibinimator.Native
             return false;
         }
 
-        public override int GetHashCode() { return ((Rectangle) this).GetHashCode(); }
+        public override int GetHashCode() { return ((Rectangle)this).GetHashCode(); }
 
         public override string ToString()
         {

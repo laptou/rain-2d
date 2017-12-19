@@ -122,15 +122,15 @@ namespace Ibinimator.View.Control
             switch (evt.Type)
             {
                 case InputEventType.MouseDown:
-                    _lastPosition = pos;
+                    _lastPosition = evt.Position;
                     ac.ToolManager.MouseDown(pos, evt.State);
                     break;
                 case InputEventType.MouseUp:
-                    _lastPosition = pos;
+                    _lastPosition = evt.Position;
                     ac.ToolManager.MouseUp(pos, evt.State);
                     break;
                 case InputEventType.MouseMove:
-                    _lastPosition = pos;
+                    _lastPosition = evt.Position;
                     ac.ToolManager.MouseMove(pos, evt.State);
                     break;
                 case InputEventType.TextInput:

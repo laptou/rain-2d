@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core
 {
-    public interface IEffect
+    public interface IEffect : IDisposable
     {
         void SetInput(int index, IBitmap bitmap);
         void SetInput(int index, IEffect effect);

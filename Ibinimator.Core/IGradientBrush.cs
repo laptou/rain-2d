@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core
 {
     public interface IGradientBrush : IBrush
     {
-        IList<GradientStop> Stops { get; }
+        ObservableList<GradientStop> Stops { get; }
         GradientSpace Space { get; set; }
     }
 

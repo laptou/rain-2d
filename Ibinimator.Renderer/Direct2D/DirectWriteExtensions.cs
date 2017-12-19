@@ -21,5 +21,11 @@ namespace Ibinimator.Renderer.Direct2D
             return collection.FindFamilyName(name, out var index) ?
                 collection.GetFontFamily(index) : null;
         }
+
+        public static IEnumerable<FontFamily> GetEnumerator(this FontCollection collection)
+        {
+            for (var i = 0; i < collection.FontFamilyCount; i++)
+                yield return collection.GetFontFamily(i);
+        }
     }
 }

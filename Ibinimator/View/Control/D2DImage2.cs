@@ -37,7 +37,8 @@ namespace Ibinimator.View.Control
 
         private IntPtr _parent;
         private bool _invalidated = true;
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")] private WndProc _proc;
+        // ReSharper disable once NotAccessedField.Local
+        private WndProc _proc;
 
         // Direct2D stuff
         private D2D.WindowRenderTarget _renderTarget;
@@ -176,7 +177,7 @@ namespace Ibinimator.View.Control
             {
                 Hwnd = _host,
                 PixelSize = new DX.Size2(width, height),
-                PresentOptions = D2D.PresentOptions.Immediately
+                PresentOptions = D2D.PresentOptions.None
             };
 
             _renderTarget = new D2D.WindowRenderTarget(_d2dFactory, rtp, hrtp);
@@ -238,7 +239,7 @@ namespace Ibinimator.View.Control
 
                     NativeHelper.EndPaint(hwnd, ref paintStruct);
 
-                    return IntPtr.Zero;
+                    break;
                 case WindowMessage.MouseWheelHorizontal:
                 case WindowMessage.MouseWheel:
                     var delta = NativeHelper.HighWord(wParam);
@@ -253,7 +254,7 @@ namespace Ibinimator.View.Control
 
                     _events.Enqueue(scrollEvt);
                     _eventFlag.Set();
-                    return IntPtr.Zero;
+                    break;
 
                 case WindowMessage.MouseMove:
                 case WindowMessage.LeftButtonDown:
@@ -284,11 +285,11 @@ namespace Ibinimator.View.Control
                                        new Vector2(x, y),
                                        NativeHelper.GetModifierState(wParam)));
                     _eventFlag.Set();
-                    return IntPtr.Zero;
+                    break;
                 case WindowMessage.MouseLeave:
                     // lose focus when mouse isn't over this
                     NativeHelper.SetFocus(_parent);
-                    return IntPtr.Zero;
+                    break;
                 case WindowMessage.KeyDown:
                 case WindowMessage.SysKeyDown:
                     var key = KeyInterop.KeyFromVirtualKey((int) wParam);
@@ -315,14 +316,22 @@ namespace Ibinimator.View.Control
 
                     // ignore control characters such as backspace
                     if (str.Length == 1 && char.IsControl(str[0]))
-                        return IntPtr.Zero;
+                        break;
 
                     _events.Enqueue(new InputEvent(InputEventType.TextInput, str));
                     _eventFlag.Set();
-                    return IntPtr.Zero;
+                    break;
+                case WindowMessage.SetFocus:
+                    NativeHelper.CreateCaret(hwnd, IntPtr.Zero, 0, 0);
+                    break;
+                case WindowMessage.KillFocus:
+                    NativeHelper.DestroyCaret();
+                    break;
                 default:
                     return NativeHelper.DefWindowProc(hwnd, msg, wParam, lParam);
             }
+
+            return IntPtr.Zero;
         }
     }
 }

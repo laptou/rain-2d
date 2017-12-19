@@ -56,6 +56,8 @@ namespace Ibinimator.Service.Tools
             }
 
             RaisePropertyChanged(nameof(Type));
+            RaiseFillUpdate();
+            RaiseStrokeUpdate();
             Context.InvalidateSurface();
         }
 

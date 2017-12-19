@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
@@ -10,15 +11,25 @@ namespace Ibinimator.Renderer.Direct2D
 {
     internal abstract class Brush : ResourceBase, IBrush
     {
-        protected SharpDX.Direct2D1.Brush Direct2DBrush { get; set; }
+        protected ReaderWriterLockSlim NativeBrushLock { get; } = new ReaderWriterLockSlim();
+
+        protected SharpDX.Direct2D1.Brush NativeBrush { get; set; }
 
         public static bool operator ==(Brush brush, object o)
         {
-            if (o == null && brush?.Direct2DBrush == null) return true;
+            if (o == null && brush?.NativeBrush == null) return true;
             return Equals(brush, o);
         }
 
-        public static implicit operator SharpDX.Direct2D1.Brush(Brush brush) { return brush?.Direct2DBrush; }
+        public static implicit operator SharpDX.Direct2D1.Brush(Brush brush)
+        {
+            if (brush == null) return null;
+
+            brush.NativeBrushLock.TryEnterReadLock(-1);
+            var native = brush.NativeBrush;
+            brush.NativeBrushLock.ExitReadLock();
+            return native;
+        }
 
         public static bool operator !=(Brush brush, object o) { return !(brush == o); }
 
@@ -26,8 +37,9 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override void Dispose()
         {
-            Direct2DBrush?.Dispose();
-
+            NativeBrush?.Dispose();
+            NativeBrushLock?.Dispose();
+            GC.SuppressFinalize(this);
             base.Dispose();
         }
 
@@ -38,25 +50,25 @@ namespace Ibinimator.Renderer.Direct2D
 
         public float Opacity
         {
-            get => Direct2DBrush.Opacity;
+            get => NativeBrush.Opacity;
             set
             {
-                Direct2DBrush.Opacity = value;
+                NativeBrush.Opacity = value;
                 RaisePropertyChanged();
             }
         }
 
         public Matrix3x2 Transform
         {
-            get => Direct2DBrush.Transform.Convert();
+            get => NativeBrush.Transform.Convert();
             set
             {
-                Direct2DBrush.Transform = value.Convert();
+                NativeBrush.Transform = value.Convert();
                 RaisePropertyChanged();
             }
         }
 
-        public T Unwrap<T>() where T : class { return Direct2DBrush as T; }
+        public T Unwrap<T>() where T : class { return NativeBrush as T; }
 
         #endregion
     }

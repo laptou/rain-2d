@@ -41,11 +41,11 @@ namespace Ibinimator.Native
         /// <summary>
         /// The WM_SETFOCUS message is sent to a window after it has gained the keyboard focus.
         /// </summary>
-        Setfocus = 0x0007,
+        SetFocus = 0x0007,
         /// <summary>
         /// The WM_KILLFOCUS message is sent to a window immediately before it loses the keyboard focus.
         /// </summary>
-        Killfocus = 0x0008,
+        KillFocus = 0x0008,
         /// <summary>
         /// The WM_ENABLE message is sent when an application changes the enabled state of a window. It is sent to the window whose enabled state is changing. This message is sent before the EnableWindow function returns, but after the enabled state (WS_DISABLED style bit) of the window has changed.
         /// </summary>

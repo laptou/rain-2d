@@ -12,7 +12,13 @@ namespace Ibinimator.Core
     {
         public abstract float Height { get; }
         public abstract float Width { get; }
+
+        public abstract void SetCaretPosition(int x, int y);
+        public abstract void ShowCaret();
+        public abstract void HideCursor();
+
         public abstract void Begin(object ctx);
+
         public abstract void Clear(Color color);
 
         public abstract IBitmap CreateBitmap(Stream stream);
@@ -111,6 +117,9 @@ namespace Ibinimator.Core
 
         public abstract float GetDpi();
 
+        public abstract void PopEffect();
+        public abstract void PushEffect(IEffect effect);
+
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 
@@ -158,8 +167,5 @@ namespace Ibinimator.Core
         public abstract void Dispose();
 
         #endregion
-
-        public abstract void PopEffect();
-        public abstract void PushEffect(IEffect effect);
     }
 }

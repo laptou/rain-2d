@@ -49,7 +49,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region IGradientBrush Members
 
-        public IList<GradientStop> Stops { get; }
+        public ObservableList<GradientStop> Stops { get; }
         public GradientSpace Space
         {
             get => _space;

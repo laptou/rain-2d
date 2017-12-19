@@ -92,7 +92,7 @@ namespace Ibinimator.Core.Model
 
         protected void Set<T>(T value, [CallerMemberName] string propertyName = "")
         {
-            if (Equals(Get<T>(propertyName), value)) return;
+            // if (Equals(Get<T>(propertyName), value)) return;
 
             if (value is INotifyCollectionChanged collection)
             {
@@ -112,9 +112,9 @@ namespace Ibinimator.Core.Model
             RaisePropertyChanged(propertyName);
         }
 
-        protected void Set<T>(T value, ref T variable, [CallerMemberName] string propertyName = "")
+        protected void Set<T>(T value, out T variable, [CallerMemberName] string propertyName = "")
         {
-            if (Equals(variable, value)) return;
+            // if (Equals(variable, value)) return;
 
             RaisePropertyChanging(propertyName);
 

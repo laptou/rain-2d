@@ -21,13 +21,15 @@ namespace Ibinimator.Renderer.Direct2D
             RawVector2 start,
             RawVector2 end) : base(target, stops)
         {
-            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
-                                                                      new LinearGradientBrushProperties
-                                                                      {
-                                                                          StartPoint = new RawVector2(start.X, start.Y),
-                                                                          EndPoint = new RawVector2(end.X, end.Y)
-                                                                      },
-                                                                      ConvertStops());
+            using (var nativeStops = ConvertStops())
+                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+                    Target,
+                    new LinearGradientBrushProperties
+                    {
+                        StartPoint = new RawVector2(start.X, start.Y),
+                        EndPoint = new RawVector2(end.X, end.Y)
+                    },
+                    nativeStops);
         }
 
         public override SpreadMethod SpreadMethod
@@ -45,63 +47,89 @@ namespace Ibinimator.Renderer.Direct2D
             object sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
-            if(Stops.Count > 0) // avoid access violation exceptions when the list is cleared
-            RecreateBrush();
+            if (Stops.Count > 0) // avoid access violation exceptions when the list is cleared
+                RecreateBrush();
         }
 
         private void RecreateBrush()
         {
-            Direct2DBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
-                                                                      new LinearGradientBrushProperties
-                                                                      {
-                                                                          StartPoint = new RawVector2(StartX, StartY),
-                                                                          EndPoint = new RawVector2(EndX, EndY)
-                                                                      },
-                                                                      ConvertStops());
+            var old = (SharpDX.Direct2D1.LinearGradientBrush) NativeBrush;
+
+            NativeBrushLock.EnterWriteLock();
+
+            using (var nativeStops = ConvertStops())
+                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+                    Target,
+                    new LinearGradientBrushProperties
+                    {
+                        StartPoint = new RawVector2(StartX, StartY),
+                        EndPoint = new RawVector2(EndX, EndY)
+                    },
+                    nativeStops);
+            
+            old.Dispose();
+
+            NativeBrushLock.ExitWriteLock();
         }
 
         #region ILinearGradientBrush Members
 
         public float EndX
         {
-            get => ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).EndPoint.X;
+            get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint.X;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).EndPoint = new RawVector2(value, EndY);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint =
+                    new RawVector2(value, EndY);
                 RaisePropertyChanged();
             }
         }
 
         public float EndY
         {
-            get => ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).EndPoint.Y;
+            get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint.Y;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).EndPoint = new RawVector2(EndX, value);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint =
+                    new RawVector2(EndX, value);
                 RaisePropertyChanged();
             }
         }
 
         public float StartX
         {
-            get => ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).StartPoint.X;
+            get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint.X;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).StartPoint = new RawVector2(value, StartY);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint =
+                    new RawVector2(value, StartY);
                 RaisePropertyChanged();
             }
         }
 
         public float StartY
         {
-            get => ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).StartPoint.Y;
+            get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint.Y;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) Direct2DBrush).StartPoint = new RawVector2(StartX, value);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint =
+                    new RawVector2(StartX, value);
                 RaisePropertyChanged();
             }
         }
 
         #endregion
+
+        public override void Dispose()
+        {
+            var old = (SharpDX.Direct2D1.LinearGradientBrush) NativeBrush;
+            // the gradient stop collection continues to exist until it is decoupled
+            // and then manually disposed of
+            var stops = old.GradientStopCollection;
+
+            base.Dispose();
+
+            stops.Dispose();
+        }
     }
 }

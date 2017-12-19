@@ -14,7 +14,7 @@ namespace Ibinimator.Renderer.Direct2D
     internal sealed class DirectWriteTextLayout : ResourceBase, ITextLayout
     {
         private readonly Direct2DRenderContext _ctx;
-
+        public const string FallbackFont = "Arial";
         private ObservableList<Format> _formats = new ObservableList<Format>();
         private DW.TextLayout _dwLayout;
         private TextRenderer.Context _textContext;
@@ -61,7 +61,9 @@ namespace Ibinimator.Renderer.Direct2D
 
             // calculate line height to use for offset
             var families = dwFormat.FontCollection;
-            families.FindFamilyName(FontFamily, out var familyIndex);
+            if (!families.FindFamilyName(FontFamily, out var familyIndex))
+                familyIndex = 0;
+
             var family = families.GetFontFamily(familyIndex);
             var font = family.GetFirstMatchingFont((DW.FontWeight) FontWeight,
                                                    (DW.FontStretch) FontStretch,

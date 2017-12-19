@@ -97,15 +97,6 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Catel.Core, Version=5.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Catel.Core.5.2.0\lib\net47\Catel.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Catel.Fody.Attributes, Version=2.19.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Catel.Fody.2.19.0\lib\netstandard1.0\Catel.Fody.Attributes.dll</HintPath>
-    </Reference>
-    <Reference Include="Catel.MVVM, Version=5.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Catel.MVVM.5.2.0\lib\net47\Catel.MVVM.dll</HintPath>
-    </Reference>
     <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
     </Reference>

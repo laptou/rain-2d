@@ -18,6 +18,8 @@ namespace Ibinimator.Renderer.WPF
         private readonly Queue<RenderCommand> _commandQueue = new Queue<RenderCommand>();
         private DrawingContext _ctx;
 
+        public override void HideCursor() { throw new NotImplementedException(); }
+
         public override void Begin(object ctx)
         {
             if (ctx is DrawingContext dc)
@@ -133,6 +135,8 @@ namespace Ibinimator.Renderer.WPF
 
         public override float Height { get; }
         public override float Width { get; }
+        public override void SetCaretPosition(int x, int y) { throw new NotImplementedException(); }
+        public override void ShowCaret() { throw new NotImplementedException(); }
 
         public override void DrawBitmap(IBitmap bitmap)
         {

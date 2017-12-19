@@ -274,7 +274,9 @@ namespace Ibinimator.Service.Tools
             target.FillCircle(end, 3, cacheManager.GetBrush(nameof(EditorColors.Node)));
             target.DrawCircle(end, 3, p);
 
-            target.PushEffect(target.CreateEffect<IDropShadowEffect>());
+            var shadow = target.CreateEffect<IDropShadowEffect>();
+            shadow.Color = new Color(0, 0, 0, 0.5f);
+            target.PushEffect(shadow);
 
             for (var i = 0; i < SelectedBrush.Stops.Count; i++)
             {
@@ -292,6 +294,7 @@ namespace Ibinimator.Service.Tools
             }
 
             target.PopEffect();
+            shadow.Dispose();
 
             // do not dispose the brushes! they are being used by the cache manager
             // and do not automatically regenerated b/c they are resource brushes

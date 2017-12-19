@@ -222,7 +222,7 @@ namespace Ibinimator.ViewModel
             {
                 Value = "hello world",
                 Fill = r2.Fill,
-                FontFamilyName = "Roboto",
+                FontFamilyName = "Roboto1s",
                 FontSize = 32,
                 Width = 100,
                 Height = 100

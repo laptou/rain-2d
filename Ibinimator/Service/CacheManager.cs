@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Catel.Collections;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -37,7 +36,8 @@ namespace Ibinimator.Service
         private readonly Dictionary<IGeometricLayer, IGeometry> _geometries =
             new Dictionary<IGeometricLayer, IGeometry>();
 
-        private readonly ReaderWriterLockSlim _renderLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private readonly ReaderWriterLockSlim _renderLock =
+            new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
         private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources =
             new Dictionary<(ILayer layer, int id), IDisposable>();
@@ -154,25 +154,13 @@ namespace Ibinimator.Service
             return newVal;
         }
 
-        public void EnterReadLock()
-        {
-            _renderLock.EnterReadLock();
-        }
+        public void EnterReadLock() { _renderLock.EnterReadLock(); }
 
-        public void ExitReadLock()
-        {
-            _renderLock.ExitReadLock();
-        }
+        public void ExitReadLock() { _renderLock.ExitReadLock(); }
 
-        public void EnterWriteLock()
-        {
-            _renderLock.EnterWriteLock();
-        }
+        public void EnterWriteLock() { _renderLock.EnterWriteLock(); }
 
-        public void ExitWriteLock()
-        {
-            _renderLock.ExitWriteLock();
-        }
+        public void ExitWriteLock() { _renderLock.ExitWriteLock(); }
 
         private IBitmap LoadBitmap(RenderContext target, string name)
         {
@@ -208,7 +196,7 @@ namespace Ibinimator.Service
                     break;
 
                 case "Stops":
-                    ((IGradientBrush) fill).Stops.ReplaceRange(((GradientBrushInfo) brush).Stops);
+                    ((IGradientBrush) fill).Stops.ReplaceRange(((GradientBrushInfo)brush).Stops);
                     break;
             }
 
@@ -238,7 +226,8 @@ namespace Ibinimator.Service
                 case nameof(IPenInfo.HasDashes):
                     stroke.Dashes.Clear();
                     if (info.HasDashes)
-                        stroke.Dashes.AddRange(info.Dashes);
+                        foreach (var dash in info.Dashes)
+                            stroke.Dashes.Add(dash);
                     break;
 
                 case nameof(IPenInfo.DashOffset):
