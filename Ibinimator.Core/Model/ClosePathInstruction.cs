@@ -9,10 +9,7 @@ namespace Ibinimator.Core.Model
     [DebuggerDisplay("Z")]
     public class ClosePathInstruction : PathInstruction
     {
-        public ClosePathInstruction(bool open)
-        {
-            Open = open;
-        }
+        public ClosePathInstruction(bool open) { Open = open; }
 
         public bool Open { get; }
     }

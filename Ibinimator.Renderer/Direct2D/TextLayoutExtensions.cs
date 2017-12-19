@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -9,8 +10,8 @@ namespace Ibinimator.Renderer.Direct2D
     internal static class TextLayoutExtensions
     {
         public static void SetFormat(
-            this TextLayout layout,
-            TextRange range,
+            this TextLayout             layout,
+            TextRange                   range,
             Action<TextRenderer.Format> callback)
         {
             var current = range.StartPosition;
@@ -28,6 +29,7 @@ namespace Ibinimator.Renderer.Direct2D
                 {
                     layout.SetDrawingEffect(specifier, new TextRange(current, 1));
                     current++;
+
                     continue;
                 }
 

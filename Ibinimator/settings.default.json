@@ -1,20 +1,20 @@
 {
     "shortcuts": {
-        "file.open": [ "ctrl+o" ],
-        "file.save": [ "ctrl+s" ],
-        "edit.undo": [ "ctrl+z" ],
-        "edit.redo": [ "ctrl+shift+z", "ctrl+y" ],
-        "object.union": [ "ctrl+shift+plus" ],
-        "object.intersection": [ "ctrl+shift+asterisk" ],
-        "object.difference": [ "ctrl+shift+minus" ],
-        "object.exclusion": [ "ctrl+shift+caret" ],
-        "selection.group": [ "ctrl+g" ],
-        "selection.ungroup": [ "ctrl+shift+g" ],
-        "selection.move-bottom": [ "ctrl+shift+leftsquare" ],
-        "selection.move-down": [ "ctrl+leftsquare" ],
-        "selection.move-up": [ "ctrl+rightsquare" ],
-        "selection.move-top": [ "ctrl+shift+rightsquare" ],
-        "object.pathify": [ "ctrl+shift+enter" ]
+        "file.open": ["ctrl+o"],
+        "file.save": ["ctrl+s"],
+        "edit.undo": ["ctrl+z"],
+        "edit.redo": ["ctrl+shift+z", "ctrl+y"],
+        "object.union": ["ctrl+shift+plus"],
+        "object.intersection": ["ctrl+shift+asterisk"],
+        "object.difference": ["ctrl+shift+minus"],
+        "object.exclusion": ["ctrl+shift+caret"],
+        "selection.group": ["ctrl+g"],
+        "selection.ungroup": ["ctrl+shift+g"],
+        "selection.move-bottom": ["ctrl+shift+leftsquare"],
+        "selection.move-down": ["ctrl+leftsquare"],
+        "selection.move-up": ["ctrl+rightsquare"],
+        "selection.move-top": ["ctrl+shift+rightsquare"],
+        "object.pathify": ["ctrl+shift+enter"]
     },
     "menus": [
         {
@@ -97,7 +97,7 @@
                     "name": "License",
                     "command": "help.license"
                 }
-            ] 
+            ]
         }
     ],
     "toolbars": [

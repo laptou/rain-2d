@@ -4,19 +4,10 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Core {
+namespace Ibinimator.Core
+{
     public struct PathNode
     {
-        public Vector2 Position { get; }
-
-        public Vector2? IncomingControl { get; }
-
-        public Vector2? OutgoingControl { get; }
-
-        public int Index { get; }
-
-        public PathFigureEnd? FigureEnd { get; }
-
         public PathNode(int index, Vector2 position) : this()
         {
             Index = index;
@@ -35,10 +26,10 @@ namespace Ibinimator.Core {
         }
 
         public PathNode(
-            int index,
-            Vector2 position,
-            Vector2? incomingControl,
-            Vector2? outgoingControl,
+            int            index,
+            Vector2        position,
+            Vector2?       incomingControl,
+            Vector2?       outgoingControl,
             PathFigureEnd? figureEnd) : this(
             index, position)
         {
@@ -46,6 +37,15 @@ namespace Ibinimator.Core {
             OutgoingControl = outgoingControl;
             FigureEnd = figureEnd;
         }
+
+        public PathFigureEnd? FigureEnd { get; }
+
+        public Vector2? IncomingControl { get; }
+
+        public int Index { get; }
+
+        public Vector2? OutgoingControl { get; }
+        public Vector2  Position        { get; }
 
         public override string ToString()
         {

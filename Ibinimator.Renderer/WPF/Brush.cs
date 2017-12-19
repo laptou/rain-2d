@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
@@ -26,6 +27,8 @@ namespace Ibinimator.Renderer.WPF
 
         public override void Optimize() { WpfBrush.Freeze(); }
 
+        public T Unwrap<T>() where T : class { return WpfBrush as T; }
+
         public float Opacity
         {
             get => (float) WpfBrush.Opacity;
@@ -45,8 +48,6 @@ namespace Ibinimator.Renderer.WPF
                 RaisePropertyChanged();
             }
         }
-
-        public T Unwrap<T>() where T : class { return WpfBrush as T; }
 
         #endregion
     }

@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -63,7 +64,9 @@ namespace Ibinimator.Service
             brush.PropertyChanged += OnBrushPropertyChanged;
 
             lock (_brushBindings)
+            {
                 _brushBindings[brush] = (shape, fill);
+            }
 
             return fill;
         }
@@ -84,42 +87,70 @@ namespace Ibinimator.Service
             return pen;
         }
 
+        public bool ClearResource(ILayer layer, int id)
+        {
+            lock (_resources)
+            {
+                _resources.TryGet((layer, id))?.Dispose();
+
+                return _resources.Remove((layer, id));
+            }
+        }
+
+        public void EnterReadLock() { _renderLock.EnterReadLock(); }
+
+        public void EnterWriteLock() { _renderLock.EnterWriteLock(); }
+
+        public void ExitReadLock() { _renderLock.ExitReadLock(); }
+
+        public void ExitWriteLock() { _renderLock.ExitWriteLock(); }
+
+        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)
+            where T : IDisposable
+        {
+            lock (_resources)
+            {
+                return _resources.Where(kv => kv.Key.layer == layer)
+                                 .Select(kv => (kv.Key.id, (T) kv.Value))
+                                 .ToArray();
+            }
+        }
+
+        public void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable
+        {
+            lock (_resources)
+            {
+                _resources.TryGet((layer, id))?.Dispose();
+                _resources[(layer, id)] = resource;
+            }
+        }
+
         public void UnbindLayer(ILayer layer)
         {
             EnterWriteLock();
 
             if (layer is IFilledLayer filled)
-            {
                 if (filled.Fill != null)
-                {
                     if (_fills.TryGetValue(filled, out var fill))
                     {
                         fill?.Dispose();
                         _fills.Remove(filled);
                     }
-                }
-            }
 
             if (layer is IStrokedLayer stroked)
-            {
                 if (stroked.Stroke != null)
-                {
                     if (_strokes.TryGetValue(stroked, out var stroke))
                     {
                         stroke.Dispose();
                         _strokes.Remove(stroked);
                     }
-                }
-            }
 
             if (layer is IGeometricLayer geometric)
-            {
                 if (_geometries.TryGetValue(geometric, out var geometry))
                 {
                     geometry.Dispose();
                     _geometries.Remove(geometric);
                 }
-            }
 
             lock (_bounds)
             {
@@ -137,7 +168,7 @@ namespace Ibinimator.Service
         {
             EnterReadLock();
 
-            var exists = dict.TryGetValue(key, out var value);
+            var exists = dict.TryGetValue(key, out var value) && value != null;
             var valid = (value as ResourceBase)?.Disposed != true;
 
             ExitReadLock();
@@ -154,14 +185,6 @@ namespace Ibinimator.Service
             return newVal;
         }
 
-        public void EnterReadLock() { _renderLock.EnterReadLock(); }
-
-        public void ExitReadLock() { _renderLock.ExitReadLock(); }
-
-        public void EnterWriteLock() { _renderLock.EnterWriteLock(); }
-
-        public void ExitWriteLock() { _renderLock.ExitWriteLock(); }
-
         private IBitmap LoadBitmap(RenderContext target, string name)
         {
             var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
@@ -171,7 +194,9 @@ namespace Ibinimator.Service
                 uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
 
             using (var stream = Application.GetResourceStream(uri)?.Stream)
+            {
                 return target.CreateBitmap(stream);
+            }
         }
 
         private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -185,18 +210,22 @@ namespace Ibinimator.Service
             {
                 case "Opacity":
                     fill.Opacity = brush.Opacity;
+
                     break;
 
                 case "Transform":
                     fill.Transform = brush.Transform;
+
                     break;
 
                 case "Color":
                     ((ISolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
+
                     break;
 
                 case "Stops":
-                    ((IGradientBrush) fill).Stops.ReplaceRange(((GradientBrushInfo)brush).Stops);
+                    ((IGradientBrush) fill).Stops.ReplaceRange(((GradientBrushInfo) brush).Stops);
+
                     break;
             }
 
@@ -206,6 +235,7 @@ namespace Ibinimator.Service
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var info = (IPenInfo) sender;
+
             if (info == null) return;
 
             var (layer, stroke) = Get(_strokeBindings, info, k => (null, default));
@@ -213,6 +243,7 @@ namespace Ibinimator.Service
             if (stroke == null)
             {
                 BindStroke(layer, info);
+
                 return;
             }
 
@@ -220,6 +251,7 @@ namespace Ibinimator.Service
             {
                 case nameof(IPenInfo.Width):
                     stroke.Width = info.Width;
+
                     break;
 
                 case nameof(IPenInfo.Dashes):
@@ -228,30 +260,39 @@ namespace Ibinimator.Service
                     if (info.HasDashes)
                         foreach (var dash in info.Dashes)
                             stroke.Dashes.Add(dash);
+
                     break;
 
                 case nameof(IPenInfo.DashOffset):
                     stroke.DashOffset = info.DashOffset;
+
                     break;
 
 
                 case nameof(IPenInfo.LineCap):
                     stroke.LineCap = info.LineCap;
+
                     break;
 
                 case nameof(IPenInfo.LineJoin):
                     stroke.LineJoin = info.LineJoin;
+
                     break;
 
                 case nameof(IPenInfo.MiterLimit):
                     stroke.MiterLimit = info.MiterLimit;
+
                     break;
             }
 
             Context.InvalidateSurface();
         }
 
+        private void RaiseBoundsChanged(ILayer layer) { BoundsChanged?.Invoke(this, layer); }
+
         #region ICacheManager Members
+
+        public event EventHandler<ILayer> BoundsChanged;
 
         public void BindLayer(ILayer layer)
         {
@@ -266,16 +307,16 @@ namespace Ibinimator.Service
                 }
 
                 filled.FillChanged += (s, e) =>
-                {
-                    EnterWriteLock();
+                                      {
+                                          EnterWriteLock();
 
-                    if (s is IFilledLayer shape)
-                        _fills.TryGet(shape)?.Dispose();
+                                          if (s is IFilledLayer shape)
+                                              _fills.TryGet(shape)?.Dispose();
 
-                    ExitWriteLock();
+                                          ExitWriteLock();
 
-                    Context.InvalidateSurface();
-                };
+                                          Context.InvalidateSurface();
+                                      };
             }
 
             if (layer is IStrokedLayer stroked)
@@ -287,61 +328,57 @@ namespace Ibinimator.Service
                 }
 
                 stroked.StrokeChanged += (s, e) =>
-                {
-                    EnterWriteLock();
+                                         {
+                                             EnterWriteLock();
 
-                    if (s is IStrokedLayer shape)
-                        _strokes.TryGet(shape)?.Dispose();
+                                             if (s is IStrokedLayer shape)
+                                                 _strokes.TryGet(shape)?.Dispose();
 
-                    ExitWriteLock();
+                                             ExitWriteLock();
 
-                    Context.InvalidateSurface();
-                };
+                                             Context.InvalidateSurface();
+                                         };
             }
 
             if (layer is ITextLayer text)
-            {
                 text.LayoutChanged += (s, e) =>
-                {
-                    EnterWriteLock();
+                                      {
+                                          EnterWriteLock();
 
-                    if (s is ITextLayer t)
-                        _texts.TryGet(t)?.Dispose();
+                                          if (s is ITextLayer t)
+                                              _texts.TryGet(t)?.Dispose();
 
-                    ExitWriteLock();
+                                          ExitWriteLock();
 
-                    Context.InvalidateSurface();
-                };
-            }
+                                          Context.InvalidateSurface();
+                                      };
 
             if (layer is IGeometricLayer geometric)
-            {
                 geometric.GeometryChanged += (s, e) =>
-                {
-                    EnterWriteLock();
+                                             {
+                                                 EnterWriteLock();
 
-                    if (s is IGeometricLayer g)
-                        _geometries.TryGet(g)?.Dispose();
+                                                 if (s is IGeometricLayer g)
+                                                     _geometries.TryGet(g)?.Dispose();
 
-                    ExitWriteLock();
+                                                 ExitWriteLock();
 
-                    Context.InvalidateSurface();
-                };
-            }
+                                                 Context.InvalidateSurface();
+                                             };
 
             layer.BoundsChanged += (s, e) =>
-            {
-                if (s is ILayer l)
-                {
-                    EnterWriteLock();
-                    _bounds[l] = l.GetBounds(this);
-                    ExitWriteLock();
+                                   {
+                                       if (s is ILayer l)
+                                       {
+                                           EnterWriteLock();
+                                           _bounds[l] = l.GetBounds(this);
+                                           ExitWriteLock();
 
-                    RaiseBoundsChanged(l);
-                }
+                                           RaiseBoundsChanged(l);
+                                       }
 
-                Context.InvalidateSurface();
-            };
+                                       Context.InvalidateSurface();
+                                   };
 
             ExitWriteLock();
 
@@ -353,19 +390,6 @@ namespace Ibinimator.Service
                 group.LayerAdded +=
                     (sender, layer1) =>
                         BindLayer(layer1);
-            }
-        }
-
-        private void RaiseBoundsChanged(ILayer layer) { BoundsChanged?.Invoke(this, layer); }
-
-        public event EventHandler<ILayer> BoundsChanged;
-
-        public bool ClearResource(ILayer layer, int id)
-        {
-            lock (_resources)
-            {
-                _resources.TryGet((layer, id))?.Dispose();
-                return _resources.Remove((layer, id));
             }
         }
 
@@ -390,17 +414,6 @@ namespace Ibinimator.Service
         public RectangleF GetRelativeBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
-        }
-
-        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)
-            where T : IDisposable
-        {
-            lock (_resources)
-            {
-                return _resources.Where(kv => kv.Key.layer == layer)
-                                 .Select(kv => (kv.Key.id, (T) kv.Value))
-                                 .ToArray();
-            }
         }
 
         public IPen GetStroke(IStrokedLayer layer)
@@ -464,6 +477,7 @@ namespace Ibinimator.Service
                     brushInfo.PropertyChanged -= OnBrushPropertyChanged;
                 brush?.Dispose();
             }
+
             _brushBindings.Clear();
 
             foreach (var (strokeInfo, (_, stroke)) in _strokeBindings.AsTuples())
@@ -473,6 +487,7 @@ namespace Ibinimator.Service
 
                 stroke.Dispose();
             }
+
             _strokeBindings.Clear();
 
             foreach (var (_, fill) in _fills.AsTuples()) fill?.Dispose();
@@ -482,15 +497,6 @@ namespace Ibinimator.Service
             _strokes.Clear();
 
             ExitWriteLock();
-        }
-
-        public void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable
-        {
-            lock (_resources)
-            {
-                _resources.TryGet((layer, id))?.Dispose();
-                _resources[(layer, id)] = resource;
-            }
         }
 
         public IArtContext Context { get; set; }

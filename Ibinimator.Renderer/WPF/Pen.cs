@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -12,12 +13,12 @@ namespace Ibinimator.Renderer.WPF
 
     internal class Pen : PropertyChangedBase, IPen
     {
-        private Brush _brush;
-        private float _dashOffset;
-        private LineCap _lineCap;
+        private Brush    _brush;
+        private float    _dashOffset;
+        private LineCap  _lineCap;
         private LineJoin _lineJoin;
-        private float _miterLimit;
-        private float _width;
+        private float    _miterLimit;
+        private float    _width;
 
         public Pen(Brush brush) : this(1, brush) { }
 
@@ -29,13 +30,13 @@ namespace Ibinimator.Renderer.WPF
             : this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4) { }
 
         public Pen(
-            float width,
-            Brush brush,
+            float              width,
+            Brush              brush,
             IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
+            float              dashOffset,
+            LineCap            lineCap,
+            LineJoin           lineJoin,
+            float              miterLimit)
         {
             Width = width;
             Brush = brush;

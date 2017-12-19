@@ -14,8 +14,9 @@ namespace Ibinimator.Core.Model
             Y = y;
         }
 
+        public Vector2 Position => new Vector2(X, Y);
+
         public float X { get; }
         public float Y { get; }
-        public Vector2 Position => new Vector2(X, Y);
     }
 }

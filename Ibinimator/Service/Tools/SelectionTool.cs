@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Resources;
@@ -33,7 +36,7 @@ namespace Ibinimator.Service.Tools
             }
         };
 
-        private float _accumRotation;
+        private float   _deltaRotation;
         private Vector2 _deltaTranslation;
 
         private SelectionHandle _handle = 0;
@@ -50,76 +53,15 @@ namespace Ibinimator.Service.Tools
             selectionManager.Updated += OnSelectionUpdated;
         }
 
+        public override string Cursor { get; protected set; }
+
+        public override float CursorRotate
+        {
+            get => SelectionManager.SelectionTransform.GetRotation();
+            protected set { }
+        }
+
         public GuideManager GuideManager { get; set; } = new GuideManager();
-
-        protected override void OnSelectionUpdated(object sender, EventArgs args)
-        {
-            base.OnSelectionUpdated(sender, args);
-            UpdateStatus();
-        }
-
-        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(float zoom)
-        {
-            var rect = SelectionManager.SelectionBounds;
-
-            if (rect.IsEmpty) yield break;
-
-            float x1 = rect.Left,
-                  y1 = rect.Top,
-                  x2 = rect.Right,
-                  y2 = rect.Bottom;
-
-            Vector2 Transform(float x, float y)
-            {
-                return SelectionManager.FromSelectionSpace(new Vector2(x, y));
-            }
-
-            yield return (SelectionHandle.TopLeft, Transform(x1, y1));
-            yield return (SelectionHandle.TopRight, Transform(x2, y1));
-            yield return (SelectionHandle.BottomRight, Transform(x2, y2));
-            yield return (SelectionHandle.BottomLeft, Transform(x1, y2));
-
-            var top = Transform((x1 + x2) / 2, y1);
-            yield return (SelectionHandle.Top, top);
-
-            yield return (SelectionHandle.Left, Transform(x1, (y1 + y2) / 2));
-            yield return (SelectionHandle.Right, Transform(x2, (y1 + y2) / 2));
-
-            var bottom = Transform((x1 + x2) / 2, y2);
-            yield return (SelectionHandle.Bottom, bottom);
-
-            var rotate = top - Vector2.Normalize(bottom - top) * 15 / zoom;
-            yield return (SelectionHandle.Rotation, rotate);
-        }
-
-        private void UpdateStatus()
-        {
-            if (Selection.Any())
-            {
-                if (!_mouse.down)
-                {
-                    var names = Selection.Select(l => l.Name ?? l.DefaultName)
-                                         .ToArray();
-
-                    var msg = string.Format(
-                        _statuses["selection"],
-                        names.Length,
-                        string.Join(", ", names));
-
-                    Manager.RaiseStatus(new Status(Status.StatusType.Info, msg));
-                }
-                else
-                {
-                    Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["transform"]));
-                }
-
-                return;
-            }
-
-            Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
-        }
-
-        #region ITool Members
 
         public override bool KeyDown(Key key, ModifierState modifiers)
         {
@@ -138,7 +80,20 @@ namespace Ibinimator.Service.Tools
                 return true;
             }
 
+            if (key == Key.LeftShift || key == Key.RightShift ||
+                key == Key.LeftAlt || key == Key.RightAlt)
+                GuideManager.ClearVirtualGuides();
+
             return base.KeyDown(key, modifiers);
+        }
+
+        public override bool KeyUp(Key key, ModifierState modifiers)
+        {
+            if (key == Key.LeftShift || key == Key.RightShift ||
+                key == Key.LeftAlt || key == Key.RightAlt)
+                GuideManager.ClearVirtualGuides();
+
+            return base.KeyUp(key, modifiers);
         }
 
         public override bool MouseDown(Vector2 pos, ModifierState state)
@@ -150,12 +105,14 @@ namespace Ibinimator.Service.Tools
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
                     _handle = handle.handle;
+
                     return true;
                 }
 
             if (base.MouseDown(pos, state))
             {
                 _handle = SelectionHandle.Translation;
+
                 return true;
             }
 
@@ -185,24 +142,30 @@ namespace Ibinimator.Service.Tools
                     {
                         case SelectionHandle.Rotation:
                             Cursor = "cursor-rotate";
+
                             break;
                         case SelectionHandle.Top:
                         case SelectionHandle.Bottom:
                             Cursor = "cursor-resize-ns";
+
                             break;
                         case SelectionHandle.Left:
                         case SelectionHandle.Right:
                             Cursor = "cursor-resize-ew";
+
                             break;
                         case SelectionHandle.BottomLeft:
                         case SelectionHandle.TopRight:
                             Cursor = "cursor-resize-nesw";
+
                             break;
                         case SelectionHandle.TopLeft:
                         case SelectionHandle.BottomRight:
                             Cursor = "cursor-resize-nwse";
+
                             break;
                         default:
+
                             throw new ArgumentOutOfRangeException();
                     }
 
@@ -239,7 +202,7 @@ namespace Ibinimator.Service.Tools
 
                 if (state.Shift)
                 {
-                    GuideManager.AddGuide(
+                    GuideManager.SetGuide(
                         new Guide(
                             0,
                             true,
@@ -247,7 +210,7 @@ namespace Ibinimator.Service.Tools
                             SelectionManager.SelectionTransform.GetRotation(),
                             GuideType.Rotation));
 
-                    _accumRotation += rotate;
+                    _deltaRotation += rotate;
                     rotate = 0;
 
                     // setting rotate to 0 means that the transformation matrix is
@@ -255,13 +218,13 @@ namespace Ibinimator.Service.Tools
                     // the matrix
                     Context.InvalidateSurface();
 
-                    if (Math.Abs(_accumRotation) > MathUtils.PiOverFour / 2)
+                    if (Math.Abs(_deltaRotation) > MathUtils.PiOverFour / 2)
                     {
-                        var delta = Math.Sign(_accumRotation) *
+                        var delta = Math.Sign(_deltaRotation) *
                                     MathUtils.PiOverFour;
 
                         rotate = delta;
-                        _accumRotation -= delta;
+                        _deltaRotation -= delta;
                     }
                 }
 
@@ -286,38 +249,41 @@ namespace Ibinimator.Service.Tools
                     var center = SelectionManager.FromSelectionSpace(localCenter);
                     var origin = center - _deltaTranslation;
 
-                    var localXaxis = localCenter + Vector2.UnitX;
-                    var localYaxis = localCenter + Vector2.UnitY;
-                    var xaxis = SelectionManager.FromSelectionSpace(localXaxis);
-                    var yaxis = SelectionManager.FromSelectionSpace(localYaxis);
-
-                    Vector2 axisX, axisY;
-
-                    if (state.Alt) // local axes
+                    if (!GuideManager.VirtualGuidesActive)
                     {
-                        axisX = xaxis - center;
-                        axisY = yaxis - center;
-                    }
-                    else
-                    {
-                        (axisX, axisY) = (Vector2.UnitX, Vector2.UnitY);
-                    }
+                        var localXaxis = localCenter + Vector2.UnitX;
+                        var localYaxis = localCenter + Vector2.UnitY;
+                        var xaxis = SelectionManager.FromSelectionSpace(localXaxis);
+                        var yaxis = SelectionManager.FromSelectionSpace(localYaxis);
 
-                    GuideManager.AddGuide(
-                        new Guide(
-                            0,
-                            true,
-                            origin,
-                            MathUtils.Angle(axisX, true),
-                            GuideType.Position));
+                        Vector2 axisX, axisY;
 
-                    GuideManager.AddGuide(
-                        new Guide(
-                            1,
-                            true,
-                            origin,
-                            MathUtils.Angle(axisY, true),
-                            GuideType.Position));
+                        if (state.Alt) // local axes
+                        {
+                            axisX = xaxis - center;
+                            axisY = yaxis - center;
+                        }
+                        else
+                        {
+                            (axisX, axisY) = (Vector2.UnitX, Vector2.UnitY);
+                        }
+
+                        GuideManager.SetGuide(
+                            new Guide(
+                                0,
+                                true,
+                                origin,
+                                MathUtils.Angle(axisX, true),
+                                GuideType.Position));
+
+                        GuideManager.SetGuide(
+                            new Guide(
+                                1,
+                                true,
+                                origin,
+                                MathUtils.Angle(axisY, true),
+                                GuideType.Position));
+                    }
 
                     var dest = GuideManager.LinearSnap(pos, origin, GuideType.Position)
                                            .Point;
@@ -381,7 +347,7 @@ namespace Ibinimator.Service.Tools
 
                 var axis = origin - target;
 
-                GuideManager.AddGuide(
+                GuideManager.SetGuide(
                     new Guide(
                         0,
                         true,
@@ -418,6 +384,8 @@ namespace Ibinimator.Service.Tools
             #endregion
 
             _mouse.position = pos;
+            _deltaTranslation += translate;
+            _deltaRotation += rotate;
 
             return true;
         }
@@ -426,7 +394,11 @@ namespace Ibinimator.Service.Tools
         {
             _mouse.down = false;
             _mouse.position = pos;
+
             base.MouseUp(pos, state);
+
+            GuideManager.ClearVirtualGuides();
+
             return true;
         }
 
@@ -441,7 +413,6 @@ namespace Ibinimator.Service.Tools
 
             // transform guides
             GuideManager.Render(target, cache, view);
-            GuideManager.ClearVirtualGuides();
 
             // handles
             var handles = GetHandles(view.Zoom).ToDictionary();
@@ -461,14 +432,74 @@ namespace Ibinimator.Service.Tools
 
         public override bool TextInput(string text) { return false; }
 
-        public override string Cursor { get; protected set; }
-
-        public override float CursorRotate
+        protected override void OnSelectionUpdated(object sender, EventArgs args)
         {
-            get => SelectionManager.SelectionTransform.GetRotation();
-            protected set { }
+            base.OnSelectionUpdated(sender, args);
+            UpdateStatus();
         }
 
-        #endregion
+        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(float zoom)
+        {
+            var rect = SelectionManager.SelectionBounds;
+
+            if (rect.IsEmpty) yield break;
+
+            float x1 = rect.Left,
+                  y1 = rect.Top,
+                  x2 = rect.Right,
+                  y2 = rect.Bottom;
+
+            Vector2 Transform(float x, float y)
+            {
+                return SelectionManager.FromSelectionSpace(new Vector2(x, y));
+            }
+
+            yield return (SelectionHandle.TopLeft, Transform(x1, y1));
+            yield return (SelectionHandle.TopRight, Transform(x2, y1));
+            yield return (SelectionHandle.BottomRight, Transform(x2, y2));
+            yield return (SelectionHandle.BottomLeft, Transform(x1, y2));
+
+            var top = Transform((x1 + x2) / 2, y1);
+
+            yield return (SelectionHandle.Top, top);
+
+            yield return (SelectionHandle.Left, Transform(x1, (y1 + y2) / 2));
+            yield return (SelectionHandle.Right, Transform(x2, (y1 + y2) / 2));
+
+            var bottom = Transform((x1 + x2) / 2, y2);
+
+            yield return (SelectionHandle.Bottom, bottom);
+
+            var rotate = top - Vector2.Normalize(bottom - top) * 15 / zoom;
+
+            yield return (SelectionHandle.Rotation, rotate);
+        }
+
+        private void UpdateStatus()
+        {
+            if (Selection.Any())
+            {
+                if (!_mouse.down)
+                {
+                    var names = Selection.Select(l => l.Name ?? l.DefaultName)
+                                         .ToArray();
+
+                    var msg = string.Format(
+                        _statuses["selection"],
+                        names.Length,
+                        string.Join(", ", names));
+
+                    Manager.RaiseStatus(new Status(Status.StatusType.Info, msg));
+                }
+                else
+                {
+                    Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["transform"]));
+                }
+
+                return;
+            }
+
+            Manager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
+        }
     }
 }

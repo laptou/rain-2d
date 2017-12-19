@@ -11,7 +11,7 @@ namespace Ibinimator.Core
         void SetInput(int index, IEffect effect);
 
         /// <summary>
-        /// Gets the native object representing the effect.
+        ///     Gets the native object representing the effect.
         /// </summary>
         /// <typeparam name="T">The type of object that is expected.</typeparam>
         /// <returns>The native object representing the effect.</returns>

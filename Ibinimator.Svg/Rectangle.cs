@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {
     public class Rectangle : ShapeElement
     {
-        public Length Height { get; set; }
+        public Length Height  { get; set; }
         public Length RadiusX { get; set; }
         public Length RadiusY { get; set; }
-        public Length Width { get; set; }
-        public Length X { get; set; }
-        public Length Y { get; set; }
+        public Length Width   { get; set; }
+        public Length X       { get; set; }
+        public Length Y       { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {

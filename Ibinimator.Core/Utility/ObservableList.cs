@@ -22,10 +22,7 @@ namespace Ibinimator.Core.Utility
         /// <summary>
         ///     Initializes a new instance of the FastObservableCollection class.
         /// </summary>
-        public ObservableList()
-        {
-            _suspendCollectionChangeNotification = false;
-        }
+        public ObservableList() { _suspendCollectionChangeNotification = false; }
 
         public ObservableList(IEnumerable<T> items) : base(items)
         {
@@ -105,21 +102,27 @@ namespace Ibinimator.Core.Utility
             }
         }
 
+        public void ReplaceRange(IEnumerable<T> items)
+        {
+            lock (_locker)
+            {
+                SuspendCollectionChangeNotification();
+                Clear();
+                foreach (var i in items)
+                    InsertItem(Count, i);
+                NotifyChanges();
+            }
+        }
+
         /// <summary>
         ///     Resumes collection changed notification.
         /// </summary>
-        public void ResumeCollectionChangeNotification()
-        {
-            _suspendCollectionChangeNotification = false;
-        }
+        public void ResumeCollectionChangeNotification() { _suspendCollectionChangeNotification = false; }
 
         /// <summary>
         ///     Suspends collection changed notification.
         /// </summary>
-        public void SuspendCollectionChangeNotification()
-        {
-            _suspendCollectionChangeNotification = true;
-        }
+        public void SuspendCollectionChangeNotification() { _suspendCollectionChangeNotification = true; }
 
         /// <inheritdoc />
         /// <summary>
@@ -146,26 +149,16 @@ namespace Ibinimator.Core.Utility
                 foreach (var @delegate in delegates)
                 {
                     var handler = (NotifyCollectionChangedEventHandler) @delegate;
+
                     // If the subscriber is a DispatcherObject and different thread.
 
                     if (handler.Target is DispatcherObject dispatcherObject
-                        && !dispatcherObject.CheckAccess())
-                        dispatcherObject.Dispatcher.BeginInvoke(DispatcherPriority.DataBind, handler, this, e);
+                     && !dispatcherObject.CheckAccess())
+                        dispatcherObject.Dispatcher.BeginInvoke(DispatcherPriority.DataBind, handler, this,
+                                                                e);
                     else
                         handler(this, e);
                 }
-            }
-        }
-
-        public void ReplaceRange(IEnumerable<T> items)
-        {
-            lock (_locker)
-            {
-                SuspendCollectionChangeNotification();
-                Clear();
-                foreach (var i in items)
-                    InsertItem(Count, i);
-                NotifyChanges();
             }
         }
     }

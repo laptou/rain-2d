@@ -15,12 +15,11 @@ namespace Ibinimator.Core.Model
         }
 
         public QuadraticPathInstruction(Vector2 position, Vector2 control) :
-            this(position.X, position.Y, control.X, control.Y)
-        { }
+            this(position.X, position.Y, control.X, control.Y) { }
+
+        public Vector2 Control => new Vector2(ControlX, ControlY);
 
         public float ControlX { get; }
         public float ControlY { get; }
-
-        public Vector2 Control => new Vector2(ControlX, ControlY);
     }
 }

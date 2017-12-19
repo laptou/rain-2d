@@ -11,11 +11,12 @@ namespace Ibinimator.Core
         {
             switch (type)
             {
-                case UnitType.None: return Unit.None;
-                case UnitType.Angle: return Unit.Radians;
+                case UnitType.None:   return Unit.None;
+                case UnitType.Angle:  return Unit.Radians;
                 case UnitType.Length: return Unit.Pixels;
-                case UnitType.Time: return Unit.Seconds;
+                case UnitType.Time:   return Unit.Seconds;
                 default:
+
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
@@ -25,10 +26,12 @@ namespace Ibinimator.Core
             switch (unit)
             {
                 case Unit.None:
+
                     return UnitType.None;
 
                 case Unit.Degrees:
                 case Unit.Radians:
+
                     return UnitType.Angle;
 
                 case Unit.Pixels:
@@ -36,6 +39,7 @@ namespace Ibinimator.Core
                 case Unit.Millimeters:
                 case Unit.Centimeters:
                 case Unit.Inches:
+
                     return UnitType.Length;
 
                 case Unit.Milliseconds:
@@ -43,9 +47,11 @@ namespace Ibinimator.Core
                 case Unit.Seconds:
                 case Unit.Minutes:
                 case Unit.Hours:
+
                     return UnitType.Time;
 
                 default:
+
                     throw new ArgumentOutOfRangeException(nameof(unit), unit, null);
             }
         }

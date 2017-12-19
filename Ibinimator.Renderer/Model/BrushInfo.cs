@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 
 namespace Ibinimator.Renderer.Model
@@ -17,6 +18,10 @@ namespace Ibinimator.Renderer.Model
             Transform = Matrix3x2.Identity;
             Name = _nextId++.ToString();
         }
+
+        #region IBrushInfo Members
+
+        public abstract IBrush CreateBrush(RenderContext target);
 
         public string Name
         {
@@ -36,7 +41,6 @@ namespace Ibinimator.Renderer.Model
             set => Set(value);
         }
 
-        public abstract IBrush CreateBrush(RenderContext target);
-        
+        #endregion
     }
 }

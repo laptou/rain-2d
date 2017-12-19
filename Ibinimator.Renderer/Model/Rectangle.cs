@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
@@ -51,7 +52,10 @@ namespace Ibinimator.Renderer.Model
             }
         }
 
-        public override RectangleF GetBounds(ICacheManager cache) { return new RectangleF(X, Y, Width, Height); }
+        public override RectangleF GetBounds(ICacheManager cache)
+        {
+            return new RectangleF(X, Y, Width, Height);
+        }
 
         public override IGeometry GetGeometry(ICacheManager cache)
         {

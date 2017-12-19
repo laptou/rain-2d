@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
+
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.Service.Commands
@@ -19,11 +21,6 @@ namespace Ibinimator.Service.Commands
             base(id, targets.OrderByDescending(l => l.Order).ToArray())
         {
             Operation = operation;
-        }
-
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override string Description => Operation.ToString();
@@ -63,17 +60,22 @@ namespace Ibinimator.Service.Commands
                         {
                             case CombineMode.Union:
                                 zg = xtg.Union(ytg);
+
                                 break;
                             case CombineMode.Intersect:
                                 zg = xtg.Intersection(ytg);
+
                                 break;
                             case CombineMode.Xor:
                                 zg = xtg.Xor(ytg);
+
                                 break;
                             case CombineMode.Exclude:
                                 zg = xtg.Difference(ytg);
+
                                 break;
                             default:
+
                                 throw new ArgumentOutOfRangeException();
                         }
 
@@ -93,6 +95,11 @@ namespace Ibinimator.Service.Commands
             var parent = _parents[Targets[0]].parent;
             Product.ApplyTransform(global: MathUtils.Invert(parent.AbsoluteTransform));
             parent.Add(Product);
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override void Undo(IArtContext artView)

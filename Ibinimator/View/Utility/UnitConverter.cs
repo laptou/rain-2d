@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+
 using Ibinimator.Core;
 
 namespace Ibinimator.View.Utility
@@ -31,7 +34,7 @@ namespace Ibinimator.View.Utility
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty BaseUnitProperty =
             DependencyProperty.Register("BaseUnit", typeof(Unit), typeof(UnitConverter),
-                new PropertyMetadata(Unit.Radians));
+                                        new PropertyMetadata(Unit.Radians));
 
         public Unit BaseUnit
         {
@@ -42,6 +45,7 @@ namespace Ibinimator.View.Utility
         public static float ConversionFactor(Unit source, Unit target)
         {
             if (source == Unit.None || target == Unit.None) return 1;
+
             return Factors[target] / Factors[source];
         }
 
@@ -50,20 +54,28 @@ namespace Ibinimator.View.Utility
             switch (target)
             {
                 case Unit.Radians:
+
                     return $"{value:N1}";
                 case Unit.Degrees:
+
                     return $"{value:N1} \u00B0";
                 case Unit.Pixels:
+
                     return $"{value:N1} px";
                 case Unit.Points:
+
                     return $"{value:N1} pt";
                 case Unit.Inches:
+
                     return $"{value:N1} in";
                 case Unit.Centimeters:
+
                     return $"{value:N1} cm";
                 case Unit.Millimeters:
+
                     return $"{value:N1} mm";
                 default:
+
                     throw new ArgumentOutOfRangeException(nameof(target), target, null);
             }
         }
@@ -84,20 +96,20 @@ namespace Ibinimator.View.Utility
                 case "in": return Unit.Inches;
 
                 case "ms": return Unit.Milliseconds;
-                case "f": return Unit.Frames;
-                case "m": return Unit.Minutes;
-                case "h": return Unit.Hours;
+                case "f":  return Unit.Frames;
+                case "m":  return Unit.Minutes;
+                case "h":  return Unit.Hours;
 
                 case "deg":
                 case "\u00B0": return Unit.Degrees;
-                default: return Unit.None;
+                default:       return Unit.None;
             }
         }
 
         public float Unformat(string value, Unit target)
         {
             var parts = Regex.Match(value,
-                @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*([a-zA-Z%\u00B0]*)");
+                                    @"([-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:E[-+]?[0-9]+)?)\s*([a-zA-Z%\u00B0]*)");
 
             if (!float.TryParse(parts.Groups[1].Value, out var num)) return float.NaN;
 
@@ -107,26 +119,32 @@ namespace Ibinimator.View.Utility
             {
                 case "\u00B0":
                     source = Unit.Degrees;
+
                     break;
 
                 case "px":
                     source = Unit.Pixels;
+
                     break;
 
                 case "pt":
                     source = Unit.Points;
+
                     break;
 
                 case "in":
                     source = Unit.Inches;
+
                     break;
 
                 case "cm":
                     source = Unit.Centimeters;
+
                     break;
 
                 default:
                     source = Unit.None;
+
                     break;
             }
 
@@ -181,6 +199,7 @@ namespace Ibinimator.View.Utility
             if (value is string input)
             {
                 var num = Unformat(input, unit) * ConversionFactor(unit, BaseUnit);
+
                 if (!float.IsNaN(num)) return num;
             }
             else

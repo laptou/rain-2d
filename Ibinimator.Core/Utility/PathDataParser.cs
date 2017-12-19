@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core.Utility
@@ -16,7 +17,7 @@ namespace Ibinimator.Core.Utility
             var nodes = new List<PathInstruction>();
 
             var commands = Regex.Matches(data ?? "",
-                @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))*");
+                                         @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))*");
             var (start, pos, control, control2) = (Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero);
             var lastInstruction = PathDataInstruction.Close;
 
@@ -24,8 +25,8 @@ namespace Ibinimator.Core.Utility
             {
                 var parameters =
                     from set in command.Groups
-                        .OfType<Group>()
-                        .Skip(2)
+                                       .OfType<Group>()
+                                       .Skip(2)
                     from Capture cap in set.Captures
                     select float.Parse(cap.Value);
 
@@ -37,35 +38,46 @@ namespace Ibinimator.Core.Utility
                 {
                     case 'M':
                         instruction = PathDataInstruction.Move;
+
                         break;
                     case 'L':
                         instruction = PathDataInstruction.Line;
+
                         break;
                     case 'H':
                         instruction = PathDataInstruction.Horizontal;
+
                         break;
                     case 'V':
                         instruction = PathDataInstruction.Vertical;
+
                         break;
                     case 'C':
                         instruction = PathDataInstruction.Cubic;
+
                         break;
                     case 'S':
                         instruction = PathDataInstruction.ShortCubic;
+
                         break;
                     case 'Q':
                         instruction = PathDataInstruction.Quadratic;
+
                         break;
                     case 'T':
                         instruction = PathDataInstruction.ShortQuadratic;
+
                         break;
                     case 'A':
                         instruction = PathDataInstruction.Arc;
+
                         break;
                     case 'Z':
                         instruction = PathDataInstruction.Close;
+
                         break;
                     default:
+
                         throw new InvalidDataException("Invalid command.");
                 }
 
@@ -86,6 +98,7 @@ namespace Ibinimator.Core.Utility
                     #region Linear
 
                     case PathDataInstruction.Line:
+
                         while (coordinates.Count >= 2)
                         {
                             if (relative)
@@ -95,9 +108,11 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new LinePathInstruction(pos));
                         }
+
                         break;
 
                     case PathDataInstruction.Horizontal:
+
                         while (coordinates.Count >= 1)
                         {
                             if (relative)
@@ -107,9 +122,11 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new LinePathInstruction(pos));
                         }
+
                         break;
 
                     case PathDataInstruction.Vertical:
+
                         while (coordinates.Count >= 1)
                         {
                             if (relative)
@@ -119,6 +136,7 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new LinePathInstruction(pos));
                         }
+
                         break;
 
                     #endregion
@@ -126,6 +144,7 @@ namespace Ibinimator.Core.Utility
                     #region Quadratic
 
                     case PathDataInstruction.Quadratic:
+
                         while (coordinates.Count >= 4)
                         {
                             if (relative)
@@ -141,8 +160,10 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new QuadraticPathInstruction(pos, control));
                         }
+
                         break;
                     case PathDataInstruction.ShortQuadratic:
+
                         while (coordinates.Count >= 2)
                         {
                             if (lastInstruction == PathDataInstruction.Quadratic ||
@@ -158,6 +179,7 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new QuadraticPathInstruction(pos, control));
                         }
+
                         break;
 
                     #endregion
@@ -165,6 +187,7 @@ namespace Ibinimator.Core.Utility
                     #region Cubic
 
                     case PathDataInstruction.Cubic:
+
                         while (coordinates.Count >= 6)
                         {
                             if (relative)
@@ -182,8 +205,10 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new CubicPathInstruction(pos, control, control2));
                         }
+
                         break;
                     case PathDataInstruction.ShortCubic:
+
                         while (coordinates.Count >= 4)
                         {
                             if (lastInstruction == PathDataInstruction.Cubic ||
@@ -205,11 +230,13 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new CubicPathInstruction(pos, control, control2));
                         }
+
                         break;
 
                     #endregion
 
                     case PathDataInstruction.Arc:
+
                         while (coordinates.Count >= 7)
                         {
                             var radii = new Vector2(coordinates.Pop(), coordinates.Pop());
@@ -224,11 +251,13 @@ namespace Ibinimator.Core.Utility
 
                             nodes.Add(new ArcPathInstruction(pos, radii, angle, clockwise, large));
                         }
+
                         break;
 
                     case PathDataInstruction.Close:
                         nodes.Add(new ClosePathInstruction(false));
                         pos = start;
+
                         break;
                 }
 

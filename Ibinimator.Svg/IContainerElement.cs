@@ -5,11 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Svg
 {
-    public interface IContainerElement : IContainerElement<IElement>
-    {
-    }
+    public interface IContainerElement : IContainerElement<IElement> { }
 
-    public interface IContainerElement<TElement> : IElement, IList<TElement>
-    {
-    }
+    public interface IContainerElement<TElement> : IElement, IList<TElement> { }
 }

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
@@ -16,25 +15,17 @@ namespace Ibinimator.ViewModel
 
         public event Action ShowRequested;
 
-        public void CloseView()
-        {
-            CloseRequested?.Invoke();
-        }
+        public void CloseView() { CloseRequested?.Invoke(); }
 
-        public void HideView()
-        {
-            HideRequested?.Invoke();
-        }
+        public void HideView() { HideRequested?.Invoke(); }
 
-        public void ShowView()
-        {
-            ShowRequested?.Invoke();
-        }
+        public void ShowView() { ShowRequested?.Invoke(); }
 
         protected async Task<T> DesignOrRunTimeAsync<T>(Func<Task<T>> designTime, Func<Task<T>> runTime)
         {
             if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
                 return await designTime();
+
             return await runTime();
         }
 
@@ -62,10 +53,7 @@ namespace Ibinimator.ViewModel
                 await task();
         }
 
-        protected void Ui(Action action)
-        {
-            Application.Current.Dispatcher.Invoke(action);
-        }
+        protected void Ui(Action action) { Application.Current.Dispatcher.Invoke(action); }
 
         protected async Task UiAsync(Action action)
         {

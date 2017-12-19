@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -14,9 +15,9 @@ namespace Ibinimator.Service.Tools
 {
     public abstract class SelectionToolBase : Core.Model.Model, ITool
     {
-        private int _depth = 1;
-        private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
-        protected ModifierState State;
+        private   int                                      _depth = 1;
+        private   (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
+        protected ModifierState                            State;
 
         protected SelectionToolBase(IToolManager manager, ISelectionManager selectionManager)
         {
@@ -180,6 +181,7 @@ namespace Ibinimator.Service.Tools
             _mouse.down = false;
 
             Context.InvalidateSurface();
+
             return false;
         }
 
@@ -209,11 +211,11 @@ namespace Ibinimator.Service.Tools
 
         public abstract bool TextInput(string text);
 
-        public virtual string Cursor { get; protected set; }
-        public virtual float CursorRotate { get; protected set; }
-        public IToolManager Manager { get; }
-        public ToolOptions Options { get; protected set; }
-        public ToolType Type { get; protected set; }
+        public virtual string       Cursor       { get; protected set; }
+        public virtual float        CursorRotate { get; protected set; }
+        public         IToolManager Manager      { get; }
+        public         ToolOptions  Options      { get; protected set; }
+        public         ToolType     Type         { get; protected set; }
 
         #endregion
     }

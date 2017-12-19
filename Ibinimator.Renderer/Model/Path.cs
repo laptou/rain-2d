@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -22,13 +23,18 @@ namespace Ibinimator.Renderer.Model
         public override IGeometry GetGeometry(ICacheManager cache)
         {
             var pg = cache.Context.RenderContext.CreateGeometry();
+
             // ToArray to avoid modification-during-iteration errors
             pg.Load(Instructions.ToArray());
+
             return pg;
         }
 
         public void Update() { RaiseGeometryChanged(); }
 
-        private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs args) { RaiseGeometryChanged(); }
+        private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs args)
+        {
+            RaiseGeometryChanged();
+        }
     }
 }

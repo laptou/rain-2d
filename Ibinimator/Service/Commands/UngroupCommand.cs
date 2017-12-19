@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.Model;
 
@@ -10,13 +13,11 @@ namespace Ibinimator.Service.Commands
 {
     public class UngroupCommand : LayerCommandBase<IContainerLayer>
     {
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
+        private readonly Dictionary<ILayer, IContainerLayer> _layers =
+            new Dictionary<ILayer, IContainerLayer>();
 
-        private readonly Dictionary<ILayer, IContainerLayer> _layers = new Dictionary<ILayer, IContainerLayer>();
-        private readonly Dictionary<IContainerLayer, IContainerLayer> _parents = new Dictionary<IContainerLayer, IContainerLayer>();
+        private readonly Dictionary<IContainerLayer, IContainerLayer> _parents =
+            new Dictionary<IContainerLayer, IContainerLayer>();
 
         public UngroupCommand(long id, IContainerLayer[] targets) : base(id, targets)
         {
@@ -43,6 +44,11 @@ namespace Ibinimator.Service.Commands
 
                 target.Parent.Remove(target as Layer);
             }
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override void Undo(IArtContext artView)

@@ -14,19 +14,8 @@ namespace Ibinimator.Core.Model
     public abstract class Model
         : IModel
     {
-        private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
-        private Dictionary<string, object> _properties = new Dictionary<string, object>();
-
-        public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
-
-        public object Clone(Type type)
-        {
-            var t = (Model) Activator.CreateInstance(type);
-            t._properties = _properties.ToDictionary(
-                kv => kv.Key,
-                kv => (kv.Value as Model)?.Clone() ?? kv.Value);
-            return t;
-        }
+        private readonly Dictionary<string, Delegate> _handlers   = new Dictionary<string, Delegate>();
+        private          Dictionary<string, object>   _properties = new Dictionary<string, object>();
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
@@ -36,11 +25,13 @@ namespace Ibinimator.Core.Model
         protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
         {
             var member = propertyLambda.Body as MemberExpression;
+
             if (member == null)
                 throw new ArgumentException(
                     $"Expression '{propertyLambda}' refers to a method, not a property.");
 
             var propInfo = member.Member as PropertyInfo;
+
             if (propInfo == null)
                 throw new ArgumentException(
                     $"Expression '{propertyLambda}' refers to a field, not a property.");
@@ -56,9 +47,9 @@ namespace Ibinimator.Core.Model
             }
             catch (Exception ex)
             {
-#if DEBUG
+                #if DEBUG
                 Debugger.Log(3, "Error-PropertyChanged-Handler", ex.Message);
-#endif
+                #endif
             }
         }
 
@@ -102,7 +93,10 @@ namespace Ibinimator.Core.Model
                     old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
                 _handlers[propertyName] =
-                    new NotifyCollectionChangedEventHandler((s, e) => { RaisePropertyChanged(propertyName); });
+                    new NotifyCollectionChangedEventHandler((s, e) =>
+                                                            {
+                                                                RaisePropertyChanged(propertyName);
+                                                            });
 
                 collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }
@@ -139,21 +133,25 @@ namespace Ibinimator.Core.Model
             _properties[propertyName] = value;
         }
 
-        #region ICloneable Members
-
-        public object Clone() { return Clone(GetType()); }
-
-        #endregion
-
-        #region INotifyPropertyChanged Members
+        #region IModel Members
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        #endregion
-
-        #region INotifyPropertyChanging Members
-
         public event PropertyChangingEventHandler PropertyChanging;
+
+        public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
+
+        public object Clone(Type type)
+        {
+            var t = (Model) Activator.CreateInstance(type);
+            t._properties = _properties.ToDictionary(
+                kv => kv.Key,
+                kv => (kv.Value as Model)?.Clone() ?? kv.Value);
+
+            return t;
+        }
+
+        public object Clone() { return Clone(GetType()); }
 
         #endregion
     }

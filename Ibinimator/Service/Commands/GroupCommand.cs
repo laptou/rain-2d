@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.Model;
 
@@ -9,13 +10,8 @@ namespace Ibinimator.Service.Commands
 {
     public class GroupCommand : LayerCommandBase<ILayer>
     {
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
-
         private readonly Dictionary<ILayer, int> _zIndices = new Dictionary<ILayer, int>();
-        private Group _group;
+        private          Group                   _group;
 
         public GroupCommand(long id, ILayer[] targets) : base(id, targets)
         {
@@ -45,6 +41,11 @@ namespace Ibinimator.Service.Commands
             }
 
             parents[0].Add(_group);
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override void Undo(IArtContext artView)

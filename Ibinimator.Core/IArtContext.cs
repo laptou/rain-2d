@@ -17,11 +17,11 @@ namespace Ibinimator.Core
 
         ISelectionManager SelectionManager { get; }
 
+        Status Status { get; set; }
+
         IToolManager ToolManager { get; }
 
         IViewManager ViewManager { get; }
-
-        Status Status { get; set; }
 
         event EventHandler StatusChanged;
 

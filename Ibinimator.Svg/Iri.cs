@@ -12,6 +12,8 @@ namespace Ibinimator.Svg
             new Regex(@"url\(#([A-Za-z_][A-Za-z0-9_]*)\)|#([A-Za-z_][A-Za-z0-9_]*)",
                       RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        public string Id { get; set; }
+
         public static bool TryParse(string input, out Iri iri)
         {
             iri = default;
@@ -31,12 +33,11 @@ namespace Ibinimator.Svg
                     return false;
 
                 iri = new Iri {Id = id};
+
                 return true;
             }
 
             return false;
         }
-
-        public string Id { get; set; }
     }
 }

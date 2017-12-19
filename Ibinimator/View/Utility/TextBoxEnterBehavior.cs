@@ -49,18 +49,18 @@ namespace Ibinimator.View.Utility
         private static void OnAssociatedObjectKeyDown(object sender, KeyEventArgs e)
         {
             if (sender is FrameworkElement element)
-            {
                 switch (e.Key)
                 {
                     case Key.Return:
                         if (!element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)))
                             Keyboard.ClearFocus();
+
                         break;
                     case Key.Escape:
                         Keyboard.ClearFocus();
+
                         break;
                 }
-            }
         }
     }
 }

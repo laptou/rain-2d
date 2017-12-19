@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
+
 using SharpDX.Direct2D1;
+
 using LineJoin = Ibinimator.Core.Model.LineJoin;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -13,11 +16,11 @@ namespace Ibinimator.Renderer.Direct2D
     internal class Pen : ResourceBase, IPen
     {
         private readonly RenderTarget _target;
-        private Brush _brush;
-        private float _dashOffset;
-        private LineCap _lineCap;
-        private LineJoin _lineJoin;
-        private float _miterLimit;
+        private          Brush        _brush;
+        private          float        _dashOffset;
+        private          LineCap      _lineCap;
+        private          LineJoin     _lineJoin;
+        private          float        _miterLimit;
 
         private float _width;
 
@@ -29,11 +32,11 @@ namespace Ibinimator.Renderer.Direct2D
                                                                          target) { }
 
         public Pen(float width, Brush brush, IEnumerable<float> dashes, RenderTarget target) :
-            this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4, target)
-        {
-        }
+            this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4, target) { }
 
-        public Pen(float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin, float miterLimit, RenderTarget target)
+        public Pen(
+            float    width, Brush    brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit, RenderTarget  target)
         {
             Width = width;
             Brush = brush;
@@ -41,7 +44,7 @@ namespace Ibinimator.Renderer.Direct2D
             var list = new ObservableList<float>(dashes);
             list.CollectionChanged += (s, e) => { RecreateStyle(); };
             Dashes = list;
-            
+
             DashOffset = dashOffset;
             LineCap = lineCap;
             LineJoin = lineJoin;
@@ -62,6 +65,8 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public StrokeStyle1 Style { get; private set; }
+
+        public override void Optimize() { throw new NotImplementedException(); }
 
         private void RecreateStyle()
         {
@@ -101,8 +106,6 @@ namespace Ibinimator.Renderer.Direct2D
             Style.Dispose();
             base.Dispose();
         }
-
-        public override void Optimize() { throw new NotImplementedException(); }
 
         public IList<float> Dashes { get; }
 

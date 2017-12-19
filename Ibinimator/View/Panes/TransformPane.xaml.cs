@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 namespace Ibinimator.View.Panes
 {
     /// <summary>
-    /// Interaction logic for TransformPane.xaml
+    ///     Interaction logic for TransformPane.xaml
     /// </summary>
     public partial class TransformPane
     {
-        public TransformPane()
-        {
-            InitializeComponent();
-        }
+        public TransformPane() { InitializeComponent(); }
     }
 }

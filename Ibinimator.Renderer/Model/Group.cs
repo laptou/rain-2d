@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -12,26 +13,28 @@ namespace Ibinimator.Renderer.Model
 {
     public class Group : Layer, IContainerLayer
     {
-        public override IEnumerable<ILayer> Flatten(int depth)
+        public override ILayer Find(Guid id)
         {
-            if (depth < 0) yield break;
+            if (id == Id) return this;
 
-            yield return this;
+            var subLayer = SubLayers.FirstOrDefault(layer => layer.Id == id);
 
-            foreach (var layer in SubLayers)
-            {
-                var graph = layer.Flatten(depth - 1);
+            if (subLayer != null) return subLayer;
 
-                foreach (var child in graph)
-                    yield return child;
-            }
+            return
+                SubLayers
+                   .OfType<Group>()
+                   .Select(layer => layer.Find(id))
+                   .FirstOrDefault(l => l != null);
         }
+
+        private void OnBoundsChanged(object sender, EventArgs e) { RaiseBoundsChanged(); }
 
         private void OnSubLayerChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(sender, e);
 
-            if(e.PropertyName == nameof(ILayer.Transform))
+            if (e.PropertyName == nameof(ILayer.Transform))
                 RaiseBoundsChanged();
         }
 
@@ -64,25 +67,19 @@ namespace Ibinimator.Renderer.Model
             LayerAdded?.Invoke(this, child);
         }
 
-        private void OnBoundsChanged(object sender, EventArgs e)
+        public override IEnumerable<ILayer> Flatten(int depth)
         {
-            RaiseBoundsChanged();
-        }
+            if (depth < 0) yield break;
 
+            yield return this;
 
-        public override ILayer Find(Guid id)
-        {
-            if (id == Id) return this;
+            foreach (var layer in SubLayers)
+            {
+                var graph = layer.Flatten(depth - 1);
 
-            var subLayer = SubLayers.FirstOrDefault(layer => layer.Id == id);
-
-            if (subLayer != null) return subLayer;
-
-            return
-                SubLayers
-                    .OfType<Group>()
-                    .Select(layer => layer.Find(id))
-                    .FirstOrDefault(l => l != null);
+                foreach (var child in graph)
+                    yield return child;
+            }
         }
 
         public override IEnumerable<ILayer> Flatten()
@@ -104,12 +101,12 @@ namespace Ibinimator.Renderer.Model
 
             if (cache != null)
                 return SubLayers
-                    .Select(cache.GetRelativeBounds)
-                    .Aggregate(RectangleF.Union);
+                      .Select(cache.GetRelativeBounds)
+                      .Aggregate(RectangleF.Union);
 
             return SubLayers
-                .Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
-                .Aggregate((r1, r2) => RectangleF.Union(r1, r2));
+                  .Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
+                  .Aggregate((r1, r2) => RectangleF.Union(r1, r2));
         }
 
         public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
@@ -119,9 +116,11 @@ namespace Ibinimator.Renderer.Model
             foreach (var layer in SubLayers)
             {
                 var result = layer.HitTest<T>(cache, point, minimumDepth - 1);
+
                 if (result == null) continue;
 
                 hit = result;
+
                 break;
             }
 

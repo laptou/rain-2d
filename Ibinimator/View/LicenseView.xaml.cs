@@ -11,9 +11,6 @@ namespace Ibinimator.View
     /// </summary>
     public partial class LicenseView : Window
     {
-        public LicenseView()
-        {
-            InitializeComponent();
-        }
+        public LicenseView() { InitializeComponent(); }
     }
 }

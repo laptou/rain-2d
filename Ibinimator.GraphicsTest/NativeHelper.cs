@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Model {}
@@ -21,15 +22,15 @@ namespace Ibinimator.Native
 
         [DllImport("user32.dll", EntryPoint = "CreateWindowEx", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateWindowEx(
-            uint dwExStyle,
-            ushort lpszClassName,
-            string lpszWindowName,
-            WindowStyles style,
-            int x, int y,
-            int width, int height,
-            IntPtr hwndParent,
-            IntPtr hMenu,
-            IntPtr hInst,
+            uint                                    dwExStyle,
+            ushort                                  lpszClassName,
+            string                                  lpszWindowName,
+            WindowStyles                            style,
+            int                                     x, int     y,
+            int                                     width, int height,
+            IntPtr                                  hwndParent,
+            IntPtr                                  hMenu,
+            IntPtr                                  hInst,
             [MarshalAs(UnmanagedType.AsAny)] object pvParam);
 
         [DllImport("user32.dll")]
@@ -55,6 +56,7 @@ namespace Ibinimator.Native
         {
             var mod = LowWord(wParam);
             var alt = GetAsyncKeyState(0x12); // VK_MENU (Alt)
+
             return new ModifierState(
                     (mod & 0x0008) != 0, // MK_CONTROL
                     (mod & 0x0004) != 0, // MK_SHIFT
@@ -91,6 +93,11 @@ namespace Ibinimator.Native
                 );
         }
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr GetModuleHandle(
+            [In] [Optional] [MarshalAs(UnmanagedType.LPTStr)]
+            string lpModuleName);
+
         /// <summary>
         ///     Gets high bits values of the pointer.
         /// </summary>
@@ -99,6 +106,7 @@ namespace Ibinimator.Native
             unchecked
             {
                 var val32 = (ulong) ptr;
+
                 return (short) ((val32 & 0xFFFF0000) >> 16);
             }
         }
@@ -107,7 +115,7 @@ namespace Ibinimator.Native
         public static extern bool InvalidateRect(
             [In] IntPtr hWnd,
             [In] IntPtr lpRect,
-            [In] bool bErase);
+            [In] bool   bErase);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindowUnicode(IntPtr hWnd);
@@ -118,14 +126,12 @@ namespace Ibinimator.Native
         public static short LowWord(IntPtr ptr)
         {
             var val32 = (ulong) ptr;
+
             return (short) (val32 & 0x0000FFFF);
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern ushort RegisterClass(ref WndClass lpWndClass);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern IntPtr GetModuleHandle([In, Optional, MarshalAs(UnmanagedType.LPTStr)] string lpModuleName);
 
 
         [DllImport("user32.dll")]
@@ -134,11 +140,11 @@ namespace Ibinimator.Native
         [DllImport("user32.dll")]
         public static extern ushort UnregisterClass(
             [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
-            [Optional] IntPtr hInstance);
+            [Optional]                        IntPtr hInstance);
 
         [DllImport("user32.dll")]
         public static extern bool ValidateRect(
-            [In] IntPtr hWnd,
+            [In]     IntPtr     hWnd,
             [In] ref NativeRect lpRect);
     }
 
@@ -220,10 +226,11 @@ namespace Ibinimator.Native
                 return Equals(rect);
             if (obj is Rectangle rectangle)
                 return Equals(new NativeRect(rectangle));
+
             return false;
         }
 
-        public override int GetHashCode() { return ((Rectangle)this).GetHashCode(); }
+        public override int GetHashCode() { return ((Rectangle) this).GetHashCode(); }
 
         public override string ToString()
         {

@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using SharpDX.Mathematics.Interop;
+
 using D2D1 = SharpDX.Direct2D1;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -29,11 +32,11 @@ namespace Ibinimator.Renderer.Direct2D
                 ((D2D1.SolidColorBrush) NativeBrush).Color.A);
 
             set => ((D2D1.SolidColorBrush) NativeBrush).Color =
-                new RawColor4(
-                    value.R,
-                    value.G,
-                    value.B,
-                    value.A);
+                   new RawColor4(
+                       value.R,
+                       value.G,
+                       value.B,
+                       value.A);
         }
 
         #endregion

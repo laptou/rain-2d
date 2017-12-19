@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -38,10 +39,14 @@ namespace Ibinimator.Service
         {
             using (var brush = target.CreateBrush(new Color(0.9f)))
             using (var pen = target.CreatePen(1, brush))
+            {
                 target.DrawRectangle(Document.Bounds, pen);
+            }
 
             using (var brush = target.CreateBrush(new Color(1f)))
+            {
                 target.FillRectangle(Document.Bounds, brush);
+            }
         }
 
         public Vector2 ToArtSpace(Vector2 v) { return Vector2.Transform(v, MathUtils.Invert(Transform)); }

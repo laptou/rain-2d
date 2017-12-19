@@ -6,8 +6,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using Color = Ibinimator.Core.Model.Color;
 using GradientStop = Ibinimator.Core.GradientStop;
 
@@ -16,9 +18,10 @@ namespace Ibinimator.Renderer.WPF
     public class WpfRenderContext : RenderContext
     {
         private readonly Queue<RenderCommand> _commandQueue = new Queue<RenderCommand>();
-        private DrawingContext _ctx;
+        private          DrawingContext       _ctx;
 
-        public override void HideCursor() { throw new NotImplementedException(); }
+        public override float Height { get; }
+        public override float Width  { get; }
 
         public override void Begin(object ctx)
         {
@@ -26,27 +29,18 @@ namespace Ibinimator.Renderer.WPF
                 _ctx = dc;
         }
 
-        public override void Clear(Color color)
-        {
-            _commandQueue.Enqueue(new ClearRenderCommand(color));
-        }
+        public override void Clear(Color color) { _commandQueue.Enqueue(new ClearRenderCommand(color)); }
 
-        public override IBitmap CreateBitmap(Stream stream)
-        {
-            throw new NotImplementedException();
-        }
+        public override IBitmap CreateBitmap(Stream stream) { throw new NotImplementedException(); }
 
-        public override ISolidColorBrush CreateBrush(Color color)
-        {
-            return new SolidColorBrush(color);
-        }
+        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(color); }
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float startX,
-            float startY,
-            float endX,
-            float endY)
+            float                     startX,
+            float                     startY,
+            float                     endX,
+            float                     endY)
         {
             return new LinearGradientBrush(
                 stops,
@@ -56,12 +50,12 @@ namespace Ibinimator.Renderer.WPF
 
         public override IRadialGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float centerX,
-            float centerY,
-            float radiusX,
-            float radiusY,
-            float focusX,
-            float focusY)
+            float                     centerX,
+            float                     centerY,
+            float                     radiusX,
+            float                     radiusY,
+            float                     focusX,
+            float                     focusY)
         {
             return new RadialGradientBrush(
                 stops,
@@ -69,6 +63,8 @@ namespace Ibinimator.Renderer.WPF
                 new Size(radiusX, radiusX),
                 new Point(focusX, focusY));
         }
+
+        public override T CreateEffect<T>() { throw new NotImplementedException(); }
 
         public override IGeometry CreateEllipseGeometry(
             float cx,
@@ -90,14 +86,24 @@ namespace Ibinimator.Renderer.WPF
             });
         }
 
-        public override T CreateEffect<T>() { throw new NotImplementedException(); }
-
         public override IPen CreatePen(
-            float width,
-            IBrush brush,
+            float              width,
+            IBrush             brush,
             IEnumerable<float> dashes)
         {
             return new Pen(width, brush as Brush, dashes);
+        }
+
+        public override IPen CreatePen(
+            float              width,
+            IBrush             brush,
+            IEnumerable<float> dashes,
+            float              dashOffset,
+            LineCap            lineCap,
+            LineJoin           lineJoin,
+            float              miterLimit)
+        {
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit);
         }
 
         public override IGeometry CreateRectangleGeometry(
@@ -110,38 +116,11 @@ namespace Ibinimator.Renderer.WPF
                 new RectangleGeometry(new Rect(new Point(x, y), new Size(w, h))));
         }
 
-        public override ITextLayout CreateTextLayout()
-        {
-            throw new NotImplementedException();
-        }
+        public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
         public override void Dispose() { _ctx = null; }
-        public override void PopEffect() { throw new NotImplementedException(); }
-        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
 
-        public override IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
-        {
-            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit);
-        }
-
-        public override float GetDpi() { return 0; }
-
-        public override float Height { get; }
-        public override float Width { get; }
-        public override void SetCaretPosition(int x, int y) { throw new NotImplementedException(); }
-        public override void ShowCaret() { throw new NotImplementedException(); }
-
-        public override void DrawBitmap(IBitmap bitmap)
-        {
-            throw new NotImplementedException();
-        }
+        public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {
@@ -165,7 +144,6 @@ namespace Ibinimator.Renderer.WPF
         {
 #warning This currently ignores the width parameter. See Apply().
             _commandQueue.Enqueue(new GeometryRenderCommand(geometry, false, null, pen));
-
         }
 
         public override void DrawLine(Vector2 v1, Vector2 v2, IPen pen)
@@ -178,7 +156,7 @@ namespace Ibinimator.Renderer.WPF
             float top,
             float width,
             float height,
-            IPen pen)
+            IPen  pen)
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left,
@@ -199,10 +177,10 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override void FillEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
+            float  cx,
+            float  cy,
+            float  rx,
+            float  ry,
             IBrush brush)
         {
             _commandQueue.Enqueue(
@@ -227,15 +205,23 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override void FillRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
+            float  left,
+            float  top,
+            float  width,
+            float  height,
             IBrush brush)
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left, top, width, height, true, brush, null));
         }
+
+        public override float GetDpi() { return 0; }
+
+        public override void HideCursor()                   { throw new NotImplementedException(); }
+        public override void PopEffect()                    { throw new NotImplementedException(); }
+        public override void PushEffect(IEffect   effect)   { throw new NotImplementedException(); }
+        public override void SetCaretPosition(int x, int y) { throw new NotImplementedException(); }
+        public override void ShowCaret()                    { throw new NotImplementedException(); }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
@@ -254,18 +240,21 @@ namespace Ibinimator.Renderer.WPF
                         new Point(ellipse.CenterX, ellipse.CenterY),
                         ellipse.RadiusX,
                         ellipse.RadiusY);
+
                     break;
                 case GeometryRenderCommand geometry:
                     _ctx?.DrawGeometry(
                         geometry.Brush as Brush,
                         geometry.Pen as Pen,
                         geometry.Geometry as Geometry);
+
                     break;
                 case RectangleRenderCommand rect:
                     _ctx?.DrawRectangle(
                         rect.Brush as Brush,
                         rect.Pen as Pen,
                         new Rect(rect.Left, rect.Top, rect.Width, rect.Height));
+
                     break;
                 case TransformRenderCommand transform:
                     _ctx?.PushTransform(
@@ -276,6 +265,7 @@ namespace Ibinimator.Renderer.WPF
                             transform.Transform.M22,
                             transform.Transform.M31,
                             transform.Transform.M32));
+
                     break;
             }
         }

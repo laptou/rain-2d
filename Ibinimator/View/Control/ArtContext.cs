@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
@@ -20,8 +21,8 @@ namespace Ibinimator.View.Control
 
             var managerInterfaces =
                 typeof(T).FindInterfaces(
-                             (type, criteria) => typeof(IArtContextManager).IsAssignableFrom(type),
-                             null)
+                              (type, criteria) => typeof(IArtContextManager).IsAssignableFrom(type),
+                              null)
                          .Concat(new[] {typeof(T)});
 
             var interfaces = managerInterfaces.ToList();
@@ -41,7 +42,7 @@ namespace Ibinimator.View.Control
                     CacheManager.LoadBitmaps(_artView.RenderContext);
 
                     if (ViewManager?.Root != null)
-                    CacheManager?.BindLayer(ViewManager.Document.Root);
+                        CacheManager?.BindLayer(ViewManager.Document.Root);
                 }
             }
 
@@ -57,6 +58,7 @@ namespace Ibinimator.View.Control
             if (interfaces.Contains(typeof(IViewManager)))
             {
                 ViewManager = (IViewManager) manager;
+
 //                ViewManager.DocumentUpdated +=
 //                    (s, e) => CacheManager?.Bind(ViewManager.Document);
 
@@ -91,12 +93,12 @@ namespace Ibinimator.View.Control
 
         #region Managers
 
-        public IBrushManager BrushManager { get; set; }
-        public ICacheManager CacheManager { get; set; }
-        public IHistoryManager HistoryManager { get; set; }
+        public IBrushManager     BrushManager     { get; set; }
+        public ICacheManager     CacheManager     { get; set; }
+        public IHistoryManager   HistoryManager   { get; set; }
         public ISelectionManager SelectionManager { get; set; }
-        public IToolManager ToolManager { get; set; }
-        public IViewManager ViewManager { get; set; }
+        public IToolManager      ToolManager      { get; set; }
+        public IViewManager      ViewManager      { get; set; }
 
         #endregion
     }

@@ -9,11 +9,6 @@ namespace Ibinimator.Core.Utility
 {
     public static class StringExtensions
     {
-        public static string ToTitle(this string s)
-        {
-            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(s);
-        }
-
         public static string Dedash(this string s) { return s.ToTitle().Replace("-", ""); }
 
         public static string DePascalize(this Enum e)
@@ -24,8 +19,8 @@ namespace Ibinimator.Core.Utility
             sb.Append(s[0]);
 
             var acronym = true;
+
             foreach (var c in s.Skip(1))
-            {
                 if (char.IsUpper(c))
                 {
                     if (!acronym)
@@ -39,9 +34,13 @@ namespace Ibinimator.Core.Utility
                     sb.Append(c);
                     acronym = false;
                 }
-            }
 
             return sb.ToString();
+        }
+
+        public static string ToTitle(this string s)
+        {
+            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(s);
         }
 
         public static string Truncate(this string s, int length, string terminator = "...")

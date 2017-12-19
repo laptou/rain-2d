@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
     public class DelegateCommand<T> : Core.Model.Model, ICommand
     {
-        private Action<T> _action;
+        private Action<T>    _action;
         private Predicate<T> _predicate;
 
         public DelegateCommand(Action<T> action, Predicate<T> predicate)
@@ -56,7 +55,8 @@ namespace Ibinimator.ViewModel
         public bool CanExecute(object parameter)
         {
             return _action != null &&
-                   _predicate?.Invoke(default(T) != null && parameter == null ? default : (T) parameter) != false;
+                   _predicate?.Invoke(default(T) != null && parameter == null ? default : (T) parameter) !=
+                   false;
         }
 
         public void Execute(object parameter)
@@ -79,15 +79,10 @@ namespace Ibinimator.ViewModel
     {
         private Func<T, Task> _task;
 
-        public AsyncDelegateCommand(Func<T, Task> task)
-        {
-            _task = task;
-        }
+        public AsyncDelegateCommand(Func<T, Task> task) { _task = task; }
 
         public AsyncDelegateCommand(Action<T> task) :
-            this(p => System.Threading.Tasks.Task.Run(() => task(p)))
-        {
-        }
+            this(p => System.Threading.Tasks.Task.Run(() => task(p))) { }
 
         public NotifyTaskCompletion Execution { get; private set; }
 
@@ -109,10 +104,7 @@ namespace Ibinimator.ViewModel
 
         public event EventHandler CanExecuteChanged;
 
-        public bool CanExecute(object parameter)
-        {
-            return _task != null;
-        }
+        public bool CanExecute(object parameter) { return _task != null; }
 
         public void Execute(object parameter)
         {

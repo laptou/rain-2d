@@ -12,15 +12,6 @@ namespace Ibinimator.Core
           IEnumerable<IOperationCommand>
     {
         /// <summary>
-        /// Merges the command with the previous command, provided that they are logically mergeable
-        /// and occurred in quick succession.
-        /// </summary>
-        /// <param name="newCommand">The command containing the new data.</param>
-        /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
-        void Merge(IOperationCommand newCommand, long timeLimit);
-
-
-        /// <summary>
         ///     Returns the last operation that was performed.
         /// </summary>
         IOperationCommand Current { get; }
@@ -47,6 +38,14 @@ namespace Ibinimator.Core
         /// </summary>
         /// <param name="command">The command to do.</param>
         void Do(IOperationCommand command);
+
+        /// <summary>
+        ///     Merges the command with the previous command, provided that they are logically mergeable
+        ///     and occurred in quick succession.
+        /// </summary>
+        /// <param name="newCommand">The command containing the new data.</param>
+        /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
+        void Merge(IOperationCommand newCommand, long timeLimit);
 
         /// <summary>
         ///     Removes the current operation from the top of the stack.

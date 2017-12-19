@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.Model;
+
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
@@ -13,13 +15,13 @@ namespace Ibinimator.Renderer.Direct2D
     internal class TextRenderer : TextRendererBase
     {
         public override Result DrawGlyphRun(
-            object clientDrawingContext,
-            float baselineOriginX,
-            float baselineOriginY,
-            MeasuringMode measuringMode,
-            GlyphRun glyphRun,
+            object              clientDrawingContext,
+            float               baselineOriginX,
+            float               baselineOriginY,
+            MeasuringMode       measuringMode,
+            GlyphRun            glyphRun,
             GlyphRunDescription glyphRunDescription,
-            ComObject clientDrawingEffect)
+            ComObject           clientDrawingEffect)
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
@@ -60,12 +62,12 @@ namespace Ibinimator.Renderer.Direct2D
         {
             public Context(Direct2DRenderContext ctx) { RenderContext = ctx; }
 
-            public List<IBrush> Brushes { get; } = new List<IBrush>();
+            public List<IBrush>         Brushes               { get; } = new List<IBrush>();
             public Dictionary<int, int> CharactersForGeometry { get; } = new Dictionary<int, int>();
-            public List<IGeometry> Geometries { get; } = new List<IGeometry>();
-            public int GeometryCount { get; set; }
-            public int GlyphCount { get; set; }
-            public List<IPen> Pens { get; } = new List<IPen>();
+            public List<IGeometry>      Geometries            { get; } = new List<IGeometry>();
+            public int                  GeometryCount         { get; set; }
+            public int                  GlyphCount            { get; set; }
+            public List<IPen>           Pens                  { get; } = new List<IPen>();
 
             public Direct2DRenderContext RenderContext { get; }
         }
@@ -76,10 +78,10 @@ namespace Ibinimator.Renderer.Direct2D
 
         public class Format : ComObject
         {
-            public BrushInfo Fill { get; set; }
-            public int StrikethroughCount { get; set; }
-            public PenInfo Stroke { get; set; }
-            public int UnderlineCount { get; set; }
+            public BrushInfo Fill               { get; set; }
+            public int       StrikethroughCount { get; set; }
+            public PenInfo   Stroke             { get; set; }
+            public int       UnderlineCount     { get; set; }
 
             public Format Clone()
             {

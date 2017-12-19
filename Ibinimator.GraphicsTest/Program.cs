@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Ibinimator.Core;
 using Ibinimator.Native;
 using Ibinimator.Renderer.Direct2D;
-using SharpDX.Mathematics.Interop;
+
 using Color = Ibinimator.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
 using DX = SharpDX;
@@ -20,53 +18,18 @@ namespace Ibinimator.GraphicsTest
 {
     internal class Program
     {
-        private WndProc _proc;
-        private Form _form;
+        private Form                   _form;
+        private WndProc                _proc;
         private D2D.WindowRenderTarget _renderTarget;
-        public Direct2DRenderContext RenderContext { get; set; }
-
-        private static void Main() { new Program().Run(); }
-
-        private void Run()
-        {
-            _form = new Form();
-            var hWnd = _form.Handle;
-            var _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
-
-            var width = (int) (512 * _d2dFactory.DesktopDpi.Width / 96.0);
-            var height = (int) (512 * _d2dFactory.DesktopDpi.Height / 96.0);
-
-            var rtp = new D2D.RenderTargetProperties(
-                    new D2D.PixelFormat(Format.Unknown,
-                                        D2D.AlphaMode.Premultiplied))
-                {
-                    DpiX = _d2dFactory.DesktopDpi.Width,
-                    DpiY = _d2dFactory.DesktopDpi.Height,
-                    Type = D2D.RenderTargetType.Hardware
-                };
-
-            var hrtp = new D2D.HwndRenderTargetProperties
-            {
-                Hwnd = hWnd,
-                PixelSize = new DX.Size2(width, height),
-                PresentOptions = D2D.PresentOptions.None
-            };
-
-            _renderTarget = new D2D.WindowRenderTarget(_d2dFactory, rtp, hrtp);
-
-            RenderContext = new Direct2DRenderContext(_renderTarget);
-
-            _form.Size = new Size(512, 512);
-            _form.SizeGripStyle = SizeGripStyle.Hide;
-            _form.Paint += FormOnPaint;
-            _form.ShowDialog();
-        }
+        public  Direct2DRenderContext  RenderContext { get; set; }
 
         private void FormOnPaint(object sender, PaintEventArgs e)
         {
             Paint();
             NativeHelper.InvalidateRect(_form.Handle, IntPtr.Zero, false);
         }
+
+        private static void Main() { new Program().Run(); }
 
         private void Paint()
         {
@@ -118,6 +81,41 @@ namespace Ibinimator.GraphicsTest
             _renderTarget.EndDraw();
 
             brush.Dispose();
+        }
+
+        private void Run()
+        {
+            _form = new Form();
+            var hWnd = _form.Handle;
+            var _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded);
+
+            var width = (int) (512 * _d2dFactory.DesktopDpi.Width / 96.0);
+            var height = (int) (512 * _d2dFactory.DesktopDpi.Height / 96.0);
+
+            var rtp = new D2D.RenderTargetProperties(
+                    new D2D.PixelFormat(Format.Unknown,
+                                        D2D.AlphaMode.Premultiplied))
+                {
+                    DpiX = _d2dFactory.DesktopDpi.Width,
+                    DpiY = _d2dFactory.DesktopDpi.Height,
+                    Type = D2D.RenderTargetType.Hardware
+                };
+
+            var hrtp = new D2D.HwndRenderTargetProperties
+            {
+                Hwnd = hWnd,
+                PixelSize = new DX.Size2(width, height),
+                PresentOptions = D2D.PresentOptions.None
+            };
+
+            _renderTarget = new D2D.WindowRenderTarget(_d2dFactory, rtp, hrtp);
+
+            RenderContext = new Direct2DRenderContext(_renderTarget);
+
+            _form.Size = new Size(512, 512);
+            _form.SizeGripStyle = SizeGripStyle.Hide;
+            _form.Paint += FormOnPaint;
+            _form.ShowDialog();
         }
     }
 }

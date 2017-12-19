@@ -1,28 +1,20 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Ibinimator.Renderer.WPF;
 using System.Linq;
-using System.Threading;
-using System.Windows;
+using System.Numerics;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using Ibinimator.Core;
-using Ibinimator.Renderer.Direct2D;
-using Ibinimator.Service;
-using SharpDX.DXGI;
+
 using Color = Ibinimator.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
-using Matrix3x2 = System.Numerics.Matrix3x2;
-using Vector2 = System.Numerics.Vector2;
 
 namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage2
     {
-        
         private readonly ISet<Key> _keys = new HashSet<Key>();
 
         private Vector2 _lastPosition;
@@ -39,20 +31,61 @@ namespace Ibinimator.View.Control
             ArtContext = new ArtContext(this);
         }
 
-        private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
+        public ArtContext ArtContext { get; }
+
+        protected override void HandleInput(InputEvent evt)
         {
-            ArtContext.CacheManager?.ResetAll();
-            ArtContext.CacheManager?.LoadBrushes(RenderContext);
-            ArtContext.CacheManager?.LoadBitmaps(RenderContext);
+            var ac = ArtContext;
+            var pos = ac.ViewManager.ToArtSpace(evt.Position);
 
-            if (ArtContext.ViewManager?.Root != null)
-                ArtContext.CacheManager?.BindLayer(ArtContext.ViewManager.Document.Root);
+            switch (evt.Type)
+            {
+                case InputEventType.MouseDown:
+                    _lastPosition = evt.Position;
+                    ac.ToolManager.MouseDown(pos, evt.State);
 
-            InvalidateVisual();
+                    break;
+                case InputEventType.MouseUp:
+                    _lastPosition = evt.Position;
+                    ac.ToolManager.MouseUp(pos, evt.State);
+
+                    break;
+                case InputEventType.MouseMove:
+                    _lastPosition = evt.Position;
+                    ac.ToolManager.MouseMove(pos, evt.State);
+
+                    break;
+                case InputEventType.TextInput:
+                    ac.ToolManager.TextInput(evt.Text);
+
+                    break;
+                case InputEventType.KeyUp:
+                    ac.ToolManager.KeyUp(evt.Key, evt.State);
+
+                    break;
+                case InputEventType.KeyDown:
+                    ac.ToolManager.KeyDown(evt.Key, evt.State);
+
+                    break;
+                case InputEventType.ScrollVertical:
+                    if (evt.State.Shift)
+                        goto case InputEventType.ScrollHorizontal;
+
+                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom);
+                    ac.InvalidateSurface();
+
+                    break;
+                case InputEventType.ScrollHorizontal:
+                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom, 0);
+                    ac.InvalidateSurface();
+
+                    break;
+                default:
+
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
-        public ArtContext ArtContext { get; }
-        
         /**
         protected override void OnPreviewTextInput(TextCompositionEventArgs e)
         {
@@ -100,6 +133,7 @@ namespace Ibinimator.View.Control
             if (ac.ToolManager.Tool.Cursor == null)
             {
                 Cursor = Cursors.Arrow;
+
                 return;
             }
 
@@ -114,50 +148,16 @@ namespace Ibinimator.View.Control
             target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.Cursor));
         }
 
-        protected override void HandleInput(InputEvent evt)
+        private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
         {
-            var ac = ArtContext;
-            var pos = ac.ViewManager.ToArtSpace(evt.Position);
+            ArtContext.CacheManager?.ResetAll();
+            ArtContext.CacheManager?.LoadBrushes(RenderContext);
+            ArtContext.CacheManager?.LoadBitmaps(RenderContext);
 
-            switch (evt.Type)
-            {
-                case InputEventType.MouseDown:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseDown(pos, evt.State);
-                    break;
-                case InputEventType.MouseUp:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseUp(pos, evt.State);
-                    break;
-                case InputEventType.MouseMove:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseMove(pos, evt.State);
-                    break;
-                case InputEventType.TextInput:
-                    ac.ToolManager.TextInput(evt.Text);
-                    break;
-                case InputEventType.KeyUp:
-                    ac.ToolManager.KeyUp(evt.Key, evt.State);
-                    break;
-                case InputEventType.KeyDown:
-                    ac.ToolManager.KeyDown(evt.Key, evt.State);
-                    break;
-                case InputEventType.ScrollVertical:
-                    if (evt.State.Shift)
-                        goto case InputEventType.ScrollHorizontal;
+            if (ArtContext.ViewManager?.Root != null)
+                ArtContext.CacheManager?.BindLayer(ArtContext.ViewManager.Document.Root);
 
-                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom);
-                    ac.InvalidateSurface();
-                    break;
-                case InputEventType.ScrollHorizontal:
-                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom, 0);
-                    ac.InvalidateSurface();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            InvalidateVisual();
         }
     }
-
-    
 }

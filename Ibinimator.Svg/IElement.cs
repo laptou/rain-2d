@@ -9,7 +9,7 @@ namespace Ibinimator.Svg
     public interface IElement
     {
         string Id { get; set; }
-        void FromXml(XElement element, SvgContext context);
+        void   FromXml(XElement element, SvgContext context);
 
         XElement ToXml(SvgContext context);
     }

@@ -2,11 +2,51 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
-namespace Ibinimator.Core {
+namespace Ibinimator.Core
+{
     public static class GeometryHelper
     {
+        public static IEnumerable<PathInstruction> InstructionsFromNodes(IEnumerable<PathNode> nodes)
+        {
+            var first = true;
+            PathNode? previous = null;
+
+            foreach (var node in nodes)
+            {
+                if (first)
+                {
+                    yield return new MovePathInstruction(node.Position);
+
+                    first = false;
+                }
+
+                if (node.IncomingControl != null)
+                    if (previous?.OutgoingControl != null)
+                        yield return new CubicPathInstruction(
+                            node.Position,
+                            previous.Value.OutgoingControl.Value,
+                            node.IncomingControl.Value);
+                    else
+                        yield return new QuadraticPathInstruction(
+                            node.Position,
+                            node.IncomingControl.Value);
+
+                yield return new LinePathInstruction(node.Position);
+
+                if (node.FigureEnd != null)
+                {
+                    yield return new ClosePathInstruction(node.FigureEnd == PathFigureEnd.Open);
+
+                    first = true;
+                }
+
+                previous = node;
+            }
+        }
+
         public static IEnumerable<PathNode> NodesFromInstructions(IEnumerable<PathInstruction> instructions)
         {
             // NOTE: this method WILL break if you pass anything other than cubics and line segments
@@ -32,6 +72,7 @@ namespace Ibinimator.Core {
                                 previousNode.IncomingControl,
                                 cubic.Control1,
                                 previousNode.FigureEnd);
+
                             break;
 
                         case ClosePathInstruction close:
@@ -41,6 +82,7 @@ namespace Ibinimator.Core {
                                 previousNode.IncomingControl,
                                 previousNode.OutgoingControl,
                                 close.Open ? PathFigureEnd.Open : PathFigureEnd.Closed);
+
                             break;
                     }
 
@@ -56,61 +98,22 @@ namespace Ibinimator.Core {
                             index++,
                             cubic.Position,
                             cubic.Control2);
+
                         break;
 
                     // lines and moves
                     case CoordinatePathInstruction line:
                         previousNode = new PathNode(index++, line.Position);
+
                         break;
 
                     case ClosePathInstruction _:
                         start = true;
+
                         break;
 
                     default: throw new Exception("wat");
                 }
-            }
-        }
-
-        public static IEnumerable<PathInstruction> InstructionsFromNodes(IEnumerable<PathNode> nodes)
-        {
-            var first = true;
-            PathNode? previous = null;
-
-            foreach (var node in nodes)
-            {
-                if (first)
-                {
-                    yield return new MovePathInstruction(node.Position);
-                    first = false;
-                }
-
-                if (node.IncomingControl != null)
-                {
-                    if (previous?.OutgoingControl != null)
-                    {
-                        yield return new CubicPathInstruction(
-                            node.Position,
-                            previous.Value.OutgoingControl.Value,
-                            node.IncomingControl.Value);
-                    }
-                    else
-                    {
-                        yield return new QuadraticPathInstruction(
-                            node.Position,
-                            node.IncomingControl.Value);
-                    }
-                }
-
-                yield return new LinePathInstruction(node.Position);
-
-                if (node.FigureEnd != null)
-                {
-                    yield return new ClosePathInstruction(node.FigureEnd == PathFigureEnd.Open);
-                    first = true;
-                }
-
-                previous = node;
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Service.Commands;
@@ -60,6 +61,12 @@ namespace Ibinimator.View.Command
         public static readonly DelegateCommand<IArtContext> AlignCenterYCommand =
             CommandManager.Register<IArtContext>(AlignCenterY);
 
+        public static readonly DelegateCommand<IArtContext> GroupCommand =
+            CommandManager.Register<IArtContext>(Group);
+
+        public static readonly DelegateCommand<IArtContext> UngroupCommand =
+            CommandManager.Register<IArtContext>(Ungroup);
+
         private static void Align(IArtContext artContext, Direction dir)
         {
             if (!artContext.SelectionManager.Selection.Any())
@@ -74,35 +81,17 @@ namespace Ibinimator.View.Command
             artContext.SelectionManager.UpdateBounds(true);
         }
 
-        private static void AlignBottom(IArtContext artContext)
-        {
-            Align(artContext, Direction.Down);
-        }
+        private static void AlignBottom(IArtContext artContext) { Align(artContext, Direction.Down); }
 
-        private static void AlignCenterX(IArtContext artContext)
-        {
-            Align(artContext, Direction.Horizontal);
-        }
+        private static void AlignCenterX(IArtContext artContext) { Align(artContext, Direction.Horizontal); }
 
-        private static void AlignCenterY(IArtContext artContext)
-        {
-            Align(artContext, Direction.Vertical);
-        }
+        private static void AlignCenterY(IArtContext artContext) { Align(artContext, Direction.Vertical); }
 
-        private static void AlignLeft(IArtContext artContext)
-        {
-            Align(artContext, Direction.Left);
-        }
+        private static void AlignLeft(IArtContext artContext) { Align(artContext, Direction.Left); }
 
-        private static void AlignRight(IArtContext artContext)
-        {
-            Align(artContext, Direction.Right);
-        }
+        private static void AlignRight(IArtContext artContext) { Align(artContext, Direction.Right); }
 
-        private static void AlignTop(IArtContext artContext)
-        {
-            Align(artContext, Direction.Up);
-        }
+        private static void AlignTop(IArtContext artContext) { Align(artContext, Direction.Up); }
 
         private static void DeselectAll(IArtContext artContext)
         {
@@ -112,19 +101,33 @@ namespace Ibinimator.View.Command
         private static void FlipHorizontal(IArtContext artContext)
         {
             artContext.SelectionManager.TransformSelection(new Vector2(-1, 1),
-                                                  Vector2.Zero,
-                                                  0,
-                                                  0,
-                                                  Vector2.One * 0.5f);
+                                                           Vector2.Zero,
+                                                           0,
+                                                           0,
+                                                           Vector2.One * 0.5f);
         }
 
         private static void FlipVertical(IArtContext artContext)
         {
             artContext.SelectionManager.TransformSelection(new Vector2(1, -1),
-                                                  Vector2.Zero,
-                                                  0,
-                                                  0,
-                                                  Vector2.One * 0.5f);
+                                                           Vector2.Zero,
+                                                           0,
+                                                           0,
+                                                           Vector2.One * 0.5f);
+        }
+
+        private static void Group(IArtContext ctx)
+        {
+            var selectionManager = ctx.SelectionManager;
+
+            if (!selectionManager.Selection.Any())
+                return;
+
+            var command = new GroupCommand(
+                ctx.HistoryManager.Position + 1,
+                selectionManager.Selection.ToArray());
+
+            ctx.HistoryManager.Do(command);
         }
 
         private static bool HasSelection(IArtContext artContext)
@@ -179,19 +182,19 @@ namespace Ibinimator.View.Command
         private static void RotateClockwise(IArtContext artContext)
         {
             artContext.SelectionManager.TransformSelection(Vector2.One,
-                                                  Vector2.Zero,
-                                                  MathUtils.PiOverTwo,
-                                                  0,
-                                                  Vector2.One * 0.5f);
+                                                           Vector2.Zero,
+                                                           MathUtils.PiOverTwo,
+                                                           0,
+                                                           Vector2.One * 0.5f);
         }
 
         private static void RotateCounterClockwise(IArtContext artContext)
         {
             artContext.SelectionManager.TransformSelection(Vector2.One,
-                                                  Vector2.Zero,
-                                                  -MathUtils.PiOverTwo,
-                                                  0,
-                                                  Vector2.One * 0.5f);
+                                                           Vector2.Zero,
+                                                           -MathUtils.PiOverTwo,
+                                                           0,
+                                                           Vector2.One * 0.5f);
         }
 
         private static void SelectAll(IArtContext artContext)
@@ -199,29 +202,9 @@ namespace Ibinimator.View.Command
             artContext.SelectionManager.ClearSelection();
 
             foreach (var layer in artContext
-                .SelectionManager.Context.ViewManager.Root.Flatten()
-                .Skip(1))
+                                 .SelectionManager.Context.ViewManager.Root.Flatten()
+                                 .Skip(1))
                 layer.Selected = true;
-        }
-
-        public static readonly DelegateCommand<IArtContext> GroupCommand =
-            CommandManager.Register<IArtContext>(Group);
-
-        public static readonly DelegateCommand<IArtContext> UngroupCommand =
-            CommandManager.Register<IArtContext>(Ungroup);
-
-        private static void Group(IArtContext ctx)
-        {
-            var selectionManager = ctx.SelectionManager;
-
-            if (!selectionManager.Selection.Any())
-                return;
-
-            var command = new GroupCommand(
-                ctx.HistoryManager.Position + 1,
-                selectionManager.Selection.ToArray());
-
-            ctx.HistoryManager.Do(command);
         }
 
         private static void Ungroup(IArtContext ctx)

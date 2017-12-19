@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
+
 using Ibinimator.Service;
 
 namespace Ibinimator
@@ -40,15 +41,21 @@ namespace Ibinimator
                 new Uri($"/Ibinimator;component/theme.{SettingsManager.GetString(".theme")}.xaml",
                         UriKind.Relative);
 
-            Resources.MergedDictionaries.Add((ResourceDictionary)LoadComponent(themeUri));
+            Resources.MergedDictionaries.Add((ResourceDictionary) LoadComponent(themeUri));
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }
 
-        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        public new static Dispatcher Dispatcher => Current.Dispatcher;
+
+        public static bool IsDesigner =>
+            LicenseManager.UsageMode == LicenseUsageMode.Designtime;
+
+        protected override void OnStartup(StartupEventArgs e)
         {
-            Task.Run(async () => await LogError(e.ExceptionObject, 1)).Wait();
-            // wait on the task because if this handler returns, the process exits
+            base.OnStartup(e);
+
+            SetDefaultFont();
         }
 
         private static async Task LogError(object o, int level)
@@ -66,6 +73,7 @@ namespace Ibinimator
 
             await writer.WriteLineAsync(
                 new string('\t', level - 1) + $"Error [{DateTime.Now}]");
+
             if (ex != null)
             {
                 await writer.WriteLineAsync(
@@ -95,22 +103,17 @@ namespace Ibinimator
             else
             {
                 await writer.WriteLineAsync(
-                    new string('\t', level) + $"{o.ToString()}");
+                    new string('\t', level) + $"{o}");
             }
 
             await writer.FlushAsync();
         }
 
-        public new static Dispatcher Dispatcher => Current.Dispatcher;
-
-        public static bool IsDesigner =>
-            LicenseManager.UsageMode == LicenseUsageMode.Designtime;
-
-        protected override void OnStartup(StartupEventArgs e)
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            base.OnStartup(e);
+            Task.Run(async () => await LogError(e.ExceptionObject, 1)).Wait();
 
-            SetDefaultFont();
+            // wait on the task because if this handler returns, the process exits
         }
 
         private void SetDefaultFont()

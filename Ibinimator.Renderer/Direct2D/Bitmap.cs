@@ -5,8 +5,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
 using Format = SharpDX.DXGI.Format;
@@ -55,10 +57,7 @@ namespace Ibinimator.Renderer.Direct2D
             }
         }
 
-        public Bitmap(D2D1.Bitmap bitmap)
-        {
-            _bmp = bitmap;
-        }
+        public Bitmap(D2D1.Bitmap bitmap) { _bmp = bitmap; }
 
         public static implicit operator D2D1.Bitmap(Bitmap bmp) { return bmp._bmp; }
 
@@ -71,7 +70,8 @@ namespace Ibinimator.Renderer.Direct2D
             base.Dispose();
         }
 
-        public override void Optimize() { throw new NotImplementedException(); }
+        public override void Optimize()                  { throw new NotImplementedException(); }
+        public          T    Unwrap<T>() where T : class { return _bmp as T; }
 
         public float Dpi => _bmp.DotsPerInch.Width;
 
@@ -82,7 +82,6 @@ namespace Ibinimator.Renderer.Direct2D
         public int PixelWidth => _bmp.PixelSize.Width;
 
         public float Width => _bmp.Size.Width;
-        public T Unwrap<T>() where T : class { return _bmp as T; }
 
         #endregion
     }

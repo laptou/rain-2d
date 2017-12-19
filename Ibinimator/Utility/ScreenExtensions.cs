@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+
 using Point = System.Drawing.Point;
 
 namespace Ibinimator.Utility
@@ -32,8 +33,9 @@ namespace Ibinimator.Utility
         }
 
         [DllImport("Shcore.dll")]
-        private static extern IntPtr GetDpiForMonitor([In] IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX,
-            [Out] out uint dpiY);
+        private static extern IntPtr GetDpiForMonitor(
+            [In]      IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX,
+            [Out] out uint   dpiY);
 
         [DllImport("User32.dll")]
         private static extern IntPtr MonitorFromPoint([In] Point pt, [In] uint dwFlags);
@@ -45,7 +47,7 @@ namespace Ibinimator.Utility
     public enum DpiType
     {
         Effective = 0,
-        Angular = 1,
-        Raw = 2
+        Angular   = 1,
+        Raw       = 2
     }
 }

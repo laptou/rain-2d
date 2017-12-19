@@ -13,9 +13,9 @@ namespace Ibinimator.View.Utility
     {
         public static readonly DependencyProperty FormattedTextProperty =
             DependencyProperty.RegisterAttached("FormattedText",
-                typeof(string),
-                typeof(TextBlockHelper),
-                new UIPropertyMetadata("", FormattedTextChanged));
+                                                typeof(string),
+                                                typeof(TextBlockHelper),
+                                                new UIPropertyMetadata("", FormattedTextChanged));
 
         public static string GetFormattedText(DependencyObject obj)
         {
@@ -27,7 +27,8 @@ namespace Ibinimator.View.Utility
             obj.SetValue(FormattedTextProperty, value);
         }
 
-        private static void FormattedTextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private static void FormattedTextChanged(
+            DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             var value = e.NewValue as string;
 
@@ -45,6 +46,7 @@ namespace Ibinimator.View.Utility
                 {
                     case XmlText _:
                         span.Inlines.Add(new Run(child.InnerText));
+
                         break;
                     case XmlElement _:
                     {
@@ -57,6 +59,7 @@ namespace Ibinimator.View.Utility
                                 InternalProcess(boldSpan, child);
                                 var bold = new Bold(boldSpan);
                                 span.Inlines.Add(bold);
+
                                 break;
                             }
                             case "I":
@@ -66,6 +69,7 @@ namespace Ibinimator.View.Utility
                                 InternalProcess(italicSpan, child);
                                 var italic = new Italic(italicSpan);
                                 span.Inlines.Add(italic);
+
                                 break;
                             }
                             case "U":
@@ -75,6 +79,7 @@ namespace Ibinimator.View.Utility
                                 InternalProcess(underlineSpan, child);
                                 var underline = new Underline(underlineSpan);
                                 span.Inlines.Add(underline);
+
                                 break;
                             }
                         }

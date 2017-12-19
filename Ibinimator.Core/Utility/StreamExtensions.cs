@@ -12,6 +12,7 @@ namespace Ibinimator.Core.Utility
         {
             var buf = new byte[4];
             stream.Read(buf, 0, 4);
+
             return BitConverter.ToInt32(buf, 0);
         }
 

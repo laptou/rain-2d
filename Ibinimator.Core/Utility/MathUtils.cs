@@ -3,23 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
+
 using static System.Math;
 
 namespace Ibinimator.Core.Utility
 {
     public static class MathUtils
     {
-        public const float TwoPi = (float) PI * 2;
-        public const float PiOverTwo = (float) PI / 2;
-        public const float Pi = (float) PI;
+        public const float TwoPi      = (float) PI * 2;
+        public const float PiOverTwo  = (float) PI / 2;
+        public const float Pi         = (float) PI;
         public const float PiOverFour = PiOverTwo / 2;
-        public const float Epsilon = 0.0001f;
+        public const float Epsilon    = 0.0001f;
 
-        public static readonly float Sqrt2 = (float) Math.Sqrt(2);
-        public static readonly float Sqrt3 = (float) Math.Sqrt(3);
-        public static readonly float Sqrt3Over2 = (float) Math.Sqrt(3) / 2;
-        public static readonly float Sqrt2Over2 = (float) Math.Sqrt(2) / 2;
+        public static readonly float Sqrt2        = (float) Math.Sqrt(2);
+        public static readonly float Sqrt3        = (float) Math.Sqrt(3);
+        public static readonly float Sqrt3Over2   = (float) Math.Sqrt(3) / 2;
+        public static readonly float Sqrt2Over2   = (float) Math.Sqrt(2) / 2;
         public static readonly float InverseSqrt3 = 1 / (float) Math.Sqrt(3);
         public static readonly float InverseSqrt2 = 1 / (float) Math.Sqrt(2);
 
@@ -42,12 +44,12 @@ namespace Ibinimator.Core.Utility
             return Atan2(reverse ? -pos.Y : pos.Y, pos.X);
         }
 
-        public static Vector2 Angle(float a) { return new Vector2((float) Cos(a), -(float) Sin(a)); }
-        public static float Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
+        public static Vector2 Angle(float a)          { return new Vector2((float) Cos(a), -(float) Sin(a)); }
+        public static float   Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
 
         public static (float left, float top, float right, float bottom) Bounds(
             RectangleF rect,
-            Matrix3x2 m)
+            Matrix3x2  m)
         {
             Vector2 p0 = Vector2.Transform(rect.TopLeft, m),
                     p1 = Vector2.Transform(rect.TopRight, m),
@@ -68,6 +70,7 @@ namespace Ibinimator.Core.Utility
                 return min;
             if (value.CompareTo(max) > 0)
                 return max;
+
             return value;
         }
 
@@ -78,8 +81,8 @@ namespace Ibinimator.Core.Utility
         }
 
         public static (Vector2, Vector2) CrossSection(
-            Vector2 ray,
-            Vector2 origin,
+            Vector2    ray,
+            Vector2    origin,
             RectangleF bounds)
         {
             bounds = (
@@ -151,12 +154,14 @@ namespace Ibinimator.Core.Utility
         public static float GetShear(this Matrix3x2 m)
         {
             var shear = Atan2(m.M22, m.M21) - PiOverTwo;
+
             return -Wrap(shear - GetRotation(m), -Pi, Pi);
         }
 
         public static Matrix3x2 Invert(Matrix3x2 mat)
         {
             Matrix3x2.Invert(mat, out var inv);
+
             return inv;
         }
 
@@ -210,14 +215,12 @@ namespace Ibinimator.Core.Utility
         /// <param name="c">The center of rotation.</param>
         /// <param name="theta">The angle to rotate the vector by.</param>
         /// <returns>The rotated vector.</returns>
-        public static Vector2 Rotate(Vector2 v, Vector2 c, float theta)
-        {
-            return Rotate(v - c, theta) + c;
-        }
+        public static Vector2 Rotate(Vector2 v, Vector2 c, float theta) { return Rotate(v - c, theta) + c; }
 
         public static float Round(float rotate, float floor, float ceiling)
         {
             var f = (rotate - floor) / (ceiling - floor);
+
             return (float) Math.Round(f) * (ceiling - floor) + floor;
         }
 

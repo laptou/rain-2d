@@ -20,12 +20,14 @@ namespace Ibinimator.Svg
             if (Color.TryParse(input, out var color))
             {
                 paint = new SolidColor(color);
+
                 return true;
             }
 
             if (Iri.TryParse(input, out var iri))
             {
                 paint = new Reference<Paint>(iri);
+
                 return true;
             }
 
@@ -38,17 +40,11 @@ namespace Ibinimator.Svg
     public class Reference<T> where T : class, IElement
     {
         private readonly Iri _location;
-        private readonly T _target;
+        private readonly T   _target;
 
-        public Reference(T target)
-        {
-            _target = target;
-        }
+        public Reference(T target) { _target = target; }
 
-        public Reference(Iri location)
-        {
-            _location = location;
-        }
+        public Reference(Iri location) { _location = location; }
 
         public T Resolve(SvgContext context)
         {
@@ -57,44 +53,26 @@ namespace Ibinimator.Svg
             return context[_location.Id] as T;
         }
 
-        public static implicit operator Reference<T>(T t)
-        {
-            return new Reference<T>(t);
-        }
+        public static implicit operator Reference<T>(T t) { return new Reference<T>(t); }
     }
 
     public class SolidColor : Paint
     {
+        public SolidColor() { }
+
+        public SolidColor(Color color) { Color = color; }
+
+        public Color Color { get; set; }
+
         public override void FromXml(XElement element, SvgContext context)
         {
             throw new NotImplementedException();
         }
 
-        public override XElement ToXml(SvgContext svgContext)
-        {
-            throw new NotImplementedException();
-        }
+        public override string ToString() { return Color.ToString(); }
 
-        public SolidColor()
-        {
-            
-        }
-
-        public SolidColor(Color color)
-        {
-            Color = color;
-        }
-
-        public Color Color { get; set; }
-
-        public override string ToString()
-        {
-            return Color.ToString();
-        }
+        public override XElement ToXml(SvgContext svgContext) { throw new NotImplementedException(); }
     }
 
-    public class AppColor : Paint
-    {
-        
-    }
+    public class AppColor : Paint { }
 }

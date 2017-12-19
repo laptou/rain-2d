@@ -11,9 +11,6 @@ namespace Ibinimator.Core.Model
 
         public AngleUnit Unit { get; set; }
 
-        public static Angle Convert(Angle length, AngleUnit target)
-        {
-            throw new NotImplementedException();
-        }
+        public static Angle Convert(Angle length, AngleUnit target) { throw new NotImplementedException(); }
     }
 }

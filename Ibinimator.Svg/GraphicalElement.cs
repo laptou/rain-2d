@@ -4,12 +4,68 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {
     public abstract class GraphicalElement : Element, IGraphicalElement
     {
+        #region IGraphicalElement Members
+
+        public override void FromXml(XElement element, SvgContext context)
+        {
+            base.FromXml(element, context);
+
+            // LazyGet(element, "clip", RectangleF.Empty);
+            //LazyGet(element, "clip-path", ClipPath);
+            //LazyGet(element, "clip-rule", ClipRule);
+            ColorInterpolation = LazyGet<ColorInterpolation>(element, "color-interpolation");
+            ColorFilterInterpolation = LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
+
+            //LazyGet(element, "color", Color);
+            //Cursor = LazyGet<Cursor>(element, "cursor", Cursor);
+            Direction = LazyGet<Direction>(element, "direction");
+
+            //LazyGet(element, "filter", Filter);
+            Kerning = LazyGet(element, "kerning", Length.Zero);
+            LetterSpacing = LazyGet(element, "letter-spacing", Length.Zero);
+
+            //LazyGet(element, "mask", Mask);
+            Opacity = LazyGet(element, "opacity", 1);
+
+            Transform = X.ParseTransform(LazyGet(element, "transform"));
+        }
+
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            LazySet(element, "clip", Clip?.Svgify());
+            LazySet(element, "clip-path", ClipPath);
+            LazySet(element, "clip-rule", ClipRule);
+            LazySet(element, "color-interpolation", ColorInterpolation);
+            LazySet(element, "filter-color-interpolation", ColorFilterInterpolation);
+            LazySet(element, "color", Color);
+            LazySet(element, "cursor", Cursor);
+            LazySet(element, "direction", Direction);
+            LazySet(element, "filter", Filter);
+            LazySet(element, "kerning", Kerning);
+            LazySet(element, "letter-spacing", LetterSpacing);
+            LazySet(element, "mask", Mask);
+            LazySet(element, "opacity", Opacity, 1);
+
+            if (!Transform.IsIdentity)
+                LazySet(
+                    element,
+                    "transform",
+                    @"matrix(" +
+                    $"{Transform.M11},{Transform.M12}," +
+                    $"{Transform.M21},{Transform.M22}," +
+                    $"{Transform.M31},{Transform.M32})");
+
+            return element;
+        }
 
         public RectangleF? Clip { get; set; }
 
@@ -39,55 +95,6 @@ namespace Ibinimator.Svg
 
         public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
 
-        public override void FromXml(XElement element, SvgContext context)
-        {
-            base.FromXml(element, context);
-
-            // LazyGet(element, "clip", RectangleF.Empty);
-            //LazyGet(element, "clip-path", ClipPath);
-            //LazyGet(element, "clip-rule", ClipRule);
-            ColorInterpolation = LazyGet<ColorInterpolation>(element, "color-interpolation");
-            ColorFilterInterpolation = LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
-            //LazyGet(element, "color", Color);
-            //Cursor = LazyGet<Cursor>(element, "cursor", Cursor);
-            Direction = LazyGet<Direction>(element, "direction");
-            //LazyGet(element, "filter", Filter);
-            Kerning = LazyGet(element, "kerning", Length.Zero);
-            LetterSpacing = LazyGet(element, "letter-spacing", Length.Zero);
-            //LazyGet(element, "mask", Mask);
-            Opacity = LazyGet(element, "opacity", 1);
-
-            Transform = X.ParseTransform(LazyGet(element, "transform"));
-        }
-
-        public override XElement ToXml(SvgContext context)
-        {
-            var element = base.ToXml(context);
-
-            LazySet(element, "clip", Clip?.Svgify());
-            LazySet(element, "clip-path", ClipPath);
-            LazySet(element, "clip-rule", ClipRule);
-            LazySet(element, "color-interpolation", ColorInterpolation);
-            LazySet(element, "filter-color-interpolation", ColorFilterInterpolation);
-            LazySet(element, "color", Color);
-            LazySet(element, "cursor", Cursor);
-            LazySet(element, "direction", Direction);
-            LazySet(element, "filter", Filter);
-            LazySet(element, "kerning", Kerning);
-            LazySet(element, "letter-spacing", LetterSpacing);
-            LazySet(element, "mask", Mask);
-            LazySet(element, "opacity", Opacity, 1);
-
-            if (!Transform.IsIdentity)
-                LazySet(
-                    element, 
-                    "transform", 
-                    @"matrix(" +
-                    $"{Transform.M11},{Transform.M12}," +
-                    $"{Transform.M21},{Transform.M22}," +
-                    $"{Transform.M31},{Transform.M32})");
-
-            return element;
-        }
+        #endregion
     }
 }

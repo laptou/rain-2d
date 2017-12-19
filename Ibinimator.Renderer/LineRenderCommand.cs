@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 
-namespace Ibinimator.Renderer {
+namespace Ibinimator.Renderer
+{
     internal class LineRenderCommand : GeometricRenderCommand
     {
         public LineRenderCommand(Vector2 v1, Vector2 v2, IPen pen) : base(

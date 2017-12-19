@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core.Model;
+
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command
@@ -11,9 +11,7 @@ namespace Ibinimator.View.Command
     {
         public static CommandManager Instance = new CommandManager();
 
-        private CommandManager()
-        {
-        }
+        private CommandManager() { }
 
         public Exception LastError
         {
@@ -25,10 +23,11 @@ namespace Ibinimator.View.Command
         {
             var command = new DelegateCommand<T>(action, null);
             command.PropertyChanged += (sender, args) =>
-            {
-                if (args.PropertyName == nameof(DelegateCommand<T>.Exception))
-                    Instance.LastError = command.Exception;
-            };
+                                       {
+                                           if (args.PropertyName == nameof(DelegateCommand<T>.Exception))
+                                               Instance.LastError = command.Exception;
+                                       };
+
             return command;
         }
 
@@ -36,16 +35,23 @@ namespace Ibinimator.View.Command
         {
             var command = new AsyncDelegateCommand<T>(task);
             command.PropertyChanged += (sender, args) =>
-            {
-                command.Execution.PropertyChanged += (s, a) =>
-                {
-                    if (a.PropertyName == nameof(NotifyTaskCompletion.Exception))
-                        Instance.LastError = command.Execution.Exception;
-                };
+                                       {
+                                           command.Execution.PropertyChanged += (s, a) =>
+                                                                                {
+                                                                                    if (a.PropertyName ==
+                                                                                        nameof(
+                                                                                            NotifyTaskCompletion
+                                                                                               .Exception))
+                                                                                        Instance.LastError =
+                                                                                            command
+                                                                                               .Execution
+                                                                                               .Exception;
+                                                                                };
 
-                if (args.PropertyName == nameof(AsyncDelegateCommand<T>.Execution))
-                    Instance.LastError = command.Execution.Exception;
-            };
+                                           if (args.PropertyName == nameof(AsyncDelegateCommand<T>.Execution))
+                                               Instance.LastError = command.Execution.Exception;
+                                       };
+
             return command;
         }
     }

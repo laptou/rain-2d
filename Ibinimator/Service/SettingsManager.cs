@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +17,8 @@ namespace Ibinimator.Service
     {
         private static readonly IDictionary<string, object> Cache =
             new Dictionary<string, object>();
+
+        public static bool Contains(string path) { return Cache.ContainsKey(path); }
 
         public static T GetEnum<T>(string path) where T : struct
         {
@@ -34,6 +39,11 @@ namespace Ibinimator.Service
 
         public static string GetString(string path) { return Cache[path] as string; }
 
+        public static string GetString(string path, string @default)
+        {
+            return Contains(path) ? GetString(path) : @default;
+        }
+
         public static void Load()
         {
             Cache.Clear();
@@ -43,7 +53,6 @@ namespace Ibinimator.Service
                 var filePath = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
 
                 if (!File.Exists(filePath))
-                {
                     using (var file =
                         File.Open(filePath,
                                   FileMode.Create,
@@ -52,10 +61,10 @@ namespace Ibinimator.Service
                     {
                         var defaultFile =
                             Application.GetResourceStream(
-                                           new Uri("/Ibinimator;component" +
-                                                   "/settings.default.json",
-                                                   UriKind.Relative))
-                                       ?.Stream;
+                                            new Uri("/Ibinimator;component" +
+                                                    "/settings.default.json",
+                                                    UriKind.Relative))
+                                      ?.Stream;
 
                         if (defaultFile == null)
                             throw new Exception("Default settings file is missing.");
@@ -64,7 +73,6 @@ namespace Ibinimator.Service
                         file.Flush(true);
                         defaultFile.Dispose();
                     }
-                }
 
                 using (var file = File.Open(
                     filePath,
@@ -83,10 +91,10 @@ namespace Ibinimator.Service
             {
                 using (var file =
                     Application.GetResourceStream(
-                                   new Uri("/Ibinimator;component" +
-                                           "/settings.default.json",
-                                           UriKind.Relative))
-                               ?.Stream)
+                                    new Uri("/Ibinimator;component" +
+                                            "/settings.default.json",
+                                            UriKind.Relative))
+                              ?.Stream)
                 {
                     if (file == null)
                         throw new Exception("Default settings file is missing.");
@@ -127,15 +135,18 @@ namespace Ibinimator.Service
                 case JObject obj:
                     foreach (var property in obj.Properties())
                         Load(property.Value, path + "." + property.Name);
+
                     break;
                 case JArray arr:
                     for (var i = 0; i < arr.Count; i++)
                         Load(arr[i], path + $"[{i}]");
 
                     Cache[path + ".$count"] = arr.Count;
+
                     break;
                 default:
                     Cache[path] = tok.ToObject<dynamic>();
+
                     break;
             }
         }
@@ -172,8 +183,8 @@ namespace Ibinimator.Service
             var obj = new JObject();
 
             var props = set
-                .Select(k => "." + k.Key.Split('.', '[')[1])
-                .Distinct();
+                       .Select(k => "." + k.Key.Split('.', '[')[1])
+                       .Distinct();
 
             foreach (var prop in props)
             {
@@ -185,13 +196,6 @@ namespace Ibinimator.Service
             }
 
             return obj;
-        }
-
-        public static bool Contains(string path) { return Cache.ContainsKey(path); }
-
-        public static string GetString(string path, string @default)
-        {
-            return Contains(path) ? GetString(path) : @default;
         }
     }
 }

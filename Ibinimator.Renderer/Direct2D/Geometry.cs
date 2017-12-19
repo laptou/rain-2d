@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using SharpDX;
 using SharpDX.Mathematics.Interop;
+
 using D2D1 = SharpDX.Direct2D1;
 using Matrix3x2 = System.Numerics.Matrix3x2;
 using RectangleF = Ibinimator.Core.Model.RectangleF;
@@ -16,7 +19,7 @@ namespace Ibinimator.Renderer.Direct2D
     internal class Geometry : ResourceBase, IGeometry, IEquatable<Geometry>
     {
         private readonly D2D1.RenderTarget _target;
-        private D2D1.Geometry _geom;
+        private          D2D1.Geometry     _geom;
 
         public Geometry(D2D1.RenderTarget target)
             : this(target, new D2D1.PathGeometry(target.Factory)) { }
@@ -35,6 +38,10 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+
+        public override bool Equals(object obj) { return Equals(obj as Geometry); }
+
+        public override int GetHashCode() { return (int) _geom.NativePointer; }
 
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
         {
@@ -56,6 +63,7 @@ namespace Ibinimator.Renderer.Direct2D
                 {
                     case ClosePathInstruction close:
                         sink.Close(close.Open);
+
                         break;
                     case ArcPathInstruction arc:
                         sink.Arc(
@@ -66,6 +74,7 @@ namespace Ibinimator.Renderer.Direct2D
                             arc.Angle,
                             arc.Clockwise,
                             arc.LargeArc);
+
                         break;
                     case CubicPathInstruction cubic:
                         sink.Cubic(
@@ -75,12 +84,15 @@ namespace Ibinimator.Renderer.Direct2D
                             cubic.Control1Y,
                             cubic.Control2X,
                             cubic.Control2Y);
+
                         break;
                     case LinePathInstruction line:
                         sink.Line(line.X, line.Y);
+
                         break;
                     case MovePathInstruction move:
                         sink.Move(move.X, move.Y);
+
                         break;
                     case QuadraticPathInstruction quadratic:
                         sink.Quadratic(
@@ -88,6 +100,7 @@ namespace Ibinimator.Renderer.Direct2D
                             quadratic.Y,
                             quadratic.ControlX,
                             quadratic.ControlY);
+
                         break;
                 }
         }
@@ -115,24 +128,32 @@ namespace Ibinimator.Renderer.Direct2D
             using (var sink = new ReadingSink())
             {
                 geometry.Stream(sink);
+
                 return sink.Read();
             }
         }
 
-        public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
-
         public static bool operator ==(Geometry g1, Geometry g2) { return g1?._geom == g2?._geom; }
+
+        public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
 
         public static bool operator !=(Geometry geometry1, Geometry geometry2)
         {
             return !(geometry1 == geometry2);
         }
 
+        #region IEquatable<Geometry> Members
+
+        public bool Equals(Geometry other) { return other == this; }
+
+        #endregion
+
         #region IGeometry Members
 
         public RectangleF Bounds()
         {
             var b = _geom.GetBounds();
+
             return new RectangleF(b.Left, b.Top, b.Right - b.Left, b.Bottom - b.Top);
         }
 
@@ -180,7 +201,6 @@ namespace Ibinimator.Renderer.Direct2D
         {
             // maybe do a geometry realization, but that transforms this into a device-dependent
             // resource
-
         }
 
         public IGeometry Outline(float width)
@@ -203,6 +223,8 @@ namespace Ibinimator.Renderer.Direct2D
             return Read(Path);
         }
 
+        public void Read(IGeometrySink sink) { Load(sink, Read()); }
+
         public IEnumerable<PathNode> ReadNodes()
         {
             Pathify();
@@ -213,8 +235,6 @@ namespace Ibinimator.Renderer.Direct2D
 
             return GeometryHelper.NodesFromInstructions(Read());
         }
-
-        public void Read(IGeometrySink sink) { Load(sink, Read()); }
 
         public bool StrokeContains(float x, float y, float width)
         {
@@ -230,15 +250,6 @@ namespace Ibinimator.Renderer.Direct2D
         public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
 
         public IGeometry Xor(IGeometry other) { return Combine(other, D2D1.CombineMode.Xor); }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Geometry);
-        }
-
-        public bool Equals(Geometry other) { return other == this; }
-
-        public override int GetHashCode() { return (int) _geom.NativePointer; }
 
         #endregion
 
@@ -355,9 +366,9 @@ namespace Ibinimator.Renderer.Direct2D
         private class WritingSink : IGeometrySink
         {
             private readonly D2D1.GeometrySink _sink;
-            private bool _b;
-            private float _x;
-            private float _y;
+            private          bool              _b;
+            private          float             _x;
+            private          float             _y;
 
             public WritingSink(D2D1.PathGeometry geometry) { _sink = geometry.Open(); }
 
@@ -384,7 +395,7 @@ namespace Ibinimator.Renderer.Direct2D
                     Point = new RawVector2(x, y),
                     RotationAngle = angle,
                     SweepDirection = clockwise ? D2D1.SweepDirection.Clockwise
-                        : D2D1.SweepDirection.CounterClockwise
+                                         : D2D1.SweepDirection.CounterClockwise
                 });
 
                 (_x, _y) = (x, y);

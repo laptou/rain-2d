@@ -42,7 +42,9 @@ namespace Ibinimator.Core.Model
             set => Height = value - Top;
         }
 
-        public Vector2 BottomLeft => new Vector2(Left, Bottom);
+        public Vector2 BottomCenter => new Vector2((Right + Left) / 2, Bottom);
+
+        public Vector2 BottomLeft  => new Vector2(Left, Bottom);
         public Vector2 BottomRight => new Vector2(Right, Bottom);
 
         public Vector2 Center => new Vector2((Right + Left) / 2, (Bottom + Top) / 2);
@@ -59,13 +61,11 @@ namespace Ibinimator.Core.Model
             set => Width = value - Left;
         }
 
-        public Vector2 Size => new Vector2(Width, Height);
-
-        public Vector2 TopLeft => new Vector2(Left, Top);
-        public Vector2 TopRight => new Vector2(Right, Top);
+        public Vector2 Size      => new Vector2(Width, Height);
         public Vector2 TopCenter => new Vector2((Right + Left) / 2, Top);
 
-        public Vector2 BottomCenter => new Vector2((Right + Left) / 2, Bottom);
+        public Vector2 TopLeft  => new Vector2(Left, Top);
+        public Vector2 TopRight => new Vector2(Right, Top);
 
         public bool Contains(Vector2 v)
         {
@@ -83,9 +83,22 @@ namespace Ibinimator.Core.Model
                    Top <= r.Top;
         }
 
-        public void Offset(Vector2 delta)
+        public static bool Intersects(RectangleF r1, RectangleF r2)
         {
-            Offset(delta.X, delta.Y);
+            if (r1.Right < r2.Left) return false;
+            if (r1.Left > r2.Right) return false;
+            if (r1.Bottom < r2.Top) return false;
+            if (r1.Top > r2.Bottom) return false;
+
+            return true;
+        }
+
+        public void Offset(Vector2 delta) { Offset(delta.X, delta.Y); }
+
+        public void Offset(float x, float y)
+        {
+            Left += x;
+            Top += y;
         }
 
         public static RectangleF Union(RectangleF r1, RectangleF r2)
@@ -93,7 +106,7 @@ namespace Ibinimator.Core.Model
             return ( Math.Min(r1.Left, r2.Left), Math.Min(r1.Top, r2.Top),
                 Math.Max(r1.Right, r2.Right), Math.Max(r1.Bottom, r2.Bottom));
         }
-        
+
         public static implicit operator (float Left, float Top, float Right, float Bottom)(RectangleF rect)
         {
             return (rect.Left, rect.Top, rect.Right, rect.Bottom);
@@ -102,21 +115,6 @@ namespace Ibinimator.Core.Model
         public static implicit operator RectangleF((float Left, float Top, float Right, float Bottom) rect)
         {
             return new RectangleF(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
-        }
-
-        public static bool Intersects(RectangleF r1, RectangleF r2)
-        {
-            if (r1.Right < r2.Left) return false;
-            if (r1.Left > r2.Right) return false;
-            if (r1.Bottom < r2.Top) return false;
-            if (r1.Top > r2.Bottom) return false;
-            return true;
-        }
-
-        public void Offset(float x, float y)
-        {
-            Left += x;
-            Top += y;
         }
     }
 }

@@ -9,6 +9,6 @@ namespace Ibinimator.Core.Model
     public interface IModel : ICloneable, INotifyPropertyChanged, INotifyPropertyChanging
     {
         object Clone(Type type);
-        T Clone<T>() where T : IModel;
+        T      Clone<T>() where T : IModel;
     }
 }

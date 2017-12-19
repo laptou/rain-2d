@@ -4,12 +4,19 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
 {
     public abstract class GradientPaint : Paint
     {
+        public SpreadMethod SpreadMethod { get; set; } = SpreadMethod.Pad;
+
+        public GradientStop[] Stops { get; set; }
+
+        public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
+
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);
@@ -17,27 +24,25 @@ namespace Ibinimator.Svg
 
             if (Iri.TryParse(LazyGet(element, SvgNames.XLink + "href"), out var href))
             {
-                var target = context.Root.DescendantsAndSelf().First(x => (string)x.Attribute("id") == href.Id);
+                var target = context.Root.DescendantsAndSelf()
+                                    .First(x => (string) x.Attribute("id") == href.Id);
                 FromXml(target, context);
             }
 
-            if(Stops == null)
-                Stops = element.Elements(SvgNames.Stop).Select(x =>
-                {
-                    var stop = new GradientStop();
-                    stop.FromXml(x, context);
-                    return stop;
-                }).ToArray();
-            
-            
+            if (Stops == null)
+                Stops = element.Elements(SvgNames.Stop)
+                               .Select(x =>
+                                       {
+                                           var stop = new GradientStop();
+                                           stop.FromXml(x, context);
+
+                                           return stop;
+                                       })
+                               .ToArray();
+
+
             Transform = X.ParseTransform(LazyGet(element, "gradientTransform"));
         }
-
-        public GradientStop[] Stops { get; set; }
-
-        public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
-
-        public SpreadMethod SpreadMethod { get; set; } = SpreadMethod.Pad;
     }
 
     public enum SpreadMethod
@@ -49,9 +54,8 @@ namespace Ibinimator.Svg
 
     public class GradientStop : Element
     {
+        public Color  Color  { get; set; }
         public Length Offset { get; set; }
-
-        public Color Color { get; set; }
 
         public float Opacity { get; set; } = 1;
 
@@ -114,9 +118,9 @@ namespace Ibinimator.Svg
     {
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }
-        public Length FocusX { get; set; }
-        public Length FocusY { get; set; }
-        public Length Radius { get; set; }
+        public Length FocusX  { get; set; }
+        public Length FocusY  { get; set; }
+        public Length Radius  { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -143,5 +147,5 @@ namespace Ibinimator.Svg
 
             return element;
         }
-}
+    }
 }

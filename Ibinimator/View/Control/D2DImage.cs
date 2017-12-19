@@ -10,13 +10,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Direct2D;
+
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+
 using D2D = SharpDX.Direct2D1;
 using D3D9 = SharpDX.Direct3D9;
 using Device = SharpDX.Direct3D11.Device;
@@ -35,16 +38,16 @@ namespace Ibinimator.View.Control
 
         private readonly Stack<Int32Rect> _dirty = new Stack<Int32Rect>();
 
-        private readonly Stopwatch _renderTimer = new Stopwatch();
-        private D2D.Factory _d2DFactory;
-        private D2D.RenderTarget _d2DRenderTarget;
-        private Device _device;
-        private DW.Factory _dwFactory;
+        private readonly Stopwatch        _renderTimer = new Stopwatch();
+        private          D2D.Factory      _d2DFactory;
+        private          D2D.RenderTarget _d2DRenderTarget;
+        private          Device           _device;
+        private          DW.Factory       _dwFactory;
 
-        private float _fps;
-        private bool _invalidated;
-        private long _lastFrameTime;
-        private Texture2D _renderTarget;
+        private float           _fps;
+        private bool            _invalidated;
+        private long            _lastFrameTime;
+        private Texture2D       _renderTarget;
         private DX11ImageSource _surface;
 
         protected D2DImage()
@@ -70,7 +73,7 @@ namespace Ibinimator.View.Control
         {
             get => _d2DRenderTarget?.AntialiasMode == D2D.AntialiasMode.Aliased;
             set => _d2DRenderTarget.AntialiasMode =
-                value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
+                       value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
         public float Fps
@@ -129,6 +132,12 @@ namespace Ibinimator.View.Control
         protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
 
         protected override Size MeasureOverride(Size constraint) { return constraint; }
+
+        protected override void OnRender(DrawingContext dc)
+        {
+            OnRendering(this, null);
+            base.OnRender(dc);
+        }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
@@ -222,12 +231,6 @@ namespace Ibinimator.View.Control
                 StopRendering();
                 StopD3D();
             }
-        }
-
-        protected override void OnRender(DrawingContext dc)
-        {
-            OnRendering(this, null);
-            base.OnRender(dc);
         }
 
         private void OnRendering(object sender, EventArgs e)
@@ -334,10 +337,10 @@ namespace Ibinimator.View.Control
 
     public class DX11ImageSource : D3DImage, IDisposable
     {
-        private static int _activeClients;
+        private static int             _activeClients;
         private static D3D9.Direct3DEx _context;
-        private static D3D9.DeviceEx _device;
-        private D3D9.Texture _renderTarget;
+        private static D3D9.DeviceEx   _device;
+        private        D3D9.Texture    _renderTarget;
 
         public DX11ImageSource()
         {
@@ -458,10 +461,10 @@ namespace Ibinimator.View.Control
         {
             switch (texture.Description.Format)
             {
-                case Format.R10G10B10A2_UNorm: return D3D9.Format.A2B10G10R10;
+                case Format.R10G10B10A2_UNorm:  return D3D9.Format.A2B10G10R10;
                 case Format.R16G16B16A16_Float: return D3D9.Format.A16B16G16R16F;
-                case Format.B8G8R8A8_UNorm: return D3D9.Format.A8R8G8B8;
-                default: return D3D9.Format.Unknown;
+                case Format.B8G8R8A8_UNorm:     return D3D9.Format.A8R8G8B8;
+                default:                        return D3D9.Format.Unknown;
             }
         }
 

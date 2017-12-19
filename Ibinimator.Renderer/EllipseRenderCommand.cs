@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 
 namespace Ibinimator.Renderer
@@ -9,13 +10,13 @@ namespace Ibinimator.Renderer
     internal class EllipseRenderCommand : GeometricRenderCommand
     {
         public EllipseRenderCommand(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
-            bool fill,
+            float  cx,
+            float  cy,
+            float  rx,
+            float  ry,
+            bool   fill,
             IBrush brush,
-            IPen pen) : base(fill, brush, pen)
+            IPen   pen) : base(fill, brush, pen)
         {
             CenterX = cx;
             CenterY = cy;

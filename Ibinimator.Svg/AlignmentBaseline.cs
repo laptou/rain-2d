@@ -8,7 +8,7 @@ namespace Ibinimator.Svg
     public enum AlignmentBaseline
     {
         Inherit = -1,
-        Auto = 0,
+        Auto    = 0,
         Baseline,
         BeforeEdge,
         TextBeforeEdge,

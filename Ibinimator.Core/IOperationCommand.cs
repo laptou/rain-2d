@@ -22,10 +22,9 @@ namespace Ibinimator.Core
 
         void Do(IArtContext artContext);
 
-        void Undo(IArtContext artContext);
-
         IOperationCommand Merge(IOperationCommand newCommand);
 
+        void Undo(IArtContext artContext);
     }
 
     public interface IOperationCommand<out T> : IOperationCommand

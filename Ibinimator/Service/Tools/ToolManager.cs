@@ -4,13 +4,13 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
+using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service.Tools
 {
-    using Core.Model;
-
-    public class ToolManager : Model, IToolManager
+    public class ToolManager : Core.Model.Model, IToolManager
     {
         public ToolManager(IArtContext artView) { Context = artView; }
 
@@ -25,32 +25,44 @@ namespace Ibinimator.Service.Tools
                 {
                     case ToolType.Select:
                         Tool = new SelectionTool(this, Context.SelectionManager);
+
                         break;
                     case ToolType.Node:
                         Tool = new NodeTool(this, Context.SelectionManager);
+
                         break;
                     case ToolType.Pencil:
                         Tool = new PencilTool(this, Context.SelectionManager);
+
                         break;
                     case ToolType.Pen:
+
                         break;
                     case ToolType.Eyedropper:
+
                         break;
                     case ToolType.Flood:
+
                         break;
                     case ToolType.Keyframe:
+
                         break;
                     case ToolType.Text:
                         Tool = new TextTool(this, Context.SelectionManager);
+
                         break;
                     case ToolType.Mask:
+
                         break;
                     case ToolType.Zoom:
+
                         break;
                     case ToolType.Gradient:
                         Tool = new GradientTool(this, Context.SelectionManager);
+
                         break;
                     default:
+
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }
             }
@@ -64,7 +76,7 @@ namespace Ibinimator.Service.Tools
         #region IToolManager Members
 
         public event EventHandler<IBrushInfo> FillUpdated;
-        public event EventHandler<IPenInfo> StrokeUpdated;
+        public event EventHandler<IPenInfo>   StrokeUpdated;
 
         public bool KeyDown(Key key, ModifierState state)
         {

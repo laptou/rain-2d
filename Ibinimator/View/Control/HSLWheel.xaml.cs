@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Utility;
+
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,8 +14,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Utility;
+
 using Color = Ibinimator.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -88,6 +92,7 @@ namespace Ibinimator.View.Control
             {
                 ReleaseMouseCapture();
                 _draggingRing = _draggingTriangle = false;
+
                 return;
             }
 
@@ -231,6 +236,7 @@ namespace Ibinimator.View.Control
                     *(pStart + currentPixel * 4 + 1) = (byte) (g * 255f); //Green
                     *(pStart + currentPixel * 4 + 0) = (byte) (b * 255f); //Blue
                 }
+
             _ring.AddDirtyRect(new Int32Rect(0, 0,
                                              _ring.PixelWidth, _ring.PixelHeight));
             _ring.Unlock();
@@ -239,40 +245,47 @@ namespace Ibinimator.View.Control
         private unsafe void UpdateTriangle()
         {
             Dispatcher.BeginInvoke(new Action(() =>
-            {
-                var height = (int) (_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
-                var slope = 1.0 / Math.Sqrt(3);
-                var hue = Hue;
+                                              {
+                                                  var height =
+                                                      (int) (_triangle.PixelWidth / Math.Sqrt(3) * 1.5);
+                                                  var slope = 1.0 / Math.Sqrt(3);
+                                                  var hue = Hue;
 
-                _triangle.Lock();
-                var pStart = (byte*) (void*) _triangle.BackBuffer;
+                                                  _triangle.Lock();
+                                                  var pStart = (byte*) (void*) _triangle.BackBuffer;
 
-                for (var iRow = 0; iRow < height; iRow++)
-                {
-                    var offset = (int) (iRow * slope);
+                                                  for (var iRow = 0; iRow < height; iRow++)
+                                                  {
+                                                      var offset = (int) (iRow * slope);
 
-                    for (var iCol = _triangle.PixelWidth / 2 - offset;
-                         iCol < _triangle.PixelWidth / 2 + offset;
-                         iCol++)
-                    {
-                        var currentPixel = iRow * _triangle.PixelWidth + iCol;
+                                                      for (var iCol = _triangle.PixelWidth / 2 - offset;
+                                                           iCol < _triangle.PixelWidth / 2 + offset;
+                                                           iCol++)
+                                                      {
+                                                          var currentPixel =
+                                                              iRow * _triangle.PixelWidth + iCol;
 
-                        var s = 1f - (double) iRow / height;
-                        var l = (double) iCol / _triangle.PixelWidth;
+                                                          var s = 1f - (double) iRow / height;
+                                                          var l = (double) iCol / _triangle.PixelWidth;
 
-                        (double r, double g, double b) = ColorUtils.HslToRgb(hue, s, l);
+                                                          (double r, double g, double b) =
+                                                              ColorUtils.HslToRgb(hue, s, l);
 
-                        *(pStart + currentPixel * 4 + 3) = 255; //alpha
-                        *(pStart + currentPixel * 4 + 2) = (byte) (r * 255.0); //red
-                        *(pStart + currentPixel * 4 + 1) = (byte) (g * 255.0); //Green
-                        *(pStart + currentPixel * 4 + 0) = (byte) (b * 255.0); //Blue
-                    }
-                }
+                                                          *(pStart + currentPixel * 4 + 3) = 255; //alpha
+                                                          *(pStart + currentPixel * 4 + 2) =
+                                                              (byte) (r * 255.0); //red
+                                                          *(pStart + currentPixel * 4 + 1) =
+                                                              (byte) (g * 255.0); //Green
+                                                          *(pStart + currentPixel * 4 + 0) =
+                                                              (byte) (b * 255.0); //Blue
+                                                      }
+                                                  }
 
-                _triangle.AddDirtyRect(new Int32Rect(0, 0,
-                                                     _triangle.PixelWidth, height));
-                _triangle.Unlock();
-            }));
+                                                  _triangle.AddDirtyRect(new Int32Rect(0, 0,
+                                                                                       _triangle.PixelWidth,
+                                                                                       height));
+                                                  _triangle.Unlock();
+                                              }));
         }
 
         #region INotifyPropertyChanged Members

@@ -22,8 +22,8 @@ namespace Ibinimator.Svg
             NResize,
             SEResize = NWResize,
             SWREsize = NEResize,
-            SResize = NResize,
-            WResize = EResize,
+            SResize  = NResize,
+            WResize  = EResize,
             Text,
             Wait,
             Help

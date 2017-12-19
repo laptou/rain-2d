@@ -6,10 +6,12 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+
 using Ibinimator.Core;
 using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.ViewModel;
+
 using Document = Ibinimator.Svg.Document;
 
 namespace Ibinimator.View.Command
@@ -35,7 +37,6 @@ namespace Ibinimator.View.Command
             await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
-            {
                 using (var stream = ofd.OpenFile())
                 {
                     var xdoc = XDocument.Load(stream);
@@ -54,7 +55,6 @@ namespace Ibinimator.View.Command
 
                     vm.Zoom = viewDim / (artDim + 20);
                 }
-            }
         }
 
         private static async Task SaveAsync(IArtContext artCtx)

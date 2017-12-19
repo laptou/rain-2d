@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
-namespace Ibinimator.Core {
+namespace Ibinimator.Core
+{
     public class ToolOption : Model.Model
     {
         public ToolOption(string id) { Id = id; }

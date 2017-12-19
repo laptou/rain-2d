@@ -3,70 +3,70 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
-using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service
 {
     public enum SelectionHandle
     {
-        Scale = 1 << -3,
-        Rotation = 1 << -2,
+        Scale       = 1 << -3,
+        Rotation    = 1 << -2,
         Translation = 1 << -1,
-        Top = (1 << 0) | Scale,
-        Left = (1 << 1) | Scale,
-        Right = (1 << 2) | Scale,
-        Bottom = (1 << 3) | Scale,
-        TopLeft = Top | Left,
-        TopRight = Top | Right,
-        BottomLeft = Bottom | Left,
+        Top         = (1 << 0) | Scale,
+        Left        = (1 << 1) | Scale,
+        Right       = (1 << 2) | Scale,
+        Bottom      = (1 << 3) | Scale,
+        TopLeft     = Top | Left,
+        TopRight    = Top | Right,
+        BottomLeft  = Bottom | Left,
         BottomRight = Bottom | Right
     }
 
     public sealed class SelectionManager : Core.Model.Model, ISelectionManager
     {
         private RectangleF _selectionBounds;
-        private Matrix3x2 _selectionTransform = Matrix3x2.Identity;
+        private Matrix3x2  _selectionTransform = Matrix3x2.Identity;
 
 
         public SelectionManager(
-            IArtContext artView,
-            IViewManager viewManager,
+            IArtContext     artView,
+            IViewManager    viewManager,
             IHistoryManager historyManager,
-            ICacheManager cacheManager)
+            ICacheManager   cacheManager)
         {
             Context = artView;
 
             Selection = new ObservableList<ILayer>();
             Selection.CollectionChanged += (sender, args) =>
-            {
-                UpdateBounds(true);
-                Updated?.Invoke(this, null);
-            };
+                                           {
+                                               UpdateBounds(true);
+                                               Updated?.Invoke(this, null);
+                                           };
 
             viewManager.DocumentUpdated += (sender, args) =>
-            {
-                if (args.PropertyName != nameof(ILayer.Selected)) return;
+                                           {
+                                               if (args.PropertyName != nameof(ILayer.Selected)) return;
 
-                var layer = (ILayer) sender;
+                                               var layer = (ILayer) sender;
 
-                var contains = Selection.Contains(layer);
+                                               var contains = Selection.Contains(layer);
 
-                if (layer.Selected && !contains)
-                {
-                    Selection.Add(layer);
+                                               if (layer.Selected && !contains)
+                                               {
+                                                   Selection.Add(layer);
 
-                    foreach (var child in layer.Flatten().Skip(1))
-                        child.Selected = false;
-                }
-                else if (!layer.Selected && contains)
-                {
-                    Selection.Remove(layer);
-                }
-            };
+                                                   foreach (var child in layer.Flatten().Skip(1))
+                                                       child.Selected = false;
+                                               }
+                                               else if (!layer.Selected && contains)
+                                               {
+                                                   Selection.Remove(layer);
+                                               }
+                                           };
 
             historyManager.Traversed += (sender, args) => { UpdateBounds(true); };
 
@@ -94,8 +94,8 @@ namespace Ibinimator.Service
         public void TransformSelection(
             Vector2 scale,
             Vector2 translate,
-            float rotate,
-            float shear,
+            float   rotate,
+            float   shear,
             Vector2 relativeOrigin)
         {
             var localOrigin = SelectionBounds.TopLeft +
@@ -189,11 +189,11 @@ namespace Ibinimator.Service
 
     public enum GuideType
     {
-        All = 0,
-        Linear = 1 << -1,
-        Radial = 1 << -2,
+        All        = 0,
+        Linear     = 1 << -1,
+        Radial     = 1 << -2,
         Proportion = (1 << 0) | Linear,
-        Position = (1 << 1) | Linear,
-        Rotation = (1 << 2) | Radial
+        Position   = (1 << 1) | Linear,
+        Rotation   = (1 << 2) | Radial
     }
 }

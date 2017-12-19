@@ -5,7 +5,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
 using Ibinimator.Core.Model;
+
 using Color = Ibinimator.Core.Model.Color;
 
 namespace Ibinimator.Renderer.WPF

@@ -5,17 +5,18 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
 {
     public interface ITool : INotifyPropertyChanged, IDisposable
     {
-        string Cursor { get; }
-        float CursorRotate { get; }
+        string Cursor       { get; }
+        float  CursorRotate { get; }
 
         IToolManager Manager { get; }
-        ToolOptions Options { get; }
+        ToolOptions  Options { get; }
 
         ToolType Type { get; }
 
@@ -52,11 +53,11 @@ namespace Ibinimator.Core
         #region Events
 
         bool KeyDown(Key key, ModifierState modifiers);
-        bool KeyUp(Key key, ModifierState modifiers);
+        bool KeyUp(Key   key, ModifierState modifiers);
 
         bool MouseDown(Vector2 pos, ModifierState state);
         bool MouseMove(Vector2 pos, ModifierState state);
-        bool MouseUp(Vector2 pos, ModifierState state);
+        bool MouseUp(Vector2   pos, ModifierState state);
 
         bool TextInput(string text);
 

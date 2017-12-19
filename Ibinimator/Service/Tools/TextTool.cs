@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Direct2D;
+
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
+
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
 using FontStyle = Ibinimator.Core.Model.FontStyle;
@@ -23,79 +27,17 @@ namespace Ibinimator.Service.Tools
 {
     public sealed class TextTool : SelectionToolBase
     {
-        private struct FontFace : IEquatable<FontFace>
-        {
-            public FontFace(FontStretch stretch, FontStyle style, FontWeight weight) : this()
-            {
-                Weight = weight;
-                Style = style;
-                Stretch = stretch;
-            }
-
-            public FontWeight Weight { get; }
-            public FontStyle Style { get; }
-            public FontStretch Stretch { get; }
-
-            public override bool Equals(object obj) { return obj is FontFace face && Equals(face); }
-
-            public bool Equals(FontFace other)
-            {
-                return Weight == other.Weight &&
-                       Style == other.Style &&
-                       Stretch == other.Stretch;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = -404071;
-                hashCode = hashCode * -1521134295 + base.GetHashCode();
-                hashCode = hashCode * -1521134295 + Weight.GetHashCode();
-                hashCode = hashCode * -1521134295 + Style.GetHashCode();
-                hashCode = hashCode * -1521134295 + Stretch.GetHashCode();
-                return hashCode;
-            }
-
-            public override string ToString()
-            {
-                if (this == (FontStretch.Normal, FontStyle.Normal, FontWeight.Normal))
-                    return "Regular";
-
-                IEnumerable<string> G(FontFace f)
-                {
-                    if (f.Stretch != FontStretch.Normal) yield return f.Stretch.DePascalize();
-                    if (f.Weight != FontWeight.Normal) yield return f.Weight.DePascalize();
-                    if (f.Style != FontStyle.Normal) yield return f.Style.DePascalize();
-                }
-
-                return string.Join(" ", G(this));
-            }
-
-            public static implicit operator (FontStretch, FontStyle, FontWeight)(FontFace face)
-            {
-                return (face.Stretch, face.Style, face.Weight);
-            }
-
-            public static implicit operator FontFace((FontStretch, FontStyle, FontWeight) face)
-            {
-                return new FontFace(face.Item1, face.Item2, face.Item3);
-            }
-
-            public static bool operator ==(FontFace face1, FontFace face2) { return face1.Equals(face2); }
-
-            public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
-        }
-
-        private readonly DW.Factory _dwFactory;
+        private readonly DW.Factory        _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
         private (Vector2 position, Vector2 size, bool visible) _caret;
+        private (Vector2 start, Vector2 end, long time)        _drag;
 
         private (Vector2 position, bool down, long time, long previousTime) _mouse;
-        private (Vector2 start, Vector2 end, long time) _drag;
-        private (int index, int length) _selection;
+        private (int index, int length)                                     _selection;
 
         private RectangleF[] _selectionRects = new RectangleF[0];
-        private bool _updatingOptions = false;
+        private bool         _updatingOptions;
 
         public TextTool(IToolManager manager, ISelectionManager selectionManager)
             : base(manager, selectionManager)
@@ -112,17 +54,20 @@ namespace Ibinimator.Service.Tools
             Options.SetValues("font-family",
                               Enumerable.Range(0, _dwFontCollection.FontFamilyCount)
                                         .Select(i =>
-                                        {
-                                            using (var dwFontFamily =
-                                                _dwFontCollection.GetFontFamily(i))
-                                            {
-                                                return dwFontFamily.FamilyNames
-                                                                   .ToCurrentCulture();
-                                            }
-                                        })
+                                                {
+                                                    using (var dwFontFamily =
+                                                        _dwFontCollection.GetFontFamily(i))
+                                                    {
+                                                        return dwFontFamily.FamilyNames
+                                                                           .ToCurrentCulture();
+                                                    }
+                                                })
                                         .OrderBy(n => n));
+
             using (var defaultFont = _dwFontCollection.GetFontFamily(0))
+            {
                 Options.Set("font-family", defaultFont.FamilyNames.ToCurrentCulture());
+            }
 
             Options.Create("font-size", "Font Size");
             Options.SetValues("font-size",
@@ -176,290 +121,6 @@ namespace Ibinimator.Service.Tools
             private set => Set(value);
         }
 
-        public Vector2 ToWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
-        }
-
-        public Vector2 FromWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-        }
-
-        protected override void OnSelectionUpdated(object sender, EventArgs e) { Update(); }
-
-        private void Format(Format format, bool merge = false)
-        {
-            var history = Context.HistoryManager;
-            var cmd = new ApplyFormatCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer, format);
-
-            if (merge)
-
-                history.Merge(cmd, Time.DoubleClick);
-            else history.Do(cmd);
-        }
-
-        [DllImport("user32.dll")]
-        private static extern uint GetCaretBlinkTime();
-
-        private IEnumerable<FontFace> GetFontFaces()
-        {
-            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
-                yield break;
-
-            using (var dwFamily = _dwFontCollection.GetFontFamily(index))
-            {
-                for (var i = 0; i < dwFamily.FontCount; i++)
-                {
-                    using (var dwFont = dwFamily.GetFont(i))
-                    {
-                        yield return new FontFace((FontStretch) dwFont.Stretch,
-                                                  (FontStyle) dwFont.Style,
-                                                  (FontWeight) dwFont.Weight);
-                    }
-                }
-            }
-        }
-
-
-        private void Insert(int index, string text)
-        {
-            if (text.Length == 0) return;
-
-            var history = Context.HistoryManager;
-            var current = new InsertTextCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer, text, index);
-
-            history.Do(current);
-        }
-
-        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (_updatingOptions) return;
-
-            var option = (ToolOption) sender;
-            if (SelectedLayer == null) return;
-            if (!(e.PropertyName == nameof(ToolOption.Value) ||
-                  e.PropertyName == nameof(ToolOption.Values)))
-                return;
-
-            var updated = false;
-            switch (option.Id)
-            {
-                case "font-family":
-                    UpdateOptions(Options.Get<string>("font-family"),
-                                  Options.Get<float>("font-size"),
-                                  Options.Get<FontStretch>("font-stretch"),
-                                  Options.Get<FontWeight>("font-weight"),
-                                  Options.Get<FontStyle>("font-style"));
-                    updated = true;
-
-                    if (_selection.length == 0)
-                        Format(new Format
-                        {
-                            FontFamilyName = (string) option.Value,
-                            Range = (0, SelectedLayer.Value.Length)
-                        });
-                    else
-                        Format(new Format
-                        {
-                            FontFamilyName = (string) option.Value,
-                            Range = (_selection.index, _selection.length)
-                        });
-                    goto case "font-stretch";
-
-                case "font-stretch":
-                    if (!updated)
-                    {
-                        UpdateOptions(Options.Get<string>("font-family"),
-                                      Options.Get<float>("font-size"),
-                                      Options.Get<FontStretch>("font-stretch"),
-                                      Options.Get<FontWeight>("font-weight"),
-                                      Options.Get<FontStyle>("font-style"));
-                        updated = true;
-                    }
-
-                    var stretch = Options.Get<FontStretch>("font-stretch");
-                    if (_selection.length == 0)
-                        Format(new Format
-                        {
-                            FontStretch = stretch,
-                            Range = (0, SelectedLayer.Value.Length)
-                        });
-                    else
-                        Format(new Format
-                        {
-                            FontStretch = stretch,
-                            Range = (_selection.index, _selection.length)
-                        });
-                    goto case "font-weight";
-
-                case "font-weight":
-                    if (!updated)
-                    {
-                        UpdateOptions(Options.Get<string>("font-family"),
-                                      Options.Get<float>("font-size"),
-                                      Options.Get<FontStretch>("font-stretch"),
-                                      Options.Get<FontWeight>("font-weight"),
-                                      Options.Get<FontStyle>("font-style"));
-                        updated = true;
-                    }
-
-                    var weight = Options.Get<FontWeight>("font-weight");
-                    if (_selection.length == 0)
-                        Format(new Format
-                        {
-                            FontWeight = weight,
-                            Range = (0, SelectedLayer.Value.Length)
-                        });
-                    else
-                        Format(new Format
-                        {
-                            FontWeight = weight,
-                            Range = (_selection.index, _selection.length)
-                        });
-
-
-                    goto case "font-style";
-
-                case "font-style":
-                    if (!updated)
-                    {
-                        UpdateOptions(Options.Get<string>("font-family"),
-                                      Options.Get<float>("font-size"),
-                                      Options.Get<FontStretch>("font-stretch"),
-                                      Options.Get<FontWeight>("font-weight"),
-                                      Options.Get<FontStyle>("font-style"));
-                    }
-
-                    var style = Options.Get<FontStyle>("font-style");
-                    if (_selection.length == 0)
-                        Format(new Format
-                        {
-                            FontStyle = style,
-                            Range = (0, SelectedLayer.Value.Length)
-                        });
-                    else
-                        Format(new Format
-                        {
-                            FontStyle = style,
-                            Range = (_selection.index, _selection.length)
-                        });
-                    break;
-
-                case "font-size":
-                    if (_selection.length == 0)
-                        Format(new Format
-                        {
-                            FontSize = (float) option.Value,
-                            Range = (0, SelectedLayer.Value.Length)
-                        });
-                    else
-                        Format(new Format
-                        {
-                            FontSize = (float) option.Value,
-                            Range = (_selection.index, _selection.length)
-                        });
-                    break;
-            }
-
-            Update();
-        }
-
-        private void Remove(int index, int length)
-        {
-            if (length == 0) return;
-
-            var history = Context.HistoryManager;
-            var current = new RemoveTextCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer,
-                SelectedLayer.Value.Substring(index, length),
-                index);
-
-            history.Do(current);
-        }
-
-        private void UpdateOptions(
-            string family, float size, FontStretch stretch,
-            FontWeight weight, FontStyle style)
-        {
-            if (_updatingOptions) return;
-
-            _updatingOptions = true;
-
-            Options.Set("font-family", family);
-            Options.Set("font-size", size);
-
-            var stretches = GetFontFaces()
-                .Select(f => f.Stretch)
-                .Distinct()
-                .ToArray();
-
-            Options.SetValues("font-stretch", stretches);
-            Options.Set("font-stretch", stretch);
-
-            var weights = GetFontFaces()
-                .Where(f => f.Stretch == stretch)
-                .Select(f => f.Weight)
-                .Distinct()
-                .ToArray();
-
-            Options.SetValues("font-weight", weights);
-            Options.Set("font-weight", weight);
-
-            var styles = GetFontFaces()
-                .Where(f => f.Stretch == stretch &&
-                            f.Weight == weight)
-                .Select(f => f.Style)
-                .Distinct()
-                .ToArray();
-
-            Options.SetValues("font-style", styles);
-            Options.Set("font-style", style);
-
-            _updatingOptions = false;
-        }
-
-        private void Update()
-        {
-            if (SelectedLayer == null) return;
-
-            // if (!_caret.visible) 
-
-            var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
-
-            var metrics = layout.MeasurePosition(_selection.index);
-
-            _caret.position = new Vector2(metrics.Left, metrics.Top);
-            _caret.size = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
-
-            _selectionRects = _selection.length > 0 ?
-                layout.MeasureRange(_selection.index, _selection.length) :
-                new RectangleF[0];
-
-            var format = SelectedLayer.GetFormat(_selection.index);
-
-            UpdateOptions(format?.FontFamilyName ?? SelectedLayer.FontFamilyName,
-                          format?.FontSize ?? SelectedLayer.FontSize,
-                          format?.FontStretch ?? SelectedLayer.FontStretch,
-                          format?.FontWeight ?? SelectedLayer.FontWeight,
-                          format?.FontStyle ?? SelectedLayer.FontStyle);
-
-            if (Manager.Tool == this) // evaluates to false when Update() called in constructor
-            {
-                Manager.RaiseFillUpdate();
-                Manager.RaiseStrokeUpdate();
-            }
-
-            Context.InvalidateSurface();
-        }
-
-        #region ITool Members
-
         public override void ApplyFill(IBrushInfo brush)
         {
             if (SelectedLayer == null || brush == null) return;
@@ -489,6 +150,11 @@ namespace Ibinimator.Service.Tools
             _dwFactory?.Dispose();
         }
 
+        public Vector2 FromWorldSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+        }
+
         public override bool KeyDown(Key key, ModifierState mods)
         {
             if (SelectedLayer != null)
@@ -496,6 +162,7 @@ namespace Ibinimator.Service.Tools
                 var text = SelectedLayer.Value;
 
                 Format format;
+
                 switch (key)
                 {
                     #region Navigation
@@ -507,8 +174,10 @@ namespace Ibinimator.Service.Tools
                             _selection.length++;
                         else
                             _selection.length = 0;
+
                         break;
                     case Key.Right:
+
                         if (mods.Shift)
                         {
                             _selection.length++;
@@ -518,8 +187,10 @@ namespace Ibinimator.Service.Tools
                             _selection.index++;
                             _selection.length = 0;
                         }
+
                         break;
                     case Key.Down:
+
                         if (mods.Shift)
                         {
                             var prev = text.Substring(0, _selection.index + _selection.length)
@@ -527,11 +198,11 @@ namespace Ibinimator.Service.Tools
 
                             var end = text.Substring(_selection.index + _selection.length)
                                           .IndexOf("\n", StringComparison.Ordinal)
-                                      + _selection.index + _selection.length;
+                                    + _selection.index + _selection.length;
 
                             var next = text.Substring(end + 1)
                                            .IndexOf("\n", StringComparison.Ordinal)
-                                       + end + 1;
+                                     + end + 1;
 
                             var pos = _selection.index + _selection.length - prev;
 
@@ -540,24 +211,26 @@ namespace Ibinimator.Service.Tools
                         else
                         {
                             var prev = text
-                                .Substring(0, _selection.index)
-                                .LastIndexOf("\n", StringComparison.Ordinal);
+                                      .Substring(0, _selection.index)
+                                      .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var end = text.Substring(_selection.index)
                                           .IndexOf("\n", StringComparison.Ordinal)
-                                      + _selection.index;
+                                    + _selection.index;
 
                             var next = text.Substring(end + 1)
                                            .IndexOf("\n", StringComparison.Ordinal)
-                                       + end + 1;
+                                     + end + 1;
 
                             var pos = _selection.index - prev;
 
                             _selection.index = Math.Min(next, end + pos);
                             _selection.length = 0;
                         }
+
                         break;
                     case Key.Up:
+
                         if (mods.Shift)
                         {
                             var start = text.Substring(0, _selection.index)
@@ -585,8 +258,10 @@ namespace Ibinimator.Service.Tools
                             _selection.index = Math.Max(0, start + pos);
                             _selection.length = 0;
                         }
+
                         break;
                     case Key.End:
+
                         if (mods.Shift)
                         {
                             _selection.length = text.Length - _selection.index;
@@ -596,6 +271,7 @@ namespace Ibinimator.Service.Tools
                             _selection.index = text.Length;
                             _selection.length = 0;
                         }
+
                         break;
                     case Key.Home:
                         if (mods.Shift)
@@ -604,12 +280,14 @@ namespace Ibinimator.Service.Tools
                             _selection.length = 0;
 
                         _selection.index = 0;
+
                         break;
                     case Key.Escape:
                         if (_selection.length == 0)
                             SelectedLayer.Selected = false;
 
                         _selection.length = 0;
+
                         break;
 
                     #endregion
@@ -617,6 +295,7 @@ namespace Ibinimator.Service.Tools
                     #region Manipulation
 
                     case Key.Back:
+
                         if (_selection.index == 0 && _selection.length == 0) break;
 
                         if (_selection.length == 0)
@@ -625,18 +304,22 @@ namespace Ibinimator.Service.Tools
                             Remove(_selection.index, _selection.length);
 
                         _selection.length = 0;
+
                         break;
 
                     case Key.Delete:
+
                         if (_selection.index + Math.Max(_selection.length, 1) > text.Length) break;
 
                         Remove(_selection.index, Math.Max(_selection.length, 1));
 
                         _selection.length = 0;
+
                         break;
 
                     case Key.Return:
                         TextInput(Environment.NewLine);
+
                         break;
 
                     #endregion
@@ -646,6 +329,7 @@ namespace Ibinimator.Service.Tools
                     case Key.A when mods.Control:
                         _selection.index = 0;
                         _selection.length = SelectedLayer.Value.Length;
+
                         break;
 
                     case Key.B when mods.Control:
@@ -657,6 +341,7 @@ namespace Ibinimator.Service.Tools
                             FontWeight = weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal,
                             Range = (_selection.index, _selection.length)
                         });
+
                         break;
 
                     case Key.I when mods.Control:
@@ -668,10 +353,12 @@ namespace Ibinimator.Service.Tools
                             FontStyle = style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal,
                             Range = (_selection.index, _selection.length)
                         });
+
                         break;
 
                     case Key.C when mods.Control:
                         Clipboard.SetText(text.Substring(_selection.index, _selection.length));
+
                         break;
 
                     case Key.X when mods.Control:
@@ -688,11 +375,13 @@ namespace Ibinimator.Service.Tools
 
                         _selection.length = 0;
                         _selection.index += pasted.Length;
+
                         break;
 
                     #endregion
 
                     default:
+
                         return false;
                 }
 
@@ -714,6 +403,7 @@ namespace Ibinimator.Service.Tools
         {
             _mouse = (pos, true, Time.Now, _mouse.time);
             _drag = (pos, pos, Time.Now);
+
             return base.MouseDown(pos, state);
         }
 
@@ -722,6 +412,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
             {
                 _mouse.position = pos;
+
                 return false;
             }
 
@@ -770,8 +461,7 @@ namespace Ibinimator.Service.Tools
                     FontStyle = Options.Get<FontStyle>("font-style"),
                     FontStretch = Options.Get<FontStretch>("font-stretch"),
                     FontWeight = Options.Get<FontWeight>("font-weight"),
-                    Fill = Context.BrushManager.Fill,
-                    Stroke = Context.BrushManager.Stroke
+                    Fill = Context.BrushManager.BrushHistory.FirstOrDefault()
                 };
                 text.ApplyTransform(Matrix3x2.CreateTranslation(pos));
 
@@ -784,6 +474,7 @@ namespace Ibinimator.Service.Tools
                                         text));
 
                 text.Selected = true;
+
                 return true;
             }
 
@@ -890,6 +581,355 @@ namespace Ibinimator.Service.Tools
             Update();
 
             return true;
+        }
+
+        public Vector2 ToWorldSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
+        }
+
+        protected override void OnSelectionUpdated(object sender, EventArgs e) { Update(); }
+
+        private void Format(Format format, bool merge = false)
+        {
+            var history = Context.HistoryManager;
+            var cmd = new ApplyFormatCommand(
+                Context.HistoryManager.Position + 1,
+                SelectedLayer, format);
+
+            if (merge)
+
+                history.Merge(cmd, Time.DoubleClick);
+            else history.Do(cmd);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern uint GetCaretBlinkTime();
+
+        private IEnumerable<FontFace> GetFontFaces()
+        {
+            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
+                yield break;
+
+            using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+            {
+                for (var i = 0; i < dwFamily.FontCount; i++)
+                    using (var dwFont = dwFamily.GetFont(i))
+                    {
+                        yield return new FontFace((FontStretch) dwFont.Stretch,
+                                                  (FontStyle) dwFont.Style,
+                                                  (FontWeight) dwFont.Weight);
+                    }
+            }
+        }
+
+
+        private void Insert(int index, string text)
+        {
+            if (text.Length == 0) return;
+
+            var history = Context.HistoryManager;
+            var current = new InsertTextCommand(
+                Context.HistoryManager.Position + 1,
+                SelectedLayer, text, index);
+
+            history.Do(current);
+        }
+
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_updatingOptions) return;
+
+            var option = (ToolOption) sender;
+
+            if (SelectedLayer == null) return;
+            if (!(e.PropertyName == nameof(ToolOption.Value) ||
+                  e.PropertyName == nameof(ToolOption.Values)))
+                return;
+
+            var updated = false;
+
+            switch (option.Id)
+            {
+                case "font-family":
+                    UpdateOptions(Options.Get<string>("font-family"),
+                                  Options.Get<float>("font-size"),
+                                  Options.Get<FontStretch>("font-stretch"),
+                                  Options.Get<FontWeight>("font-weight"),
+                                  Options.Get<FontStyle>("font-style"));
+                    updated = true;
+
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontFamilyName = (string) option.Value,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontFamilyName = (string) option.Value,
+                            Range = (_selection.index, _selection.length)
+                        });
+                    goto case "font-stretch";
+
+                case "font-stretch":
+
+                    if (!updated)
+                    {
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+                        updated = true;
+                    }
+
+                    var stretch = Options.Get<FontStretch>("font-stretch");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontStretch = stretch,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontStretch = stretch,
+                            Range = (_selection.index, _selection.length)
+                        });
+                    goto case "font-weight";
+
+                case "font-weight":
+
+                    if (!updated)
+                    {
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+                        updated = true;
+                    }
+
+                    var weight = Options.Get<FontWeight>("font-weight");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontWeight = weight,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontWeight = weight,
+                            Range = (_selection.index, _selection.length)
+                        });
+
+
+                    goto case "font-style";
+
+                case "font-style":
+                    if (!updated)
+                        UpdateOptions(Options.Get<string>("font-family"),
+                                      Options.Get<float>("font-size"),
+                                      Options.Get<FontStretch>("font-stretch"),
+                                      Options.Get<FontWeight>("font-weight"),
+                                      Options.Get<FontStyle>("font-style"));
+
+                    var style = Options.Get<FontStyle>("font-style");
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontStyle = style,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontStyle = style,
+                            Range = (_selection.index, _selection.length)
+                        });
+
+                    break;
+
+                case "font-size":
+                    if (_selection.length == 0)
+                        Format(new Format
+                        {
+                            FontSize = (float) option.Value,
+                            Range = (0, SelectedLayer.Value.Length)
+                        });
+                    else
+                        Format(new Format
+                        {
+                            FontSize = (float) option.Value,
+                            Range = (_selection.index, _selection.length)
+                        });
+
+                    break;
+            }
+
+            Update();
+        }
+
+        private void Remove(int index, int length)
+        {
+            if (length == 0) return;
+
+            var history = Context.HistoryManager;
+            var current = new RemoveTextCommand(
+                Context.HistoryManager.Position + 1,
+                SelectedLayer,
+                SelectedLayer.Value.Substring(index, length),
+                index);
+
+            history.Do(current);
+        }
+
+        private void Update()
+        {
+            if (SelectedLayer == null) return;
+
+            // if (!_caret.visible) 
+
+            var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
+
+            var metrics = layout.MeasurePosition(_selection.index);
+
+            _caret.position = new Vector2(metrics.Left, metrics.Top);
+            _caret.size = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
+
+            _selectionRects = _selection.length > 0 ?
+                                  layout.MeasureRange(_selection.index, _selection.length) :
+                                  new RectangleF[0];
+
+            var format = SelectedLayer.GetFormat(_selection.index);
+
+            UpdateOptions(format?.FontFamilyName ?? SelectedLayer.FontFamilyName,
+                          format?.FontSize ?? SelectedLayer.FontSize,
+                          format?.FontStretch ?? SelectedLayer.FontStretch,
+                          format?.FontWeight ?? SelectedLayer.FontWeight,
+                          format?.FontStyle ?? SelectedLayer.FontStyle);
+
+            if (Manager.Tool == this) // evaluates to false when Update() called in constructor
+            {
+                Manager.RaiseFillUpdate();
+                Manager.RaiseStrokeUpdate();
+            }
+
+            Context.InvalidateSurface();
+        }
+
+        private void UpdateOptions(
+            string     family, float     size, FontStretch stretch,
+            FontWeight weight, FontStyle style)
+        {
+            if (_updatingOptions) return;
+
+            _updatingOptions = true;
+
+            Options.Set("font-family", family);
+            Options.Set("font-size", size);
+
+            var stretches = GetFontFaces()
+                           .Select(f => f.Stretch)
+                           .Distinct()
+                           .ToArray();
+
+            Options.SetValues("font-stretch", stretches);
+            Options.Set("font-stretch", stretch);
+
+            var weights = GetFontFaces()
+                         .Where(f => f.Stretch == stretch)
+                         .Select(f => f.Weight)
+                         .Distinct()
+                         .ToArray();
+
+            Options.SetValues("font-weight", weights);
+            Options.Set("font-weight", weight);
+
+            var styles = GetFontFaces()
+                        .Where(f => f.Stretch == stretch &&
+                                    f.Weight == weight)
+                        .Select(f => f.Style)
+                        .Distinct()
+                        .ToArray();
+
+            Options.SetValues("font-style", styles);
+            Options.Set("font-style", style);
+
+            _updatingOptions = false;
+        }
+
+        #region Nested type: FontFace
+
+        private struct FontFace : IEquatable<FontFace>
+        {
+            public FontFace(FontStretch stretch, FontStyle style, FontWeight weight) : this()
+            {
+                Weight = weight;
+                Style = style;
+                Stretch = stretch;
+            }
+
+            public FontStretch Stretch { get; }
+            public FontStyle   Style   { get; }
+
+            public FontWeight Weight { get; }
+
+            public override bool Equals(object obj) { return obj is FontFace face && Equals(face); }
+
+            public override int GetHashCode()
+            {
+                var hashCode = -404071;
+                hashCode = hashCode * -1521134295 + base.GetHashCode();
+                hashCode = hashCode * -1521134295 + Weight.GetHashCode();
+                hashCode = hashCode * -1521134295 + Style.GetHashCode();
+                hashCode = hashCode * -1521134295 + Stretch.GetHashCode();
+
+                return hashCode;
+            }
+
+            public override string ToString()
+            {
+                if (this == (FontStretch.Normal, FontStyle.Normal, FontWeight.Normal))
+                    return "Regular";
+
+                IEnumerable<string> G(FontFace f)
+                {
+                    if (f.Stretch != FontStretch.Normal) yield return f.Stretch.DePascalize();
+                    if (f.Weight != FontWeight.Normal) yield return f.Weight.DePascalize();
+                    if (f.Style != FontStyle.Normal) yield return f.Style.DePascalize();
+                }
+
+                return string.Join(" ", G(this));
+            }
+
+            public static bool operator ==(FontFace face1, FontFace face2) { return face1.Equals(face2); }
+
+            public static implicit operator (FontStretch, FontStyle, FontWeight)(FontFace face)
+            {
+                return (face.Stretch, face.Style, face.Weight);
+            }
+
+            public static implicit operator FontFace((FontStretch, FontStyle, FontWeight) face)
+            {
+                return new FontFace(face.Item1, face.Item2, face.Item3);
+            }
+
+            public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
+
+            #region IEquatable<FontFace> Members
+
+            public bool Equals(FontFace other)
+            {
+                return Weight == other.Weight &&
+                       Style == other.Style &&
+                       Stretch == other.Stretch;
+            }
+
+            #endregion
         }
 
         #endregion

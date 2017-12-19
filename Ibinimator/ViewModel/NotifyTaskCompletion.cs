@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.ViewModel
 {
@@ -12,6 +11,7 @@ namespace Ibinimator.ViewModel
         public NotifyTaskCompletion(Task<TResult> task)
         {
             Task = task;
+
             if (!task.IsCompleted)
             {
                 var _ = WatchTaskAsync(task);
@@ -46,15 +46,16 @@ namespace Ibinimator.ViewModel
             {
                 await task;
             }
-            catch
-            {
-            }
+            catch { }
 
             var propertyChanged = PropertyChanged;
+
             if (propertyChanged == null) return;
+
             propertyChanged(this, new PropertyChangedEventArgs("Status"));
             propertyChanged(this, new PropertyChangedEventArgs("IsCompleted"));
             propertyChanged(this, new PropertyChangedEventArgs("IsNotCompleted"));
+
             if (task.IsCanceled)
             {
                 propertyChanged(this, new PropertyChangedEventArgs("IsCanceled"));
@@ -64,13 +65,13 @@ namespace Ibinimator.ViewModel
                 propertyChanged(this, new PropertyChangedEventArgs("IsFaulted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Exception"));
                 propertyChanged(this,
-                    new PropertyChangedEventArgs("InnerException"));
+                                new PropertyChangedEventArgs("InnerException"));
                 propertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
             }
             else
             {
                 propertyChanged(this,
-                    new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
+                                new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Result"));
             }
         }
@@ -87,6 +88,7 @@ namespace Ibinimator.ViewModel
         public NotifyTaskCompletion(Task task)
         {
             Task = task;
+
             if (!task.IsCompleted)
             {
                 var _ = WatchTaskAsync(task);
@@ -96,6 +98,7 @@ namespace Ibinimator.ViewModel
         public NotifyTaskCompletion(Func<IProgress<double>, Task> func)
         {
             Task = func(this);
+
             if (!Task.IsCompleted)
             {
                 var _ = WatchTaskAsync(Task);
@@ -105,6 +108,7 @@ namespace Ibinimator.ViewModel
         public NotifyTaskCompletion(Func<Task> func)
         {
             Task = func();
+
             if (!Task.IsCompleted)
             {
                 var _ = WatchTaskAsync(Task);
@@ -141,13 +145,12 @@ namespace Ibinimator.ViewModel
             {
                 await task;
             }
-            catch
-            {
-            }
+            catch { }
 
             RaisePropertyChanged("Status");
             RaisePropertyChanged("IsCompleted");
             RaisePropertyChanged("IsNotCompleted");
+
             if (task.IsCanceled)
             {
                 RaisePropertyChanged("IsCanceled");

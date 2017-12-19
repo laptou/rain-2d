@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -11,12 +11,16 @@ namespace Ibinimator.Service
 {
     public class BrushManager : Core.Model.Model, IBrushManager
     {
-        public BrushManager(IArtContext artContext, 
-            ISelectionManager selectionManager, 
-            IHistoryManager historyManager,
-            IToolManager toolManager)
+        private readonly Stack<IBrushInfo> _brushHistory;
+
+        public BrushManager(
+            IArtContext       artContext,
+            ISelectionManager selectionManager,
+            IHistoryManager   historyManager,
+            IToolManager      toolManager)
         {
             Context = artContext;
+            _brushHistory = new Stack<IBrushInfo>();
 
             selectionManager.Updated += OnUpdated;
             historyManager.Traversed += (s, e) => OnUpdated(s, null);
@@ -31,6 +35,29 @@ namespace Ibinimator.Service
 
         #region IBrushManager Members
 
+        public void ApplyFill() { Context.ToolManager.Tool.ApplyFill(Fill); }
+
+        public void ApplyStroke() { Context.ToolManager.Tool.ApplyStroke(Stroke); }
+
+        public void Query()
+        {
+            var (oldFill, oldStroke) = (Fill, Stroke);
+            Fill = Context.ToolManager.Tool.ProvideFill();
+            Stroke = Context.ToolManager.Tool.ProvideStroke();
+
+            if (_brushHistory.Count == 0) return;
+
+            var top = _brushHistory.Peek();
+
+            if (top != oldFill)
+                _brushHistory.Push(Fill);
+
+            if (top != oldStroke.Brush)
+                _brushHistory.Push(oldStroke.Brush);
+        }
+
+        public IReadOnlyCollection<IBrushInfo> BrushHistory => _brushHistory;
+
         public IArtContext Context { get; }
 
         public IBrushInfo Fill
@@ -43,22 +70,6 @@ namespace Ibinimator.Service
         {
             get => Get<IPenInfo>();
             set => Set(value);
-        }
-
-        public void Query()
-        {
-            Fill = Context.ToolManager.Tool.ProvideFill();
-            Stroke = Context.ToolManager.Tool.ProvideStroke();
-        }
-
-        public void ApplyFill()
-        {
-            Context.ToolManager.Tool.ApplyFill(Fill);
-        }
-
-        public void ApplyStroke()
-        {
-            Context.ToolManager.Tool.ApplyStroke(Stroke);
         }
 
         #endregion

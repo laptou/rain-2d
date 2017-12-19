@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
@@ -48,26 +49,28 @@ namespace Ibinimator.Svg
 
             _spans.AddRange(element.Elements()
                                    .Select(spanElement =>
-                                   {
-                                       IInlineTextElement span;
+                                           {
+                                               IInlineTextElement span;
 
-                                       switch (spanElement.Name.LocalName)
-                                       {
-                                           case "tspan":
-                                               span = new Span();
-                                               span.FromXml(spanElement, context);
-                                               break;
-                                           default:
-                                               throw new InvalidDataException();
-                                       }
+                                               switch (spanElement.Name.LocalName)
+                                               {
+                                                   case "tspan":
+                                                       span = new Span();
+                                                       span.FromXml(spanElement, context);
 
-                                       span.Position = spanElement
-                                           .ElementsBeforeSelf()
-                                           .Select(x => x.Value.Length)
-                                           .Sum();
+                                                       break;
+                                                   default:
 
-                                       return span;
-                                   }));
+                                                       throw new InvalidDataException();
+                                               }
+
+                                               span.Position = spanElement
+                                                              .ElementsBeforeSelf()
+                                                              .Select(x => x.Value.Length)
+                                                              .Sum();
+
+                                               return span;
+                                           }));
         }
 
         public IEnumerator<IInlineTextElement> GetEnumerator() { return _spans.GetEnumerator(); }

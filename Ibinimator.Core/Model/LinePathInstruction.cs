@@ -10,11 +10,8 @@ namespace Ibinimator.Core.Model
     [DebuggerDisplay("L {" + nameof(Position) + "}")]
     public class LinePathInstruction : CoordinatePathInstruction
     {
-        public LinePathInstruction(float x, float y) : base(x, y)
-        {
-        }
+        public LinePathInstruction(float x, float y) : base(x, y) { }
 
-        public LinePathInstruction(Vector2 position) : this(position.X, position.Y)
-        { }
+        public LinePathInstruction(Vector2 position) : this(position.X, position.Y) { }
     }
 }

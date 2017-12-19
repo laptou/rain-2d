@@ -702,7 +702,7 @@ namespace Ibinimator.Native
         ///     message through its WindowProc function.
         /// </summary>
         ImeComposition = 0x010F,
-        ImeKeylast = 0x010F,
+        ImeKeylast     = 0x010F,
 
         /// <summary>
         ///     The WM_INITDIALOG message is sent to the dialog box procedure immediately before a dialog box is displayed. Dialog
@@ -1213,8 +1213,8 @@ namespace Ibinimator.Native
         ///     The WM_WTSSESSION_CHANGE message notifies applications of changes in session state.
         /// </summary>
         WtssessionChange = 0x02B1,
-        TabletFirst = 0x02c0,
-        TabletLast = 0x02df,
+        TabletFirst      = 0x02c0,
+        TabletLast       = 0x02df,
 
         /// <summary>
         ///     An application sends a WM_CUT message to an edit control or combo box to delete (cut) the current selection, if
@@ -1393,12 +1393,12 @@ namespace Ibinimator.Native
         ///     Sent to request extended title bar information. A window receives this message through its WindowProc function.
         /// </summary>
         Gettitlebarinfoex = 0x033F,
-        Handheldfirst = 0x0358,
-        Handheldlast = 0x035F,
-        Afxfirst = 0x0360,
-        Afxlast = 0x037F,
-        Penwinfirst = 0x0380,
-        Penwinlast = 0x038F,
+        Handheldfirst     = 0x0358,
+        Handheldlast      = 0x035F,
+        Afxfirst          = 0x0360,
+        Afxlast           = 0x037F,
+        Penwinfirst       = 0x0380,
+        Penwinlast        = 0x038F,
 
         /// <summary>
         ///     The WM_APP constant is used by applications to help define private messages, usually of the form WM_APP+X, where X

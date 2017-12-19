@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
-using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service
 {
@@ -50,6 +50,14 @@ namespace Ibinimator.Service
             }
         }
 
+        public IEnumerator<IOperationCommand> GetEnumerator()
+        {
+            lock (this)
+            {
+                return _redo.Reverse().Concat(_undo).ToList().GetEnumerator();
+            }
+        }
+
         public void Merge(IOperationCommand command, long timeLimit)
         {
             lock (this)
@@ -73,16 +81,6 @@ namespace Ibinimator.Service
                                               new NotifyCollectionChangedEventArgs(
                                                   NotifyCollectionChangedAction.Reset));
                 }
-            }
-
-            
-        }
-
-        public IEnumerator<IOperationCommand> GetEnumerator()
-        {
-            lock (this)
-            {
-                return _redo.Reverse().Concat(_undo).ToList().GetEnumerator();
             }
         }
 
@@ -195,7 +193,7 @@ namespace Ibinimator.Service
 
     public class KeyComparer<TK, TV> : IEqualityComparer<KeyValuePair<TK, TV>>
     {
-        #region IEqualityComparer<KeyValuePair<K,V>> Members
+        #region IEqualityComparer<KeyValuePair<TK,TV>> Members
 
         public bool Equals(KeyValuePair<TK, TV> x, KeyValuePair<TK, TV> y)
         {

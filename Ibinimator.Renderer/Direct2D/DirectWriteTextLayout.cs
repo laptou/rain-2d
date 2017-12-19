@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
+
 using DW = SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     internal sealed class DirectWriteTextLayout : ResourceBase, ITextLayout
     {
-        private readonly Direct2DRenderContext _ctx;
-        public const string FallbackFont = "Arial";
-        private ObservableList<Format> _formats = new ObservableList<Format>();
-        private DW.TextLayout _dwLayout;
-        private TextRenderer.Context _textContext;
+        public const     string                 FallbackFont = "Arial";
+        private readonly Direct2DRenderContext  _ctx;
+        private          DW.TextLayout          _dwLayout;
+        private          ObservableList<Format> _formats = new ObservableList<Format>();
+        private          TextRenderer.Context   _textContext;
 
         public DirectWriteTextLayout(Direct2DRenderContext ctx) { _ctx = ctx; }
+        public float FontHeight { get; private set; }
 
         public float Height { get; set; }
 
@@ -34,7 +37,9 @@ namespace Ibinimator.Renderer.Direct2D
             index = 0;
 
             do
+            {
                 index++;
+            }
             while (index < sorted.Length && sorted[index].Range.Index <= position);
 
             var format = sorted.ElementAtOrDefault(--index);
@@ -78,11 +83,11 @@ namespace Ibinimator.Renderer.Direct2D
                                                dwFormat,
                                                Width,
                                                Height))
-                {
-                    //TextAlignment = TextAlignment,
-                    //ParagraphAlignment = ParagraphAlignment
-                    WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
-                };
+            {
+                //TextAlignment = TextAlignment,
+                //ParagraphAlignment = ParagraphAlignment
+                WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
+            };
 
             lock (_formats)
             {
@@ -131,8 +136,10 @@ namespace Ibinimator.Renderer.Direct2D
             }
 
             using (var renderer = new TextRenderer())
+            {
                 _dwLayout.Draw(_textContext = new TextRenderer.Context(_ctx), renderer,
                                0, -FontHeight);
+            }
         }
 
         #region ITextLayout Members
@@ -148,9 +155,11 @@ namespace Ibinimator.Renderer.Direct2D
         public IBrush GetBrushForGlyph(int index)
         {
             var j = 0;
+
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
+
                 if (j >= index + 1)
                     return _textContext.Brushes[i];
             }
@@ -163,9 +172,11 @@ namespace Ibinimator.Renderer.Direct2D
         public IGeometry GetGeometryForGlyphRun(int index)
         {
             var j = 0;
+
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
+
                 if (j >= index + 1)
                     return _textContext.Geometries[i];
             }
@@ -178,9 +189,11 @@ namespace Ibinimator.Renderer.Direct2D
         public int GetGlyphCountForGeometry(int index)
         {
             var j = 0;
+
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
+
                 if (j >= index + 1)
                     return _textContext.CharactersForGeometry[i];
             }
@@ -191,9 +204,11 @@ namespace Ibinimator.Renderer.Direct2D
         public IPen GetPenForGlyph(int index)
         {
             var j = 0;
+
             for (var i = 0; i < _textContext.Geometries.Count; i++)
             {
                 j += _textContext.CharactersForGeometry[i];
+
                 if (j >= index + 1)
                     return _textContext.Pens[i];
             }
@@ -205,12 +220,14 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var metrics = _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
             trailing = isTrailingHit;
+
             return metrics.TextPosition;
         }
 
         public bool Hit(Vector2 point)
         {
             _dwLayout.HitTestPoint(point.X, point.Y + FontHeight, out var _, out var hit);
+
             return hit;
         }
 
@@ -248,7 +265,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var oMetrics = _dwLayout.OverhangMetrics;
             var metrics = _dwLayout.Metrics;
-            
+
             var rect = new RectangleF(0, -FontHeight, metrics.LayoutWidth, metrics.LayoutHeight);
 
             if (!IsBlock)
@@ -267,15 +284,16 @@ namespace Ibinimator.Renderer.Direct2D
         public RectangleF MeasurePosition(int index)
         {
             var m = _dwLayout.HitTestTextPosition(index, false, out var _, out var _);
+
             return new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height);
         }
 
         public RectangleF[] MeasureRange(int index, int length)
         {
             return _dwLayout
-                .HitTestTextRange(index, length, 0, 0)
-                .Select(m => new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height))
-                .ToArray();
+                  .HitTestTextRange(index, length, 0, 0)
+                  .Select(m => new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height))
+                  .ToArray();
         }
 
         public override void Optimize() { throw new NotImplementedException(); }
@@ -296,6 +314,7 @@ namespace Ibinimator.Renderer.Direct2D
                     if (format == null)
                     {
                         current++;
+
                         continue;
                     }
 
@@ -306,8 +325,10 @@ namespace Ibinimator.Renderer.Direct2D
                     var fend = fstart + format.Range.Length;
 
                     if (len <= 0 && fend <= end) _formats.Remove(format);
-                    else if (len <= 0 && fend > end) format.Range = (fstart, fend - fstart - range);
-                    else format.Range = (fstart, len);
+                    else if (len <= 0 && fend > end)
+                        format.Range = (fstart, fend - fstart - range);
+                    else
+                        format.Range = (fstart, len);
 
                     current++;
                 }
@@ -407,12 +428,11 @@ namespace Ibinimator.Renderer.Direct2D
             Update();
         }
 
-        public string FontFamily { get; set; } = "Arial";
-        public float FontSize { get; set; }
+        public string      FontFamily  { get; set; } = "Arial";
+        public float       FontSize    { get; set; }
         public FontStretch FontStretch { get; set; }
-        public FontStyle FontStyle { get; set; }
-        public FontWeight FontWeight { get; set; }
-        public float FontHeight { get; private set; }
+        public FontStyle   FontStyle   { get; set; }
+        public FontWeight  FontWeight  { get; set; }
 
         public string Text { get; private set; } = "";
 

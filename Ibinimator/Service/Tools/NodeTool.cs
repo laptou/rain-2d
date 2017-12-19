@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -16,15 +17,12 @@ namespace Ibinimator.Service.Tools
     public class NodeTool : SelectionToolBase
     {
         private readonly ISet<int> _selection = new HashSet<int>();
+
         private int? _handle;
+
         //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
-        private IList<PathNode> _nodes;
-
-        protected override ILayer HitTest(ILayer layer, Vector2 position)
-        {
-            return layer.HitTest<IGeometricLayer>(Context.CacheManager, position, 0);
-        }
+        private IList<PathNode>                      _nodes;
 
         public NodeTool(IToolManager toolManager, ISelectionManager selectionManager)
             : base(toolManager, selectionManager)
@@ -45,6 +43,263 @@ namespace Ibinimator.Service.Tools
             "<b>Click</b> to select, " +
             "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
+
+        public override void Dispose()
+        {
+            _selection.Clear();
+
+            Manager.Context.SelectionManager.Updated -= OnUpdated;
+            Manager.Context.HistoryManager.Traversed -= OnTraversed;
+
+            base.Dispose();
+        }
+
+        public override bool KeyDown(Key key, ModifierState modifiers)
+        {
+            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
+            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
+
+            switch (key)
+            {
+                case Key.Escape:
+                    Context.SelectionManager.ClearSelection();
+                    _selection.Clear();
+
+                    break;
+
+                case Key.Delete:
+                    Remove(_selection.ToArray());
+                    Context.InvalidateSurface();
+
+                    break;
+
+                case Key.K:
+                    Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
+
+                    break;
+
+                default:
+
+                    return base.KeyDown(key, modifiers);
+            }
+
+            return true;
+        }
+
+        public override bool KeyUp(Key key, ModifierState modifiers)
+        {
+            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
+            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
+
+            return base.KeyUp(key, modifiers);
+        }
+
+        public override bool MouseDown(Vector2 pos, ModifierState state)
+        {
+            _mouse = (true, false, pos);
+
+            if (SelectedLayer == null)
+                return base.MouseDown(pos, state);
+
+            _handle = null;
+            PathNode? target = null;
+
+            foreach (var node in _nodes)
+            {
+                if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position), pos) < 3)
+                {
+                    _handle = 0;
+                    target = node;
+
+                    break;
+                }
+
+                if (!_selection.Contains(node.Index)) continue;
+
+                if (node.IncomingControl != null &&
+                    Vector2.DistanceSquared(
+                        SelectionManager.FromSelectionSpace(node.IncomingControl.Value), pos) < 2)
+                {
+                    _handle = -1;
+                    target = node;
+
+                    break;
+                }
+
+                if (node.OutgoingControl != null &&
+                    Vector2.DistanceSquared(
+                        SelectionManager.FromSelectionSpace(node.OutgoingControl.Value), pos) < 2)
+                {
+                    _handle = +1;
+                    target = node;
+
+                    break;
+                }
+            }
+
+            if (target != null)
+            {
+                if (!state.Shift)
+                    _selection.Clear();
+
+                _selection.Add(target.Value.Index);
+            }
+
+            Context.SelectionManager.UpdateBounds(true);
+
+            return true;
+        }
+
+        public override bool MouseMove(Vector2 pos, ModifierState state)
+        {
+            if (SelectedLayer == null)
+                return false;
+
+            var tlpos = Vector2.Transform(_mouse.pos,
+                                          MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+
+            var tpos = Vector2.Transform(pos,
+                                         MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+
+            var delta = tpos - tlpos;
+
+            _mouse = (_mouse.down, true, pos);
+
+            if (_mouse.down && _handle != null)
+            {
+                switch (_handle)
+                {
+                    case -1:
+                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveInHandle);
+
+                        break;
+                    case 0:
+                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.Move);
+
+                        break;
+                    case +1:
+                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveOutHandle);
+
+                        break;
+                }
+
+                Context.InvalidateSurface();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public override bool MouseUp(Vector2 pos, ModifierState state)
+        {
+            if (SelectedLayer == null)
+                return base.MouseUp(pos, state);
+
+            _mouse = (false, _mouse.moved, pos);
+
+            Context.InvalidateSurface();
+
+            return true;
+        }
+
+        public override void Render(
+            RenderContext target,
+            ICacheManager cacheManager,
+            IViewManager  view)
+        {
+            if (SelectedLayer == null)
+                return;
+
+            RenderBoundingBox(target, cacheManager, view);
+            RenderPathOutlines(target, cacheManager, view);
+
+            var transform = SelectedLayer.AbsoluteTransform;
+            var zoom = view.Zoom;
+
+            var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
+            var p2 = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+
+            IBrush GetBrush(bool over, bool down, bool selected)
+            {
+                if (over)
+                    if (down)
+                        return cacheManager.GetBrush(nameof(EditorColors.NodeClick));
+                    else
+                        return cacheManager.GetBrush(nameof(EditorColors.NodeHover));
+
+                if (selected) return cacheManager.GetBrush(nameof(EditorColors.NodeSelected));
+
+                return cacheManager.GetBrush(nameof(EditorColors.Node));
+            }
+
+            var start = true;
+
+            foreach (var node in _nodes)
+            {
+                var pos = Vector2.Transform(node.Position, transform);
+                var radius = 4f / zoom;
+                var selected = _selection.Contains(node.Index);
+
+                if (node.IncomingControl != null || node.OutgoingControl != null)
+                {
+                    if (selected)
+                    {
+                        if (node.IncomingControl != null)
+                        {
+                            var lPos = Vector2.Transform(node.IncomingControl.Value, transform);
+                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
+
+                            target.DrawLine(lPos, pos, p);
+                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.DrawCircle(lPos, radius / 1.2f, p);
+                        }
+
+                        if (node.OutgoingControl != null)
+                        {
+                            var lPos = Vector2.Transform(node.OutgoingControl.Value, transform);
+                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
+
+                            target.DrawLine(lPos, pos, p);
+                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.DrawCircle(lPos, radius / 1.2f, p);
+                        }
+                    }
+
+                    var over = Vector2.DistanceSquared(pos, _mouse.pos) < radius * radius;
+                    target.FillCircle(pos, radius, GetBrush(over, _mouse.down, selected));
+                    target.DrawCircle(pos, radius, node.Index == 0 ? p2 : p);
+                }
+                else
+                {
+                    var rect =
+                        new RectangleF(pos.X - radius,
+                                       pos.Y - radius,
+                                       radius * 2,
+                                       radius * 2);
+
+                    var over = rect.Contains(_mouse.pos);
+
+                    target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
+
+                    target.DrawRectangle(rect, start ? p2 : p);
+                }
+
+                start = node.FigureEnd != null;
+            }
+
+            // do not dispose the brushes! they are being used by the cache manager
+            // and do not automatically regenerated b/c they are resource brushes
+            p.Dispose();
+            p2.Dispose();
+        }
+
+        public override bool TextInput(string text) { return false; }
+
+        protected override ILayer HitTest(ILayer layer, Vector2 position)
+        {
+            return layer.HitTest<IGeometricLayer>(Context.CacheManager, position, 0);
+        }
 
         private void ConvertToPath()
         {
@@ -130,248 +385,5 @@ namespace Ibinimator.Service.Tools
         }
 
         private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }
-
-        #region ITool Members
-
-        public override void Dispose()
-        {
-            _selection.Clear();
-
-            Manager.Context.SelectionManager.Updated -= OnUpdated;
-            Manager.Context.HistoryManager.Traversed -= OnTraversed;
-
-            base.Dispose();
-        }
-
-        public override bool KeyDown(Key key, ModifierState modifiers)
-        {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            switch (key)
-            {
-                case Key.Escape:
-                    Context.SelectionManager.ClearSelection();
-                    _selection.Clear();
-                    break;
-
-                case Key.Delete:
-                    Remove(_selection.ToArray());
-                    Context.InvalidateSurface();
-                    break;
-
-                case Key.K:
-                    Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
-                    break;
-
-                default:
-                    return base.KeyDown(key, modifiers);
-            }
-
-            return true;
-        }
-
-        public override bool KeyUp(Key key, ModifierState modifiers)
-        {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            return base.KeyUp(key, modifiers);
-        }
-
-        public override bool MouseDown(Vector2 pos, ModifierState state)
-        {
-            _mouse = (true, false, pos);
-
-            if (SelectedLayer == null)
-                return base.MouseDown(pos, state);
-
-            _handle = null;
-            PathNode? target = null;
-
-            foreach (var node in _nodes)
-            {
-                if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position), pos) < 3)
-                {
-                    _handle = 0;
-                    target = node;
-                    break;
-                }
-
-                if (!_selection.Contains(node.Index)) continue;
-
-                if (node.IncomingControl != null &&
-                    Vector2.DistanceSquared(
-                        SelectionManager.FromSelectionSpace(node.IncomingControl.Value), pos) < 2)
-                {
-                    _handle = -1;
-                    target = node;
-                    break;
-                }
-
-                if (node.OutgoingControl != null &&
-                    Vector2.DistanceSquared(
-                        SelectionManager.FromSelectionSpace(node.OutgoingControl.Value), pos) < 2)
-                {
-                    _handle = +1;
-                    target = node;
-                    break;
-                }
-            }
-
-            if (target != null)
-            {
-                if (!state.Shift)
-                    _selection.Clear();
-
-                _selection.Add(target.Value.Index);
-            }
-
-            Context.SelectionManager.UpdateBounds(true);
-
-            return true;
-        }
-
-        public override bool MouseMove(Vector2 pos, ModifierState state)
-        {
-            if (SelectedLayer == null)
-                return false;
-
-            var tlpos = Vector2.Transform(_mouse.pos,
-                                          MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-
-            var tpos = Vector2.Transform(pos,
-                                         MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-
-            var delta = tpos - tlpos;
-
-            _mouse = (_mouse.down, true, pos);
-
-            if (_mouse.down && _handle != null)
-            {
-                switch (_handle)
-                {
-                    case -1:
-                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveInHandle);
-                        break;
-                    case 0:
-                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.Move);
-                        break;
-                    case +1:
-                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveOutHandle);
-                        break;
-                }
-
-                Context.InvalidateSurface();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public override bool MouseUp(Vector2 pos, ModifierState state)
-        {
-            if (SelectedLayer == null)
-                return base.MouseUp(pos, state);
-
-            _mouse = (false, _mouse.moved, pos);
-
-            Context.InvalidateSurface();
-
-            return true;
-        }
-
-        public override void Render(
-            RenderContext target,
-            ICacheManager cacheManager,
-            IViewManager view)
-        {
-            if (SelectedLayer == null)
-                return;
-
-            RenderBoundingBox(target, cacheManager, view);
-            RenderPathOutlines(target, cacheManager, view);
-
-            var transform = SelectedLayer.AbsoluteTransform;
-            var zoom = view.Zoom;
-
-            var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
-            var p2 = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
-
-            IBrush GetBrush(bool over, bool down, bool selected)
-            {
-                if (over)
-                    if (down) return cacheManager.GetBrush(nameof(EditorColors.NodeClick));
-                    else return cacheManager.GetBrush(nameof(EditorColors.NodeHover));
-
-                if (selected) return cacheManager.GetBrush(nameof(EditorColors.NodeSelected));
-
-                return cacheManager.GetBrush(nameof(EditorColors.Node));
-            }
-
-            var start = true;
-            foreach (var node in _nodes)
-            {
-                var pos = Vector2.Transform(node.Position, transform);
-                var radius = 4f / zoom;
-                var selected = _selection.Contains(node.Index);
-
-                if (node.IncomingControl != null || node.OutgoingControl != null)
-                {
-                    if (selected)
-                    {
-                        if (node.IncomingControl != null)
-                        {
-                            var lPos = Vector2.Transform(node.IncomingControl.Value, transform);
-                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
-
-                            target.DrawLine(lPos, pos, p);
-                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.2f, p);
-                        }
-
-                        if (node.OutgoingControl != null)
-                        {
-                            var lPos = Vector2.Transform(node.OutgoingControl.Value, transform);
-                            var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
-
-                            target.DrawLine(lPos, pos, p);
-                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.2f, p);
-                        }
-                    }
-
-                    var over = Vector2.DistanceSquared(pos, _mouse.pos) < radius * radius;
-                    target.FillCircle(pos, radius, GetBrush(over, _mouse.down, selected));
-                    target.DrawCircle(pos, radius, node.Index == 0 ? p2 : p);
-                }
-                else
-                {
-                    var rect =
-                        new RectangleF(pos.X - radius,
-                                       pos.Y - radius,
-                                       radius * 2,
-                                       radius * 2);
-
-                    var over = rect.Contains(_mouse.pos);
-
-                    target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
-
-                    target.DrawRectangle(rect, start ? p2 : p);
-                }
-
-                start = node.FigureEnd != null;
-            }
-
-            // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerated b/c they are resource brushes
-            p.Dispose();
-            p2.Dispose();
-        }
-
-        public override bool TextInput(string text) { return false; }
-
-        #endregion
     }
 }

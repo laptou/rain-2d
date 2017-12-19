@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -16,8 +17,8 @@ namespace Ibinimator.Service.Tools
     public sealed class PencilTool : SelectionToolBase
     {
         private (bool down, bool moved, Vector2 pos) _mouse;
-        private IList<PathNode> _nodes;
-        private Vector2? _start;
+        private IList<PathNode>                      _nodes;
+        private Vector2?                             _start;
 
         public PencilTool(IToolManager toolManager, ISelectionManager selectionManager) :
             base(toolManager, selectionManager)
@@ -44,14 +45,17 @@ namespace Ibinimator.Service.Tools
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
+
                     break;
 
                 case Key.Delete:
                     Remove(_nodes.Count - 1);
                     Context.InvalidateSurface();
+
                     break;
 
                 default:
+
                     return base.KeyDown(key, modifiers);
             }
 
@@ -69,6 +73,7 @@ namespace Ibinimator.Service.Tools
                 if (hit != null)
                 {
                     hit.Selected = true;
+
                     return true;
                 }
 
@@ -77,6 +82,7 @@ namespace Ibinimator.Service.Tools
                 if (_start == null)
                 {
                     _start = pos;
+
                     return true;
                 }
 
@@ -102,6 +108,7 @@ namespace Ibinimator.Service.Tools
             else
             {
                 var found = false;
+
                 foreach (var node in _nodes)
                 {
                     if (Vector2.DistanceSquared(ToWorldSpace(node.Position), pos) < 9)
@@ -124,6 +131,7 @@ namespace Ibinimator.Service.Tools
                                         ModifyPathCommand.NodeOperation.EndFigureClosed));
                         }
                     }
+
                     break;
                 }
 
@@ -163,8 +171,6 @@ namespace Ibinimator.Service.Tools
             return true;
         }
 
-        public override bool TextInput(string text) { return false; }
-
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
             var zoom = view.Zoom;
@@ -192,6 +198,7 @@ namespace Ibinimator.Service.Tools
             {
                 p.Dispose();
                 p2.Dispose();
+
                 return;
             }
 
@@ -209,8 +216,10 @@ namespace Ibinimator.Service.Tools
             IBrush GetBrush(bool over, bool down)
             {
                 if (over)
-                    if (down) return cache.GetBrush(nameof(EditorColors.NodeClick));
-                    else return cache.GetBrush(nameof(EditorColors.NodeHover));
+                    if (down)
+                        return cache.GetBrush(nameof(EditorColors.NodeClick));
+                    else
+                        return cache.GetBrush(nameof(EditorColors.NodeHover));
 
                 return cache.GetBrush(nameof(EditorColors.Node));
             }
@@ -238,6 +247,8 @@ namespace Ibinimator.Service.Tools
             p.Dispose();
             p2.Dispose();
         }
+
+        public override bool TextInput(string text) { return false; }
 
         public Vector2 ToWorldSpace(Vector2 v)
         {

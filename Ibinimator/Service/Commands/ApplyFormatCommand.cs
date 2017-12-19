@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 
 namespace Ibinimator.Service.Commands
 {
     public sealed class ApplyFormatCommand : LayerCommandBase<ITextLayer>
     {
+        private Format[] _oldFormats;
+
         public ApplyFormatCommand(long id, ITextLayer target, Format format) : base(id, new[] {target})
         {
             Format = format;
@@ -17,8 +20,6 @@ namespace Ibinimator.Service.Commands
 
         public Format Format { get; }
 
-        private Format[] _oldFormats;
-
         public override void Do(IArtContext artView)
         {
             foreach (var target in Targets)
@@ -26,6 +27,15 @@ namespace Ibinimator.Service.Commands
                 _oldFormats = target.Formats.ToArray();
                 target.SetFormat(Format);
             }
+        }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (newCommand is ApplyFormatCommand cmd)
+                return new ApplyFormatCommand(newCommand.Id, cmd.Targets[0],
+                                              Format.Merge(cmd.Format));
+
+            return null;
         }
 
         public override void Undo(IArtContext artView)
@@ -37,17 +47,6 @@ namespace Ibinimator.Service.Commands
                 foreach (var format in _oldFormats)
                     target.SetFormat(format);
             }
-        }
-
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            if (newCommand is ApplyFormatCommand cmd)
-            {
-                return new ApplyFormatCommand(newCommand.Id, cmd.Targets[0],
-                                              Format.Merge(cmd.Format));
-            }
-
-            return null;
         }
     }
 }

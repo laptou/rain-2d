@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
@@ -11,13 +12,13 @@ namespace Ibinimator.Renderer.Direct2D
 {
     internal abstract class Brush : ResourceBase, IBrush
     {
-        protected ReaderWriterLockSlim NativeBrushLock { get; } = new ReaderWriterLockSlim();
-
-        protected SharpDX.Direct2D1.Brush NativeBrush { get; set; }
+        protected SharpDX.Direct2D1.Brush NativeBrush     { get; set; }
+        protected ReaderWriterLockSlim    NativeBrushLock { get; } = new ReaderWriterLockSlim();
 
         public static bool operator ==(Brush brush, object o)
         {
             if (o == null && brush?.NativeBrush == null) return true;
+
             return Equals(brush, o);
         }
 
@@ -28,6 +29,7 @@ namespace Ibinimator.Renderer.Direct2D
             brush.NativeBrushLock.TryEnterReadLock(-1);
             var native = brush.NativeBrush;
             brush.NativeBrushLock.ExitReadLock();
+
             return native;
         }
 
@@ -48,6 +50,8 @@ namespace Ibinimator.Renderer.Direct2D
             // this doesn't do anything; Direct2D objects aren't freezable
         }
 
+        public T Unwrap<T>() where T : class { return NativeBrush as T; }
+
         public float Opacity
         {
             get => NativeBrush.Opacity;
@@ -67,8 +71,6 @@ namespace Ibinimator.Renderer.Direct2D
                 RaisePropertyChanged();
             }
         }
-
-        public T Unwrap<T>() where T : class { return NativeBrush as T; }
 
         #endregion
     }

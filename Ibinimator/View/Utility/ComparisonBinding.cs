@@ -35,9 +35,7 @@ namespace Ibinimator.View.Utility
     {
         // Default constructor
         public ComparisonBinding()
-            : this(null, ComparisonOperators.EQ, null)
-        {
-        }
+            : this(null, ComparisonOperators.EQ, null) { }
 
         // Construction with an operator & comparand
         public ComparisonBinding(string path, ComparisonOperators op, object comparand)
@@ -66,16 +64,14 @@ namespace Ibinimator.View.Utility
         private readonly ComparisonBinding _styleBinding;
 
         // In construction, get a reference to the StyleBinding
-        public ComparisonConverter(ComparisonBinding styleBinding)
-        {
-            _styleBinding = styleBinding;
-        }
+        public ComparisonConverter(ComparisonBinding styleBinding) { _styleBinding = styleBinding; }
 
         // Check for equality of two values
         private bool CheckEquals(Type type, object value1, object value2)
         {
             if (type.IsValueType || type == typeof(string))
                 return Equals(value1, value2);
+
             return ReferenceEquals(value1, value2);
         }
 
@@ -92,10 +88,10 @@ namespace Ibinimator.View.Utility
             if (Debugger.IsAttached)
             {
                 Debug.WriteLine("StyleBinding couldn’t convert '"
-                                + value.GetType()
-                                + "' to '"
-                                + _styleBinding.Comparand.GetType()
-                                + "'");
+                              + value.GetType()
+                              + "' to '"
+                              + _styleBinding.Comparand.GetType()
+                              + "'");
                 Debug.WriteLine("(" + message + ")");
             }
         }
@@ -114,6 +110,7 @@ namespace Ibinimator.View.Utility
                     return ReturnHelper(value != _styleBinding.Comparand);
                 else
                     return ReturnHelper(value == _styleBinding.Comparand);
+
             // Convert the comparand so that it matches the value
             var convertedComparand = _styleBinding.Comparand;
 
@@ -132,6 +129,7 @@ namespace Ibinimator.View.Utility
                 if (typeConverter?.CanConvertFrom(_styleBinding.Comparand.GetType()) == true)
                     convertedComparand = typeConverter.ConvertFrom(_styleBinding.Comparand);
             }
+
             // Simple check for the equality case
             if (_styleBinding.Operator == ComparisonOperators.EQ)
                 return ReturnHelper(CheckEquals(value.GetType(), value, convertedComparand));
@@ -143,33 +141,41 @@ namespace Ibinimator.View.Utility
             if (!(value is IComparable) || !(convertedComparand is IComparable))
             {
                 Trace(value, "One of the values was not an IComparable");
+
                 return ReturnHelper(false);
             }
+
             // Compare the values
             var comparison = (value as IComparable).CompareTo(convertedComparand);
+
             // And return the comparisson result
             switch (_styleBinding.Operator)
             {
                 case ComparisonOperators.GT:
+
                     return ReturnHelper(comparison > 0);
 
                 case ComparisonOperators.GTE:
+
                     return ReturnHelper(comparison >= 0);
 
                 case ComparisonOperators.LT:
+
                     return ReturnHelper(comparison < 0);
 
                 case ComparisonOperators.LTE:
+
                     return ReturnHelper(comparison <= 0);
             }
+
             return _notNull;
         }
 
         // IValueConverter.ConvertBack isn’t supported.
         public object ConvertBack(
-            object value,
-            Type targetType,
-            object parameter,
+            object      value,
+            Type        targetType,
+            object      parameter,
             CultureInfo culture)
         {
             throw new NotImplementedException();

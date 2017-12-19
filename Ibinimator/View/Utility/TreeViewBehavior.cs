@@ -35,9 +35,10 @@ namespace Ibinimator.View.Utility
         /// <summary>
         ///     The dependency property definition for the IsItemSelected attached property.
         /// </summary>
-        public static readonly DependencyProperty IsItemSelectedProperty = DependencyProperty.RegisterAttached(
-            "IsItemSelected", typeof(bool), typeof(TreeViewMultipleSelectionBehavior),
-            new FrameworkPropertyMetadata(OnIsItemSelectedChanged));
+        public static readonly DependencyProperty IsItemSelectedProperty =
+            DependencyProperty.RegisterAttached(
+                "IsItemSelected", typeof(bool), typeof(TreeViewMultipleSelectionBehavior),
+                new FrameworkPropertyMetadata(OnIsItemSelectedChanged));
 
         /// <summary>
         ///     Gets or sets the selected items.
@@ -80,6 +81,7 @@ namespace Ibinimator.View.Utility
                 if (ReferenceEquals(AnchorItem, treeViewItem))
                 {
                     SelectSingleItem(treeViewItem);
+
                     return;
                 }
 
@@ -148,9 +150,10 @@ namespace Ibinimator.View.Utility
         {
             base.OnAttached();
 
-            AssociatedObject.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown), true);
+            AssociatedObject.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown),
+                                        true);
             AssociatedObject.AddHandler(UIElement.MouseLeftButtonUpEvent,
-                new MouseButtonEventHandler(OnTreeViewItemMouseUp), true);
+                                        new MouseButtonEventHandler(OnTreeViewItemMouseUp), true);
         }
 
         /// <summary>
@@ -161,9 +164,10 @@ namespace Ibinimator.View.Utility
         {
             base.OnDetaching();
 
-            AssociatedObject.RemoveHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown));
+            AssociatedObject.RemoveHandler(UIElement.KeyDownEvent,
+                                           new KeyEventHandler(OnTreeViewItemKeyDown));
             AssociatedObject.RemoveHandler(UIElement.MouseLeftButtonUpEvent,
-                new MouseButtonEventHandler(OnTreeViewItemMouseUp));
+                                           new MouseButtonEventHandler(OnTreeViewItemMouseUp));
         }
 
         /// <summary>
@@ -213,6 +217,7 @@ namespace Ibinimator.View.Utility
             for (var i = 0; i < parentItem.Items.Count; i++)
             {
                 var item = parentItem.ItemContainerGenerator.ContainerFromIndex(i) as T;
+
                 if (item != null)
                 {
                     items.Add(item);
@@ -239,9 +244,11 @@ namespace Ibinimator.View.Utility
 
             var items = GetItemsRecursively<T>(AssociatedObject);
             var index = items.IndexOf(item);
+
             if (index >= 0)
             {
                 var relativeIndex = index + relativePosition;
+
                 if (relativeIndex >= 0 && relativeIndex < items.Count)
                     return items[relativeIndex];
             }
@@ -257,14 +264,17 @@ namespace Ibinimator.View.Utility
         ///     The <see cref="System.Windows.DependencyPropertyChangedEventArgs" /> instance containing the event
         ///     data.
         /// </param>
-        private static void OnIsItemSelectedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        private static void OnIsItemSelectedChanged(
+            DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             var treeViewItem = obj as TreeViewItem;
             var treeView = treeViewItem?.FindVisualAncestor<TreeView>();
+
             if (treeView != null)
             {
-                var behavior = Interaction.GetBehaviors(treeView).OfType<TreeViewMultipleSelectionBehavior>()
-                    .FirstOrDefault();
+                var behavior = Interaction.GetBehaviors(treeView)
+                                          .OfType<TreeViewMultipleSelectionBehavior>()
+                                          .FirstOrDefault();
                 var selectedItems = behavior?.SelectedItems;
                 if (selectedItems != null)
                     if (GetIsItemSelected(treeViewItem))
@@ -284,6 +294,7 @@ namespace Ibinimator.View.Utility
         private void OnTreeViewItemKeyDown(object sender, KeyEventArgs e)
         {
             var treeViewItem = e.OriginalSource as TreeViewItem;
+
             if (treeViewItem != null)
             {
                 TreeViewItem targetItem = null;
@@ -292,15 +303,18 @@ namespace Ibinimator.View.Utility
                 {
                     case Key.Down:
                         targetItem = GetRelativeItem(treeViewItem, 1);
+
                         break;
 
                     case Key.Space:
                         if (Keyboard.Modifiers == ModifierKeys.Control)
                             ToggleSingleItem(treeViewItem);
+
                         break;
 
                     case Key.Up:
                         targetItem = GetRelativeItem(treeViewItem, -1);
+
                         break;
                 }
 
@@ -309,14 +323,17 @@ namespace Ibinimator.View.Utility
                     {
                         case ModifierKeys.Control:
                             Keyboard.Focus(targetItem);
+
                             break;
 
                         case ModifierKeys.Shift:
                             SelectMultipleItemsContinuously(targetItem);
+
                             break;
 
                         case ModifierKeys.None:
                             SelectSingleItem(targetItem);
+
                             break;
                     }
             }
@@ -338,14 +355,17 @@ namespace Ibinimator.View.Utility
                 {
                     case ModifierKeys.Control:
                         ToggleSingleItem(treeViewItem);
+
                         break;
 
                     case ModifierKeys.Shift:
                         SelectMultipleItemsContinuously(treeViewItem);
+
                         break;
 
                     default:
                         SelectSingleItem(treeViewItem);
+
                         break;
                 }
         }
@@ -390,10 +410,12 @@ namespace Ibinimator.View.Utility
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
+
                 if (child is T)
                     return (T) child;
 
                 var descendant = FindVisualChild<T>(child);
+
                 if (descendant != null)
                     return descendant;
             }
@@ -413,10 +435,12 @@ namespace Ibinimator.View.Utility
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
+
                 if (child is T)
                     yield return (T) child;
 
                 var descendants = FindVisualChildren<T>(child);
+
                 foreach (var descendant in descendants)
                     yield return descendant;
             }
@@ -435,6 +459,7 @@ namespace Ibinimator.View.Utility
             while (current != null)
             {
                 result = current;
+
                 if (current is Visual || current is Visual3D)
                     break;
 

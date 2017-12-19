@@ -12,14 +12,14 @@ namespace Ibinimator.Svg
 
         public IElement this[string id]
         {
-            get => 
-                _elements.TryGetValue(id, out var element) ? 
-                element :
-                _elements[id] = 
-                    X.FromXml(
-                        Root.DescendantsAndSelf()
-                            .FirstOrDefault(x => (string)x.Attribute("id") == id), 
-                    this);
+            get =>
+                _elements.TryGetValue(id, out var element) ?
+                    element :
+                    _elements[id] =
+                        X.FromXml(
+                            Root.DescendantsAndSelf()
+                                .FirstOrDefault(x => (string) x.Attribute("id") == id),
+                            this);
 
             set => _elements[id] = value;
         }

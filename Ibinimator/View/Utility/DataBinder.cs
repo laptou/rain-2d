@@ -18,6 +18,7 @@ namespace Ibinimator.View.Utility
         public static object Eval(object container, string expression)
         {
             var binding = new Binding(expression) {Source = container};
+
             return binding.Eval();
         }
 
@@ -25,6 +26,7 @@ namespace Ibinimator.View.Utility
         {
             dependencyObject = dependencyObject ?? new DependencyObject();
             BindingOperations.SetBinding(dependencyObject, DummyProperty, binding);
+
             return dependencyObject.GetValue(DummyProperty);
         }
     }

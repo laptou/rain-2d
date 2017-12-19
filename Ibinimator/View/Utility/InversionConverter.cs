@@ -9,10 +9,12 @@ namespace Ibinimator.View.Utility
 {
     public class InversionConverter : IValueConverter
     {
+        #region IValueConverter Members
+
         public object Convert(
-            object value,
-            Type targetType,
-            object parameter,
+            object      value,
+            Type        targetType,
+            object      parameter,
             CultureInfo culture)
         {
             if (value is bool b)
@@ -22,9 +24,9 @@ namespace Ibinimator.View.Utility
         }
 
         public object ConvertBack(
-            object value,
-            Type targetType,
-            object parameter,
+            object      value,
+            Type        targetType,
+            object      parameter,
             CultureInfo culture)
         {
             if (value is bool b)
@@ -32,5 +34,7 @@ namespace Ibinimator.View.Utility
 
             return value;
         }
+
+        #endregion
     }
 }

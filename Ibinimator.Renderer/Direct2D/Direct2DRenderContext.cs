@@ -5,9 +5,12 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using SharpDX.Mathematics.Interop;
+
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 using RectangleF = SharpDX.RectangleF;
@@ -20,7 +23,7 @@ namespace Ibinimator.Renderer.Direct2D
     {
         private readonly Stack<Effect> _effects = new Stack<Effect>();
 
-        private readonly D2D.RenderTarget _target;
+        private readonly D2D.RenderTarget       _target;
         private readonly D2D.BitmapRenderTarget _virtualTarget;
 
         public Direct2DRenderContext(D2D.RenderTarget target)
@@ -39,8 +42,8 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override float Height => Target.Size.Height;
 
-        public D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
-        public override float Width => Target.Size.Width;
+        public          D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
+        public override float            Width  => Target.Size.Width;
 
         public override void Begin(object ctx)
         {
@@ -65,10 +68,10 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float startX,
-            float startY,
-            float endX,
-            float endY)
+            float                     startX,
+            float                     startY,
+            float                     endX,
+            float                     endY)
         {
             return new LinearGradientBrush(
                 Target,
@@ -79,12 +82,12 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override IRadialGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float centerX,
-            float centerY,
-            float radiusX,
-            float radiusY,
-            float focusX,
-            float focusY)
+            float                     centerX,
+            float                     centerY,
+            float                     radiusX,
+            float                     radiusY,
+            float                     focusX,
+            float                     focusY)
         {
             return new RadialGradientBrush(
                 Target,
@@ -134,21 +137,21 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override IPen CreatePen(
-            float width,
-            IBrush brush,
+            float              width,
+            IBrush             brush,
             IEnumerable<float> dashes)
         {
             return CreatePen(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4);
         }
 
         public override IPen CreatePen(
-            float width,
-            IBrush brush,
+            float              width,
+            IBrush             brush,
             IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
+            float              dashOffset,
+            LineCap            lineCap,
+            LineJoin           lineJoin,
+            float              miterLimit)
         {
             return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, Target);
         }
@@ -193,7 +196,7 @@ namespace Ibinimator.Renderer.Direct2D
             float cy,
             float rx,
             float ry,
-            IPen iPen)
+            IPen  iPen)
         {
             var pen = iPen as Pen;
 
@@ -248,7 +251,7 @@ namespace Ibinimator.Renderer.Direct2D
             float top,
             float width,
             float height,
-            IPen iPen)
+            IPen  iPen)
         {
             var pen = iPen as Pen;
             Target.DrawRectangle(
@@ -269,10 +272,10 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override void FillEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
+            float  cx,
+            float  cy,
+            float  rx,
+            float  ry,
             IBrush brush)
         {
             Target.FillEllipse(
@@ -295,10 +298,10 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override void FillRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
+            float  left,
+            float  top,
+            float  width,
+            float  height,
             IBrush brush)
         {
             Target.FillRectangle(
@@ -310,8 +313,8 @@ namespace Ibinimator.Renderer.Direct2D
                 brush as Brush);
         }
 
-        public override float GetDpi() { return Target.DotsPerInch.Width; }
-        public override void HideCursor() { NativeHelper.HideCaret(); }
+        public override float GetDpi()     { return Target.DotsPerInch.Width; }
+        public override void  HideCursor() { NativeHelper.HideCaret(); }
 
         public override void PopEffect()
         {
@@ -324,9 +327,13 @@ namespace Ibinimator.Renderer.Direct2D
                 var t = _target.Transform;
 
                 _target.Transform = SharpDX.Matrix3x2.Identity;
+
                 using (var output = d2dEffect.GetOutput())
+                {
                     _target.QueryInterface<D2D.DeviceContext>()
-                            .DrawImage(output);
+                           .DrawImage(output);
+                }
+
                 _target.Transform = t;
 
                 _virtualTarget.BeginDraw();
@@ -388,6 +395,12 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region IDropShadowEffect Members
 
+        public override void Dispose()
+        {
+            shadow.Dispose();
+            composite.Dispose();
+        }
+
         public override void SetInput(int index, IBitmap bitmap)
         {
             if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
@@ -406,10 +419,11 @@ namespace Ibinimator.Renderer.Direct2D
 
         public override T Unwrap<T>() { return shadow as T; }
 
-        public override void Dispose()
+        public Color Color
         {
-            shadow.Dispose();
-            composite.Dispose();
+            get => shadow.GetColor4Value((int) D2D.ShadowProperties.Color).Convert();
+            set => shadow.SetValue((int) D2D.ShadowProperties.Color,
+                                   (RawColor4) value.Convert());
         }
 
         public float Radius
@@ -417,13 +431,6 @@ namespace Ibinimator.Renderer.Direct2D
             get => shadow.GetFloatValue((int) D2D.ShadowProperties.BlurStandardDeviation);
             set => shadow.SetValue((int) D2D.ShadowProperties.BlurStandardDeviation,
                                    value);
-        }
-
-        public Color Color
-        {
-            get => shadow.GetColor4Value((int)D2D.ShadowProperties.Color).Convert();
-            set => shadow.SetValue((int)D2D.ShadowProperties.Color,
-                                   (RawColor4)value.Convert());
         }
 
         #endregion
@@ -435,13 +442,13 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region IEffect Members
 
+        public abstract void Dispose();
+
         public abstract void SetInput(int index, IBitmap bitmap);
         public abstract void SetInput(int index, IEffect effect);
-        public abstract T Unwrap<T>() where T : class;
+        public abstract T    Unwrap<T>() where T : class;
 
         #endregion
-
-        public abstract void Dispose();
     }
 
     public class GlowEffect : Effect, IGlowEffect
@@ -461,6 +468,12 @@ namespace Ibinimator.Renderer.Direct2D
 
         #region IGlowEffect Members
 
+        public override void Dispose()
+        {
+            blur.Dispose();
+            composite.Dispose();
+        }
+
         public override void SetInput(int index, IBitmap bitmap)
         {
             if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
@@ -478,12 +491,6 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override T Unwrap<T>() { return composite as T; }
-
-        public override void Dispose()
-        {
-            blur.Dispose();
-            composite.Dispose();
-        }
 
         public float Radius
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,10 +8,12 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Xml.Linq;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;
+
 using Document = Ibinimator.Core.Document;
 using WPF = System.Windows;
 
@@ -38,7 +39,7 @@ namespace Ibinimator.View.Control
                     SourceChanged));
 
         private readonly CacheManager _cache;
-        private Document _document;
+        private          Document     _document;
 
         private bool _prepared;
 
@@ -57,10 +58,7 @@ namespace Ibinimator.View.Control
             set => SetValue(SourceProperty, value);
         }
 
-        protected override WPF.Size ArrangeOverride(WPF.Size finalSize)
-        {
-            return MeasureOverride(finalSize);
-        }
+        protected override WPF.Size ArrangeOverride(WPF.Size finalSize) { return MeasureOverride(finalSize); }
 
         protected override WPF.Size MeasureOverride(WPF.Size availableSize)
         {
@@ -76,8 +74,8 @@ namespace Ibinimator.View.Control
             var docAspect = docWidth / docHeight;
 
             return aspect > docAspect ?
-                new WPF.Size(docWidth * height / docHeight, height) :
-                new WPF.Size(width, docHeight * width / docWidth);
+                       new WPF.Size(docWidth * height / docHeight, height) :
+                       new WPF.Size(width, docHeight * width / docWidth);
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -105,28 +103,29 @@ namespace Ibinimator.View.Control
         private async Task<Stream> GetStream()
         {
             if (Source.IsAbsoluteUri)
-            {
                 switch (Source.Scheme)
                 {
                     case "file":
+
                         return File.OpenRead(Source.LocalPath);
                     case "http":
                         var request = WebRequest.CreateHttp(Source);
                         var response = await Task.Factory.FromAsync(
-                            request.BeginGetResponse,
-                            request.EndGetResponse,
-                            null);
+                                           request.BeginGetResponse,
+                                           request.EndGetResponse,
+                                           null);
+
                         return response.GetResponseStream();
                     default:
+
                         throw new Exception("Unsupported URI scheme!");
                 }
-            }
 
             return WPF.Application.GetResourceStream(Source)?.Stream;
         }
 
         private static async void SourceChanged(
-            WPF.DependencyObject d,
+            WPF.DependencyObject                   d,
             WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
@@ -142,7 +141,9 @@ namespace Ibinimator.View.Control
             XDocument xdoc;
 
             using (var stream = await GetStream())
+            {
                 xdoc = XDocument.Load(stream);
+            }
 
             var document = new Svg.Document();
             document.FromXml(xdoc.Root, new SvgContext());
@@ -154,18 +155,18 @@ namespace Ibinimator.View.Control
         #region IArtContext Members
 
         public event EventHandler StatusChanged;
-        public void InvalidateSurface() { InvalidateVisual(); }
+        public       void         InvalidateSurface() { InvalidateVisual(); }
 
-        public IBrushManager BrushManager { get; }
-        public ICacheManager CacheManager => _cache;
+        public IBrushManager   BrushManager   { get; }
+        public ICacheManager   CacheManager   => _cache;
         public IHistoryManager HistoryManager { get; }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();
 
         public ISelectionManager SelectionManager { get; }
-        public IToolManager ToolManager { get; }
-        public IViewManager ViewManager { get; }
-        public Status Status { get; set; }
+        public Status            Status           { get; set; }
+        public IToolManager      ToolManager      { get; }
+        public IViewManager      ViewManager      { get; }
 
         #endregion
     }

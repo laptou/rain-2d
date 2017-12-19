@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Matrix3x2 = SharpDX.Matrix3x2;
 
 namespace Ibinimator.Test
@@ -13,9 +15,9 @@ namespace Ibinimator.Test
     public class MathTest
     {
         /// <summary>
-        ///  Gets or sets the test context which provides
-        ///  information about and functionality for the current test run.
-        ///</summary>
+        ///     Gets or sets the test context which provides
+        ///     information about and functionality for the current test run.
+        /// </summary>
         public TestContext TestContext { get; set; }
 
         [TestMethod]
@@ -49,7 +51,6 @@ namespace Ibinimator.Test
 
             for (var i = 0; i < 100; i++)
             {
-
                 var mat = System.Numerics.Matrix3x2.Identity;
 
                 var s = System.Numerics.Matrix3x2.CreateScale(13);

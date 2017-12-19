@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -9,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
@@ -62,8 +65,8 @@ namespace Ibinimator.ViewModel
         public MainViewModel()
         {
             RunTime(() => throw new InvalidOperationException(
-                        "This constructor only exists so that the XAML designer doesn't " +
-                        "complain. Do not call this."));
+                              "This constructor only exists so that the XAML designer doesn't " +
+                              "complain. Do not call this."));
 
             SettingsManager.Load();
 
@@ -122,6 +125,8 @@ namespace Ibinimator.ViewModel
         public DelegateCommand<Layer> SelectLayerCommand { get; }
 
         public DelegateCommand<ToolType> SelectToolCommand { get; }
+
+        public List<InputBinding> Shortcuts { get; } = new List<InputBinding>();
 
         public List<ToolbarItem> ToolbarItems { get; set; }
 
@@ -248,6 +253,7 @@ namespace Ibinimator.ViewModel
                 yield break;
 
             var menuCount = SettingsManager.GetInt(path + ".$count");
+
             for (var i = 0; i < menuCount; i++)
             {
                 var localPath = path + "[" + i + "]";
@@ -262,8 +268,8 @@ namespace Ibinimator.ViewModel
                     var name = SettingsManager.GetString(localPath + ".name");
                     var cmd = SettingsManager.GetString(localPath + ".command", null);
                     var shortcut = cmd != null ?
-                        SettingsManager.GetString(".shortcuts." + cmd + "[0]", null) :
-                        null;
+                                       SettingsManager.GetString(".shortcuts." + cmd + "[0]", null) :
+                                       null;
 
                     var item = new MenuItem(name,
                                             LoadMenus(localPath + ".menus"),
@@ -295,6 +301,7 @@ namespace Ibinimator.ViewModel
                 yield break;
 
             var tbCount = SettingsManager.GetInt(path + ".$count");
+
             for (var i = 0; i < tbCount; i++)
             {
                 var localPath = path + "[" + i + "]";
@@ -303,63 +310,72 @@ namespace Ibinimator.ViewModel
                 switch (type)
                 {
                     case ToolbarItemType.Space:
+
                         yield return new ToolbarItem(ArtContext);
+
                         break;
                     case ToolbarItemType.Button:
                         var icon = SettingsManager.GetString(localPath + ".icon");
                         var name = SettingsManager.GetString(localPath + ".name");
                         var cmd = SettingsManager.GetString(localPath + ".command", null);
+
                         yield return new ToolbarItem(
                             name,
                             MapCommand(cmd),
                             $"/Ibinimator;component/Resources/Icon/{icon}-{theme}.svg",
                             ArtContext);
+
                         break;
                     default:
+
                         throw new ArgumentOutOfRangeException();
                 }
             }
         }
 
-        public List<InputBinding> Shortcuts { get; } = new List<InputBinding>();
-
         private static ICommand MapCommand(string name)
         {
             switch (name)
             {
-                case "file.open": return FileCommands.OpenCommand;
-                case "file.save": return FileCommands.SaveCommand;
-                case "edit.undo": return HistoryCommands.UndoCommand;
-                case "edit.redo": return HistoryCommands.RedoCommand;
-                case "object.union": return ObjectCommands.UnionCommand;
-                case "object.difference": return ObjectCommands.DifferenceCommand;
+                case "file.open":           return FileCommands.OpenCommand;
+                case "file.save":           return FileCommands.SaveCommand;
+                case "edit.undo":           return HistoryCommands.UndoCommand;
+                case "edit.redo":           return HistoryCommands.RedoCommand;
+                case "object.union":        return ObjectCommands.UnionCommand;
+                case "object.difference":   return ObjectCommands.DifferenceCommand;
                 case "object.intersection": return ObjectCommands.IntersectionCommand;
-                case "object.exclusion": return ObjectCommands.XorCommand;
-                case "object.pathify": return ObjectCommands.PathifyCommand;
-                case "selection.group": return SelectionCommands.GroupCommand;
-                case "selection.ungroup": return SelectionCommands.UngroupCommand;
+                case "object.exclusion":    return ObjectCommands.XorCommand;
+                case "object.pathify":      return ObjectCommands.PathifyCommand;
+                case "selection.group":     return SelectionCommands.GroupCommand;
+                case "selection.ungroup":   return SelectionCommands.UngroupCommand;
                 case "selection.move-bottom":
+
                     return SelectionCommands.MoveToBottomCommand;
                 case "selection.move-down": return SelectionCommands.MoveDownCommand;
-                case "selection.move-up": return SelectionCommands.MoveUpCommand;
-                case "selection.move-top": return SelectionCommands.MoveToTopCommand;
-                case "selection.mirror-x": return SelectionCommands.FlipHorizontalCommand;
-                case "selection.mirror-y": return SelectionCommands.FlipVerticalCommand;
+                case "selection.move-up":   return SelectionCommands.MoveUpCommand;
+                case "selection.move-top":  return SelectionCommands.MoveToTopCommand;
+                case "selection.mirror-x":  return SelectionCommands.FlipHorizontalCommand;
+                case "selection.mirror-y":  return SelectionCommands.FlipVerticalCommand;
                 case "selection.rotate-cw":
+
                     return SelectionCommands.RotateClockwiseCommand;
                 case "selection.rotate-ccw":
+
                     return SelectionCommands.RotateCounterClockwiseCommand;
-                case "selection.align-left": return SelectionCommands.AlignLeftCommand;
+                case "selection.align-left":  return SelectionCommands.AlignLeftCommand;
                 case "selection.align-right": return SelectionCommands.AlignRightCommand;
-                case "selection.align-top": return SelectionCommands.AlignTopCommand;
+                case "selection.align-top":   return SelectionCommands.AlignTopCommand;
                 case "selection.align-bottom":
+
                     return SelectionCommands.AlignBottomCommand;
                 case "selection.align-center-x":
+
                     return SelectionCommands.AlignCenterXCommand;
                 case "selection.align-center-y":
+
                     return SelectionCommands.AlignCenterYCommand;
                 case "help.license": return ViewCommands.LicenseCommand;
-                default: return null;
+                default:             return null;
             }
         }
 
@@ -403,11 +419,11 @@ namespace Ibinimator.ViewModel
         public MenuItem() { Type = MenuItemType.Separator; }
 
         public MenuItem(
-            string name,
+            string                name,
             IEnumerable<MenuItem> subMenus,
-            ICommand command,
-            string shortcut,
-            IArtContext artContext)
+            ICommand              command,
+            string                shortcut,
+            IArtContext           artContext)
         {
             SubMenus = subMenus.ToList();
             Command = command;
@@ -439,9 +455,9 @@ namespace Ibinimator.ViewModel
         }
 
         public ToolbarItem(
-            string name,
-            ICommand command,
-            string icon,
+            string      name,
+            ICommand    command,
+            string      icon,
             IArtContext artContext)
         {
             Command = command;
@@ -464,43 +480,18 @@ namespace Ibinimator.ViewModel
 
     public enum ToolbarItemType
     {
-        Space = 0,
+        Space  = 0,
         Button = 1
     }
 
     public enum MenuItemType
     {
         Separator = 0,
-        Item = 1
+        Item      = 1
     }
 
     public static class ShortcutHelper
     {
-        public static string Prettify(string raw)
-        {
-            if (raw == null) return null;
-
-            IEnumerable<string> split = raw.Split('+');
-
-            split = split.Replace("plus", "+");
-            split = split.Replace("minus", "-");
-            split = split.Replace("asterisk", "*");
-            split = split.Replace("caret", "^");
-            split = split.Replace("rightsquare", "]");
-            split = split.Replace("leftsquare", "[");
-
-            split = split.Replace("ctrl", "control");
-
-            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(
-                string.Join(" + ", split));
-        }
-
-        [DllImport("user32.dll")]
-        private static extern long GetKeyboardLayout(int thread);
-
-        [DllImport("user32.dll")]
-        private static extern short VkKeyScanEx(char tchar, long kb);
-
         public static InputGesture GetGesture(string shortcut)
         {
             if (shortcut == null) return null;
@@ -530,5 +521,30 @@ namespace Ibinimator.ViewModel
 
             return new KeyGesture(k, m);
         }
+
+        public static string Prettify(string raw)
+        {
+            if (raw == null) return null;
+
+            IEnumerable<string> split = raw.Split('+');
+
+            split = split.Replace("plus", "+");
+            split = split.Replace("minus", "-");
+            split = split.Replace("asterisk", "*");
+            split = split.Replace("caret", "^");
+            split = split.Replace("rightsquare", "]");
+            split = split.Replace("leftsquare", "[");
+
+            split = split.Replace("ctrl", "control");
+
+            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(
+                string.Join(" + ", split));
+        }
+
+        [DllImport("user32.dll")]
+        private static extern long GetKeyboardLayout(int thread);
+
+        [DllImport("user32.dll")]
+        private static extern short VkKeyScanEx(char tchar, long kb);
     }
 }

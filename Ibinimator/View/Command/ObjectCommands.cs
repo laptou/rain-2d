@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Service.Commands;
 using Ibinimator.ViewModel;
+
 using SharpDX.Direct2D1;
 
 namespace Ibinimator.View.Command
@@ -43,10 +45,6 @@ namespace Ibinimator.View.Command
             BinaryOperation(manager, CombineMode.Intersect);
         }
 
-        private static void Union(IArtContext manager) { BinaryOperation(manager, CombineMode.Union); }
-
-        private static void Xor(IArtContext manager) { BinaryOperation(manager, CombineMode.Xor); }
-
         private static void Pathify(IArtContext ctx)
         {
             ctx.HistoryManager.Do(
@@ -57,5 +55,9 @@ namespace Ibinimator.View.Command
                        .OfType<IGeometricLayer>()
                        .ToArray()));
         }
+
+        private static void Union(IArtContext manager) { BinaryOperation(manager, CombineMode.Union); }
+
+        private static void Xor(IArtContext manager) { BinaryOperation(manager, CombineMode.Xor); }
     }
 }

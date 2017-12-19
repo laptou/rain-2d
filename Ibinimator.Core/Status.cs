@@ -3,9 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Core {
+namespace Ibinimator.Core
+{
     public class Status
     {
+        #region StatusType enum
+
+        public enum StatusType
+        {
+            Info,
+            Warning,
+            Error,
+            Success,
+            Progress
+        }
+
+        #endregion
+
         public Status(StatusType type, string message)
         {
             Type = type;
@@ -18,19 +32,10 @@ namespace Ibinimator.Core {
             Type = StatusType.Progress;
         }
 
+        public string Message { get; }
+
         public float Percentage { get; } = -1;
 
         public StatusType Type { get; }
-
-        public string Message { get; }
-
-        public enum StatusType
-        {
-            Info,
-            Warning,
-            Error,
-            Success,
-            Progress
-        }
     }
 }

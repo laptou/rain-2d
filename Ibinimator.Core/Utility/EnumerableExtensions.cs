@@ -7,7 +7,41 @@ namespace Ibinimator.Core.Utility
 {
     public static class EnumerableExtensions
     {
-        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Func<T, int, bool> predicate)
+        public static IEnumerable<T> Cycle<T>(
+            this IEnumerable<T> enumerable,
+            int                 elements)
+        {
+            var enumerable1 = enumerable as IList<T> ?? enumerable.ToList();
+
+            return enumerable1.Skip(elements).Concat(enumerable1.Take(elements - 1));
+        }
+
+        public static IEnumerable<T> Replace<T>(
+            this IEnumerable<T> enumerable,
+            T                   oldItem,
+            T                   newItem)
+        {
+            foreach (var item in enumerable)
+                if (item.Equals(oldItem))
+                    yield return newItem;
+                else
+                    yield return item;
+        }
+
+        public static IEnumerable<T> SkipUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        {
+            var yielding = false;
+
+            foreach (var element in enumerable)
+            {
+                if (yielding) yield return element;
+
+                if (!yielding && !predicate(element)) yielding = true;
+            }
+        }
+
+        public static IEnumerable<IEnumerable<T>> Split<T>(
+            this IEnumerable<T> enumerable, Func<T, int, bool> predicate)
         {
             var set = new List<T>();
             var index = 0;
@@ -19,6 +53,7 @@ namespace Ibinimator.Core.Utility
                     if (predicate(enumerator.Current, index) && set.Any())
                     {
                         yield return set;
+
                         set.Clear();
                     }
                     else
@@ -34,7 +69,8 @@ namespace Ibinimator.Core.Utility
                 yield return set;
         }
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Predicate<T> predicate)
+        public static IEnumerable<IEnumerable<T>> Split<T>(
+            this IEnumerable<T> enumerable, Predicate<T> predicate)
         {
             return enumerable.Split((t, i) => predicate(t));
         }
@@ -42,18 +78,6 @@ namespace Ibinimator.Core.Utility
         public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, T element)
         {
             return enumerable.Split((t, i) => t.Equals(element));
-        }
-
-        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
-            this IEnumerable<KeyValuePair<TKey, TElement>> source)
-        {
-            return source.ToDictionary(kv => kv.Key, kv => kv.Value);
-        }
-
-        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
-            this IEnumerable<(TKey, TElement)> source)
-        {
-            return source.ToDictionary(kv => kv.Item1, kv => kv.Item2);
         }
 
         public static IEnumerable<T> TakeUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
@@ -66,37 +90,16 @@ namespace Ibinimator.Core.Utility
             }
         }
 
-        public static IEnumerable<T> SkipUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
+            this IEnumerable<KeyValuePair<TKey, TElement>> source)
         {
-            var yielding = false;
-
-            foreach (var element in enumerable)
-            {
-                if (yielding) yield return element;
-
-                if (!yielding && !predicate(element)) yielding = true;
-            }
+            return source.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        public static IEnumerable<T> Cycle<T>(
-            this IEnumerable<T> enumerable,
-            int elements)
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
+            this IEnumerable<(TKey, TElement)> source)
         {
-            var enumerable1 = enumerable as IList<T> ?? enumerable.ToList();
-
-            return enumerable1.Skip(elements).Concat(enumerable1.Take(elements - 1));
-        }
-
-        public static IEnumerable<T> Replace<T>(
-            this IEnumerable<T> enumerable,
-            T oldItem,
-            T newItem)
-        {
-            foreach (var item in enumerable)
-            {
-                if (item.Equals(oldItem)) yield return newItem;
-                else yield return item;
-            }
+            return source.ToDictionary(kv => kv.Item1, kv => kv.Item2);
         }
     }
 }

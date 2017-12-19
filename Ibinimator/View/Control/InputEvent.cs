@@ -5,8 +5,8 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core.Model;
-using Ibinimator.Native;
 
 namespace Ibinimator.View.Control
 {
@@ -32,14 +32,16 @@ namespace Ibinimator.View.Control
             Type = type;
             Text = text;
         }
-        
-        public InputEvent(InputEventType type, Vector2 position, ModifierState modifiers) : this(Service.Time.Now, modifiers)
+
+        public InputEvent(InputEventType type, Vector2 position, ModifierState modifiers) : this(
+            Service.Time.Now, modifiers)
         {
             Type = type;
             Position = position;
         }
 
-        public InputEvent(InputEventType type, float delta, Vector2 position, ModifierState modifiers) : this(Service.Time.Now, modifiers)
+        public InputEvent(InputEventType type, float delta, Vector2 position, ModifierState modifiers) : this(
+            Service.Time.Now, modifiers)
         {
             if (type != InputEventType.ScrollVertical &&
                 type != InputEventType.ScrollHorizontal)
@@ -56,12 +58,12 @@ namespace Ibinimator.View.Control
             State = state;
         }
 
-        public Key Key { get; }
-        public ModifierState State { get; }
-        public Vector2 Position { get; }
-        public float ScrollDelta { get; }
-        public string Text { get; }
-        public long Time { get; }
-        public InputEventType Type { get; }
+        public Key            Key         { get; }
+        public Vector2        Position    { get; }
+        public float          ScrollDelta { get; }
+        public ModifierState  State       { get; }
+        public string         Text        { get; }
+        public long           Time        { get; }
+        public InputEventType Type        { get; }
     }
 }

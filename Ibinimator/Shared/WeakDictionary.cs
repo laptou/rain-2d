@@ -18,9 +18,7 @@ namespace Ibinimator.Shared
     internal class WeakReference<T> : WeakReference where T : class
     {
         protected WeakReference(T target)
-            : base(target, false)
-        {
-        }
+            : base(target, false) { }
 
         public new T Target => (T) base.Target;
 
@@ -41,9 +39,7 @@ namespace Ibinimator.Shared
     {
         public static readonly WeakNullReference<T> Singleton = new WeakNullReference<T>();
 
-        private WeakNullReference() : base(null)
-        {
-        }
+        private WeakNullReference() : base(null) { }
 
         public override bool IsAlive => true;
     }
@@ -87,6 +83,7 @@ namespace Ibinimator.Shared
         {
             var wref = obj as WeakKeyReference<T>;
             T target;
+
             if (wref != null)
             {
                 target = wref.Target;
@@ -97,6 +94,7 @@ namespace Ibinimator.Shared
                 target = (T) obj;
                 isDead = false;
             }
+
             return target;
         }
 
@@ -138,6 +136,7 @@ namespace Ibinimator.Shared
         {
             if (obj is WeakKeyReference<T> weakKey)
                 return weakKey.HashCode;
+
             return _comparer.GetHashCode((T) obj);
         }
 
@@ -170,19 +169,13 @@ namespace Ibinimator.Shared
         private readonly Dictionary<object, WeakReference<TValue>> _dictionary;
 
         public WeakDictionary()
-            : this(0, null)
-        {
-        }
+            : this(0, null) { }
 
         public WeakDictionary(int capacity)
-            : this(capacity, null)
-        {
-        }
+            : this(capacity, null) { }
 
         public WeakDictionary(IEqualityComparer<TKey> comparer)
-            : this(0, comparer)
-        {
-        }
+            : this(0, comparer) { }
 
         public WeakDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
@@ -199,15 +192,13 @@ namespace Ibinimator.Shared
         public override void Add(TKey key, TValue value)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
+
             WeakReference<TKey> weakKey = new WeakKeyReference<TKey>(key, _comparer);
             var weakValue = WeakReference<TValue>.Create(value);
             _dictionary.Add(weakKey, weakValue);
         }
 
-        public override void Clear()
-        {
-            _dictionary.Clear();
-        }
+        public override void Clear() { _dictionary.Clear(); }
 
         public override bool ContainsKey(TKey key)
         {
@@ -217,18 +208,15 @@ namespace Ibinimator.Shared
         public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return (from kvp in _dictionary
-                let weakKey = (WeakReference<TKey>) kvp.Key
-                let weakValue = kvp.Value
-                let key = weakKey.Target
-                let value = weakValue.Target
-                where weakKey.IsAlive && weakValue.IsAlive
-                select new KeyValuePair<TKey, TValue>(key, value)).GetEnumerator();
+                    let weakKey = (WeakReference<TKey>) kvp.Key
+                    let weakValue = kvp.Value
+                    let key = weakKey.Target
+                    let value = weakValue.Target
+                    where weakKey.IsAlive && weakValue.IsAlive
+                    select new KeyValuePair<TKey, TValue>(key, value)).GetEnumerator();
         }
 
-        public override bool Remove(TKey key)
-        {
-            return _dictionary.Remove(key);
-        }
+        public override bool Remove(TKey key) { return _dictionary.Remove(key); }
 
         // Removes the left-over weak references for entries in the dictionary
         // whose key or value has already been reclaimed by the garbage
@@ -237,6 +225,7 @@ namespace Ibinimator.Shared
         public void RemoveCollectedEntries()
         {
             List<object> toRemove = null;
+
             foreach (var pair in _dictionary)
             {
                 var weakKey = (WeakReference<TKey>) pair.Key;
@@ -260,9 +249,12 @@ namespace Ibinimator.Shared
             if (_dictionary.TryGetValue(key, out var weakValue))
             {
                 value = weakValue.Target;
+
                 return weakValue.IsAlive;
             }
+
             value = null;
+
             return false;
         }
 
@@ -286,9 +278,11 @@ namespace Ibinimator.Shared
     public abstract class BaseDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private const string Prefix = "System.Collections.Generic.Mscorlib_";
-        private const string Suffix = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
 
-        private KeyCollection _keys;
+        private const string Suffix =
+            ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
+
+        private KeyCollection   _keys;
         private ValueCollection _values;
 
         protected abstract void SetValue(TKey key, TValue value);
@@ -323,10 +317,7 @@ namespace Ibinimator.Shared
             set => SetValue(key, value);
         }
 
-        public void Add(KeyValuePair<TKey, TValue> item)
-        {
-            Add(item.Key, item.Value);
-        }
+        public void Add(KeyValuePair<TKey, TValue> item) { Add(item.Key, item.Value); }
 
         public abstract void Add(TKey key, TValue value);
 
@@ -358,13 +349,10 @@ namespace Ibinimator.Shared
             return Remove(item.Key);
         }
 
-        public abstract bool Remove(TKey key);
+        public abstract bool Remove(TKey      key);
         public abstract bool TryGetValue(TKey key, out TValue value);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         public abstract int Count { get; }
 
@@ -382,10 +370,7 @@ namespace Ibinimator.Shared
         {
             protected readonly IDictionary<TKey, TValue> Dictionary;
 
-            protected Collection(IDictionary<TKey, TValue> dictionary)
-            {
-                Dictionary = dictionary;
-            }
+            protected Collection(IDictionary<TKey, TValue> dictionary) { Dictionary = dictionary; }
 
             protected abstract T GetItem(KeyValuePair<TKey, TValue> pair);
 
@@ -396,35 +381,17 @@ namespace Ibinimator.Shared
                 return this.Any(element => EqualityComparer<T>.Default.Equals(element, item));
             }
 
-            public void Add(T item)
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
+            public void Add(T item) { throw new NotSupportedException("Collection is read-only."); }
 
-            public void Clear()
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
+            public void Clear() { throw new NotSupportedException("Collection is read-only."); }
 
-            public void CopyTo(T[] array, int arrayIndex)
-            {
-                Copy(this, array, arrayIndex);
-            }
+            public void CopyTo(T[] array, int arrayIndex) { Copy(this, array, arrayIndex); }
 
-            public IEnumerator<T> GetEnumerator()
-            {
-                return Dictionary.Select(GetItem).GetEnumerator();
-            }
+            public IEnumerator<T> GetEnumerator() { return Dictionary.Select(GetItem).GetEnumerator(); }
 
-            public bool Remove(T item)
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
+            public bool Remove(T item) { throw new NotSupportedException("Collection is read-only."); }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
             public int Count => Dictionary.Count;
 
@@ -442,19 +409,11 @@ namespace Ibinimator.Shared
         private class KeyCollection : Collection<TKey>
         {
             public KeyCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary)
-            {
-            }
+                : base(dictionary) { }
 
-            public override bool Contains(TKey item)
-            {
-                return Dictionary.ContainsKey(item);
-            }
+            public override bool Contains(TKey item) { return Dictionary.ContainsKey(item); }
 
-            protected override TKey GetItem(KeyValuePair<TKey, TValue> pair)
-            {
-                return pair.Key;
-            }
+            protected override TKey GetItem(KeyValuePair<TKey, TValue> pair) { return pair.Key; }
         }
 
         #endregion
@@ -466,14 +425,9 @@ namespace Ibinimator.Shared
         private class ValueCollection : Collection<TValue>
         {
             public ValueCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary)
-            {
-            }
+                : base(dictionary) { }
 
-            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair)
-            {
-                return pair.Value;
-            }
+            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair) { return pair.Value; }
         }
 
         #endregion

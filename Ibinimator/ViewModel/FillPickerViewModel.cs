@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.Utility;
 using Ibinimator.Renderer.WPF;
+
 using WPF = System.Windows.Media;
 
 namespace Ibinimator.ViewModel
@@ -130,21 +131,22 @@ namespace Ibinimator.ViewModel
             _parent = parent;
 
             brushManager.PropertyChanged += (sender, args) =>
-            {
-                _updating = true;
+                                            {
+                                                _updating = true;
 
-                if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
-                    _fillPicker.Color = fill.Color;
+                                                if (_parent.BrushManager.Fill is SolidColorBrushInfo fill)
+                                                    _fillPicker.Color = fill.Color;
 
-                if (_parent.BrushManager.Stroke?.Brush is SolidColorBrushInfo stroke)
-                    _strokePicker.Color = stroke.Color;
+                                                if (_parent.BrushManager.Stroke?.Brush is SolidColorBrushInfo
+                                                        stroke)
+                                                    _strokePicker.Color = stroke.Color;
 
-                RaisePropertyChanged(nameof(FillBrush));
-                RaisePropertyChanged(nameof(StrokeBrush));
-                RaisePropertyChanged(nameof(StrokeInfo));
+                                                RaisePropertyChanged(nameof(FillBrush));
+                                                RaisePropertyChanged(nameof(StrokeBrush));
+                                                RaisePropertyChanged(nameof(StrokeInfo));
 
-                _updating = false;
-            };
+                                                _updating = false;
+                                            };
 
             _strokePicker.PropertyChanged += OnColorPickerPropertyChanged;
             _fillPicker.PropertyChanged += OnColorPickerPropertyChanged;
@@ -168,11 +170,13 @@ namespace Ibinimator.ViewModel
         public WPF.Brush StrokeBrush =>
             GetBrush(StrokeInfo?.Brush);
 
+        public IPenInfo StrokeInfo => _parent.BrushManager.Stroke;
+
         private WPF.Brush GetBrush(IBrushInfo brushInfo)
         {
             var brush = brushInfo?
-                .CreateBrush(new WpfRenderContext())
-                .Unwrap<WPF.Brush>();
+                       .CreateBrush(new WpfRenderContext())
+                       .Unwrap<WPF.Brush>();
 
             if (brush is WPF.GradientBrush gradient)
             {
@@ -200,10 +204,8 @@ namespace Ibinimator.ViewModel
             return brush;
         }
 
-        public IPenInfo StrokeInfo => _parent.BrushManager.Stroke;
-
         private void OnColorPickerPropertyChanged(
-            object sender,
+            object                   sender,
             PropertyChangedEventArgs e)
         {
             if (_updating) return;
@@ -229,8 +231,10 @@ namespace Ibinimator.ViewModel
                     //    break;
                     default:
                         _parent.BrushManager.Fill = new SolidColorBrushInfo(picker.Color);
+
                         break;
                 }
+
                 _parent.BrushManager.ApplyFill();
             }
             else
@@ -245,8 +249,10 @@ namespace Ibinimator.ViewModel
                             _parent.BrushManager.Stroke = new PenInfo {Width = 1};
 
                         _parent.BrushManager.Stroke.Brush = new SolidColorBrushInfo(picker.Color);
+
                         break;
                 }
+
                 _parent.BrushManager.ApplyStroke();
             }
 

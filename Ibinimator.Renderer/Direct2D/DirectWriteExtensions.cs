@@ -3,29 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using SharpDX.DirectWrite;
 
 namespace Ibinimator.Renderer.Direct2D
 {
     public static class DirectWriteExtensions
     {
-        public static string ToCurrentCulture(this LocalizedStrings ls)
+        public static IEnumerable<FontFamily> GetEnumerator(this FontCollection collection)
         {
-            ls.FindLocaleName(Thread.CurrentThread.CurrentUICulture.Name, out var i);
-
-            return ls.GetString(i);
+            for (var i = 0; i < collection.FontFamilyCount; i++)
+                yield return collection.GetFontFamily(i);
         }
 
         public static FontFamily GetFamilyByName(this FontCollection collection, string name)
         {
             return collection.FindFamilyName(name, out var index) ?
-                collection.GetFontFamily(index) : null;
+                       collection.GetFontFamily(index) : null;
         }
 
-        public static IEnumerable<FontFamily> GetEnumerator(this FontCollection collection)
+        public static string ToCurrentCulture(this LocalizedStrings ls)
         {
-            for (var i = 0; i < collection.FontFamilyCount; i++)
-                yield return collection.GetFontFamily(i);
+            ls.FindLocaleName(Thread.CurrentThread.CurrentUICulture.Name, out var i);
+
+            return ls.GetString(i);
         }
     }
 }

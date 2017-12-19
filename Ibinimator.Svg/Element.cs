@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
@@ -13,10 +14,10 @@ namespace Ibinimator.Svg
     {
         protected string LazyGet(XElement element, XName name, bool inherit = false)
         {
-            if(inherit)
-                return (string)element.AncestorsAndSelf()
-                                      .Select(x => x.Attribute(name))
-                                      .FirstOrDefault(a => a != null);
+            if (inherit)
+                return (string) element.AncestorsAndSelf()
+                                       .Select(x => x.Attribute(name))
+                                       .FirstOrDefault(a => a != null);
 
             return (string) element.Attribute(name);
         }
@@ -29,55 +30,49 @@ namespace Ibinimator.Svg
             {
                 if (string.IsNullOrWhiteSpace(value)) return @default;
 
-                var pascalCase = string.Join("", value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1)));
+                var pascalCase =
+                    string.Join("", value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1)));
 
                 return (T) Enum.Parse(typeof(T), pascalCase);
             }
 
             if (typeof(T) == typeof(float[]))
             {
-                if (string.IsNullOrWhiteSpace(value)) return (T)(object)new float[0];
+                if (string.IsNullOrWhiteSpace(value)) return (T) (object) new float[0];
 
-                return (T)(object)value.Split(',', ' ')
-                                       .Where(s => float.TryParse(s, out var _))
-                                       .Select(float.Parse).ToArray();
+                return (T) (object) value.Split(',', ' ')
+                                         .Where(s => float.TryParse(s, out var _))
+                                         .Select(float.Parse)
+                                         .ToArray();
             }
 
             if (typeof(T) == typeof(float))
-            {
                 if (value != null && float.TryParse(value, out var result))
-                    return (T)(object)result;
-            }
+                    return (T) (object) result;
 
             if (typeof(T) == typeof(Length))
-            {
                 if (value != null && Length.TryParse(value, out var result))
-                    return (T)(object)result;
-            }
+                    return (T) (object) result;
 
             if (typeof(T) == typeof(Color))
-            {
                 if (value != null && Color.TryParse(value, out var result))
-                    return (T)(object)result;
-            }
+                    return (T) (object) result;
 
             if (typeof(T) == typeof(Matrix3x2))
-            {
                 if (value != null)
                 {
                     var values = value.Split('\u0020', '\u000A', '\u000D', '\u0009')
-                        .Select(s => float.TryParse(s, out var result) ? result : float.NaN)
-                        .ToArray();
+                                      .Select(s => float.TryParse(s, out var result) ? result : float.NaN)
+                                      .ToArray();
 
-                    return (T)(object)new Matrix3x2(
-                        values[0], values[1], 
-                        values[2], values[3], 
+                    return (T) (object) new Matrix3x2(
+                        values[0], values[1],
+                        values[2], values[3],
                         values[4], values[5]);
                 }
-            }
 
             if (typeof(T) == typeof(string))
-                return (T)(object)value;
+                return (T) (object) value;
 
             return @default;
         }
@@ -95,17 +90,21 @@ namespace Ibinimator.Svg
             switch (value)
             {
                 case Array array:
-                    if(array.Length > 0)
+                    if (array.Length > 0)
                         element.SetAttributeValue(name, string.Join(",", array.OfType<object>()));
+
                     break;
                 case Enum @enum:
                     element.SetAttributeValue(name, @enum.Svgify());
+
                     break;
                 case RectangleF rect:
                     element.SetAttributeValue(name, $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
+
                     break;
                 default:
                     element.SetAttributeValue(name, value);
+
                     break;
             }
         }
@@ -114,7 +113,6 @@ namespace Ibinimator.Svg
 
         public virtual void FromXml(XElement element, SvgContext context)
         {
-
             Id = (string) element.Attribute("id");
 
             var style = (string) element.Attribute("style");
@@ -130,7 +128,7 @@ namespace Ibinimator.Svg
                         element.SetAttributeValue(rule.name, rule.value);
             }
 
-            if(Id != null)
+            if (Id != null)
                 context[Id] = this;
         }
 

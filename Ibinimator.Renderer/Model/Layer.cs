@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -18,6 +19,8 @@ namespace Ibinimator.Renderer.Model
             Transform = Matrix3x2.Identity;
         }
 
+        public virtual ILayer Find(Guid id) { return id == Id ? this : null; }
+
         public override int GetHashCode() { return Id.GetHashCode(); }
 
         protected void RaiseBoundsChanged() { BoundsChanged?.Invoke(this, null); }
@@ -27,7 +30,7 @@ namespace Ibinimator.Renderer.Model
         public event EventHandler BoundsChanged;
 
         public virtual void ApplyTransform(
-            Matrix3x2? local = null,
+            Matrix3x2? local  = null,
             Matrix3x2? global = null)
         {
             Transform = (local ?? Matrix3x2.Identity) *
@@ -36,8 +39,6 @@ namespace Ibinimator.Renderer.Model
                         (global ?? Matrix3x2.Identity) *
                         MathUtils.Invert(WorldTransform);
         }
-
-        public virtual ILayer Find(Guid id) { return id == Id ? this : null; }
 
         public virtual IEnumerable<ILayer> Flatten(int depth)
         {
@@ -52,10 +53,7 @@ namespace Ibinimator.Renderer.Model
         ///     The entire layer graph starting at this layer,
         ///     as a list.
         /// </returns>
-        public virtual IEnumerable<ILayer> Flatten()
-        {
-            yield return this;
-        }
+        public virtual IEnumerable<ILayer> Flatten() { yield return this; }
 
         public virtual RectangleF GetBounds(ICacheManager cache)
         {

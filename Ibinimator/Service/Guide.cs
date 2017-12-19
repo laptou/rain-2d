@@ -17,7 +17,8 @@ namespace Ibinimator.Service
             Type = type;
         }
 
-        public Guide(int id, bool @virtual, Vector2 origin, float angle, int divisions, GuideType type) : this()
+        public Guide(
+            int id, bool @virtual, Vector2 origin, float angle, int divisions, GuideType type) : this()
         {
             Id = id;
             Virtual = @virtual;
@@ -27,29 +28,27 @@ namespace Ibinimator.Service
             Type = type;
         }
 
-        public int Id { get; }
-
-        public bool Virtual { get; }
-
-        public Vector2 Origin { get; }
-
         public float Angle { get; }
 
         public int Divisions { get; }
 
+        public int Id { get; }
+
+        public Vector2 Origin { get; }
+
         public GuideType Type { get; }
+
+        public bool Virtual { get; }
 
         public override bool Equals(object obj)
         {
             if (obj is Guide g)
                 return Equals(g);
+
             return base.Equals(obj);
         }
 
-        public bool Equals(Guide g)
-        {
-            return g.Id == Id && g.Virtual == Virtual && g.Type == Type;
-        }
+        public bool Equals(Guide g) { return g.Id == Id && g.Virtual == Virtual && g.Type == Type; }
 
         public override int GetHashCode()
         {
@@ -61,6 +60,7 @@ namespace Ibinimator.Service
                 hashCode = (hashCode * 397) ^ Angle.GetHashCode();
                 hashCode = (hashCode * 397) ^ Divisions;
                 hashCode = (hashCode * 397) ^ (int) Type;
+
                 return hashCode;
             }
         }

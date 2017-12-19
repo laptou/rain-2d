@@ -19,25 +19,30 @@ namespace Ibinimator.Svg
             set => _list[index] = value;
         }
 
-        public void Add(IElement item)
+        public void Add(IElement item) { _list.Add(item); }
+
+        public void Clear() { _list.Clear(); }
+
+        public bool Contains(IElement item) { return _list.Contains(item); }
+
+        public void CopyTo(IElement[] array, int arrayIndex) { _list.CopyTo(array, arrayIndex); }
+
+        public override void FromXml(XElement element, SvgContext context)
         {
-            _list.Add(item);
+            base.FromXml(element, context);
+
+            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
         }
 
-        public void Clear()
-        {
-            _list.Clear();
-        }
+        public IEnumerator<IElement> GetEnumerator() { return _list.GetEnumerator(); }
 
-        public bool Contains(IElement item)
-        {
-            return _list.Contains(item);
-        }
+        public int IndexOf(IElement item) { return _list.IndexOf(item); }
 
-        public void CopyTo(IElement[] array, int arrayIndex)
-        {
-            _list.CopyTo(array, arrayIndex);
-        }
+        public void Insert(int index, IElement item) { _list.Insert(index, item); }
+
+        public bool Remove(IElement item) { return _list.Remove(item); }
+
+        public void RemoveAt(int index) { _list.RemoveAt(index); }
 
         public override XElement ToXml(SvgContext context)
         {
@@ -49,46 +54,11 @@ namespace Ibinimator.Svg
             return element;
         }
 
-        public override void FromXml(XElement element, SvgContext context)
-        {
-            base.FromXml(element, context);
-
-            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
-        }
-
-        public IEnumerator<IElement> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
-
-        public int IndexOf(IElement item)
-        {
-            return _list.IndexOf(item);
-        }
-
-        public void Insert(int index, IElement item)
-        {
-            _list.Insert(index, item);
-        }
-
-        public bool Remove(IElement item)
-        {
-            return _list.Remove(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            _list.RemoveAt(index);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) _list).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _list).GetEnumerator(); }
 
         public int Count => _list.Count;
 
-        public bool IsReadOnly => ((IList<IElement>)_list).IsReadOnly;
+        public bool IsReadOnly => ((IList<IElement>) _list).IsReadOnly;
 
         #endregion
     }
@@ -105,25 +75,30 @@ namespace Ibinimator.Svg
             set => _list[index] = value;
         }
 
-        public void Add(IElement item)
+        public void Add(IElement item) { _list.Add(item); }
+
+        public void Clear() { _list.Clear(); }
+
+        public bool Contains(IElement item) { return _list.Contains(item); }
+
+        public void CopyTo(IElement[] array, int arrayIndex) { _list.CopyTo(array, arrayIndex); }
+
+        public override void FromXml(XElement element, SvgContext context)
         {
-            _list.Add(item);
+            base.FromXml(element, context);
+
+            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
         }
 
-        public void Clear()
-        {
-            _list.Clear();
-        }
+        public IEnumerator<IElement> GetEnumerator() { return _list.GetEnumerator(); }
 
-        public bool Contains(IElement item)
-        {
-            return _list.Contains(item);
-        }
+        public int IndexOf(IElement item) { return _list.IndexOf(item); }
 
-        public void CopyTo(IElement[] array, int arrayIndex)
-        {
-            _list.CopyTo(array, arrayIndex);
-        }
+        public void Insert(int index, IElement item) { _list.Insert(index, item); }
+
+        public bool Remove(IElement item) { return _list.Remove(item); }
+
+        public void RemoveAt(int index) { _list.RemoveAt(index); }
 
         public override XElement ToXml(SvgContext context)
         {
@@ -135,46 +110,11 @@ namespace Ibinimator.Svg
             return element;
         }
 
-        public override void FromXml(XElement element, SvgContext context)
-        {
-            base.FromXml(element, context);
-
-            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
-        }
-
-        public IEnumerator<IElement> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
-
-        public int IndexOf(IElement item)
-        {
-            return _list.IndexOf(item);
-        }
-
-        public void Insert(int index, IElement item)
-        {
-            _list.Insert(index, item);
-        }
-
-        public bool Remove(IElement item)
-        {
-            return _list.Remove(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            _list.RemoveAt(index);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)_list).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _list).GetEnumerator(); }
 
         public int Count => _list.Count;
 
-        public bool IsReadOnly => ((IList<IElement>)_list).IsReadOnly;
+        public bool IsReadOnly => ((IList<IElement>) _list).IsReadOnly;
 
         #endregion
     }

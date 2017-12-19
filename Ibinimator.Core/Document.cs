@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 
@@ -51,6 +52,9 @@ namespace Ibinimator.Core
 
         public event PropertyChangedEventHandler Updated;
 
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e) { Updated?.Invoke(sender, e); }
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Updated?.Invoke(sender, e);
+        }
     }
 }

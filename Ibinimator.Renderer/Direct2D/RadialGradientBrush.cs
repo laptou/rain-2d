@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
+
 using GradientStop = Ibinimator.Core.GradientStop;
 
 namespace Ibinimator.Renderer.Direct2D
@@ -16,11 +19,11 @@ namespace Ibinimator.Renderer.Direct2D
         private SpreadMethod _spreadMethod;
 
         public RadialGradientBrush(
-            RenderTarget target,
+            RenderTarget              target,
             IEnumerable<GradientStop> stops,
-            RawVector2 center,
-            RawVector2 radii,
-            RawVector2 focus) : base(target, stops)
+            RawVector2                center,
+            RawVector2                radii,
+            RawVector2                focus) : base(target, stops)
         {
             NativeBrush = new SharpDX.Direct2D1.RadialGradientBrush(target,
                                                                     new RadialGradientBrushProperties
@@ -48,7 +51,7 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         protected override void OnStopsChanged(
-            object sender,
+            object                           sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             if (Stops.Count > 0) // avoid access violation exceptions when the list is cleared

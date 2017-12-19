@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 
@@ -22,16 +23,6 @@ namespace Ibinimator.Renderer.WPF
             _geometry = geometry.GetFlattenedPathGeometry(double.Epsilon, WPF.ToleranceType.Relative);
         }
 
-        public IEnumerable<PathNode> ReadNodes()
-        {
-            // we don't need to handle arcs below
-            // because Pathify() converts everything
-            // into line segments and cubic beziers
-
-            return GeometryHelper.NodesFromInstructions(Read());
-
-        }
-
         private IGeometry Combine(IGeometry other, WPF.GeometryCombineMode mode)
         {
             return new Geometry(new WPF.CombinedGeometry(mode, _geometry, (other as Geometry)?._geometry));
@@ -45,7 +36,10 @@ namespace Ibinimator.Renderer.WPF
 
         public IGeometry Copy() { return new Geometry(_geometry.Clone()); }
 
-        public IGeometry Difference(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Exclude); }
+        public IGeometry Difference(IGeometry other)
+        {
+            return Combine(other, WPF.GeometryCombineMode.Exclude);
+        }
 
         public void Dispose() { _geometry = null; }
 
@@ -57,7 +51,10 @@ namespace Ibinimator.Renderer.WPF
                 WPF.ToleranceType.Relative);
         }
 
-        public IGeometry Intersection(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Intersect); }
+        public IGeometry Intersection(IGeometry other)
+        {
+            return Combine(other, WPF.GeometryCombineMode.Intersect);
+        }
 
         public void Load(IEnumerable<PathInstruction> source)
         {
@@ -74,6 +71,7 @@ namespace Ibinimator.Renderer.WPF
                             _geometry.Figures.Add(figure);
 
                         figure = new WPF.PathFigure {IsFilled = true};
+
                         break;
                     case ArcPathInstruction arc:
                         figure.Segments.Add(
@@ -86,6 +84,7 @@ namespace Ibinimator.Renderer.WPF
                                     WPF.SweepDirection.Clockwise :
                                     WPF.SweepDirection.Counterclockwise,
                                 true));
+
                         break;
                     case CubicPathInstruction cubic:
                         figure.Segments.Add(
@@ -94,9 +93,11 @@ namespace Ibinimator.Renderer.WPF
                                 cubic.Control2.Convert(),
                                 cubic.Position.Convert(),
                                 true));
+
                         break;
                     case LinePathInstruction line:
                         figure.Segments.Add(new WPF.LineSegment(line.Position.Convert(), true));
+
                         break;
                     case MovePathInstruction move:
                         if (figure.Segments.Count > 0)
@@ -115,6 +116,7 @@ namespace Ibinimator.Renderer.WPF
                                 quadratic.Control.Convert(),
                                 quadratic.Position.Convert(),
                                 true));
+
                         break;
                 }
 
@@ -143,6 +145,7 @@ namespace Ibinimator.Renderer.WPF
                     switch (segment)
                     {
                         case WPF.ArcSegment arc:
+
                             yield return new ArcPathInstruction(
                                 (float) arc.Point.X,
                                 (float) arc.Point.Y,
@@ -151,8 +154,10 @@ namespace Ibinimator.Renderer.WPF
                                 (float) arc.RotationAngle,
                                 arc.SweepDirection == WPF.SweepDirection.Clockwise,
                                 arc.IsLargeArc);
+
                             break;
                         case WPF.BezierSegment cubic:
+
                             yield return new CubicPathInstruction(
                                 (float) cubic.Point3.X,
                                 (float) cubic.Point3.Y,
@@ -160,18 +165,23 @@ namespace Ibinimator.Renderer.WPF
                                 (float) cubic.Point1.Y,
                                 (float) cubic.Point2.X,
                                 (float) cubic.Point2.Y);
+
                             break;
                         case WPF.LineSegment line:
+
                             yield return new LinePathInstruction(
                                 (float) line.Point.X,
                                 (float) line.Point.Y);
+
                             break;
                         case WPF.QuadraticBezierSegment quadratic:
+
                             yield return new QuadraticPathInstruction(
                                 (float) quadratic.Point2.X,
                                 (float) quadratic.Point2.Y,
                                 (float) quadratic.Point1.X,
                                 (float) quadratic.Point1.Y);
+
                             break;
                     }
 
@@ -180,6 +190,15 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public void Read(IGeometrySink sink) { throw new NotImplementedException(); }
+
+        public IEnumerable<PathNode> ReadNodes()
+        {
+            // we don't need to handle arcs below
+            // because Pathify() converts everything
+            // into line segments and cubic beziers
+
+            return GeometryHelper.NodesFromInstructions(Read());
+        }
 
         public bool StrokeContains(float x, float y, float width)
         {
@@ -202,10 +221,10 @@ namespace Ibinimator.Renderer.WPF
 
         public class Sink : IGeometrySink
         {
-            private bool _b;
+            private bool             _b;
             private WPF.PathGeometry _geometry;
-            private float _x;
-            private float _y;
+            private float            _x;
+            private float            _y;
 
             public Sink(WPF.PathGeometry geometry) { _geometry = geometry; }
 
@@ -223,7 +242,8 @@ namespace Ibinimator.Renderer.WPF
 
             #region IGeometrySink Members
 
-            public void Arc(float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc)
+            public void Arc(
+                float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc)
             {
                 Begin();
 
@@ -235,7 +255,8 @@ namespace Ibinimator.Renderer.WPF
                     Size = new Size(radiusX, radiusY),
                     RotationAngle = angle,
                     IsLargeArc = largeArc,
-                    SweepDirection = clockwise ? WPF.SweepDirection.Clockwise : WPF.SweepDirection.Counterclockwise
+                    SweepDirection = clockwise ? WPF.SweepDirection.Clockwise
+                                         : WPF.SweepDirection.Counterclockwise
                 });
 
                 (_x, _y) = (x, y);
@@ -288,9 +309,9 @@ namespace Ibinimator.Renderer.WPF
                 if (_b)
                     _geometry.Figures.Last()
                              .Segments.Add(new WPF.LineSegment
-                             {
-                                 Point = new Point(x, y)
-                             });
+                              {
+                                  Point = new Point(x, y)
+                              });
 
                 (_x, _y) = (x, y);
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.ViewModel;
 
@@ -15,14 +16,8 @@ namespace Ibinimator.View.Command
         public static readonly DelegateCommand<IArtContext> RedoCommand =
             CommandManager.Register<IArtContext>(Redo);
 
-        private static void Redo(IArtContext artContext)
-        {
-            artContext.HistoryManager.Redo();
-        }
+        private static void Redo(IArtContext artContext) { artContext.HistoryManager.Redo(); }
 
-        private static void Undo(IArtContext artContext)
-        {
-            artContext.HistoryManager.Undo();
-        }
+        private static void Undo(IArtContext artContext) { artContext.HistoryManager.Undo(); }
     }
 }

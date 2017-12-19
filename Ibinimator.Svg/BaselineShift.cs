@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
@@ -23,9 +24,6 @@ namespace Ibinimator.Svg
 
         public Length Length { get; set; }
 
-        public override string ToString()
-        {
-            return Length != default ? Length.ToString() : Enum.Svgify();
-        }
+        public override string ToString() { return Length != default ? Length.ToString() : Enum.Svgify(); }
     }
 }

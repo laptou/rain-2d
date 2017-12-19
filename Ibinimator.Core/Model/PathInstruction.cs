@@ -5,7 +5,5 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model
 {
-    public abstract class PathInstruction
-    {
-    }
+    public abstract class PathInstruction { }
 }

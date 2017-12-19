@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Resources;
@@ -14,6 +15,18 @@ namespace Ibinimator.Service
         private readonly Dictionary<(int, GuideType), Guide> _guides =
             new Dictionary<(int, GuideType), Guide>();
 
+        public bool VirtualGuidesActive => _guides.Any(g => g.Value.Virtual);
+
+        public void ClearVirtualGuides()
+        {
+            foreach (var guide in _guides.Where(g => g.Value.Virtual).ToList())
+                _guides.Remove(guide.Key);
+        }
+
+        public IEnumerable<Guide> GetGuides(GuideType type)
+        {
+            return _guides.Values.Where(g => g.Type.HasFlag(type)).ToList();
+        }
 
         public (Vector2 Point, Guide? Guide) LinearSnap(Vector2 position, Vector2 origin)
         {
@@ -21,21 +34,35 @@ namespace Ibinimator.Service
         }
 
         public (Vector2 Point, Guide? Guide) LinearSnap(
-            Vector2 position,
-            Vector2 origin,
+            Vector2   position,
+            Vector2   origin,
             GuideType type)
         {
             var candidates = GetGuides(type);
             var delta = position - origin;
 
             var results = candidates
-                .Select<Guide, (Vector2 Position, float Loss, Guide? Guide)>(g =>
-                {
-                    var newDelta = MathUtils.Project(delta, MathUtils.Angle(g.Angle));
-                    return (newDelta + origin, Vector2.Distance(newDelta + origin, position), g);
-                })
-                .OrderBy(r => r.Loss)
-                .ToList();
+                         .Select<Guide, (Vector2 Position, float Loss, Guide? Guide)>(g =>
+                                                                                      {
+                                                                                          var newDelta =
+                                                                                              MathUtils
+                                                                                                 .Project(
+                                                                                                      delta,
+                                                                                                      MathUtils
+                                                                                                         .Angle(
+                                                                                                              g.Angle));
+
+                                                                                          return (newDelta +
+                                                                                                  origin,
+                                                                                              Vector2
+                                                                                                 .Distance(
+                                                                                                      newDelta +
+                                                                                                      origin,
+                                                                                                      position)
+                                                                                            , g);
+                                                                                      })
+                         .OrderBy(r => r.Loss)
+                         .ToList();
 
             var result = results.Count > 0 ? results.First() : (position, 0, null);
 
@@ -43,8 +70,8 @@ namespace Ibinimator.Service
         }
 
         public (Vector2 Point, Guide? Guide) RadialSnap(
-            Vector2 position,
-            Vector2 origin,
+            Vector2   position,
+            Vector2   origin,
             GuideType type)
         {
             var angle = MathUtils.Wrap(
@@ -54,8 +81,8 @@ namespace Ibinimator.Service
             var candidates = GetGuides(type);
 
             var results = candidates
-                .OrderBy(g => Math.Abs(MathUtils.Wrap(g.Angle, MathUtils.Pi) - angle))
-                .ToList();
+                         .OrderBy(g => Math.Abs(MathUtils.Wrap(g.Angle, MathUtils.Pi) - angle))
+                         .ToList();
 
             if (results.Count == 0) return (position, null);
 
@@ -70,26 +97,14 @@ namespace Ibinimator.Service
             return (origin + dist, result);
         }
 
-        public IEnumerable<Guide> GetGuides(GuideType type)
-        {
-            return _guides.Values.Where(g => g.Type.HasFlag(type)).ToList();
-        }
-
-        public void AddGuide(Guide guide) { _guides[(guide.Id, guide.Type)] = guide; }
-
-        public void ClearVirtualGuides()
-        {
-            foreach (var guide in _guides.Where(g => g.Value.Virtual).ToList())
-                _guides.Remove(guide.Key);
-        }
-
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
-            target.PushEffect(target.CreateEffect<IGlowEffect>());
+            var fx = target.CreateEffect<IGlowEffect>();
+
+            target.PushEffect(fx);
 
             foreach (var guide in GetGuides(GuideType.All))
             {
-
                 var brush = cache.GetBrush(nameof(EditorColors.Guide));
 
                 if (guide.Type.HasFlag(GuideType.Linear))
@@ -102,16 +117,16 @@ namespace Ibinimator.Service
                     if (slope > diagonal)
                     {
                         p1 = new Vector2(
-                            (float)(origin.X + (origin.Y - target.Height) / slope),
+                            (float) (origin.X + (origin.Y - target.Height) / slope),
                             target.Height);
-                        p2 = new Vector2((float)(origin.X + origin.Y / slope), 0);
+                        p2 = new Vector2((float) (origin.X + origin.Y / slope), 0);
                     }
                     else
                     {
                         p1 = new Vector2(
                             target.Width,
-                            (float)(origin.Y + (origin.X - target.Width) * slope));
-                        p2 = new Vector2(0, (float)(origin.Y + origin.X * slope));
+                            (float) (origin.Y + (origin.X - target.Width) * slope));
+                        p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
                     }
 
                     using (var pen = target.CreatePen(2, brush))
@@ -151,6 +166,10 @@ namespace Ibinimator.Service
             }
 
             target.PopEffect();
+
+            fx.Dispose();
         }
+
+        public void SetGuide(Guide guide) { _guides[(guide.Id, guide.Type)] = guide; }
     }
 }

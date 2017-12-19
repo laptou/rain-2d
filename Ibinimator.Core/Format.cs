@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
@@ -72,15 +73,6 @@ namespace Ibinimator.Core
             };
         }
 
-        public override string ToString()
-        {
-            var f = this;
-
-            return $"{f.Range.Index} + {f.Range.Length}" +
-                   $" -> {f.Range.Index + f.Range.Length}: " +
-                   $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
-        }
-
         public Format Merge(Format newFormat)
         {
             return new Format
@@ -95,6 +87,15 @@ namespace Ibinimator.Core
                 Fill = newFormat.Fill ?? Fill,
                 Stroke = newFormat.Stroke ?? Stroke
             };
+        }
+
+        public override string ToString()
+        {
+            var f = this;
+
+            return $"{f.Range.Index} + {f.Range.Length}" +
+                   $" -> {f.Range.Index + f.Range.Length}: " +
+                   $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
         }
     }
 }

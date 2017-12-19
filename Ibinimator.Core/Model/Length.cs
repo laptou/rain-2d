@@ -39,14 +39,12 @@ namespace Ibinimator.Core.Model
             return new Length(length.Magnitude * Factors[target] / Factors[length.Unit], target);
         }
 
-        public bool Equals(Length other)
-        {
-            return Magnitude.Equals(other.Magnitude) && Unit == other.Unit;
-        }
+        public bool Equals(Length other) { return Magnitude.Equals(other.Magnitude) && Unit == other.Unit; }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
+
             return obj is Length length && Equals(length);
         }
 
@@ -61,13 +59,11 @@ namespace Ibinimator.Core.Model
         public static Length Parse(string input)
         {
             if (TryParse(input, out var length)) return length;
+
             throw new FormatException();
         }
 
-        public float To(LengthUnit target)
-        {
-            return Convert(this, target).Magnitude;
-        }
+        public float To(LengthUnit target) { return Convert(this, target).Magnitude; }
 
         public float To(LengthUnit target, float baseline)
         {
@@ -87,56 +83,50 @@ namespace Ibinimator.Core.Model
             switch (Unit)
             {
                 case LengthUnit.Number:
+
                     break;
                 case LengthUnit.Percent:
                     suffix = "%";
+
                     break;
                 case LengthUnit.Ems:
                     suffix = "em";
+
                     break;
                 case LengthUnit.Exs:
                     suffix = "ex";
+
                     break;
                 case LengthUnit.Pixels:
                     suffix = "px";
+
                     break;
                 case LengthUnit.Centimeter:
                     suffix = "cm";
+
                     break;
                 case LengthUnit.Millimeter:
                     suffix = "mm";
+
                     break;
                 case LengthUnit.Inches:
                     suffix = "in";
+
                     break;
                 case LengthUnit.Points:
                     suffix = "pt";
+
                     break;
                 case LengthUnit.Picas:
                     suffix = "pc";
+
                     break;
                 default:
+
                     throw new ArgumentOutOfRangeException();
             }
 
             return Magnitude + suffix;
-        }
-
-        public static bool operator ==(Length l1, Length l2)
-        {
-            var l3 = Convert(l2, l1.Unit);
-
-            return Math.Abs(l1.Magnitude - l3.Magnitude) < float.Epsilon;
-        }
-
-        public static implicit operator Length(ValueTuple<float, LengthUnit> v)
-        {
-            return new Length(v.Item1, v.Item2);
-        }
-
-        public static bool operator !=(Length l1, Length l2)
-        {
-            return !(l1 == l2);
         }
 
         public static bool TryParse(string input, out Length length)
@@ -155,42 +145,67 @@ namespace Ibinimator.Core.Model
                 {
                     case "em":
                         unit = LengthUnit.Ems;
+
                         break;
                     case "ex":
                         unit = LengthUnit.Exs;
+
                         break;
                     case "px":
                         unit = LengthUnit.Pixels;
+
                         break;
                     case "in":
                         unit = LengthUnit.Inches;
+
                         break;
                     case "cm":
                         unit = LengthUnit.Centimeter;
+
                         break;
                     case "mm":
                         unit = LengthUnit.Millimeter;
+
                         break;
                     case "pt":
                         unit = LengthUnit.Points;
+
                         break;
                     case "pc":
                         unit = LengthUnit.Picas;
+
                         break;
                     case "%":
                         unit = LengthUnit.Percent;
+
                         break;
                     case "":
                         unit = LengthUnit.Number;
+
                         break;
                     default: throw new FormatException("Invalid unit.");
                 }
 
                 length = new Length(float.Parse(match.Groups[1].Value), unit);
+
                 return true;
             }
 
             return false;
         }
+
+        public static bool operator ==(Length l1, Length l2)
+        {
+            var l3 = Convert(l2, l1.Unit);
+
+            return Math.Abs(l1.Magnitude - l3.Magnitude) < float.Epsilon;
+        }
+
+        public static implicit operator Length(ValueTuple<float, LengthUnit> v)
+        {
+            return new Length(v.Item1, v.Item2);
+        }
+
+        public static bool operator !=(Length l1, Length l2) { return !(l1 == l2); }
     }
 }

@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Svg;
+
 using SharpDX.Direct2D1;
+
 using Color = Ibinimator.Core.Model.Color;
 using Document = Ibinimator.Core.Document;
 using Ellipse = Ibinimator.Svg.Ellipse;
@@ -37,7 +40,7 @@ namespace Ibinimator.Service
             };
 
             foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(FromSvg))
-                    doc.Root.Add(child, 0);
+                doc.Root.Add(child, 0);
 
             return doc;
         }
@@ -51,8 +54,8 @@ namespace Ibinimator.Service
                 var group = new Group();
 
                 foreach (var child in containerElement
-                    .OfType<IGraphicalElement>()
-                    .Select(FromSvg))
+                                     .OfType<IGraphicalElement>()
+                                     .Select(FromSvg))
                     group.Add(child, 0);
 
                 layer = group;
@@ -72,6 +75,7 @@ namespace Ibinimator.Service
                             RadiusX = ellipse.RadiusX.To(LengthUnit.Pixels),
                             RadiusY = ellipse.RadiusY.To(LengthUnit.Pixels)
                         };
+
                         break;
                     case Line line:
                         var linePath = new Path();
@@ -87,6 +91,7 @@ namespace Ibinimator.Service
                                 line.Y2.To(LengthUnit.Pixels)));
 
                         shape = linePath;
+
                         break;
                     case Svg.Path path:
                         var pathPath = new Path();
@@ -94,6 +99,7 @@ namespace Ibinimator.Service
                         pathPath.Instructions.AddItems(path.Data);
 
                         shape = pathPath;
+
                         break;
                     case Polygon polygon:
                         var polygonPath = new Path();
@@ -105,6 +111,7 @@ namespace Ibinimator.Service
                         polygonPath.Instructions.Add(new ClosePathInstruction(false));
 
                         shape = polygonPath;
+
                         break;
                     case Polyline polyline:
                         var polylinePath = new Path();
@@ -116,6 +123,7 @@ namespace Ibinimator.Service
                         polylinePath.Instructions.Add(new ClosePathInstruction(true));
 
                         shape = polylinePath;
+
                         break;
                     case Rectangle rectangle:
                         shape = new Renderer.Model.Rectangle
@@ -125,6 +133,7 @@ namespace Ibinimator.Service
                             Width = rectangle.Width.To(LengthUnit.Pixels),
                             Height = rectangle.Height.To(LengthUnit.Pixels)
                         };
+
                         break;
                     case Circle circle:
                         shape = new Renderer.Model.Ellipse
@@ -134,6 +143,7 @@ namespace Ibinimator.Service
                             RadiusX = circle.Radius.To(LengthUnit.Pixels),
                             RadiusY = circle.Radius.To(LengthUnit.Pixels)
                         };
+
                         break;
                     case Text text:
                         shape = new Renderer.Model.Text
@@ -144,14 +154,16 @@ namespace Ibinimator.Service
                             FontSize = text.FontSize?.To(LengthUnit.Points) ?? 12,
                             Value = text.Text
                         };
+
                         break;
                     default:
+
                         throw new ArgumentOutOfRangeException(nameof(shapeElement));
                 }
 
                 var dashes = shapeElement
-                    .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(LengthUnit.Pixels))
-                    .ToArray();
+                            .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(LengthUnit.Pixels))
+                            .ToArray();
 
                 shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
                 shape.Stroke = FromSvg(
@@ -192,6 +204,7 @@ namespace Ibinimator.Service
                             color.Alpha * opacity));
 
                 case LinearGradient linearGradient:
+
                     return new GradientBrushInfo
                     {
                         Stops = new ObservableList<GradientStop>(
@@ -218,6 +231,7 @@ namespace Ibinimator.Service
                     };
 
                 case RadialGradient radialGradient:
+
                     return new GradientBrushInfo
                     {
                         Stops = new ObservableList<GradientStop>(
@@ -258,7 +272,7 @@ namespace Ibinimator.Service
 
             foreach (var child in doc.Root.SubLayers.Select(ToSvg))
                 svgDoc.Insert(0, child);
-            
+
             svgDoc.Viewbox = doc.Bounds;
 
             return svgDoc;
@@ -292,6 +306,7 @@ namespace Ibinimator.Service
                             RadiusX = new Length(ellipse.RadiusX, LengthUnit.Pixels),
                             RadiusY = new Length(ellipse.RadiusY, LengthUnit.Pixels)
                         };
+
                         break;
                     case Path path:
                         var pathPath = new Svg.Path();
@@ -299,6 +314,7 @@ namespace Ibinimator.Service
                         pathPath.Data = path.Instructions.ToArray();
 
                         shape = pathPath;
+
                         break;
                     case Renderer.Model.Rectangle rectangle:
                         shape = new Rectangle
@@ -308,11 +324,14 @@ namespace Ibinimator.Service
                             Width = new Length(rectangle.Width, LengthUnit.Pixels),
                             Height = new Length(rectangle.Height, LengthUnit.Pixels)
                         };
+
                         break;
                     case Renderer.Model.Text text:
                         shape = ToSvg(text);
+
                         break;
                     default:
+
                         throw new ArgumentOutOfRangeException(nameof(shapeLayer));
                 }
 
@@ -323,8 +342,8 @@ namespace Ibinimator.Service
                 shape.StrokeOpacity = shapeLayer.Stroke?.Brush?.Opacity ?? 0;
 
                 var dashes = shapeLayer
-                    .Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
-                    .ToArray();
+                            .Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
+                            .ToArray();
 
                 shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, LengthUnit.Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
@@ -405,24 +424,24 @@ namespace Ibinimator.Service
             if (brush is SolidColorBrushInfo solidBrush)
                 return new SolidColor(
                     new Svg.Color(
-                        solidBrush.Color.R,
-                        solidBrush.Color.G,
-                        solidBrush.Color.B,
-                        solidBrush.Color.A
-                    ));
+                            solidBrush.Color.R,
+                            solidBrush.Color.G,
+                            solidBrush.Color.B,
+                            solidBrush.Color.A
+                        ));
 
             return null;
         }
 
         private static IPenInfo FromSvg(
-            Paint paint,
-            float opacity,
-            float width,
-            float[] dashes,
-            float dashOffset,
-            LineCap lineCap,
+            Paint    paint,
+            float    opacity,
+            float    width,
+            float[]  dashes,
+            float    dashOffset,
+            LineCap  lineCap,
             LineJoin lineJoin,
-            float miterLimit)
+            float    miterLimit)
         {
             var stroke = new PenInfo
             {

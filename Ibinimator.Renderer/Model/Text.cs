@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 
@@ -63,7 +67,9 @@ namespace Ibinimator.Renderer.Model
             index = 0;
 
             do
+            {
                 index++;
+            }
             while (index < sorted.Length && sorted[index].Range.Index <= position);
 
             var format = sorted.ElementAtOrDefault(--index);
@@ -71,8 +77,8 @@ namespace Ibinimator.Renderer.Model
             if (format == null) return null;
 
             return format.Range.Index + format.Range.Length > position && position >= format.Range.Index ?
-                format :
-                null;
+                       format :
+                       null;
         }
 
         protected void RaiseFillChanged() { FillChanged?.Invoke(this, null); }
@@ -90,7 +96,6 @@ namespace Ibinimator.Renderer.Model
         }
 
         protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
-
 
         #region ITextLayer Members
 
@@ -144,7 +149,7 @@ namespace Ibinimator.Renderer.Model
             layout.FontStretch = FontStretch;
             layout.FontFamily = FontFamilyName;
             layout.InsertText(0, Value);
-            
+
             foreach (var format in Formats)
                 layout.SetFormat(format);
 
@@ -214,6 +219,7 @@ namespace Ibinimator.Renderer.Model
                     if (format == null)
                     {
                         current++;
+
                         continue;
                     }
 
@@ -224,8 +230,10 @@ namespace Ibinimator.Renderer.Model
                     var fend = fstart + format.Range.Length;
 
                     if (len <= 0 && fend <= end) Formats.Remove(format);
-                    else if (len <= 0 && fend > end) format.Range = (fstart, fend - fstart - range);
-                    else format.Range = (fstart, len);
+                    else if (len <= 0 && fend > end)
+                        format.Range = (fstart, fend - fstart - range);
+                    else
+                        format.Range = (fstart, len);
 
                     current++;
                 }
@@ -278,7 +286,7 @@ namespace Ibinimator.Renderer.Model
                 FontWeight = format.FontWeight ?? FontWeight;
                 Fill = format.Fill ?? Fill;
                 Stroke = format.Stroke ?? Stroke;
-                
+
                 // no return -- we still want it to override any conflicting properties
                 // set by other formats
             }

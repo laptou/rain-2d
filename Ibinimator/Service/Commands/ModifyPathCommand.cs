@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.Model;
 
@@ -10,11 +11,6 @@ namespace Ibinimator.Service.Commands
 {
     public sealed class ModifyPathCommand : LayerCommandBase<Path>
     {
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
-
         #region NodeOperation enum
 
         public enum NodeOperation
@@ -31,9 +27,9 @@ namespace Ibinimator.Service.Commands
         #endregion
 
         /// <summary>
-        /// This will create a command with <see cref="NodeOperation.Add"/> 
-        /// that inserts the nodes given 
-        /// by <paramref name="nodes"/>.
+        ///     This will create a command with <see cref="NodeOperation.Add" />
+        ///     that inserts the nodes given
+        ///     by <paramref name="nodes" />.
         /// </summary>
         /// <param name="id">The command ID.</param>
         /// <param name="target">The path to modify.</param>
@@ -53,10 +49,10 @@ namespace Ibinimator.Service.Commands
         }
 
         /// <summary>
-        /// This will create a command with <see cref="NodeOperation.Move"/>, 
-        /// <see cref="NodeOperation.MoveInHandle"/>, or <see cref="NodeOperation.MoveOutHandle"/>
-        /// that moves the handle for the nodes at the positions given by
-        /// <paramref name="indices"/> by <paramref name="delta"/>.
+        ///     This will create a command with <see cref="NodeOperation.Move" />,
+        ///     <see cref="NodeOperation.MoveInHandle" />, or <see cref="NodeOperation.MoveOutHandle" />
+        ///     that moves the handle for the nodes at the positions given by
+        ///     <paramref name="indices" /> by <paramref name="delta" />.
         /// </summary>
         /// <param name="id">The command ID.</param>
         /// <param name="target">The path to modify.</param>
@@ -80,10 +76,10 @@ namespace Ibinimator.Service.Commands
         }
 
         /// <summary>
-        /// This will create a command with <see cref="NodeOperation.Remove"/>, 
-        /// <see cref="NodeOperation.EndFigureClosed"/> or x that
-        /// removes the nodes at indices given by <paramref name="indices"/> or closes
-        /// the path at those nodes.
+        ///     This will create a command with <see cref="NodeOperation.Remove" />,
+        ///     <see cref="NodeOperation.EndFigureClosed" /> or x that
+        ///     removes the nodes at indices given by <paramref name="indices" /> or closes
+        ///     the path at those nodes.
         /// </summary>
         /// <param name="id">The command ID.</param>
         /// <param name="target">The path to modify.</param>
@@ -111,15 +107,20 @@ namespace Ibinimator.Service.Commands
                 switch (Operation)
                 {
                     case NodeOperation.Add:
+
                         return $"Added {Indices.Length} node(s)";
                     case NodeOperation.Remove:
+
                         return $"Removed {Indices.Length} node(s)";
                     case NodeOperation.Move:
+
                         return $"Moved {Indices.Length} node(s)";
                     case NodeOperation.MoveInHandle:
                     case NodeOperation.MoveOutHandle:
+
                         return "Modified node handle(s)";
                     default:
+
                         throw new ArgumentOutOfRangeException();
                 }
             }
@@ -133,9 +134,52 @@ namespace Ibinimator.Service.Commands
 
         public override void Do(IArtContext context) { Apply(context, Operation, Indices, Nodes, Delta); }
 
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is cannot be merged.");
+        }
+
+        public override void Undo(IArtContext context)
+        {
+            switch (Operation)
+            {
+                case NodeOperation.Add:
+                    Apply(context, NodeOperation.Remove, Indices, Nodes, Delta);
+
+                    break;
+                case NodeOperation.Remove:
+                    Apply(context, NodeOperation.Add, Indices, Nodes, Delta);
+
+                    break;
+                case NodeOperation.Move:
+                    Apply(context, NodeOperation.Move, Indices, Nodes, -Delta);
+
+                    break;
+                case NodeOperation.MoveInHandle:
+                    Apply(context, NodeOperation.MoveInHandle, Indices, Nodes, -Delta);
+
+                    break;
+                case NodeOperation.MoveOutHandle:
+                    Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
+
+                    break;
+                case NodeOperation.EndFigureClosed:
+                    Apply(context, NodeOperation.EndFigureOpen, Indices, Nodes, -Delta);
+
+                    break;
+                case NodeOperation.EndFigureOpen:
+                    Apply(context, NodeOperation.EndFigureClosed, Indices, Nodes, -Delta);
+
+                    break;
+                default:
+
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         private void Apply(
-            IArtContext context, NodeOperation operation, IReadOnlyList<int> indices,
-            IReadOnlyList<PathNode> targetNodes, Vector2 delta)
+            IArtContext             context, NodeOperation operation, IReadOnlyList<int> indices,
+            IReadOnlyList<PathNode> targetNodes, Vector2   delta)
         {
             var target = Targets[0];
             var geom = context.CacheManager.GetGeometry(target);
@@ -144,6 +188,7 @@ namespace Ibinimator.Service.Commands
             switch (operation)
             {
                 case NodeOperation.Add:
+
                     for (var i = 0; i < Indices.Length; i++)
                     {
                         if (nodes.Count == indices[i] + i)
@@ -177,6 +222,7 @@ namespace Ibinimator.Service.Commands
                                                         nodes[index - 1].OutgoingControl + delta,
                                                         node.FigureEnd);
                     }
+
                     break;
                 case NodeOperation.Move:
                     foreach (var index in indices)
@@ -185,6 +231,7 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].IncomingControl + delta,
                                                     nodes[index].OutgoingControl + delta,
                                                     nodes[index].FigureEnd);
+
                     break;
                 case NodeOperation.MoveInHandle:
                     foreach (var index in indices)
@@ -193,6 +240,7 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].IncomingControl + delta,
                                                     nodes[index].OutgoingControl,
                                                     nodes[index].FigureEnd);
+
                     break;
                 case NodeOperation.MoveOutHandle:
                     foreach (var index in indices)
@@ -201,6 +249,7 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].IncomingControl,
                                                     nodes[index].OutgoingControl + delta,
                                                     nodes[index].FigureEnd);
+
                     break;
                 case NodeOperation.EndFigureClosed:
                     Nodes = new PathNode[indices.Count];
@@ -217,6 +266,7 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].OutgoingControl,
                                                     PathFigureEnd.Closed);
                     }
+
                     break;
                 case NodeOperation.EndFigureOpen:
                     Nodes = new PathNode[indices.Count];
@@ -233,42 +283,14 @@ namespace Ibinimator.Service.Commands
                                                     nodes[index].OutgoingControl,
                                                     PathFigureEnd.Open);
                     }
+
                     break;
                 default:
+
                     throw new ArgumentOutOfRangeException();
             }
 
             target.Instructions.ReplaceRange(GeometryHelper.InstructionsFromNodes(nodes));
-        }
-
-        public override void Undo(IArtContext context)
-        {
-            switch (Operation)
-            {
-                case NodeOperation.Add:
-                    Apply(context, NodeOperation.Remove, Indices, Nodes, Delta);
-                    break;
-                case NodeOperation.Remove:
-                    Apply(context, NodeOperation.Add, Indices, Nodes, Delta);
-                    break;
-                case NodeOperation.Move:
-                    Apply(context, NodeOperation.Move, Indices, Nodes, -Delta);
-                    break;
-                case NodeOperation.MoveInHandle:
-                    Apply(context, NodeOperation.MoveInHandle, Indices, Nodes, -Delta);
-                    break;
-                case NodeOperation.MoveOutHandle:
-                    Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
-                    break;
-                case NodeOperation.EndFigureClosed:
-                    Apply(context, NodeOperation.EndFigureOpen, Indices, Nodes, -Delta);
-                    break;
-                case NodeOperation.EndFigureOpen:
-                    Apply(context, NodeOperation.EndFigureClosed, Indices, Nodes, -Delta);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Ibinimator.Core;
 using Ibinimator.Renderer.Model;
 
@@ -14,16 +15,16 @@ namespace Ibinimator.Service.Commands
             Layer = layer;
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is not stackable.");
-        }
-
         public override string Description => $"Added {Layer.DefaultName}";
 
         public ILayer Layer { get; }
 
         public override void Do(IArtContext artView) { Targets[0].Add(Layer as Layer); }
+
+        public override IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            throw new InvalidOperationException("This operation is not stackable.");
+        }
 
         public override void Undo(IArtContext artView) { Targets[0].Remove(Layer as Layer); }
     }

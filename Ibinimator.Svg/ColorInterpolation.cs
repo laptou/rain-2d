@@ -7,8 +7,8 @@ namespace Ibinimator.Svg
 {
     public enum ColorInterpolation
     {
-        Auto = 0,
-        sRGB = 1,
+        Auto      = 0,
+        sRGB      = 1,
         linearRGB = 2
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Svg
@@ -18,7 +19,7 @@ namespace Ibinimator.Svg
             if (Paint.TryParse(LazyGet(element, "fill", true), out var fill))
                 Fill = fill.Resolve(context);
 
-            if(float.TryParse(LazyGet(element, "fill-opacity", true), out var fillOpacity))
+            if (float.TryParse(LazyGet(element, "fill-opacity", true), out var fillOpacity))
                 FillOpacity = fillOpacity;
 
             if (Paint.TryParse(LazyGet(element, "stroke", true), out var stroke))

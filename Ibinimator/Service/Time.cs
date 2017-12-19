@@ -8,9 +8,8 @@ namespace Ibinimator.Service
 {
     public class Time
     {
-        public static long Now => DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-
         public static long DoubleClick => GetDoubleClickTime();
+        public static long Now         => DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         [DllImport("user32.dll")]
         private static extern uint GetDoubleClickTime();

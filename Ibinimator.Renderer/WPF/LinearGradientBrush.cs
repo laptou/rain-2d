@@ -5,8 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+
 using GradientStop = Ibinimator.Core.GradientStop;
 
 namespace Ibinimator.Renderer.WPF
@@ -15,14 +17,14 @@ namespace Ibinimator.Renderer.WPF
     {
         public LinearGradientBrush(
             IEnumerable<GradientStop> stops,
-            Point start,
-            Point end) : base(stops)
+            Point                     start,
+            Point                     end) : base(stops)
         {
             WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end)
             {
                 MappingMode = Space == GradientSpace.Absolute ?
-                    BrushMappingMode.Absolute :
-                    BrushMappingMode.RelativeToBoundingBox
+                                  BrushMappingMode.Absolute :
+                                  BrushMappingMode.RelativeToBoundingBox
             };
         }
 
@@ -30,11 +32,11 @@ namespace Ibinimator.Renderer.WPF
         {
             get => (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
             set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
-                (GradientSpreadMethod) value;
+                   (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(
-            object sender,
+            object                           sender,
             NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             ((System.Windows.Media.LinearGradientBrush) WpfBrush).GradientStops = ConvertStops();

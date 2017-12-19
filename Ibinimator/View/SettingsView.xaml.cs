@@ -7,13 +7,10 @@ using System.Windows;
 namespace Ibinimator.View
 {
     /// <summary>
-    /// Interaction logic for SettingsView.xaml
+    ///     Interaction logic for SettingsView.xaml
     /// </summary>
     public partial class SettingsView : Window
     {
-        public SettingsView()
-        {
-            InitializeComponent();
-        }
+        public SettingsView() { InitializeComponent(); }
     }
 }

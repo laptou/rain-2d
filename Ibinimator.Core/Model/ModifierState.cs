@@ -21,13 +21,14 @@ namespace Ibinimator.Core.Model
             XMouse2 = xMouse2;
         }
 
-        public bool Control { get; }
-        public bool Shift { get; }
         public bool Alt { get; }
 
-        public bool LeftMouse { get; }
+        public bool Control { get; }
+
+        public bool LeftMouse   { get; }
         public bool MiddleMouse { get; }
-        public bool RightMouse { get; }
+        public bool RightMouse  { get; }
+        public bool Shift       { get; }
 
         public bool XMouse1 { get; }
         public bool XMouse2 { get; }

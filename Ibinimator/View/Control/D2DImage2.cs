@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -11,11 +9,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
+
 using Ibinimator.Core;
 using Ibinimator.Native;
 using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Service;
+
 using DX = SharpDX;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
@@ -29,22 +28,23 @@ namespace Ibinimator.View.Control
         private readonly AutoResetEvent _eventFlag = new AutoResetEvent(false);
 
         private readonly Queue<InputEvent> _events = new Queue<InputEvent>();
-        private bool _eventLoop;
-        private Thread _evtThread;
+
+        private D2D.Factory _d2dFactory;
+        private DW.Factory  _dwFactory;
+        private bool        _eventLoop;
+        private Thread      _evtThread;
 
         // Win32 stuff
         private IntPtr _host;
+        private bool   _invalidated = true;
 
         private IntPtr _parent;
-        private bool _invalidated = true;
+
         // ReSharper disable once NotAccessedField.Local
         private WndProc _proc;
 
         // Direct2D stuff
         private D2D.WindowRenderTarget _renderTarget;
-
-        private D2D.Factory _d2dFactory;
-        private DW.Factory _dwFactory;
 
         protected D2DImage2()
         {
@@ -65,7 +65,7 @@ namespace Ibinimator.View.Control
         {
             get => _renderTarget?.AntialiasMode == D2D.AntialiasMode.Aliased;
             set => _renderTarget.AntialiasMode =
-                value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
+                       value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
         public RenderContext RenderContext { get; set; }
@@ -111,6 +111,7 @@ namespace Ibinimator.View.Control
             if (_host == IntPtr.Zero)
             {
                 var code = Marshal.GetLastWin32Error();
+
                 throw new Win32Exception(code);
             }
 
@@ -254,11 +255,13 @@ namespace Ibinimator.View.Control
 
                     _events.Enqueue(scrollEvt);
                     _eventFlag.Set();
+
                     break;
 
                 case WindowMessage.MouseMove:
                 case WindowMessage.LeftButtonDown:
                 case WindowMessage.LeftButtonUp:
+
                     // set focus to this if the mouse enters
                     NativeHelper.SetFocus(hwnd);
 
@@ -271,12 +274,15 @@ namespace Ibinimator.View.Control
                     {
                         case WindowMessage.MouseMove:
                             clickType = InputEventType.MouseMove;
+
                             break;
                         case WindowMessage.LeftButtonDown:
                             clickType = InputEventType.MouseDown;
+
                             break;
                         case WindowMessage.LeftButtonUp:
                             clickType = InputEventType.MouseUp;
+
                             break;
                     }
 
@@ -285,14 +291,21 @@ namespace Ibinimator.View.Control
                                        new Vector2(x, y),
                                        NativeHelper.GetModifierState(wParam)));
                     _eventFlag.Set();
+
                     break;
                 case WindowMessage.MouseLeave:
+
                     // lose focus when mouse isn't over this
                     NativeHelper.SetFocus(_parent);
+
                     break;
                 case WindowMessage.KeyDown:
                 case WindowMessage.SysKeyDown:
+                    var repeat = (int) lParam & (1 << 30);
                     var key = KeyInterop.KeyFromVirtualKey((int) wParam);
+
+                    if (repeat != 0) goto default;
+
                     _events.Enqueue(
                         new InputEvent(InputEventType.KeyDown,
                                        key, NativeHelper.GetModifierState()));
@@ -320,14 +333,18 @@ namespace Ibinimator.View.Control
 
                     _events.Enqueue(new InputEvent(InputEventType.TextInput, str));
                     _eventFlag.Set();
+
                     break;
                 case WindowMessage.SetFocus:
                     NativeHelper.CreateCaret(hwnd, IntPtr.Zero, 0, 0);
+
                     break;
                 case WindowMessage.KillFocus:
                     NativeHelper.DestroyCaret();
+
                     break;
                 default:
+
                     return NativeHelper.DefWindowProc(hwnd, msg, wParam, lParam);
             }
 

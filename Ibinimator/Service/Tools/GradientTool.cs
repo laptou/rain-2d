@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
@@ -17,7 +17,9 @@ namespace Ibinimator.Service.Tools
     public class GradientTool : SelectionToolBase
     {
         private readonly ISet<int> _selection = new HashSet<int>();
+
         private int? _handle;
+
         //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
 
@@ -38,36 +40,10 @@ namespace Ibinimator.Service.Tools
             "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
 
-        private void Move(IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
-        {
-            Context.HistoryManager.Merge(
-                new ModifyGradientCommand(
-                        Context.HistoryManager.Position + 1,
-                        delta,
-                        indices,
-                        SelectedBrush
-                    ), Time.DoubleClick);
-        }
-
-        private void Remove(params int[] indices)
-        {
-            Context.HistoryManager.Merge(
-                new ModifyGradientCommand(
-                        Context.HistoryManager.Position + 1,
-                        indices,
-                        ModifyGradientCommand.GradientOperation.RemoveStop,
-                        SelectedBrush
-                    ), Time.DoubleClick);
-        }
-
-        #region ITool Members
-
         public override void ApplyFill(IBrushInfo brush)
         {
             if (brush is SolidColorBrushInfo solid)
-            {
                 foreach (var handle in _selection)
-                {
                     Context.HistoryManager.Merge(
                         new ModifyGradientCommand(
                                 Context.HistoryManager.Position + 1,
@@ -75,8 +51,6 @@ namespace Ibinimator.Service.Tools
                                 new[] {handle},
                                 SelectedBrush
                             ), Time.DoubleClick);
-                }
-            }
             else throw new ArgumentException(nameof(brush));
         }
 
@@ -101,14 +75,17 @@ namespace Ibinimator.Service.Tools
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
                     _selection.Clear();
+
                     break;
 
                 case Key.Delete:
                     Remove(_selection.ToArray());
                     Context.InvalidateSurface();
+
                     break;
 
                 default:
+
                     return base.KeyDown(key, modifiers);
             }
 
@@ -148,6 +125,7 @@ namespace Ibinimator.Service.Tools
                     {
                         _handle = 0;
                         target = (stop, index);
+
                         break;
                     }
 
@@ -215,6 +193,7 @@ namespace Ibinimator.Service.Tools
 
                         Move(_selection.ToArray(), newOffset - stop.Offset,
                              ModifyGradientCommand.GradientOperation.ChangeOffset);
+
                         break;
                 }
 
@@ -243,6 +222,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedBrush == null || _selection.Count == 0) return null;
 
             var stop = SelectedBrush.Stops[_selection.Last()];
+
             return new SolidColorBrushInfo(stop.Color);
         }
 
@@ -251,7 +231,7 @@ namespace Ibinimator.Service.Tools
         public override void Render(
             RenderContext target,
             ICacheManager cacheManager,
-            IViewManager view)
+            IViewManager  view)
         {
             if (SelectedBrush == null)
                 return;
@@ -304,6 +284,26 @@ namespace Ibinimator.Service.Tools
 
         public override bool TextInput(string text) { return false; }
 
-        #endregion
+        private void Move(IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
+        {
+            Context.HistoryManager.Merge(
+                new ModifyGradientCommand(
+                        Context.HistoryManager.Position + 1,
+                        delta,
+                        indices,
+                        SelectedBrush
+                    ), Time.DoubleClick);
+        }
+
+        private void Remove(params int[] indices)
+        {
+            Context.HistoryManager.Merge(
+                new ModifyGradientCommand(
+                        Context.HistoryManager.Position + 1,
+                        indices,
+                        ModifyGradientCommand.GradientOperation.RemoveStop,
+                        SelectedBrush
+                    ), Time.DoubleClick);
+        }
     }
 }
