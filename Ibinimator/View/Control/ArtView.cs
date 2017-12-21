@@ -15,8 +15,6 @@ namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage2
     {
-        private readonly ISet<Key> _keys = new HashSet<Key>();
-
         private Vector2 _lastPosition;
 
         public ArtView()
@@ -71,12 +69,15 @@ namespace Ibinimator.View.Control
                     if (evt.State.Shift)
                         goto case InputEventType.ScrollHorizontal;
 
-                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom);
+                    if (evt.State.Control)
+                        ac.ViewManager.Zoom *= (float)Math.Pow(10, evt.ScrollDelta / 100) / 10f;
+
+                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom / 6);
                     ac.InvalidateSurface();
 
                     break;
                 case InputEventType.ScrollHorizontal:
-                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom, 0);
+                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom / 6, 0);
                     ac.InvalidateSurface();
 
                     break;

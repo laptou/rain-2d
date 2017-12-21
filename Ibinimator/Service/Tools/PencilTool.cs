@@ -88,8 +88,7 @@ namespace Ibinimator.Service.Tools
 
                 var path = new Path
                 {
-                    Fill = Context.BrushManager.Fill,
-                    Stroke = Context.BrushManager.Stroke,
+                    Fill = Context.BrushManager.BrushHistory.LastOrDefault(),
                     Instructions =
                     {
                         new MovePathInstruction(_start.Value),

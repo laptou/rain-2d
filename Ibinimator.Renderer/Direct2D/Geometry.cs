@@ -37,7 +37,15 @@ namespace Ibinimator.Renderer.Direct2D
             _geom = new D2D1.GeometryGroup(_target.Factory, D2D1.FillMode.Winding, nativeGeometries);
         }
 
-        private D2D1.PathGeometry Path => _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+        private D2D1.PathGeometry Path
+        {
+            get
+            {
+                if (_geom?.IsDisposed == true) return null;
+
+                return _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+            }
+        }
 
         public override bool Equals(object obj) { return Equals(obj as Geometry); }
 
@@ -220,7 +228,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             Pathify();
 
-            return Read(Path);
+            return Path != null ? Read(Path) : Enumerable.Empty<PathInstruction>();
         }
 
         public void Read(IGeometrySink sink) { Load(sink, Read()); }

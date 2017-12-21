@@ -7,6 +7,8 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ibinimator.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <LangVersion>latest</LangVersion>

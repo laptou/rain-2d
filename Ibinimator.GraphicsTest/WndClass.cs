@@ -9,16 +9,15 @@ namespace Ibinimator.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct WndClass
     {
+        public                                        uint    style;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public WndProc lpfnWndProc;
         public                                        int     cbClsExtra;
         public                                        int     cbWndExtra;
-        public                                        IntPtr  hbrBackground;
-        public                                        IntPtr  hCursor;
-        public                                        IntPtr  hIcon;
         public                                        IntPtr  hInstance;
-        [MarshalAs(UnmanagedType.FunctionPtr)] public WndProc lpfnWndProc;
-
-        [MarshalAs(UnmanagedType.LPTStr)] public string lpszClassName;
-        [MarshalAs(UnmanagedType.LPTStr)] public string lpszMenuName;
-        public                                   uint   style;
+        public                                        IntPtr  hIcon;
+        public                                        IntPtr  hCursor;
+        public                                        IntPtr  hbrBackground;
+        [MarshalAs(UnmanagedType.LPTStr)] public      string  lpszMenuName;
+        [MarshalAs(UnmanagedType.LPTStr)] public      string  lpszClassName;
     }
 }

@@ -44,15 +44,13 @@ namespace Ibinimator.Service
             var (oldFill, oldStroke) = (Fill, Stroke);
             Fill = Context.ToolManager.Tool.ProvideFill();
             Stroke = Context.ToolManager.Tool.ProvideStroke();
+            
+            var top = _brushHistory.Count == 0 ? null : _brushHistory.Peek();
 
-            if (_brushHistory.Count == 0) return;
-
-            var top = _brushHistory.Peek();
-
-            if (top != oldFill)
+            if (oldFill != null && top != oldFill)
                 _brushHistory.Push(Fill);
 
-            if (top != oldStroke.Brush)
+            if (oldStroke?.Brush != null && top != oldStroke.Brush)
                 _brushHistory.Push(oldStroke.Brush);
         }
 

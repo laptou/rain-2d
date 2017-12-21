@@ -151,12 +151,15 @@ namespace Ibinimator.Renderer.Model
 
             lock (this)
             {
-                target.Transform(Transform);
+                // grabbing the value here avoids jitter if the transform is changed during the rendering
+                var transform = Transform;
+
+                target.Transform(transform);
 
                 foreach (var layer in SubLayers.Reverse())
                     layer.Render(target, cache, view);
 
-                target.Transform(MathUtils.Invert(Transform));
+                target.Transform(MathUtils.Invert(transform));
             }
         }
 

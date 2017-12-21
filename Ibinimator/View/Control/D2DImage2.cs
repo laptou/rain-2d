@@ -88,6 +88,7 @@ namespace Ibinimator.View.Control
         {
             var wndClass = new WndClass
             {
+                style = 3, // CS_VREDRAW | CS_HREDRAW
                 lpszClassName = "d2d",
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 lpfnWndProc = _proc = WndProc
@@ -95,9 +96,17 @@ namespace Ibinimator.View.Control
 
             var cls = NativeHelper.RegisterClass(ref wndClass);
 
+            if (cls == 0)
+            {
+                var code = Marshal.GetLastWin32Error();
+
+                throw new Win32Exception(code);
+            }
+
             _parent = hwndParent.Handle;
             _host = NativeHelper.CreateWindowEx(
-                0, cls, "",
+                0,
+                cls, "",
                 WindowStyles.Child |
                 WindowStyles.Visible,
                 0, 0,
@@ -116,6 +125,8 @@ namespace Ibinimator.View.Control
             }
 
             Initialize();
+
+            NativeHelper.UpdateWindow(_host);
 
             return new HandleRef(this, _host);
         }
@@ -343,6 +354,9 @@ namespace Ibinimator.View.Control
                     NativeHelper.DestroyCaret();
 
                     break;
+                case WindowMessage.Size:
+                    InvalidateSurface();
+                    goto default;
                 default:
 
                     return NativeHelper.DefWindowProc(hwnd, msg, wParam, lParam);

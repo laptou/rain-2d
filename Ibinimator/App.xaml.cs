@@ -33,6 +33,8 @@ namespace Ibinimator
     {
         public App()
         {
+
+
             InitializeComponent();
 
             SettingsManager.Load();

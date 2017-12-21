@@ -21,7 +21,6 @@ namespace Ibinimator.Core
 
         public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
 
-        [XmlIgnore]
         public string Path
         {
             get => Get<string>();

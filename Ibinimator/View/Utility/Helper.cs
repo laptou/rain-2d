@@ -8,27 +8,20 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
+using FPMO = System.Windows.FrameworkPropertyMetadataOptions;
+
 namespace Ibinimator.View.Utility
 {
     public class Helper
     {
         public static readonly DependencyProperty AccentProperty =
-            DependencyProperty.RegisterAttached("Accent",
-                                                typeof(Color),
-                                                typeof(Helper),
-                                                new FrameworkPropertyMetadata(
-                                                    Color.FromRgb(0, 0, 0),
-                                                    FrameworkPropertyMetadataOptions
-                                                       .Inherits |
-                                                    FrameworkPropertyMetadataOptions
-                                                       .AffectsRender));
-
-        public static readonly DependencyPropertyKey AccentBrushPropertyKey =
-            DependencyProperty.RegisterAttachedReadOnly("AccentBrush",
-                                                        typeof(SolidColorBrush),
-                                                        typeof(Helper),
-                                                        new PropertyMetadata(
-                                                            default(SolidColorBrush)));
+            DependencyProperty.RegisterAttached(
+                "Accent",
+                typeof(Color),
+                typeof(Helper),
+                new FrameworkPropertyMetadata(
+                    Color.FromRgb(255, 255, 255),
+                    FPMO.Inherits | FPMO.AffectsRender));
 
         public static readonly DependencyProperty InputBindingSourceProperty =
             DependencyProperty.RegisterAttached(
@@ -37,11 +30,18 @@ namespace Ibinimator.View.Utility
                 typeof(Helper),
                 new PropertyMetadata(InputBindingsChanged));
 
+        public static readonly DependencyProperty BackgroundProperty =
+            DependencyProperty.RegisterAttached(
+                "Background", typeof(Color), typeof(Helper),
+                new FrameworkPropertyMetadata(
+                    Color.FromRgb(255, 255, 255),
+                    FPMO.Inherits | FPMO.AffectsRender));
+
         public static Color GetAccent(DependencyObject obj) { return (Color) obj.GetValue(AccentProperty); }
 
-        public static SolidColorBrush GetAccentBrush(DependencyObject obj)
+        public static Color GetBackground(DependencyObject element)
         {
-            return new SolidColorBrush(GetAccent(obj));
+            return (Color) element.GetValue(BackgroundProperty);
         }
 
         public static IEnumerable<InputBinding>
@@ -56,17 +56,21 @@ namespace Ibinimator.View.Utility
             obj.SetValue(AccentProperty, value);
         }
 
-        public static void SetAccentBrush(DependencyObject obj, SolidColorBrush value) { }
+        public static void SetBackground(DependencyObject element, Color value)
+        {
+            element.SetValue(BackgroundProperty, value);
+        }
+
 
         public static void SetInputBindingSource(
-            DependencyObject          element,
+            DependencyObject element,
             IEnumerable<InputBinding> value)
         {
             element.SetValue(InputBindingSourceProperty, value);
         }
 
         private static void InputBindingsChanged(
-            DependencyObject                   d,
+            DependencyObject d,
             DependencyPropertyChangedEventArgs e)
         {
             var value = (IEnumerable<InputBinding>) e.NewValue;
@@ -86,9 +90,9 @@ namespace Ibinimator.View.Utility
         #region IValueConverter Members
 
         public object Convert(
-            object      value,
-            Type        targetType,
-            object      parameter,
+            object value,
+            Type targetType,
+            object parameter,
             CultureInfo culture)
         {
             var fraction = System.Convert.ToDecimal(value);
@@ -97,9 +101,9 @@ namespace Ibinimator.View.Utility
         }
 
         public object ConvertBack(
-            object      value,
-            Type        targetType,
-            object      parameter,
+            object value,
+            Type targetType,
+            object parameter,
             CultureInfo culture)
         {
             decimal.TryParse(value.ToString().Trim(culture.NumberFormat.PercentSymbol[0]),

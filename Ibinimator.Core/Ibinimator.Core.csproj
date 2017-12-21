@@ -10,6 +10,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>7.2</LangVersion>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ibinimator.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />

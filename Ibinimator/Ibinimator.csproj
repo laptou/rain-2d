@@ -69,7 +69,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -96,10 +96,13 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>ibinimator.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FastMember.1.1.0\lib\net40\FastMember.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Expression.Blend.Sdk.WPF.1.0.1\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
       <Private>True</Private>
@@ -160,10 +163,17 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Native\AccentPolicy.cs" />
+    <Compile Include="Native\AccentState.cs" />
     <Compile Include="Native\NativeHelper.cs" />
+    <Compile Include="Native\NativeRect.cs" />
+    <Compile Include="Native\PaintStruct.cs" />
+    <Compile Include="Native\WindowCompositionAttribute.cs" />
+    <Compile Include="Native\WindowCompositionAttributeData.cs" />
     <Compile Include="Native\WindowMessage.cs" />
-    <Compile Include="Native\WindowStyle.cs" />
+    <Compile Include="Native\WindowStyles.cs" />
     <Compile Include="Native\WndClass.cs" />
+    <Compile Include="Native\WndProc.cs" />
     <Compile Include="Resources\EditorColors.cs" />
     <Compile Include="Service\BrushManager.cs" />
     <Compile Include="Service\Commands\AddLayerCommand.cs" />
@@ -190,6 +200,7 @@
     <Compile Include="Service\Tools\GradientTool.cs" />
     <Compile Include="Service\Tools\NodeTool.cs" />
     <Compile Include="Service\Tools\SelectionToolBase.cs" />
+    <Compile Include="Utility\ObjectHelper.cs" />
     <Compile Include="Utility\ScreenExtensions.cs" />
     <Compile Include="View\Command\CommandManager.cs" />
     <Compile Include="View\Command\FileCommands.cs" />
@@ -225,6 +236,9 @@
     </Compile>
     <Compile Include="View\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SplashScreen.xaml.cs">
+      <DependentUpon>SplashScreen.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Utility\DesignerResourceDictionary.cs" />
     <Compile Include="View\Utility\InversionConverter.cs" />
@@ -275,6 +289,7 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="ibinimator.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -337,6 +352,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SplashScreen.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -477,16 +496,6 @@
     <Resource Include="Resources\Icon\tool-zoom-dark.svg" />
     <Resource Include="Resources\Icon\tool-zoom-light.svg" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="FodyWeavers.xml" />
-  </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Fody.2.2.1.0\build\net452\Fody.targets" Condition="Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.2.1.0\build\net452\Fody.targets'))" />
-  </Target>
 </Project>

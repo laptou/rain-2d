@@ -254,7 +254,10 @@ namespace Ibinimator.Renderer.Model
         {
             if (!Visible) return;
 
-            target.Transform(Transform);
+            // grabbing the value here avoids jitter if the transform is changed during the rendering
+            var transform = Transform;
+
+            target.Transform(transform);
 
             var layout = cache.GetTextLayout(this);
 
@@ -271,7 +274,7 @@ namespace Ibinimator.Renderer.Model
                     target.DrawGeometry(geom, pen, pen.Width * view.Zoom);
             }
 
-            target.Transform(MathUtils.Invert(Transform));
+            target.Transform(MathUtils.Invert(transform));
         }
 
         public void SetFormat(Format format)
