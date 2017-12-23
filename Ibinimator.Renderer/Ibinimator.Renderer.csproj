@@ -96,9 +96,13 @@
     <Compile Include="Direct2D\Direct2DRenderContext.cs" />
     <Compile Include="Direct2D\DirectWriteExtensions.cs" />
     <Compile Include="Direct2D\DirectWriteTextLayout.cs" />
+    <Compile Include="Direct2D\DropShadowEffect.cs" />
+    <Compile Include="Direct2D\Effect.cs" />
     <Compile Include="Direct2D\Geometry.cs" />
+    <Compile Include="Direct2D\GlowEffect.cs" />
     <Compile Include="Direct2D\GradientBrush.cs" />
     <Compile Include="Direct2D\LinearGradientBrush.cs" />
+    <Compile Include="Direct2D\NativeHelper.cs" />
     <Compile Include="Direct2D\NullGeometry.cs" />
     <Compile Include="Direct2D\Pen.cs" />
     <Compile Include="Direct2D\RadialGradientBrush.cs" />

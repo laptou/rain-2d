@@ -74,7 +74,7 @@ namespace Ibinimator.Service.Commands
                 _transformations[target] = mat;
             }
 
-            artContext.InvalidateSurface();
+            artContext.InvalidateRender();
         }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)
@@ -90,7 +90,7 @@ namespace Ibinimator.Service.Commands
                 target.ApplyTransform(global: mat);
             }
 
-            artContext.InvalidateSurface();
+            artContext.InvalidateRender();
         }
     }
 

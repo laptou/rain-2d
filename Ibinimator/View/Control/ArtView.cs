@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Utility;
 using Ibinimator.Native;
 
@@ -18,7 +19,7 @@ namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage2
     {
-        private Vector2 _lastPosition;
+        private Vector2                    _lastPosition;
         private Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
 
         public ArtView()
@@ -48,7 +49,7 @@ namespace Ibinimator.View.Control
             _cursors["cursor-resize-nwse"] = LoadCursor("cursor-resize-nwse");
             _cursors["cursor-resize-nesw"] = LoadCursor("cursor-resize-nesw");
             _cursors["cursor-rotate"] = LoadCursor("cursor-rotate");
-            _cursors["default"] = CursorHelper.LoadCursor(lpCursorName: (IntPtr)32512);
+            _cursors["default"] = CursorHelper.LoadCursor(lpCursorName: (IntPtr) 32512);
         }
 
         private IntPtr LoadCursor(string name)
@@ -58,7 +59,7 @@ namespace Ibinimator.View.Control
 
             if (WindowHelper.GetDpiForWindow(Handle) > 96)
                 uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
-            
+
             return CursorHelper.CreateCursor(uri, MathUtils.PiOverFour);
         }
 
@@ -76,65 +77,63 @@ namespace Ibinimator.View.Control
                     break;
 
                 default:
+
                     return base.OnMessage(hWnd, msg, wParam, lParam);
             }
 
             return IntPtr.Zero;
         }
 
-        protected override void OnInput(InputEvent evt)
+        protected override void OnInput(IInputEvent evt)
         {
             var ac = ArtContext;
-            var pos = ac.ViewManager.ToArtSpace(evt.Position);
 
-            switch (evt.Type)
+            switch (evt)
             {
-                case InputEventType.MouseDown:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseDown(pos, evt.State);
+                case ClickEvent clickEvent:
+                    _lastPosition = clickEvent.Position;
+
+                    if (clickEvent.State)
+                        ac.RaiseMouseDown(clickEvent);
+                    else
+                        ac.RaiseMouseUp(clickEvent);
 
                     break;
-                case InputEventType.MouseUp:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseUp(pos, evt.State);
+                case PointerEvent pointerEvent:
+                    ac.RaiseMouseMove(pointerEvent);
 
                     break;
-                case InputEventType.MouseMove:
-                    _lastPosition = evt.Position;
-                    ac.ToolManager.MouseMove(pos, evt.State);
+                case TextEvent textEvent:
+                    ac.RaiseText(textEvent);
 
                     break;
-                case InputEventType.TextInput:
-                    ac.ToolManager.TextInput(evt.Text);
+                case KeyboardEvent keyEvent:
+                    if (keyEvent.State)
+                        ac.RaiseKeyDown(keyEvent);
+                    else
+                        ac.RaiseKeyUp(keyEvent);
 
                     break;
-                case InputEventType.KeyUp:
-                    ac.ToolManager.KeyUp(evt.Key, evt.State);
+                case FocusEvent focusEvent:
+                    if (focusEvent.State)
+                        ac.RaiseGainedFocus(focusEvent);
+                    else
+                        ac.RaiseLostFocus(focusEvent);
 
                     break;
-                case InputEventType.KeyDown:
-                    ac.ToolManager.KeyDown(evt.Key, evt.State);
+                case ScrollEvent scrollEvent:
+                    if (scrollEvent.ModifierState.Control)
+                        ac.ViewManager.Zoom *= (float) Math.Pow(10, scrollEvent.Delta / 100) / 10f;
 
+                    if (scrollEvent.ModifierState.Shift ||
+                        scrollEvent.Direction == ScrollDirection.Horizontal)
+                        ac.ViewManager.Pan += new Vector2(scrollEvent.Delta * ac.ViewManager.Zoom / 6, 0);
+                    else
+                        ac.ViewManager.Pan += new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
+
+                    ac.InvalidateRender();
                     break;
-                case InputEventType.ScrollVertical:
-                    if (evt.State.Shift)
-                        goto case InputEventType.ScrollHorizontal;
-
-                    if (evt.State.Control)
-                        ac.ViewManager.Zoom *= (float)Math.Pow(10, evt.ScrollDelta / 100) / 10f;
-
-                    ac.ViewManager.Pan += new Vector2(0, evt.ScrollDelta * ac.ViewManager.Zoom / 6);
-                    ac.InvalidateSurface();
-
-                    break;
-                case InputEventType.ScrollHorizontal:
-                    ac.ViewManager.Pan += new Vector2(evt.ScrollDelta * ac.ViewManager.Zoom / 6, 0);
-                    ac.InvalidateSurface();
-
-                    break;
-                default:
-
-                    throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -155,28 +154,11 @@ namespace Ibinimator.View.Control
             if (ac.ToolManager?.Tool == null) return;
 
             ac.ToolManager.Tool.Render(target, ac.CacheManager, ac.ViewManager);
-
-            //if (ac.ToolManager.Tool.Cursor == null)
-            //{
-            //    Cursor = Cursors.Arrow;
-
-            //    return;
-            //}
-
-            //Cursor = Cursors.None;
-
-            //target.Transform(
-            //    Matrix3x2.CreateRotation(ac.ToolManager.Tool.CursorRotate,
-            //                             new Vector2(8)) *
-            //    Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)),
-            //    true);
-
-            //target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.Cursor));
         }
 
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
         {
-            ArtContext.CacheManager?.ResetAll();
+            ArtContext.CacheManager?.ResetResources();
             ArtContext.CacheManager?.LoadBrushes(RenderContext);
             ArtContext.CacheManager?.LoadBitmaps(RenderContext);
 

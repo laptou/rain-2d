@@ -21,7 +21,7 @@ namespace Ibinimator.Renderer.WPF
         private          DrawingContext       _ctx;
 
         public override float Height { get; }
-        public override float Width  { get; }
+        public override float Width { get; }
 
         public override void Begin(object ctx)
         {
@@ -37,10 +37,10 @@ namespace Ibinimator.Renderer.WPF
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float                     startX,
-            float                     startY,
-            float                     endX,
-            float                     endY)
+            float startX,
+            float startY,
+            float endX,
+            float endY)
         {
             return new LinearGradientBrush(
                 stops,
@@ -50,12 +50,12 @@ namespace Ibinimator.Renderer.WPF
 
         public override IRadialGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float                     centerX,
-            float                     centerY,
-            float                     radiusX,
-            float                     radiusY,
-            float                     focusX,
-            float                     focusY)
+            float centerX,
+            float centerY,
+            float radiusX,
+            float radiusY,
+            float focusX,
+            float focusY)
         {
             return new RadialGradientBrush(
                 stops,
@@ -87,21 +87,21 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override IPen CreatePen(
-            float              width,
-            IBrush             brush,
+            float width,
+            IBrush brush,
             IEnumerable<float> dashes)
         {
             return new Pen(width, brush as Brush, dashes);
         }
 
         public override IPen CreatePen(
-            float              width,
-            IBrush             brush,
+            float width,
+            IBrush brush,
             IEnumerable<float> dashes,
-            float              dashOffset,
-            LineCap            lineCap,
-            LineJoin           lineJoin,
-            float              miterLimit)
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit)
         {
             return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit);
         }
@@ -156,7 +156,7 @@ namespace Ibinimator.Renderer.WPF
             float top,
             float width,
             float height,
-            IPen  pen)
+            IPen pen)
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left,
@@ -177,10 +177,10 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override void FillEllipse(
-            float  cx,
-            float  cy,
-            float  rx,
-            float  ry,
+            float cx,
+            float cy,
+            float rx,
+            float ry,
             IBrush brush)
         {
             _commandQueue.Enqueue(
@@ -205,10 +205,10 @@ namespace Ibinimator.Renderer.WPF
         }
 
         public override void FillRectangle(
-            float  left,
-            float  top,
-            float  width,
-            float  height,
+            float left,
+            float top,
+            float width,
+            float height,
             IBrush brush)
         {
             _commandQueue.Enqueue(
@@ -217,17 +217,14 @@ namespace Ibinimator.Renderer.WPF
 
         public override float GetDpi() { return 0; }
 
-        public override void HideCursor()                   { throw new NotImplementedException(); }
-        public override void PopEffect()                    { throw new NotImplementedException(); }
-        public override void PushEffect(IEffect   effect)   { throw new NotImplementedException(); }
-        public override void SetCaretPosition(int x, int y) { throw new NotImplementedException(); }
-        public override void ShowCaret()                    { throw new NotImplementedException(); }
+        public override void PopEffect() { throw new NotImplementedException(); }
+
+        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             _commandQueue.Enqueue(new TransformRenderCommand(transform, absolute));
         }
-
 
         protected void Apply(RenderCommand command)
         {

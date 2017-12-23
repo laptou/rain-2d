@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Core.Model
+namespace Ibinimator.Core.Input
 {
     public struct ModifierState
     {
@@ -25,10 +25,10 @@ namespace Ibinimator.Core.Model
 
         public bool Control { get; }
 
-        public bool LeftMouse   { get; }
+        public bool LeftMouse { get; }
         public bool MiddleMouse { get; }
-        public bool RightMouse  { get; }
-        public bool Shift       { get; }
+        public bool RightMouse { get; }
+        public bool Shift { get; }
 
         public bool XMouse1 { get; }
         public bool XMouse2 { get; }

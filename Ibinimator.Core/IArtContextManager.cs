@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core
 {
-    public interface IArtContextManager : INotifyPropertyChanged
+    public interface IArtContextManager : INotifyPropertyChanged, IAttachment
     {
         IArtContext Context { get; }
     }

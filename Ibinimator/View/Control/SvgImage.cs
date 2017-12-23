@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Xml.Linq;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;
@@ -39,6 +40,7 @@ namespace Ibinimator.View.Control
                     SourceChanged));
 
         private readonly CacheManager _cache;
+        private readonly IViewManager _view;
         private          Document     _document;
 
         private bool _prepared;
@@ -48,7 +50,7 @@ namespace Ibinimator.View.Control
             SnapsToDevicePixels = true;
             UseLayoutRounding = true;
             _cache = new CacheManager(this);
-            ViewManager = new ViewManager(this);
+            _view = new ViewManager(this);
         }
 
         [Category("Common")]
@@ -95,7 +97,7 @@ namespace Ibinimator.View.Control
             // don't scale towards center - they are not center-aligned in the first place!
             RenderContext.Transform(Matrix3x2.CreateScale(scale));
 
-            _document.Root.Render(RenderContext, CacheManager, ViewManager);
+            _document.Root.Render(RenderContext, _cache, _view);
 
             RenderContext.End();
         }
@@ -125,7 +127,7 @@ namespace Ibinimator.View.Control
         }
 
         private static async void SourceChanged(
-            WPF.DependencyObject                   d,
+            WPF.DependencyObject d,
             WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
@@ -154,19 +156,57 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
-        public event EventHandler StatusChanged;
-        public       void         InvalidateSurface() { InvalidateVisual(); }
+        /// <inheritdoc />
+        public event ArtContextEventHandler<FocusEvent> GainedFocus;
 
-        public IBrushManager   BrushManager   { get; }
-        public ICacheManager   CacheManager   => _cache;
-        public IHistoryManager HistoryManager { get; }
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<KeyboardEvent> KeyDown;
+
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<KeyboardEvent> KeyUp;
+
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<FocusEvent> LostFocus;
+
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<ClickEvent> MouseDown;
+
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<PointerEvent> MouseMove;
+
+        /// <inheritdoc />
+        public new event ArtContextEventHandler<ClickEvent> MouseUp;
+
+        /// <inheritdoc />
+        public event EventHandler StatusChanged;
+
+        /// <inheritdoc />
+        public event ArtContextEventHandler<TextEvent> Text;
+
+        public void InvalidateRender() { InvalidateVisual(); }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();
 
-        public ISelectionManager SelectionManager { get; }
-        public Status            Status           { get; set; }
-        public IToolManager      ToolManager      { get; }
-        public IViewManager      ViewManager      { get; }
+        /// <inheritdoc />
+        IBrushManager IArtContext.BrushManager { get; }
+
+        /// <inheritdoc />
+        ICacheManager IArtContext.CacheManager => _cache;
+
+        /// <inheritdoc />
+        IHistoryManager IArtContext.HistoryManager { get; }
+
+        /// <inheritdoc />
+        ISelectionManager IArtContext.SelectionManager { get; }
+
+        /// <inheritdoc />
+        Status IArtContext.Status { get; set; }
+
+        /// <inheritdoc />
+        IToolManager IArtContext.ToolManager { get; }
+
+        /// <inheritdoc />
+        IViewManager IArtContext.ViewManager => _view;
 
         #endregion
     }

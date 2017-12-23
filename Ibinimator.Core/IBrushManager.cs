@@ -8,10 +8,10 @@ namespace Ibinimator.Core
     public interface IBrushManager : IArtContextManager
     {
         IReadOnlyCollection<IBrushInfo> BrushHistory { get; }
-        IBrushInfo                      Fill         { get; set; }
-        IPenInfo                        Stroke       { get; set; }
-        void                            ApplyFill();
-        void                            ApplyStroke();
-        void                            Query();
+        IBrushInfo Fill { get; set; }
+        IPenInfo Stroke { get; set; }
+        void ApplyFill();
+        void ApplyStroke();
+        void Query();
     }
 }

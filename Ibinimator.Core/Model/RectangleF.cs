@@ -44,7 +44,7 @@ namespace Ibinimator.Core.Model
 
         public Vector2 BottomCenter => new Vector2((Right + Left) / 2, Bottom);
 
-        public Vector2 BottomLeft  => new Vector2(Left, Bottom);
+        public Vector2 BottomLeft => new Vector2(Left, Bottom);
         public Vector2 BottomRight => new Vector2(Right, Bottom);
 
         public Vector2 Center => new Vector2((Right + Left) / 2, (Bottom + Top) / 2);
@@ -61,10 +61,10 @@ namespace Ibinimator.Core.Model
             set => Width = value - Left;
         }
 
-        public Vector2 Size      => new Vector2(Width, Height);
+        public Vector2 Size => new Vector2(Width, Height);
         public Vector2 TopCenter => new Vector2((Right + Left) / 2, Top);
 
-        public Vector2 TopLeft  => new Vector2(Left, Top);
+        public Vector2 TopLeft => new Vector2(Left, Top);
         public Vector2 TopRight => new Vector2(Right, Top);
 
         public bool Contains(Vector2 v)

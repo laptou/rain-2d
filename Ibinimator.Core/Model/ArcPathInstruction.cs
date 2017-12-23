@@ -12,7 +12,7 @@ namespace Ibinimator.Core.Model
     {
         public ArcPathInstruction(
             float x, float y, float radiusX, float radiusY, float angle, bool clockwise,
-            bool  largeArc) : base(x, y)
+            bool largeArc) : base(x, y)
         {
             RadiusX = radiusX;
             RadiusY = radiusY;
@@ -25,9 +25,9 @@ namespace Ibinimator.Core.Model
             Vector2 position, Vector2 radii, float angle, bool clockwise, bool largeArc) :
             this(position.X, position.Y, radii.X, radii.Y, angle, clockwise, largeArc) { }
 
-        public float Angle     { get; }
-        public bool  Clockwise { get; }
-        public bool  LargeArc  { get; }
+        public float Angle { get; }
+        public bool Clockwise { get; }
+        public bool LargeArc { get; }
 
         public float RadiusX { get; }
         public float RadiusY { get; }

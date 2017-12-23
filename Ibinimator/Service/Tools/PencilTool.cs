@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
@@ -50,7 +51,7 @@ namespace Ibinimator.Service.Tools
 
                 case Key.Delete:
                     Remove(_nodes.Count - 1);
-                    Context.InvalidateSurface();
+                    Context.InvalidateRender();
 
                     break;
 
@@ -158,14 +159,14 @@ namespace Ibinimator.Service.Tools
         {
             _mouse = (_mouse.down, true, pos);
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
             return false;
         }
 
         public override bool MouseUp(Vector2 pos, ModifierState state)
         {
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
             return true;
         }

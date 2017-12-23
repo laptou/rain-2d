@@ -29,26 +29,19 @@ namespace Ibinimator.ViewModel
             var cache = new CacheManager(artView.ArtContext);
             ViewManager = new ViewManager(artView.ArtContext);
             HistoryManager = new HistoryManager(artView.ArtContext);
-            SelectionManager = new SelectionManager(artView.ArtContext,
-                                                    ViewManager,
-                                                    HistoryManager,
-                                                    cache);
+            SelectionManager = new SelectionManager(artView.ArtContext);
             ToolManager = new ToolManager(artView.ArtContext);
-            BrushManager = new BrushManager(
-                artView.ArtContext,
-                SelectionManager,
-                HistoryManager,
-                ToolManager);
+            BrushManager = new BrushManager( artView.ArtContext);
 
             Load();
 
             ArtContext = artView.ArtContext;
+            artView.ArtContext.SetManager(cache);
             artView.ArtContext.SetManager(ViewManager);
-            artView.ArtContext.SetManager(BrushManager);
+            artView.ArtContext.SetManager(HistoryManager);
             artView.ArtContext.SetManager(SelectionManager);
             artView.ArtContext.SetManager(ToolManager);
-            artView.ArtContext.SetManager(cache);
-            artView.ArtContext.SetManager(HistoryManager);
+            artView.ArtContext.SetManager(BrushManager);
 
             FillPicker = new FillPickerViewModel(this, BrushManager);
             TransformViewModel = new TransformViewModel(ArtContext);
@@ -113,12 +106,12 @@ namespace Ibinimator.ViewModel
             set
             {
                 if (SelectionManager != null)
-                    SelectionManager.Updated -= SelectionUpdated;
+                    SelectionManager.SelectionUpdated -= SelectionUpdated;
 
                 Set(value);
 
                 if (SelectionManager != null)
-                    SelectionManager.Updated += SelectionUpdated;
+                    SelectionManager.SelectionUpdated += SelectionUpdated;
             }
         }
 

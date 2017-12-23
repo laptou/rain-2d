@@ -12,7 +12,7 @@ namespace Ibinimator.Core
     public abstract class RenderContext : IDisposable
     {
         public abstract float Height { get; }
-        public abstract float Width  { get; }
+        public abstract float Width { get; }
 
         public abstract void Begin(object ctx);
 
@@ -24,19 +24,19 @@ namespace Ibinimator.Core
 
         public abstract ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float                     startX,
-            float                     startY,
-            float                     endX,
-            float                     endY);
+            float startX,
+            float startY,
+            float endX,
+            float endY);
 
         public abstract IRadialGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops,
-            float                     centerX,
-            float                     centerY,
-            float                     radiusX,
-            float                     radiusY,
-            float                     focusX,
-            float                     focusY);
+            float centerX,
+            float centerY,
+            float radiusX,
+            float radiusY,
+            float focusX,
+            float focusY);
 
         public abstract T CreateEffect<T>() where T : class, IEffect;
 
@@ -51,18 +51,18 @@ namespace Ibinimator.Core
         public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
 
         public abstract IPen CreatePen(
-            float              width,
-            IBrush             brush,
+            float width,
+            IBrush brush,
             IEnumerable<float> dashes);
 
         public abstract IPen CreatePen(
-            float              width,
-            IBrush             brush,
+            float width,
+            IBrush brush,
             IEnumerable<float> dashes,
-            float              dashOffset,
-            LineCap            lineCap,
-            LineJoin           lineJoin,
-            float              miterLimit);
+            float dashOffset,
+            LineCap lineCap,
+            LineJoin lineJoin,
+            float miterLimit);
 
         public abstract IGeometry CreateRectangleGeometry(
             float x,
@@ -79,7 +79,7 @@ namespace Ibinimator.Core
             float cy,
             float rx,
             float ry,
-            IPen  pen);
+            IPen pen);
 
         public abstract void DrawGeometry(IGeometry geometry, IPen pen);
 
@@ -92,31 +92,31 @@ namespace Ibinimator.Core
             float top,
             float width,
             float height,
-            IPen  pen);
+            IPen pen);
 
         public abstract void End();
 
         public abstract void FillEllipse(
-            float  cx,
-            float  cy,
-            float  rx,
-            float  ry,
+            float cx,
+            float cy,
+            float rx,
+            float ry,
             IBrush brush);
 
         public abstract void FillGeometry(IGeometry geometry, IBrush brush);
 
         public abstract void FillRectangle(
-            float  left,
-            float  top,
-            float  width,
-            float  height,
+            float left,
+            float top,
+            float width,
+            float height,
             IBrush brush);
 
         public abstract float GetDpi();
 
         public abstract void PopEffect();
         public abstract void PushEffect(IEffect effect);
-        
+
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 
         public virtual IPen CreatePen(float width, IBrush brush)

@@ -26,10 +26,10 @@ namespace Ibinimator.Core
         }
 
         public PathNode(
-            int            index,
-            Vector2        position,
-            Vector2?       incomingControl,
-            Vector2?       outgoingControl,
+            int index,
+            Vector2 position,
+            Vector2? incomingControl,
+            Vector2? outgoingControl,
             PathFigureEnd? figureEnd) : this(
             index, position)
         {
@@ -45,7 +45,7 @@ namespace Ibinimator.Core
         public int Index { get; }
 
         public Vector2? OutgoingControl { get; }
-        public Vector2  Position        { get; }
+        public Vector2 Position { get; }
 
         public override string ToString()
         {

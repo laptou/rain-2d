@@ -10,14 +10,14 @@ namespace Ibinimator.Core
 {
     public interface IPenInfo : IModel
     {
-        IBrushInfo            Brush      { get; set; }
-        ObservableList<float> Dashes     { get; set; }
-        float                 DashOffset { get; set; }
-        bool                  HasDashes  { get; set; }
-        LineCap               LineCap    { get; set; }
-        LineJoin              LineJoin   { get; set; }
-        float                 MiterLimit { get; set; }
-        float                 Width      { get; set; }
+        IBrushInfo Brush { get; set; }
+        ObservableList<float> Dashes { get; set; }
+        float DashOffset { get; set; }
+        bool HasDashes { get; set; }
+        LineCap LineCap { get; set; }
+        LineJoin LineJoin { get; set; }
+        float MiterLimit { get; set; }
+        float Width { get; set; }
 
         IPen CreatePen(RenderContext renderCtx);
     }

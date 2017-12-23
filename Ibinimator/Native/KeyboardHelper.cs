@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
-using Ibinimator.Core.Model;
+using Ibinimator.Core.Input;
 
-namespace Ibinimator.Native {
-    internal static class KeyboardHelper {
+namespace Ibinimator.Native
+{
+    internal static class KeyboardHelper
+    {
         [DllImport("user32.dll")]
         public static extern ushort GetAsyncKeyState([In] int vKey);
 

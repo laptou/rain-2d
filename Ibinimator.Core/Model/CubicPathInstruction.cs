@@ -25,9 +25,9 @@ namespace Ibinimator.Core.Model
 
         public Vector2 Control1 => new Vector2(Control1X, Control1Y);
 
-        public float   Control1X { get; }
-        public float   Control1Y { get; }
-        public Vector2 Control2  => new Vector2(Control2X, Control2Y);
+        public float Control1X { get; }
+        public float Control1Y { get; }
+        public Vector2 Control2 => new Vector2(Control2X, Control2Y);
 
         public float Control2X { get; }
         public float Control2Y { get; }

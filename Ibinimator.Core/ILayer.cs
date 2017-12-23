@@ -9,7 +9,7 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
 {
-    public interface ILayer : INotifyPropertyChanged, INotifyPropertyChanging
+    public interface ILayer : INotifyPropertyChanged, INotifyPropertyChanging, IRenderable
     {
         /// <summary>
         ///     Gets the world transform multiplied by the local transform: the total transform applied
@@ -51,8 +51,8 @@ namespace Ibinimator.Core
         /// </summary>
         int Order { get; }
 
-        IContainerLayer Parent   { get; set; }
-        bool            Selected { get; set; }
+        IContainerLayer Parent { get; set; }
+        bool Selected { get; set; }
 
         /// <summary>
         ///     Gets the number of steps that this layer adds to the Order of layers above it.
@@ -66,7 +66,7 @@ namespace Ibinimator.Core
         /// </summary>
         bool Visible { get; set; }
 
-        float     Width          { get; set; }
+        float Width { get; set; }
         Matrix3x2 WorldTransform { get; }
 
         event EventHandler BoundsChanged;
@@ -74,11 +74,9 @@ namespace Ibinimator.Core
         void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null);
 
         IEnumerable<ILayer> Flatten();
-        IEnumerable<ILayer> Flatten(int             depth);
-        RectangleF          GetBounds(ICacheManager cache);
+        IEnumerable<ILayer> Flatten(int depth);
+        RectangleF GetBounds(ICacheManager cache);
 
         T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth) where T : ILayer;
-
-        void Render(RenderContext target, ICacheManager cache, IViewManager view);
     }
 }

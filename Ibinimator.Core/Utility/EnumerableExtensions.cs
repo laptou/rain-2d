@@ -9,7 +9,7 @@ namespace Ibinimator.Core.Utility
     {
         public static IEnumerable<T> Cycle<T>(
             this IEnumerable<T> enumerable,
-            int                 elements)
+            int elements)
         {
             var enumerable1 = enumerable as IList<T> ?? enumerable.ToList();
 
@@ -18,8 +18,8 @@ namespace Ibinimator.Core.Utility
 
         public static IEnumerable<T> Replace<T>(
             this IEnumerable<T> enumerable,
-            T                   oldItem,
-            T                   newItem)
+            T oldItem,
+            T newItem)
         {
             foreach (var item in enumerable)
                 if (item.Equals(oldItem))

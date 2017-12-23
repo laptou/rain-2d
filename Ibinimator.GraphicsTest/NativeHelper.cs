@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Interop;
 
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Model {}

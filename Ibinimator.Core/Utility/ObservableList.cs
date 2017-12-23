@@ -154,8 +154,8 @@ namespace Ibinimator.Core.Utility
 
                     if (handler.Target is DispatcherObject dispatcherObject
                      && !dispatcherObject.CheckAccess())
-                        dispatcherObject.Dispatcher.BeginInvoke(DispatcherPriority.DataBind, handler, this,
-                                                                e);
+                        dispatcherObject.Dispatcher.BeginInvoke(
+                            DispatcherPriority.DataBind, handler, this, e);
                     else
                         handler(this, e);
                 }

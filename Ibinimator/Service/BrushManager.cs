@@ -13,25 +13,21 @@ namespace Ibinimator.Service
     {
         private readonly Stack<IBrushInfo> _brushHistory;
 
-        public BrushManager(
-            IArtContext       artContext,
-            ISelectionManager selectionManager,
-            IHistoryManager   historyManager,
-            IToolManager      toolManager)
+        public BrushManager(IArtContext artContext)
         {
             Context = artContext;
             _brushHistory = new Stack<IBrushInfo>();
-
-            selectionManager.Updated += OnUpdated;
-            historyManager.Traversed += (s, e) => OnUpdated(s, null);
-            toolManager.StrokeUpdated += (s, e) => OnUpdated(s, null);
-            toolManager.FillUpdated += (s, e) => OnUpdated(s, null);
-
             Fill = new SolidColorBrushInfo(new Color(0, 0, 0));
             Stroke = null;
         }
 
-        private void OnUpdated(object sender, EventArgs args) { Query(); }
+        private void OnFillUpdated(object sender, IBrushInfo e) { Query(); }
+
+        private void OnStrokeUpdated(object sender, IPenInfo e) { Query(); }
+
+        private void OnHistoryTraversed(object sender, long e) { Query(); }
+
+        private void OnSelectionUpdated(object sender, EventArgs args) { Query(); }
 
         #region IBrushManager Members
 
@@ -71,5 +67,23 @@ namespace Ibinimator.Service
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.HistoryManager.Traversed += OnHistoryTraversed;
+            context.ToolManager.StrokeUpdated += OnStrokeUpdated;
+            context.ToolManager.FillUpdated += OnFillUpdated;
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            context.HistoryManager.Traversed -= OnHistoryTraversed;
+            context.ToolManager.StrokeUpdated -= OnStrokeUpdated;
+            context.ToolManager.FillUpdated -= OnFillUpdated;
+        }
     }
 }

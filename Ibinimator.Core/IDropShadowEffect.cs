@@ -9,7 +9,7 @@ namespace Ibinimator.Core
 {
     public interface IDropShadowEffect : IEffect
     {
-        Color Color  { get; set; }
+        Color Color { get; set; }
         float Radius { get; set; }
     }
 }

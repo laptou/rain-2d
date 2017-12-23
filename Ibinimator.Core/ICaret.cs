@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ibinimator.Core
 {
     public interface ICaret : IDisposable
     {
-        void Show();
         void Hide();
+        void Show();
     }
 }

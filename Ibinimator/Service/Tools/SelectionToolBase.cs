@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Resources;
@@ -23,7 +24,6 @@ namespace Ibinimator.Service.Tools
         {
             Manager = manager;
             Options = new ToolOptions();
-            selectionManager.Updated += OnSelectionUpdated;
         }
 
         protected IArtContext Context => Manager.Context;
@@ -31,6 +31,56 @@ namespace Ibinimator.Service.Tools
         protected IEnumerable<ILayer> Selection => SelectionManager.Selection;
 
         protected ISelectionManager SelectionManager => Context.SelectionManager;
+
+        public abstract bool MouseMove(Vector2 pos, ModifierState state);
+
+        public abstract bool TextInput(string text);
+
+        public virtual bool KeyDown(Key key, ModifierState modifiers)
+        {
+            State = modifiers;
+
+            return true;
+        }
+
+        public virtual bool KeyUp(Key key, ModifierState modifiers)
+        {
+            State = modifiers;
+
+            return true;
+        }
+
+        public virtual bool MouseDown(Vector2 pos, ModifierState state)
+        {
+            var deltaTime = Time.Now - _mouse.time;
+            _mouse = (pos, true, Time.Now);
+
+            if (deltaTime < 500)
+                _depth++;
+
+            var hit = HitTest(pos);
+
+            if (deltaTime < 500 && hit == null)
+                _depth--;
+
+            if (!state.Shift && hit?.Selected != true)
+                SelectionManager.ClearSelection();
+
+            if (hit != null)
+                hit.Selected = true;
+
+            return hit != null;
+        }
+
+        public virtual bool MouseUp(Vector2 pos, ModifierState state)
+        {
+            _mouse.position = pos;
+            _mouse.down = false;
+
+            Context.InvalidateRender();
+
+            return false;
+        }
 
         protected virtual ILayer HitTest(ILayer layer, Vector2 position)
         {
@@ -137,53 +187,7 @@ namespace Ibinimator.Service.Tools
             Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
 
-        public virtual void Dispose() { SelectionManager.Updated -= OnSelectionUpdated; }
-
-        public virtual bool KeyDown(Key key, ModifierState modifiers)
-        {
-            State = modifiers;
-
-            return true;
-        }
-
-        public virtual bool KeyUp(Key key, ModifierState modifiers)
-        {
-            State = modifiers;
-
-            return true;
-        }
-
-        public virtual bool MouseDown(Vector2 pos, ModifierState state)
-        {
-            var deltaTime = Time.Now - _mouse.time;
-            _mouse = (pos, true, Time.Now);
-
-            if (deltaTime < 500)
-                _depth++;
-
-            var hit = HitTest(pos);
-
-            if (deltaTime < 500 && hit == null)
-                _depth--;
-
-            if (!state.Shift && hit?.Selected != true)
-                SelectionManager.ClearSelection();
-
-            if (hit != null)
-                hit.Selected = true;
-
-            return hit != null;
-        }
-
-        public virtual bool MouseUp(Vector2 pos, ModifierState state)
-        {
-            _mouse.position = pos;
-            _mouse.down = false;
-
-            Context.InvalidateSurface();
-
-            return false;
-        }
+        public virtual void Dispose() { SelectionManager.SelectionUpdated -= OnSelectionUpdated; }
 
         public virtual IBrushInfo ProvideFill()
         {
@@ -205,11 +209,7 @@ namespace Ibinimator.Service.Tools
             return null;
         }
 
-        public abstract bool MouseMove(Vector2 pos, ModifierState state);
-
         public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
-
-        public abstract bool TextInput(string text);
 
         public virtual string Cursor { get; protected set; }
         public virtual float CursorRotate { get; protected set; }
@@ -218,5 +218,17 @@ namespace Ibinimator.Service.Tools
         public ToolType Type { get; protected set; }
 
         #endregion
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+        }
     }
 }

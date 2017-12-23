@@ -9,7 +9,7 @@ namespace Ibinimator.Core
 {
     public interface IGradientBrush : IBrush
     {
-        GradientSpace                Space { get; set; }
+        GradientSpace Space { get; set; }
         ObservableList<GradientStop> Stops { get; }
     }
 

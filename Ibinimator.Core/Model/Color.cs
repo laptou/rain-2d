@@ -33,7 +33,7 @@ namespace Ibinimator.Core.Model
 
         public static Color operator +(Color c, Vector4 v) { return new Color(c.AsVector() + v); }
 
-        public static Vector4 operator -(Color c1, Color  c2) { return c1.AsVector() - c2.AsVector(); }
-        public static Color operator -(Color   c, Vector4 v)  { return new Color(c.AsVector() - v); }
+        public static Vector4 operator -(Color c1, Color c2) { return c1.AsVector() - c2.AsVector(); }
+        public static Color operator -(Color c, Vector4 v) { return new Color(c.AsVector() - v); }
     }
 }

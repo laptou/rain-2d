@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 
@@ -31,12 +32,7 @@ namespace Ibinimator.Service
         private RectangleF _selectionBounds;
         private Matrix3x2  _selectionTransform = Matrix3x2.Identity;
 
-
-        public SelectionManager(
-            IArtContext     artView,
-            IViewManager    viewManager,
-            IHistoryManager historyManager,
-            ICacheManager   cacheManager)
+        public SelectionManager(IArtContext artView)
         {
             Context = artView;
 
@@ -44,40 +40,41 @@ namespace Ibinimator.Service
             Selection.CollectionChanged += (sender, args) =>
                                            {
                                                UpdateBounds(true);
-                                               Updated?.Invoke(this, null);
+                                               SelectionUpdated?.Invoke(this, null);
                                            };
+        }
 
-            viewManager.DocumentUpdated += (sender, args) =>
-                                           {
-                                               if (args.PropertyName != nameof(ILayer.Selected)) return;
+        private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(ILayer.Selected)) return;
 
-                                               var layer = (ILayer) sender;
+            var layer = (ILayer)sender;
 
-                                               var contains = Selection.Contains(layer);
+            var contains = Selection.Contains(layer);
 
-                                               if (layer.Selected && !contains)
-                                               {
-                                                   Selection.Add(layer);
+            if (layer.Selected && !contains)
+            {
+                Selection.Add(layer);
 
-                                                   foreach (var child in layer.Flatten().Skip(1))
-                                                       child.Selected = false;
-                                               }
-                                               else if (!layer.Selected && contains)
-                                               {
-                                                   Selection.Remove(layer);
-                                               }
-                                           };
+                foreach (var child in layer.Flatten().Skip(1))
+                    child.Selected = false;
+            }
+            else if (!layer.Selected && contains)
+            {
+                Selection.Remove(layer);
+            }
+        }
 
-            historyManager.Traversed += (sender, args) => { UpdateBounds(true); };
-
-            cacheManager.BoundsChanged += (sender, args) => { UpdateBounds(true); };
+        private void OnHistoryTraversed(object sender, long e)
+        {
+            UpdateBounds(true);
         }
 
         public ObservableList<ILayer> Selection { get; }
 
         #region ISelectionManager Members
 
-        public event EventHandler Updated;
+        public event EventHandler SelectionUpdated;
 
         public void ClearSelection()
         {
@@ -94,8 +91,8 @@ namespace Ibinimator.Service
         public void TransformSelection(
             Vector2 scale,
             Vector2 translate,
-            float   rotate,
-            float   shear,
+            float rotate,
+            float shear,
             Vector2 relativeOrigin)
         {
             var localOrigin = SelectionBounds.TopLeft +
@@ -127,9 +124,9 @@ namespace Ibinimator.Service
 
             Context.HistoryManager.Merge(command, 500);
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
-            Updated?.Invoke(this, null);
+            SelectionUpdated?.Invoke(this, null);
         }
 
         public void UpdateBounds(bool reset)
@@ -155,9 +152,9 @@ namespace Ibinimator.Service
                 SelectionTransform = Matrix3x2.Identity;
             }
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
-            Updated?.Invoke(this, null);
+            SelectionUpdated?.Invoke(this, null);
         }
 
         public IArtContext Context { get; }
@@ -185,6 +182,20 @@ namespace Ibinimator.Service
         IEnumerable<ILayer> ISelectionManager.Selection => Selection;
 
         #endregion
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            context.ViewManager.DocumentUpdated += OnDocumentUpdated;
+            context.HistoryManager.Traversed += OnHistoryTraversed;
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            context.ViewManager.DocumentUpdated -= OnDocumentUpdated;
+            context.HistoryManager.Traversed -= OnHistoryTraversed;
+        }
     }
 
     public enum GuideType

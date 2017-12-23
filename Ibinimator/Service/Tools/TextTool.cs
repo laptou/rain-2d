@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
@@ -817,7 +818,7 @@ namespace Ibinimator.Service.Tools
                 Manager.RaiseStrokeUpdate();
             }
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
         }
 
         private void UpdateOptions(

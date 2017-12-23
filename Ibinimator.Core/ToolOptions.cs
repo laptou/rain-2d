@@ -41,9 +41,9 @@ namespace Ibinimator.Core
 
         public void Set<T>(string id, T value) { _options[id].Value = value; }
 
-        public void SetMaximum(string id, float          maximum) { _options[id].Maximum = maximum; }
-        public void SetMinimum(string id, float          minimum) { _options[id].Minimum = minimum; }
-        public void SetType(string    id, ToolOptionType type)    { _options[id].Type = type; }
+        public void SetMaximum(string id, float maximum) { _options[id].Maximum = maximum; }
+        public void SetMinimum(string id, float minimum) { _options[id].Minimum = minimum; }
+        public void SetType(string id, ToolOptionType type) { _options[id].Type = type; }
 
         public void SetUnit(string id, Unit unit) { _options[id].Unit = unit; }
 

@@ -189,6 +189,18 @@ namespace Ibinimator.Service
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            // HistoryManager doesn't subscribe to events from any other managers.
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            // HistoryManager doesn't subscribe to events from any other managers.
+        }
     }
 
     public class KeyComparer<TK, TV> : IEqualityComparer<KeyValuePair<TK, TV>>

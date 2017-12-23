@@ -40,9 +40,6 @@ namespace Ibinimator.Service
         private readonly ReaderWriterLockSlim _renderLock =
             new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-        private readonly Dictionary<(ILayer layer, int id), IDisposable> _resources =
-            new Dictionary<(ILayer layer, int id), IDisposable>();
-
         private readonly Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>
             _strokeBindings =
                 new Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>();
@@ -87,16 +84,6 @@ namespace Ibinimator.Service
             return pen;
         }
 
-        public bool ClearResource(ILayer layer, int id)
-        {
-            lock (_resources)
-            {
-                _resources.TryGet((layer, id))?.Dispose();
-
-                return _resources.Remove((layer, id));
-            }
-        }
-
         public void EnterReadLock() { _renderLock.EnterReadLock(); }
 
         public void EnterWriteLock() { _renderLock.EnterWriteLock(); }
@@ -104,65 +91,6 @@ namespace Ibinimator.Service
         public void ExitReadLock() { _renderLock.ExitReadLock(); }
 
         public void ExitWriteLock() { _renderLock.ExitWriteLock(); }
-
-        public IEnumerable<(int id, T resource)> GetResources<T>(ILayer layer)
-            where T : IDisposable
-        {
-            lock (_resources)
-            {
-                return _resources.Where(kv => kv.Key.layer == layer)
-                                 .Select(kv => (kv.Key.id, (T) kv.Value))
-                                 .ToArray();
-            }
-        }
-
-        public void SetResource<T>(ILayer layer, int id, T resource) where T : IDisposable
-        {
-            lock (_resources)
-            {
-                _resources.TryGet((layer, id))?.Dispose();
-                _resources[(layer, id)] = resource;
-            }
-        }
-
-        public void UnbindLayer(ILayer layer)
-        {
-            EnterWriteLock();
-
-            if (layer is IFilledLayer filled)
-                if (filled.Fill != null)
-                    if (_fills.TryGetValue(filled, out var fill))
-                    {
-                        fill?.Dispose();
-                        _fills.Remove(filled);
-                    }
-
-            if (layer is IStrokedLayer stroked)
-                if (stroked.Stroke != null)
-                    if (_strokes.TryGetValue(stroked, out var stroke))
-                    {
-                        stroke.Dispose();
-                        _strokes.Remove(stroked);
-                    }
-
-            if (layer is IGeometricLayer geometric)
-                if (_geometries.TryGetValue(geometric, out var geometry))
-                {
-                    geometry.Dispose();
-                    _geometries.Remove(geometric);
-                }
-
-            lock (_bounds)
-            {
-                _bounds.Remove(layer);
-            }
-
-            ExitWriteLock();
-
-            if (layer is IContainerLayer group)
-                foreach (var subLayer in group.SubLayers)
-                    UnbindLayer(subLayer);
-        }
 
         private TV Get<TK, TV>(IDictionary<TK, TV> dict, TK key, Func<TK, TV> fallback)
         {
@@ -229,7 +157,7 @@ namespace Ibinimator.Service
                     break;
             }
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
         }
 
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -285,15 +213,16 @@ namespace Ibinimator.Service
                     break;
             }
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
         }
-
-        private void RaiseBoundsChanged(ILayer layer) { BoundsChanged?.Invoke(this, layer); }
 
         #region ICacheManager Members
 
-        public event EventHandler<ILayer> BoundsChanged;
+        /// <inheritdoc />
+        public void Attach(IArtContext context) { throw new NotImplementedException(); }
 
+
+        /// <inheritdoc />
         public void BindLayer(ILayer layer)
         {
             EnterWriteLock();
@@ -315,7 +244,7 @@ namespace Ibinimator.Service
 
                                           ExitWriteLock();
 
-                                          Context.InvalidateSurface();
+                                          Context.InvalidateRender();
                                       };
             }
 
@@ -336,7 +265,7 @@ namespace Ibinimator.Service
 
                                              ExitWriteLock();
 
-                                             Context.InvalidateSurface();
+                                             Context.InvalidateRender();
                                          };
             }
 
@@ -350,7 +279,7 @@ namespace Ibinimator.Service
 
                                           ExitWriteLock();
 
-                                          Context.InvalidateSurface();
+                                          Context.InvalidateRender();
                                       };
 
             if (layer is IGeometricLayer geometric)
@@ -363,7 +292,7 @@ namespace Ibinimator.Service
 
                                                  ExitWriteLock();
 
-                                                 Context.InvalidateSurface();
+                                                 Context.InvalidateRender();
                                              };
 
             layer.BoundsChanged += (s, e) =>
@@ -373,11 +302,9 @@ namespace Ibinimator.Service
                                            EnterWriteLock();
                                            _bounds[l] = l.GetBounds(this);
                                            ExitWriteLock();
-
-                                           RaiseBoundsChanged(l);
                                        }
 
-                                       Context.InvalidateSurface();
+                                       Context.InvalidateRender();
                                    };
 
             ExitWriteLock();
@@ -393,6 +320,10 @@ namespace Ibinimator.Service
             }
         }
 
+        /// <inheritdoc />
+        public void Detach(IArtContext context) { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
         public RectangleF GetAbsoluteBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
@@ -400,6 +331,7 @@ namespace Ibinimator.Service
 
         public IBitmap GetBitmap(string key) { return _bitmaps[key]; }
 
+        /// <inheritdoc />
         public RectangleF GetBounds(ILayer layer) { return Get(_bounds, layer, l => l.GetBounds(this)); }
 
         public IBrush GetBrush(string key) { return _brushes[key]; }
@@ -411,6 +343,7 @@ namespace Ibinimator.Service
             return Get(_geometries, layer, l => l.GetGeometry(this));
         }
 
+        /// <inheritdoc />
         public RectangleF GetRelativeBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
@@ -439,24 +372,6 @@ namespace Ibinimator.Service
         {
             foreach (var field in typeof(EditorColors).GetFields())
                 _brushes[field.Name] = target.CreateBrush((Color) field.GetValue(null));
-        }
-
-
-        public void ResetAll()
-        {
-            ResetDeviceResources();
-
-            EnterWriteLock();
-
-            foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
-            _geometries.Clear();
-
-            foreach (var (_, layout) in _texts.AsTuples())
-                layout.Dispose();
-
-            _texts.Clear();
-
-            ExitWriteLock();
         }
 
         public void ResetDeviceResources()
@@ -497,6 +412,63 @@ namespace Ibinimator.Service
             _strokes.Clear();
 
             ExitWriteLock();
+        }
+
+        public void ResetResources()
+        {
+            ResetDeviceResources();
+
+            EnterWriteLock();
+
+            foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
+            _geometries.Clear();
+
+            foreach (var (_, layout) in _texts.AsTuples())
+                layout.Dispose();
+
+            _texts.Clear();
+
+            ExitWriteLock();
+        }
+
+        /// <inheritdoc />
+        public void UnbindLayer(ILayer layer)
+        {
+            EnterWriteLock();
+
+            if (layer is IFilledLayer filled)
+                if (filled.Fill != null)
+                    if (_fills.TryGetValue(filled, out var fill))
+                    {
+                        fill?.Dispose();
+                        _fills.Remove(filled);
+                    }
+
+            if (layer is IStrokedLayer stroked)
+                if (stroked.Stroke != null)
+                    if (_strokes.TryGetValue(stroked, out var stroke))
+                    {
+                        stroke.Dispose();
+                        _strokes.Remove(stroked);
+                    }
+
+            if (layer is IGeometricLayer geometric)
+                if (_geometries.TryGetValue(geometric, out var geometry))
+                {
+                    geometry.Dispose();
+                    _geometries.Remove(geometric);
+                }
+
+            lock (_bounds)
+            {
+                _bounds.Remove(layer);
+            }
+
+            ExitWriteLock();
+
+            if (layer is IContainerLayer group)
+                foreach (var subLayer in group.SubLayers)
+                    UnbindLayer(subLayer);
         }
 
         public IArtContext Context { get; set; }

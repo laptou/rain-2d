@@ -103,5 +103,17 @@ namespace Ibinimator.Service
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            // ViewManager doesn't subscribe to events from any other managers.
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            // ViewManager doesn't subscribe to events from any other managers.
+        }
     }
 }

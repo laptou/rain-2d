@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
@@ -80,7 +81,7 @@ namespace Ibinimator.Service.Tools
 
                 case Key.Delete:
                     Remove(_selection.ToArray());
-                    Context.InvalidateSurface();
+                    Context.InvalidateRender();
 
                     break;
 
@@ -150,7 +151,7 @@ namespace Ibinimator.Service.Tools
 
         public override bool MouseMove(Vector2 pos, ModifierState state)
         {
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
             if (SelectedLayer == null)
                 return false;
@@ -197,7 +198,7 @@ namespace Ibinimator.Service.Tools
                         break;
                 }
 
-                Context.InvalidateSurface();
+                Context.InvalidateRender();
 
                 return true;
             }
@@ -212,7 +213,7 @@ namespace Ibinimator.Service.Tools
 
             _mouse = (false, _mouse.moved, pos);
 
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
             return true;
         }

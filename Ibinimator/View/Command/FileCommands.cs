@@ -44,7 +44,7 @@ namespace Ibinimator.View.Command
                     doc.FromXml(xdoc.Root, new SvgContext {Root = xdoc.Root});
                     vm.Document = SvgConverter.FromSvg(doc);
 
-                    artCtx.CacheManager.ResetAll();
+                    artCtx.CacheManager.ResetResources();
                     artCtx.CacheManager.LoadBitmaps(artCtx.RenderContext);
                     artCtx.CacheManager.LoadBrushes(artCtx.RenderContext);
                     artCtx.CacheManager.BindLayer(vm.Document.Root);

@@ -44,12 +44,12 @@ namespace Ibinimator.Core.Utility
             return Atan2(reverse ? -pos.Y : pos.Y, pos.X);
         }
 
-        public static Vector2 Angle(float a)          { return new Vector2((float) Cos(a), -(float) Sin(a)); }
-        public static float   Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
+        public static Vector2 Angle(float a) { return new Vector2((float) Cos(a), -(float) Sin(a)); }
+        public static float Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
 
         public static (float left, float top, float right, float bottom) Bounds(
             RectangleF rect,
-            Matrix3x2  m)
+            Matrix3x2 m)
         {
             Vector2 p0 = Vector2.Transform(rect.TopLeft, m),
                     p1 = Vector2.Transform(rect.TopRight, m),
@@ -81,8 +81,8 @@ namespace Ibinimator.Core.Utility
         }
 
         public static (Vector2, Vector2) CrossSection(
-            Vector2    ray,
-            Vector2    origin,
+            Vector2 ray,
+            Vector2 origin,
             RectangleF bounds)
         {
             bounds = (
@@ -127,6 +127,8 @@ namespace Ibinimator.Core.Utility
             return (s, r, Matrix3x2.CreateTranslation(m.M31,
                                                       m.M32));
         }
+
+        public static float Degrees(float radians) { return radians / Pi * 180; }
 
         public static (Vector2 scale, float rotation, Vector2 translation, float skew)
             Extract(this Matrix3x2 m)
@@ -255,6 +257,5 @@ namespace Ibinimator.Core.Utility
         }
 
         public static int Wrap(int f, int r) { return (f % r + r) % r; }
-        public static float Degrees(float radians) { return radians / Pi * 180; }
     }
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -50,7 +51,7 @@ namespace Ibinimator.Service.Tools
 
             toolManager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
 
-            selectionManager.Updated += OnSelectionUpdated;
+            selectionManager.SelectionUpdated += OnSelectionUpdated;
         }
 
         public override string Cursor { get; protected set; }
@@ -123,7 +124,7 @@ namespace Ibinimator.Service.Tools
 
         public override bool MouseMove(Vector2 pos, ModifierState state)
         {
-            Context.InvalidateSurface();
+            Context.InvalidateRender();
 
             var localPos = SelectionManager.ToSelectionSpace(pos);
             var bounds = SelectionManager.SelectionBounds;
@@ -216,7 +217,7 @@ namespace Ibinimator.Service.Tools
                     // setting rotate to 0 means that the transformation matrix is
                     // identity, which will cause rendering to stop so we invalidate
                     // the matrix
-                    Context.InvalidateSurface();
+                    Context.InvalidateRender();
 
                     if (Math.Abs(_deltaRotation) > MathUtils.PiOverFour / 2)
                     {

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;

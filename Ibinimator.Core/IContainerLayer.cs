@@ -14,7 +14,7 @@ namespace Ibinimator.Core
         event EventHandler<ILayer> LayerAdded;
         event EventHandler<ILayer> LayerRemoved;
 
-        void Add(ILayer    child, int index = -1);
+        void Add(ILayer child, int index = -1);
         void Remove(ILayer child);
     }
 }

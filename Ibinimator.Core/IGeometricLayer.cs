@@ -8,6 +8,6 @@ namespace Ibinimator.Core
     public interface IGeometricLayer : IFilledLayer, IStrokedLayer
     {
         event EventHandler GeometryChanged;
-        IGeometry          GetGeometry(ICacheManager cache);
+        IGeometry GetGeometry(ICacheManager cache);
     }
 }

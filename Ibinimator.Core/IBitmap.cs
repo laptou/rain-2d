@@ -9,12 +9,12 @@ namespace Ibinimator.Core
 {
     public interface IBitmap : IResource
     {
-        float Dpi         { get; }
-        float Height      { get; }
-        int   PixelHeight { get; }
+        float Dpi { get; }
+        float Height { get; }
+        int PixelHeight { get; }
 
-        int   PixelWidth { get; }
-        float Width      { get; }
+        int PixelWidth { get; }
+        float Width { get; }
 
         /// <summary>
         ///     Gets the native object representing the brush.
