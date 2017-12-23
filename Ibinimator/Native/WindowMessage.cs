@@ -201,7 +201,7 @@ namespace Ibinimator.Native
         ///     The WM_SETCURSOR message is sent to a window if the mouse causes the cursor to move within a window and mouse input
         ///     is not captured.
         /// </summary>
-        Setcursor = 0x0020,
+        SetCursor = 0x0020,
 
         /// <summary>
         ///     The WM_MOUSEACTIVATE message is sent when the cursor is in an inactive window and the user presses a mouse button.

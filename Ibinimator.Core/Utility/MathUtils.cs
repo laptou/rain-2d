@@ -255,5 +255,6 @@ namespace Ibinimator.Core.Utility
         }
 
         public static int Wrap(int f, int r) { return (f % r + r) % r; }
+        public static float Degrees(float radians) { return radians / Pi * 180; }
     }
 }

@@ -17,6 +17,7 @@ using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
+using Ibinimator.Native;
 
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
@@ -65,9 +66,7 @@ namespace Ibinimator.Service.Tools
                                         .OrderBy(n => n));
 
             using (var defaultFont = _dwFontCollection.GetFontFamily(0))
-            {
                 Options.Set("font-family", defaultFont.FamilyNames.ToCurrentCulture());
-            }
 
             Options.Create("font-size", "Font Size");
             Options.SetValues("font-size",

@@ -113,15 +113,10 @@ namespace Ibinimator.Core
             IBrush brush);
 
         public abstract float GetDpi();
-        public abstract void  HideCursor();
 
         public abstract void PopEffect();
         public abstract void PushEffect(IEffect effect);
-
-        public abstract void SetCaretPosition(int x, int y);
-        public abstract void ShowCaret();
-
-
+        
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 
         public virtual IPen CreatePen(float width, IBrush brush)

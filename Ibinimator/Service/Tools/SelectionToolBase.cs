@@ -211,11 +211,11 @@ namespace Ibinimator.Service.Tools
 
         public abstract bool TextInput(string text);
 
-        public virtual string       Cursor       { get; protected set; }
-        public virtual float        CursorRotate { get; protected set; }
-        public         IToolManager Manager      { get; }
-        public         ToolOptions  Options      { get; protected set; }
-        public         ToolType     Type         { get; protected set; }
+        public virtual string Cursor { get; protected set; }
+        public virtual float CursorRotate { get; protected set; }
+        public IToolManager Manager { get; }
+        public ToolOptions Options { get; protected set; }
+        public ToolType Type { get; protected set; }
 
         #endregion
     }

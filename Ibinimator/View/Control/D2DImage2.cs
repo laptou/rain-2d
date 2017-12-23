@@ -72,14 +72,14 @@ namespace Ibinimator.View.Control
 
         public event EventHandler RenderTargetCreated;
 
-        protected abstract void HandleInput(InputEvent evt);
+        protected abstract void OnInput(InputEvent evt);
 
-        protected abstract void Render(RenderContext renderContext);
+        protected abstract void OnRender(RenderContext renderContext);
 
         public virtual void InvalidateSurface()
         {
             _invalidated = true;
-            NativeHelper.InvalidateRect(_host, IntPtr.Zero, false);
+            WindowHelper.InvalidateRect(_host, IntPtr.Zero, false);
         }
 
         protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
@@ -91,10 +91,10 @@ namespace Ibinimator.View.Control
                 style = 3, // CS_VREDRAW | CS_HREDRAW
                 lpszClassName = "d2d",
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
-                lpfnWndProc = _proc = WndProc
+                lpfnWndProc = _proc = OnMessage
             };
 
-            var cls = NativeHelper.RegisterClass(ref wndClass);
+            var cls = WindowHelper.RegisterClass(ref wndClass);
 
             if (cls == 0)
             {
@@ -104,7 +104,7 @@ namespace Ibinimator.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _host = NativeHelper.CreateWindowEx(
+            _host = WindowHelper.CreateWindowEx(
                 0,
                 cls, "",
                 WindowStyles.Child |
@@ -126,14 +126,14 @@ namespace Ibinimator.View.Control
 
             Initialize();
 
-            NativeHelper.UpdateWindow(_host);
+            WindowHelper.UpdateWindow(_host);
 
             return new HandleRef(this, _host);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
-            NativeHelper.DestroyWindow(hwnd.Handle);
+            WindowHelper.DestroyWindow(hwnd.Handle);
             _proc = null;
         }
 
@@ -155,7 +155,7 @@ namespace Ibinimator.View.Control
                     // discard old events
                     if (Time.Now - evt.Time > 500) continue;
 
-                    HandleInput(evt);
+                    OnInput(evt);
                 }
 
                 _eventFlag.Reset();
@@ -199,8 +199,7 @@ namespace Ibinimator.View.Control
             RenderTargetCreated?.Invoke(this, null);
         }
 
-        private void OnIsVisibleChanged(
-            object sender, DependencyPropertyChangedEventArgs e)
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (IsVisible)
             {
@@ -221,14 +220,14 @@ namespace Ibinimator.View.Control
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e) { Initialize(); }
 
-        private IntPtr WndProc(IntPtr hwnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        protected virtual IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
                 case WindowMessage.Paint:
                     if (_renderTarget == null) goto default;
 
-                    NativeHelper.BeginPaint(hwnd, out var paintStruct);
+                    WindowHelper.BeginPaint(hWnd, out var paintStruct);
 
                     try
                     {
@@ -236,7 +235,7 @@ namespace Ibinimator.View.Control
                         {
                             _invalidated = false;
                             RenderContext.Begin(null);
-                            Render(RenderContext);
+                            OnRender(RenderContext);
                             RenderContext.End();
                         }
                     }
@@ -245,11 +244,11 @@ namespace Ibinimator.View.Control
                     {
                         Initialize();
                         RenderContext.Begin(null);
-                        Render(RenderContext);
+                        OnRender(RenderContext);
                         RenderContext.End();
                     }
 
-                    NativeHelper.EndPaint(hwnd, ref paintStruct);
+                    WindowHelper.EndPaint(hWnd, ref paintStruct);
 
                     break;
                 case WindowMessage.MouseWheelHorizontal:
@@ -262,7 +261,7 @@ namespace Ibinimator.View.Control
                                                        InputEventType.ScrollVertical :
                                                        InputEventType.ScrollHorizontal,
                                                    delta, new Vector2(x, y),
-                                                   NativeHelper.GetModifierState(wParam));
+                                                   KeyboardHelper.GetModifierState(wParam));
 
                     _events.Enqueue(scrollEvt);
                     _eventFlag.Set();
@@ -274,7 +273,7 @@ namespace Ibinimator.View.Control
                 case WindowMessage.LeftButtonUp:
 
                     // set focus to this if the mouse enters
-                    NativeHelper.SetFocus(hwnd);
+                    WindowHelper.SetFocus(hWnd);
 
                     x = NativeHelper.LowWord(lParam) / _d2dFactory.DesktopDpi.Width * 96f;
                     y = NativeHelper.HighWord(lParam) / _d2dFactory.DesktopDpi.Height * 96f;
@@ -300,14 +299,14 @@ namespace Ibinimator.View.Control
                     _events.Enqueue(
                         new InputEvent(clickType,
                                        new Vector2(x, y),
-                                       NativeHelper.GetModifierState(wParam)));
+                                       KeyboardHelper.GetModifierState(wParam)));
                     _eventFlag.Set();
 
                     break;
                 case WindowMessage.MouseLeave:
 
                     // lose focus when mouse isn't over this
-                    NativeHelper.SetFocus(_parent);
+                    WindowHelper.SetFocus(_parent);
 
                     break;
                 case WindowMessage.KeyDown:
@@ -319,7 +318,7 @@ namespace Ibinimator.View.Control
 
                     _events.Enqueue(
                         new InputEvent(InputEventType.KeyDown,
-                                       key, NativeHelper.GetModifierState()));
+                                       key, KeyboardHelper.GetModifierState()));
                     _eventFlag.Set();
 
                     // since the messages are processed asynchronously, 
@@ -330,7 +329,7 @@ namespace Ibinimator.View.Control
                     key = KeyInterop.KeyFromVirtualKey((int) wParam);
                     _events.Enqueue(
                         new InputEvent(InputEventType.KeyUp,
-                                       key, NativeHelper.GetModifierState()));
+                                       key, KeyboardHelper.GetModifierState()));
                     _eventFlag.Set();
 
                     return (IntPtr) 1;
@@ -347,11 +346,9 @@ namespace Ibinimator.View.Control
 
                     break;
                 case WindowMessage.SetFocus:
-                    NativeHelper.CreateCaret(hwnd, IntPtr.Zero, 0, 0);
 
                     break;
                 case WindowMessage.KillFocus:
-                    NativeHelper.DestroyCaret();
 
                     break;
                 case WindowMessage.Size:
@@ -359,7 +356,7 @@ namespace Ibinimator.View.Control
                     goto default;
                 default:
 
-                    return NativeHelper.DefWindowProc(hwnd, msg, wParam, lParam);
+                    return WindowHelper.DefWindowProc(hWnd, msg, wParam, lParam);
             }
 
             return IntPtr.Zero;

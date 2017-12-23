@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Utility;
+using Ibinimator.Native;
 
 using Color = Ibinimator.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
@@ -16,6 +19,7 @@ namespace Ibinimator.View.Control
     public class ArtView : D2DImage2
     {
         private Vector2 _lastPosition;
+        private Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
 
         public ArtView()
         {
@@ -26,12 +30,59 @@ namespace Ibinimator.View.Control
             Focusable = true;
 
             RenderTargetCreated += OnRenderTargetCreated;
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
             ArtContext = new ArtContext(this);
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var (_, cursor) in _cursors.AsTuples())
+                CursorHelper.DestroyCursor(cursor);
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _cursors["cursor-resize-ns"] = LoadCursor("cursor-resize-ns");
+            _cursors["cursor-resize-ew"] = LoadCursor("cursor-resize-ew");
+            _cursors["cursor-resize-nwse"] = LoadCursor("cursor-resize-nwse");
+            _cursors["cursor-resize-nesw"] = LoadCursor("cursor-resize-nesw");
+            _cursors["cursor-rotate"] = LoadCursor("cursor-rotate");
+            _cursors["default"] = CursorHelper.LoadCursor(lpCursorName: (IntPtr)32512);
+        }
+
+        private IntPtr LoadCursor(string name)
+        {
+            var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
+
+
+            if (WindowHelper.GetDpiForWindow(Handle) > 96)
+                uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
+            
+            return CursorHelper.CreateCursor(uri, MathUtils.PiOverFour);
         }
 
         public ArtContext ArtContext { get; }
 
-        protected override void HandleInput(InputEvent evt)
+        protected override IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        {
+            switch (msg)
+            {
+                case WindowMessage.SetCursor:
+                    CursorHelper.SetCursor(ArtContext.ToolManager.Tool.Cursor != null
+                                               ? _cursors[ArtContext.ToolManager.Tool.Cursor]
+                                               : _cursors["default"]);
+
+                    break;
+
+                default:
+                    return base.OnMessage(hWnd, msg, wParam, lParam);
+            }
+
+            return IntPtr.Zero;
+        }
+
+        protected override void OnInput(InputEvent evt)
         {
             var ac = ArtContext;
             var pos = ac.ViewManager.ToArtSpace(evt.Position);
@@ -87,33 +138,7 @@ namespace Ibinimator.View.Control
             }
         }
 
-        /**
-        protected override void OnPreviewTextInput(TextCompositionEventArgs e)
-        {
-            base.OnPreviewTextInput(e);
-
-            // quickfix b/c asychronous events mean we can't use Handled
-            // which creates the problem of backspace registering as 
-            // text input for some reason
-            if (e.Text == "\b" || e.Text == "")
-            {
-                _eventFlag.Set();
-                return;
-            }
-
-            lock (_events)
-            {
-                _events.Enqueue(
-                    new InputEvent(
-                        InputEventType.TextInput,
-                        e.Text));
-            }
-
-            _eventFlag.Set();
-        }
-    */
-
-        protected override void Render(RenderContext target)
+        protected override void OnRender(RenderContext target)
         {
             target.Clear(new Color(0.5f));
 
@@ -131,22 +156,22 @@ namespace Ibinimator.View.Control
 
             ac.ToolManager.Tool.Render(target, ac.CacheManager, ac.ViewManager);
 
-            if (ac.ToolManager.Tool.Cursor == null)
-            {
-                Cursor = Cursors.Arrow;
+            //if (ac.ToolManager.Tool.Cursor == null)
+            //{
+            //    Cursor = Cursors.Arrow;
 
-                return;
-            }
+            //    return;
+            //}
 
-            Cursor = Cursors.None;
+            //Cursor = Cursors.None;
 
-            target.Transform(
-                Matrix3x2.CreateRotation(ac.ToolManager.Tool.CursorRotate,
-                                         new Vector2(8)) *
-                Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)),
-                true);
+            //target.Transform(
+            //    Matrix3x2.CreateRotation(ac.ToolManager.Tool.CursorRotate,
+            //                             new Vector2(8)) *
+            //    Matrix3x2.CreateTranslation(_lastPosition - new Vector2(8)),
+            //    true);
 
-            target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.Cursor));
+            //target.DrawBitmap(ac.CacheManager.GetBitmap(ac.ToolManager.Tool.Cursor));
         }
 
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)

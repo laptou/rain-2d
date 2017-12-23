@@ -165,11 +165,17 @@
     </Compile>
     <Compile Include="Native\AccentPolicy.cs" />
     <Compile Include="Native\AccentState.cs" />
+    <Compile Include="Native\Caret.cs" />
+    <Compile Include="Native\CaretHelper.cs" />
+    <Compile Include="Native\CursorHelper.cs" />
+    <Compile Include="Native\KeyboardHelper.cs" />
     <Compile Include="Native\NativeHelper.cs" />
+    <Compile Include="Native\NativePoint.cs" />
     <Compile Include="Native\NativeRect.cs" />
     <Compile Include="Native\PaintStruct.cs" />
     <Compile Include="Native\WindowCompositionAttribute.cs" />
     <Compile Include="Native\WindowCompositionAttributeData.cs" />
+    <Compile Include="Native\WindowHelper.cs" />
     <Compile Include="Native\WindowMessage.cs" />
     <Compile Include="Native\WindowStyles.cs" />
     <Compile Include="Native\WndClass.cs" />
@@ -211,7 +217,6 @@
     <Compile Include="Service\Tools\SelectionTool.cs" />
     <Compile Include="Service\Tools\TextTool.cs" />
     <Compile Include="Service\Time.cs" />
-    <Compile Include="Service\WeakLock.cs" />
     <Compile Include="View\Command\SelectionCommands.cs" />
     <Compile Include="Service\Tools\ToolManager.cs" />
     <Compile Include="View\Command\ViewCommands.cs" />
