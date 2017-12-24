@@ -39,7 +39,7 @@ namespace Ibinimator.Service
             Selection = new ObservableList<ILayer>();
             Selection.CollectionChanged += (sender, args) =>
                                            {
-                                               UpdateBounds(true);
+                                               UpdateBounds();
                                                SelectionUpdated?.Invoke(this, null);
                                            };
         }
@@ -48,26 +48,32 @@ namespace Ibinimator.Service
 
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(ILayer.Selected)) return;
-
-            var layer = (ILayer) sender;
-
-            var contains = Selection.Contains(layer);
-
-            if (layer.Selected && !contains)
+            switch (e.PropertyName)
             {
-                Selection.Add(layer);
+                case nameof(ILayer.Selected):
+                    var layer = (ILayer)sender;
 
-                foreach (var child in layer.Flatten().Skip(1))
-                    child.Selected = false;
+                    var contains = Selection.Contains(layer);
+
+                    if (layer.Selected && !contains)
+                    {
+                        Selection.Add(layer);
+
+                        foreach (var child in layer.Flatten().Skip(1))
+                            child.Selected = false;
+                    }
+                    else if (!layer.Selected && contains)
+                    {
+                        Selection.Remove(layer);
+                    }
+
+                    break;
             }
-            else if (!layer.Selected && contains)
-            {
-                Selection.Remove(layer);
-            }
+
+            
         }
 
-        private void OnHistoryTraversed(object sender, long e) { UpdateBounds(true); }
+        private void OnHistoryTraversed(object sender, long e) { UpdateBounds(); }
 
         #region ISelectionManager Members
 
@@ -77,8 +83,11 @@ namespace Ibinimator.Service
         public void Attach(IArtContext context)
         {
             context.ViewManager.DocumentUpdated += OnDocumentUpdated;
+            context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
             context.HistoryManager.Traversed += OnHistoryTraversed;
         }
+
+        private void OnBoundsChanged(object sender, EventArgs e) { UpdateBounds(); }
 
         public void ClearSelection()
         {
@@ -140,7 +149,7 @@ namespace Ibinimator.Service
             SelectionUpdated?.Invoke(this, null);
         }
 
-        public void UpdateBounds(bool reset)
+        public void UpdateBounds()
         {
             if (Selection.Count == 0)
             {

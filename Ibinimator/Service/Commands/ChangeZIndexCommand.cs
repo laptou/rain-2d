@@ -28,7 +28,7 @@ namespace Ibinimator.Service.Commands
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index + Delta));
             }
 
-            artContext.SelectionManager.UpdateBounds(true);
+            artContext.SelectionManager.UpdateBounds();
         }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)
@@ -49,7 +49,7 @@ namespace Ibinimator.Service.Commands
                 siblings.Move(index, MathUtils.Clamp(0, siblings.Count - 1, index - Delta));
             }
 
-            artContext.SelectionManager.UpdateBounds(true);
+            artContext.SelectionManager.UpdateBounds();
         }
     }
 }

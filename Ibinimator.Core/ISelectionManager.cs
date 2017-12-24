@@ -21,6 +21,6 @@ namespace Ibinimator.Core
         Vector2 ToSelectionSpace(Vector2 v);
 
         void TransformSelection(Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 origin);
-        void UpdateBounds(bool reset);
+        void UpdateBounds();
     }
 }

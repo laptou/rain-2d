@@ -55,7 +55,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
@@ -141,12 +141,12 @@ namespace Ibinimator.Service.Tools
 
             _nodes = GetGeometricNodes().ToList();
 
-            Context.SelectionManager.UpdateBounds(true);
+            Context.SelectionManager.UpdateBounds();
         }
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (_mouse.down, true, pos);
 
             Context.InvalidateRender();

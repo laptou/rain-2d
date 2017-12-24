@@ -48,18 +48,10 @@ namespace Ibinimator.Service.Tools
         /// <inheritdoc />
         public override void Detach(IArtContext context)
         {
-            Manager.Context.HistoryManager.Traversed += OnTraversed;
-            base.Detach(context);
-        }
-
-        public override void Dispose()
-        {
+            Manager.Context.HistoryManager.Traversed -= OnTraversed;
             _selection.Clear();
 
-            Manager.Context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
-            Manager.Context.HistoryManager.Traversed -= OnTraversed;
-
-            base.Dispose();
+            base.Detach(context);
         }
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
@@ -89,7 +81,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
@@ -143,7 +135,7 @@ namespace Ibinimator.Service.Tools
                 _selection.Add(target.Value.Index);
             }
 
-            Context.SelectionManager.UpdateBounds(true);
+            Context.SelectionManager.UpdateBounds();
         }
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
@@ -151,7 +143,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
                 return;
 
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
 
             var tlpos = Vector2.Transform(_mouse.pos,
                                           MathUtils.Invert(SelectedLayer.AbsoluteTransform));

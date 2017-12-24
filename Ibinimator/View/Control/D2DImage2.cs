@@ -113,6 +113,7 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+
                     _events.Enqueue(new PointerEvent(pos, _lastMousePos - pos,
                                                      KeyboardHelper.GetModifierState(wParam)));
 
@@ -127,6 +128,7 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+
                     _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Down,
                                                    KeyboardHelper.GetModifierState(wParam)));
 

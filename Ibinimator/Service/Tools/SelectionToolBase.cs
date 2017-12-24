@@ -85,9 +85,12 @@ namespace Ibinimator.Service.Tools
         public virtual void Detach(IArtContext context)
         {
             context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            context.MouseDown -= MouseDown;
+            context.MouseMove -= MouseMove;
+            context.MouseUp -= MouseUp;
+            context.KeyDown -= KeyDown;
+            context.KeyUp -= KeyUp;
         }
-
-        public virtual void Dispose() { SelectionManager.SelectionUpdated -= OnSelectionUpdated; }
 
         public virtual IBrushInfo ProvideFill()
         {
@@ -156,7 +159,7 @@ namespace Ibinimator.Service.Tools
         public virtual void MouseDown(IArtContext context, ClickEvent evt)
         {
             var deltaTime = Time.Now - _mouse.time;
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             var state = evt.ModifierState;
 
             _mouse = (pos, true, Time.Now);

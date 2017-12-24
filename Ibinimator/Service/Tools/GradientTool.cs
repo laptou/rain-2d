@@ -53,12 +53,6 @@ namespace Ibinimator.Service.Tools
             // no-op on this tool
         }
 
-        public override void Dispose()
-        {
-            _selection.Clear();
-            base.Dispose();
-        }
-
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
             switch ((Key) evt.KeyCode)
@@ -81,7 +75,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
@@ -127,12 +121,12 @@ namespace Ibinimator.Service.Tools
                 }
             }
 
-            Context.SelectionManager.UpdateBounds(true);
+            Context.SelectionManager.UpdateBounds();
         }
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             Context.InvalidateRender();
 
             if (SelectedLayer == null)

@@ -125,6 +125,8 @@ namespace Ibinimator.Service.Tools
         public override void Detach(IArtContext context)
         {
             context.Text -= TextInput;
+            Dispose();
+
             base.Detach(context);
         }
 
@@ -156,13 +158,12 @@ namespace Ibinimator.Service.Tools
             }, true);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            base.Dispose();
+
             _dwFontCollection?.Dispose();
             _dwFactory?.Dispose();
         }
-
         
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
@@ -404,7 +405,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (pos, true, Time.Now, _mouse.time);
             _drag = (pos, pos, Time.Now);
 
@@ -413,7 +414,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
 
             if (SelectedLayer == null)
             {
@@ -449,7 +450,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseUp(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse.down = false;
             _drag.end = pos;
 

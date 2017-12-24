@@ -78,7 +78,7 @@ namespace Ibinimator.View.Command
 
             artContext.HistoryManager.Do(cmd);
 
-            artContext.SelectionManager.UpdateBounds(true);
+            artContext.SelectionManager.UpdateBounds();
         }
 
         private static void AlignBottom(IArtContext artContext) { Align(artContext, Direction.Down); }

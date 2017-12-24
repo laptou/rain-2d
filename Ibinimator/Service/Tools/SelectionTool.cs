@@ -73,7 +73,7 @@ namespace Ibinimator.Service.Tools
         public override void Detach(IArtContext context)
         {
             context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
-            base.Attach(context);
+            base.Detach(context);
         }
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
@@ -115,7 +115,7 @@ namespace Ibinimator.Service.Tools
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
 
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
@@ -140,7 +140,7 @@ namespace Ibinimator.Service.Tools
         {
             Context.InvalidateRender();
 
-            var pos = evt.Position;
+            var pos = context.ViewManager.ToArtSpace(evt.Position);
             var localPos = SelectionManager.ToSelectionSpace(pos);
             var bounds = SelectionManager.SelectionBounds;
 

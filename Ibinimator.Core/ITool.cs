@@ -14,7 +14,7 @@ namespace Ibinimator.Core
         void Detach(IArtContext context);
     }
 
-    public interface ITool : INotifyPropertyChanged, IDisposable, IRenderable, IAttachment
+    public interface ITool : INotifyPropertyChanged, IRenderable, IAttachment
     {
         string Cursor { get; }
         float CursorRotate { get; }
