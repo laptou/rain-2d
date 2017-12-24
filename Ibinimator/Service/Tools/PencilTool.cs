@@ -21,8 +21,8 @@ namespace Ibinimator.Service.Tools
         private IList<PathNode>                      _nodes;
         private Vector2?                             _start;
 
-        public PencilTool(IToolManager toolManager, ISelectionManager selectionManager) :
-            base(toolManager, selectionManager)
+        public PencilTool(IToolManager toolManager) :
+            base(toolManager)
         {
             Type = ToolType.Pencil;
 
@@ -40,31 +40,27 @@ namespace Ibinimator.Service.Tools
             return Vector2.Transform(v, MathUtils.Invert(SelectedPath.AbsoluteTransform));
         }
 
-        public override bool KeyDown(Key key, ModifierState modifiers)
+        public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            switch (key)
+            switch ((Key)evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
-
                     break;
 
                 case Key.Delete:
                     Remove(_nodes.Count - 1);
                     Context.InvalidateRender();
-
                     break;
 
-                default:
-
-                    return base.KeyDown(key, modifiers);
             }
 
-            return true;
+            base.KeyDown(context, evt);
         }
 
-        public override bool MouseDown(Vector2 pos, ModifierState state)
+        public override void MouseDown(IArtContext context, ClickEvent evt)
         {
+            var pos = evt.Position;
             _mouse = (true, false, pos);
 
             if (SelectedPath == null)
@@ -75,7 +71,7 @@ namespace Ibinimator.Service.Tools
                 {
                     hit.Selected = true;
 
-                    return true;
+                    return ;
                 }
 
                 Context.SelectionManager.ClearSelection();
@@ -84,7 +80,7 @@ namespace Ibinimator.Service.Tools
                 {
                     _start = pos;
 
-                    return true;
+                    return;
                 }
 
                 var path = new Path
@@ -115,7 +111,7 @@ namespace Ibinimator.Service.Tools
                     {
                         found = true;
 
-                        if (state.Shift)
+                        if (evt.ModifierState.Shift)
                         {
                             // shift + click = remove node
                             Remove(node.Index);
@@ -152,23 +148,21 @@ namespace Ibinimator.Service.Tools
 
             Context.SelectionManager.UpdateBounds(true);
 
-            return true;
         }
 
-        public override bool MouseMove(Vector2 pos, ModifierState state)
+        public override void MouseMove(IArtContext context, PointerEvent evt)
         {
+            var pos = evt.Position;
             _mouse = (_mouse.down, true, pos);
 
             Context.InvalidateRender();
 
-            return false;
         }
 
-        public override bool MouseUp(Vector2 pos, ModifierState state)
+        public override void MouseUp(IArtContext context, ClickEvent evt)
         {
             Context.InvalidateRender();
 
-            return true;
         }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
@@ -247,8 +241,6 @@ namespace Ibinimator.Service.Tools
             p.Dispose();
             p2.Dispose();
         }
-
-        public override bool TextInput(string text) { return false; }
 
         public Vector2 ToWorldSpace(Vector2 v)
         {

@@ -19,8 +19,7 @@ namespace Ibinimator.View.Control
 {
     public class ArtView : D2DImage2
     {
-        private Vector2                    _lastPosition;
-        private Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
+        private readonly Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
 
         public ArtView()
         {
@@ -91,8 +90,6 @@ namespace Ibinimator.View.Control
             switch (evt)
             {
                 case ClickEvent clickEvent:
-                    _lastPosition = clickEvent.Position;
-
                     if (clickEvent.State)
                         ac.RaiseMouseDown(clickEvent);
                     else

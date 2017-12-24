@@ -219,7 +219,10 @@ namespace Ibinimator.Service
         #region ICacheManager Members
 
         /// <inheritdoc />
-        public void Attach(IArtContext context) { throw new NotImplementedException(); }
+        public void Attach(IArtContext context)
+        {
+
+        }
 
 
         /// <inheritdoc />
@@ -321,7 +324,7 @@ namespace Ibinimator.Service
         }
 
         /// <inheritdoc />
-        public void Detach(IArtContext context) { throw new NotImplementedException(); }
+        public void Detach(IArtContext context) {  }
 
         /// <inheritdoc />
         public RectangleF GetAbsoluteBounds(ILayer layer)

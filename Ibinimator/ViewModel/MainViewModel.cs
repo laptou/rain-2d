@@ -31,7 +31,7 @@ namespace Ibinimator.ViewModel
             HistoryManager = new HistoryManager(artView.ArtContext);
             SelectionManager = new SelectionManager(artView.ArtContext);
             ToolManager = new ToolManager(artView.ArtContext);
-            BrushManager = new BrushManager( artView.ArtContext);
+            BrushManager = new BrushManager(artView.ArtContext);
 
             Load();
 
@@ -330,45 +330,33 @@ namespace Ibinimator.ViewModel
         {
             switch (name)
             {
-                case "file.open":           return FileCommands.OpenCommand;
-                case "file.save":           return FileCommands.SaveCommand;
-                case "edit.undo":           return HistoryCommands.UndoCommand;
-                case "edit.redo":           return HistoryCommands.RedoCommand;
-                case "object.union":        return ObjectCommands.UnionCommand;
-                case "object.difference":   return ObjectCommands.DifferenceCommand;
-                case "object.intersection": return ObjectCommands.IntersectionCommand;
-                case "object.exclusion":    return ObjectCommands.XorCommand;
-                case "object.pathify":      return ObjectCommands.PathifyCommand;
-                case "selection.group":     return SelectionCommands.GroupCommand;
-                case "selection.ungroup":   return SelectionCommands.UngroupCommand;
-                case "selection.move-bottom":
-
-                    return SelectionCommands.MoveToBottomCommand;
-                case "selection.move-down": return SelectionCommands.MoveDownCommand;
-                case "selection.move-up":   return SelectionCommands.MoveUpCommand;
-                case "selection.move-top":  return SelectionCommands.MoveToTopCommand;
-                case "selection.mirror-x":  return SelectionCommands.FlipHorizontalCommand;
-                case "selection.mirror-y":  return SelectionCommands.FlipVerticalCommand;
-                case "selection.rotate-cw":
-
-                    return SelectionCommands.RotateClockwiseCommand;
-                case "selection.rotate-ccw":
-
-                    return SelectionCommands.RotateCounterClockwiseCommand;
-                case "selection.align-left":  return SelectionCommands.AlignLeftCommand;
-                case "selection.align-right": return SelectionCommands.AlignRightCommand;
-                case "selection.align-top":   return SelectionCommands.AlignTopCommand;
-                case "selection.align-bottom":
-
-                    return SelectionCommands.AlignBottomCommand;
-                case "selection.align-center-x":
-
-                    return SelectionCommands.AlignCenterXCommand;
-                case "selection.align-center-y":
-
-                    return SelectionCommands.AlignCenterYCommand;
-                case "help.license": return ViewCommands.LicenseCommand;
-                default:             return null;
+                case "file.open":                return FileCommands.OpenCommand;
+                case "file.save":                return FileCommands.SaveCommand;
+                case "edit.undo":                return HistoryCommands.UndoCommand;
+                case "edit.redo":                return HistoryCommands.RedoCommand;
+                case "object.union":             return ObjectCommands.UnionCommand;
+                case "object.difference":        return ObjectCommands.DifferenceCommand;
+                case "object.intersection":      return ObjectCommands.IntersectionCommand;
+                case "object.exclusion":         return ObjectCommands.XorCommand;
+                case "object.pathify":           return ObjectCommands.PathifyCommand;
+                case "selection.group":          return SelectionCommands.GroupCommand;
+                case "selection.ungroup":        return SelectionCommands.UngroupCommand;
+                case "selection.move-bottom":    return SelectionCommands.MoveToBottomCommand;
+                case "selection.move-down":      return SelectionCommands.MoveDownCommand;
+                case "selection.move-up":        return SelectionCommands.MoveUpCommand;
+                case "selection.move-top":       return SelectionCommands.MoveToTopCommand;
+                case "selection.mirror-x":       return SelectionCommands.FlipHorizontalCommand;
+                case "selection.mirror-y":       return SelectionCommands.FlipVerticalCommand;
+                case "selection.rotate-cw":      return SelectionCommands.RotateClockwiseCommand;
+                case "selection.rotate-ccw":     return SelectionCommands.RotateCounterClockwiseCommand;
+                case "selection.align-left":     return SelectionCommands.AlignLeftCommand;
+                case "selection.align-right":    return SelectionCommands.AlignRightCommand;
+                case "selection.align-top":      return SelectionCommands.AlignTopCommand;
+                case "selection.align-bottom":   return SelectionCommands.AlignBottomCommand;
+                case "selection.align-center-x": return SelectionCommands.AlignCenterXCommand;
+                case "selection.align-center-y": return SelectionCommands.AlignCenterYCommand;
+                case "help.license":             return ViewCommands.LicenseCommand;
+                default:                         return null;
             }
         }
 
@@ -412,11 +400,11 @@ namespace Ibinimator.ViewModel
         public MenuItem() { Type = MenuItemType.Separator; }
 
         public MenuItem(
-            string                name,
+            string name,
             IEnumerable<MenuItem> subMenus,
-            ICommand              command,
-            string                shortcut,
-            IArtContext           artContext)
+            ICommand command,
+            string shortcut,
+            IArtContext artContext)
         {
             SubMenus = subMenus.ToList();
             Command = command;
@@ -448,9 +436,9 @@ namespace Ibinimator.ViewModel
         }
 
         public ToolbarItem(
-            string      name,
-            ICommand    command,
-            string      icon,
+            string name,
+            ICommand command,
+            string icon,
             IArtContext artContext)
         {
             Command = command;

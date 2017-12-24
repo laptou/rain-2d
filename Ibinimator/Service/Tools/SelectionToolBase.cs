@@ -20,7 +20,7 @@ namespace Ibinimator.Service.Tools
         private   (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
         protected ModifierState                            State;
 
-        protected SelectionToolBase(IToolManager manager, ISelectionManager selectionManager)
+        protected SelectionToolBase(IToolManager manager)
         {
             Manager = manager;
             Options = new ToolOptions();
@@ -32,27 +32,27 @@ namespace Ibinimator.Service.Tools
 
         protected ISelectionManager SelectionManager => Context.SelectionManager;
 
-        public abstract bool MouseMove(Vector2 pos, ModifierState state);
+        public abstract void MouseMove(IArtContext context, PointerEvent evt);
 
-        public abstract bool TextInput(string text);
-
-        public virtual bool KeyDown(Key key, ModifierState modifiers)
+        public virtual void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            State = modifiers;
+            State = evt.ModifierState;
 
-            return true;
         }
 
-        public virtual bool KeyUp(Key key, ModifierState modifiers)
+        public virtual void KeyUp(IArtContext context, KeyboardEvent evt)
         {
-            State = modifiers;
+            State = evt.ModifierState;
 
-            return true;
+            return ;
         }
 
-        public virtual bool MouseDown(Vector2 pos, ModifierState state)
+        public virtual void MouseDown(IArtContext context, ClickEvent evt)
         {
             var deltaTime = Time.Now - _mouse.time;
+            var pos = evt.Position;
+            var state = evt.ModifierState;
+
             _mouse = (pos, true, Time.Now);
 
             if (deltaTime < 500)
@@ -69,17 +69,15 @@ namespace Ibinimator.Service.Tools
             if (hit != null)
                 hit.Selected = true;
 
-            return hit != null;
         }
 
-        public virtual bool MouseUp(Vector2 pos, ModifierState state)
+        public virtual void MouseUp(IArtContext context, ClickEvent evt)
         {
-            _mouse.position = pos;
+            _mouse.position = evt.Position;
             _mouse.down = false;
 
             Context.InvalidateRender();
 
-            return false;
         }
 
         protected virtual ILayer HitTest(ILayer layer, Vector2 position)
@@ -220,13 +218,14 @@ namespace Ibinimator.Service.Tools
         #endregion
 
         /// <inheritdoc />
-        public void Attach(IArtContext context)
+        public virtual void Attach(IArtContext context)
         {
             context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.MouseDown += (context1, evt) => MouseDown(context1, evt);
         }
 
         /// <inheritdoc />
-        public void Detach(IArtContext context)
+        public virtual void Detach(IArtContext context)
         {
             context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
         }

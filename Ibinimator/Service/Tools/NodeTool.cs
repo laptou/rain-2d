@@ -25,16 +25,27 @@ namespace Ibinimator.Service.Tools
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode>                      _nodes;
 
-        public NodeTool(IToolManager toolManager, ISelectionManager selectionManager)
-            : base(toolManager, selectionManager)
+        public NodeTool(IToolManager toolManager)
+            : base(toolManager)
         {
             Type = ToolType.Node;
 
             UpdateNodes();
 
-            Manager.Context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+        }
 
+        /// <inheritdoc />
+        public override void Attach(IArtContext context)
+        {
             Manager.Context.HistoryManager.Traversed += OnTraversed;
+            base.Attach(context);
+        }
+
+        /// <inheritdoc />
+        public override void Detach(IArtContext context)
+        {
+            Manager.Context.HistoryManager.Traversed += OnTraversed;
+            base.Detach(context);
         }
 
         public IGeometricLayer SelectedLayer =>
@@ -55,12 +66,9 @@ namespace Ibinimator.Service.Tools
             base.Dispose();
         }
 
-        public override bool KeyDown(Key key, ModifierState modifiers)
+        public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            switch (key)
+            switch ((Key)evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
@@ -74,33 +82,23 @@ namespace Ibinimator.Service.Tools
 
                     break;
 
-                case Key.K:
+                case Key.Right:
                     Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
-
                     break;
 
-                default:
-
-                    return base.KeyDown(key, modifiers);
+                default: return base.KeyDown(context, evt);
             }
 
             return true;
         }
 
-        public override bool KeyUp(Key key, ModifierState modifiers)
+        public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            return base.KeyUp(key, modifiers);
-        }
-
-        public override bool MouseDown(Vector2 pos, ModifierState state)
-        {
+            var pos = evt.Position;
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-                return base.MouseDown(pos, state);
+                return base.MouseDown(context, evt);
 
             _handle = null;
             PathNode? target = null;
@@ -140,7 +138,7 @@ namespace Ibinimator.Service.Tools
 
             if (target != null)
             {
-                if (!state.Shift)
+                if (!evt.ModifierState.Shift)
                     _selection.Clear();
 
                 _selection.Add(target.Value.Index);
@@ -192,12 +190,12 @@ namespace Ibinimator.Service.Tools
             return false;
         }
 
-        public override bool MouseUp(Vector2 pos, ModifierState state)
+        public override void MouseUp(IArtContext context, ClickEvent evt)
         {
             if (SelectedLayer == null)
-                return base.MouseUp(pos, state);
+                return base.MouseUp(context, evt);
 
-            _mouse = (false, _mouse.moved, pos);
+            _mouse = (false, _mouse.moved, evt.Position);
 
             Context.InvalidateRender();
 
@@ -294,8 +292,6 @@ namespace Ibinimator.Service.Tools
             p.Dispose();
             p2.Dispose();
         }
-
-        public override bool TextInput(string text) { return false; }
 
         protected override ILayer HitTest(ILayer layer, Vector2 position)
         {

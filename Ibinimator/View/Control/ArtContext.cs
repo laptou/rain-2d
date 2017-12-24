@@ -14,7 +14,18 @@ namespace Ibinimator.View.Control
         private readonly ArtView _artView;
         private          Status  _status;
 
-        public ArtContext(ArtView artView) { _artView = artView; }
+        public ArtContext(ArtView artView)
+        {
+            _artView = artView;
+            _artView.RenderTargetCreated += ArtViewOnRenderTargetCreated;
+        }
+
+        private void ArtViewOnRenderTargetCreated(object sender, EventArgs eventArgs)
+        {
+            CacheManager?.ResetDeviceResources();
+            if (ViewManager?.Root != null)
+                CacheManager?.BindLayer(ViewManager.Document.Root);
+        }
 
         public void SetManager<T>(T manager) where T : IArtContextManager
         {
@@ -79,11 +90,6 @@ namespace Ibinimator.View.Control
                 ViewManager?.Detach(this);
                 ViewManager = (IViewManager) manager;
                 ViewManager.Attach(this);
-
-
-                CacheManager?.ResetDeviceResources();
-                if (ViewManager?.Root != null)
-                    CacheManager?.BindLayer(ViewManager.Document.Root);
             }
 
             InvalidateRender();

@@ -44,14 +44,26 @@ namespace Ibinimator.Service.Tools
 
         private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
 
-        public SelectionTool(IToolManager toolManager, ISelectionManager selectionManager)
-            : base(toolManager, selectionManager)
+        public SelectionTool(IToolManager toolManager)
+            : base(toolManager)
         {
             Type = ToolType.Select;
 
             toolManager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
+        }
 
-            selectionManager.SelectionUpdated += OnSelectionUpdated;
+        /// <inheritdoc />
+        public override void Attach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            base.Attach(context);
+        }
+
+        /// <inheritdoc />
+        public override void Detach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            base.Attach(context);
         }
 
         public override string Cursor { get; protected set; }
@@ -64,8 +76,9 @@ namespace Ibinimator.Service.Tools
 
         public GuideManager GuideManager { get; set; } = new GuideManager();
 
-        public override bool KeyDown(Key key, ModifierState modifiers)
+        public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
+            var key = (Key) evt.KeyCode;
             if (key == Key.Delete)
             {
                 var delete = Selection.ToArray();
@@ -78,27 +91,31 @@ namespace Ibinimator.Service.Tools
                             layer.Parent,
                             layer));
 
-                return true;
+                return;
             }
 
             if (key == Key.LeftShift || key == Key.RightShift ||
                 key == Key.LeftAlt || key == Key.RightAlt)
                 GuideManager.ClearVirtualGuides();
 
-            return base.KeyDown(key, modifiers);
+            base.KeyDown(context, evt);
         }
 
-        public override bool KeyUp(Key key, ModifierState modifiers)
+        public override void KeyUp(IArtContext context, KeyboardEvent evt)
         {
+            var key = (Key) evt.KeyCode;
+
             if (key == Key.LeftShift || key == Key.RightShift ||
                 key == Key.LeftAlt || key == Key.RightAlt)
                 GuideManager.ClearVirtualGuides();
 
-            return base.KeyUp(key, modifiers);
+            base.KeyUp(context, evt);
         }
 
-        public override bool MouseDown(Vector2 pos, ModifierState state)
+        public override void MouseDown(IArtContext context, ClickEvent evt)
         {
+            var pos = evt.Position;
+
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
 
@@ -106,26 +123,22 @@ namespace Ibinimator.Service.Tools
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
                     _handle = handle.handle;
-
-                    return true;
+                    return;
                 }
 
-            if (base.MouseDown(pos, state))
-            {
+            base.MouseDown(context, evt);
+
+            if(Context.SelectionManager.Selection.Any())
                 _handle = SelectionHandle.Translation;
 
-                return true;
-            }
-
             UpdateStatus();
-
-            return false;
         }
 
-        public override bool MouseMove(Vector2 pos, ModifierState state)
+        public override void MouseMove(IArtContext context, PointerEvent evt)
         {
             Context.InvalidateRender();
 
+            var pos = evt.Position;
             var localPos = SelectionManager.ToSelectionSpace(pos);
             var bounds = SelectionManager.SelectionBounds;
 
@@ -178,8 +191,7 @@ namespace Ibinimator.Service.Tools
 
             #region transformation
 
-            if (!_mouse.down) return false;
-            if (!Selection.Any()) return false;
+            if (!_mouse.down || !Selection.Any()) return;
 
             var relativeOrigin = new Vector2(0.5f);
 
@@ -201,7 +213,7 @@ namespace Ibinimator.Service.Tools
 
                 #region segmented rotation
 
-                if (state.Shift)
+                if (evt.ModifierState.Shift)
                 {
                     GuideManager.SetGuide(
                         new Guide(
@@ -242,7 +254,7 @@ namespace Ibinimator.Service.Tools
 
                 #region snapped translation
 
-                if (state.Shift)
+                if (evt.ModifierState.Shift)
                 {
                     var localCenter = bounds.TopLeft +
                                       relativeOrigin * bounds.Size;
@@ -259,7 +271,7 @@ namespace Ibinimator.Service.Tools
 
                         Vector2 axisX, axisY;
 
-                        if (state.Alt) // local axes
+                        if (evt.ModifierState.Alt) // local axes
                         {
                             axisX = xaxis - center;
                             axisY = yaxis - center;
@@ -329,7 +341,7 @@ namespace Ibinimator.Service.Tools
 
             #region proportional scaling
 
-            if (state.Shift &&
+            if (evt.ModifierState.Shift &&
                 (_handle == SelectionHandle.BottomLeft ||
                  _handle == SelectionHandle.BottomRight ||
                  _handle == SelectionHandle.TopRight ||
@@ -387,20 +399,15 @@ namespace Ibinimator.Service.Tools
             _mouse.position = pos;
             _deltaTranslation += translate;
             _deltaRotation += rotate;
-
-            return true;
         }
 
-        public override bool MouseUp(Vector2 pos, ModifierState state)
+        public override void MouseUp(IArtContext context, ClickEvent evt)
         {
             _mouse.down = false;
-            _mouse.position = pos;
-
-            base.MouseUp(pos, state);
-
+            _mouse.position = evt.Position;
             GuideManager.ClearVirtualGuides();
 
-            return true;
+            base.MouseUp(context, evt);
         }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
@@ -430,8 +437,6 @@ namespace Ibinimator.Service.Tools
                 }
             }
         }
-
-        public override bool TextInput(string text) { return false; }
 
         protected override void OnSelectionUpdated(object sender, EventArgs args)
         {

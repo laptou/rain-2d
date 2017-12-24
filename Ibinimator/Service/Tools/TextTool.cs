@@ -41,8 +41,8 @@ namespace Ibinimator.Service.Tools
         private RectangleF[] _selectionRects = new RectangleF[0];
         private bool         _updatingOptions;
 
-        public TextTool(IToolManager manager, ISelectionManager selectionManager)
-            : base(manager, selectionManager)
+        public TextTool(IToolManager manager)
+            : base(manager)
         {
             Type = ToolType.Text;
             Status = "<b>Double Click</b> on canvas to create new text object. " +
@@ -155,7 +155,7 @@ namespace Ibinimator.Service.Tools
             return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        public override bool KeyDown(Key key, ModifierState mods)
+        public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
             if (SelectedLayer != null)
             {
@@ -163,22 +163,21 @@ namespace Ibinimator.Service.Tools
 
                 Format format;
 
-                switch (key)
+                switch ((Key)evt.KeyCode)
                 {
                     #region Navigation
 
                     case Key.Left:
                         _selection.index--;
 
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                             _selection.length++;
                         else
                             _selection.length = 0;
 
                         break;
                     case Key.Right:
-
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                         {
                             _selection.length++;
                         }
@@ -190,8 +189,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Down:
-
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                         {
                             var prev = text.Substring(0, _selection.index + _selection.length)
                                            .LastIndexOf("\n", StringComparison.Ordinal);
@@ -230,8 +228,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Up:
-
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                         {
                             var start = text.Substring(0, _selection.index)
                                             .LastIndexOf("\n", StringComparison.Ordinal);
@@ -261,8 +258,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.End:
-
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                         {
                             _selection.length = text.Length - _selection.index;
                         }
@@ -274,7 +270,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Home:
-                        if (mods.Shift)
+                        if (evt.ModifierState.Shift)
                             _selection.length += _selection.index;
                         else
                             _selection.length = 0;
@@ -326,13 +322,13 @@ namespace Ibinimator.Service.Tools
 
                     #region Shorcuts
 
-                    case Key.A when mods.Control:
+                    case Key.A when evt.ModifierState.Control:
                         _selection.index = 0;
                         _selection.length = SelectedLayer.Value.Length;
 
                         break;
 
-                    case Key.B when mods.Control:
+                    case Key.B when evt.ModifierState.Control:
                         format = SelectedLayer.GetFormat(_selection.index);
                         var weight = format?.FontWeight ?? SelectedLayer.FontWeight;
 
@@ -344,7 +340,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-                    case Key.I when mods.Control:
+                    case Key.I when evt.ModifierState.Control:
                         format = SelectedLayer.GetFormat(_selection.index);
                         var style = format?.FontStyle ?? SelectedLayer.FontStyle;
 
@@ -356,16 +352,16 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-                    case Key.C when mods.Control:
+                    case Key.C when evt.ModifierState.Control:
                         Clipboard.SetText(text.Substring(_selection.index, _selection.length));
 
                         break;
 
-                    case Key.X when mods.Control:
+                    case Key.X when evt.ModifierState.Control:
                         Clipboard.SetText(text.Substring(_selection.index, _selection.length));
                         goto case Key.Back;
 
-                    case Key.V when mods.Control:
+                    case Key.V when evt.ModifierState.Control:
                         if (_selection.length > 0)
                             Remove(_selection.index, _selection.length);
 
@@ -382,7 +378,7 @@ namespace Ibinimator.Service.Tools
 
                     default:
 
-                        return false;
+                        return ;
                 }
 
                 _selection.index = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0, _selection.index);
@@ -391,29 +387,28 @@ namespace Ibinimator.Service.Tools
 
                 Update();
 
-                return true;
             }
 
-            return false;
         }
 
-        public override bool KeyUp(Key key, ModifierState modifiers) { return false; }
-
-        public override bool MouseDown(Vector2 pos, ModifierState state)
+        public override void MouseDown(IArtContext context, ClickEvent evt)
         {
+            var pos = evt.Position;
             _mouse = (pos, true, Time.Now, _mouse.time);
             _drag = (pos, pos, Time.Now);
 
-            return base.MouseDown(pos, state);
+            base.MouseDown(context, evt);
         }
 
-        public override bool MouseMove(Vector2 pos, ModifierState state)
+        public override void MouseMove(IArtContext context, PointerEvent evt)
         {
+            var pos = evt.Position;
+
             if (SelectedLayer == null)
             {
                 _mouse.position = pos;
 
-                return false;
+                return ;
             }
 
             _drag.end = pos;
@@ -440,18 +435,22 @@ namespace Ibinimator.Service.Tools
 
             _mouse.position = pos;
 
-            return true;
         }
 
-        public override bool MouseUp(Vector2 pos, ModifierState state)
+        public override void MouseUp(IArtContext context, ClickEvent evt)
         {
+            var pos = evt.Position;
             _mouse.down = false;
             _drag.end = pos;
 
             if (SelectedLayer == null)
             {
                 if (_mouse.time - _mouse.previousTime > Time.DoubleClick)
-                    return base.MouseUp(pos, state);
+                {
+                    base.MouseUp(context, evt);
+
+                    return;
+                }
 
                 // if double click, make a new text object
                 var text = new Text
@@ -475,13 +474,16 @@ namespace Ibinimator.Service.Tools
 
                 text.Selected = true;
 
-                return true;
+                return ;
             }
 
             var tpos = FromWorldSpace(pos);
 
             if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tpos))
-                return base.MouseUp(pos, state);
+            {
+                base.MouseUp(context, evt);
+                return;
+            }
 
             if (_mouse.time - _mouse.previousTime <= Time.DoubleClick)
             {
@@ -523,7 +525,6 @@ namespace Ibinimator.Service.Tools
 
             Update();
 
-            return true;
         }
 
         public override IBrushInfo ProvideFill()
@@ -566,7 +567,7 @@ namespace Ibinimator.Service.Tools
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        public override bool TextInput(string text)
+        public bool TextInput(string text)
         {
             if (SelectedLayer == null) return false;
 

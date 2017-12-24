@@ -24,11 +24,7 @@ namespace Ibinimator.Service.Tools
         //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
 
-        public GradientTool(IToolManager toolManager, ISelectionManager selectionManager) : base(
-            toolManager, selectionManager)
-        {
-            Type = ToolType.Gradient;
-        }
+        public GradientTool(IToolManager toolManager) : base(toolManager) { Type = ToolType.Gradient; }
 
         public GradientBrushInfo SelectedBrush =>
             SelectedLayer?.Fill as GradientBrushInfo;
@@ -66,12 +62,9 @@ namespace Ibinimator.Service.Tools
             base.Dispose();
         }
 
-        public override bool KeyDown(Key key, ModifierState modifiers)
+        public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            switch (key)
+            switch ((Key) evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
@@ -84,29 +77,21 @@ namespace Ibinimator.Service.Tools
                     Context.InvalidateRender();
 
                     break;
-
-                default:
-
-                    return base.KeyDown(key, modifiers);
             }
 
-            return true;
+            base.KeyDown(context, evt);
         }
 
-        public override bool KeyUp(Key key, ModifierState modifiers)
+        public override void MouseDown(IArtContext context, ClickEvent evt)
         {
-            //_kbd.shift = modifiers.HasFlag(ModifierKeys.Shift);
-            //_kbd.alt = modifiers.HasFlag(ModifierKeys.Alt);
-
-            return base.KeyUp(key, modifiers);
-        }
-
-        public override bool MouseDown(Vector2 pos, ModifierState state)
-        {
+            var pos = evt.Position;
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-                return base.MouseDown(pos, state);
+            {
+                base.MouseDown(context, evt);
+                return;
+            }
 
             if (SelectedBrush != null)
             {
@@ -133,7 +118,7 @@ namespace Ibinimator.Service.Tools
                     index++;
                 }
 
-                if (!state.Shift)
+                if (!evt.ModifierState.Shift)
                     _selection.Clear();
 
                 if (target != null)
@@ -145,16 +130,15 @@ namespace Ibinimator.Service.Tools
             }
 
             Context.SelectionManager.UpdateBounds(true);
-
-            return true;
         }
 
-        public override bool MouseMove(Vector2 pos, ModifierState state)
+        public override void MouseMove(IArtContext context, PointerEvent evt)
         {
+            var pos = evt.Position;
             Context.InvalidateRender();
 
             if (SelectedLayer == null)
-                return false;
+                return;
 
             var localLastPos = Vector2.Transform(_mouse.pos,
                                                  MathUtils.Invert(SelectedLayer.AbsoluteTransform));
@@ -199,23 +183,17 @@ namespace Ibinimator.Service.Tools
                 }
 
                 Context.InvalidateRender();
-
-                return true;
             }
-
-            return false;
         }
 
-        public override bool MouseUp(Vector2 pos, ModifierState state)
+        public override void MouseUp(IArtContext context, ClickEvent evt)
         {
             if (SelectedLayer == null)
-                return false;
+                return;
 
-            _mouse = (false, _mouse.moved, pos);
+            _mouse = (false, _mouse.moved, evt.Position);
 
             Context.InvalidateRender();
-
-            return true;
         }
 
         public override IBrushInfo ProvideFill()
@@ -232,7 +210,7 @@ namespace Ibinimator.Service.Tools
         public override void Render(
             RenderContext target,
             ICacheManager cacheManager,
-            IViewManager  view)
+            IViewManager view)
         {
             if (SelectedBrush == null)
                 return;
@@ -282,8 +260,6 @@ namespace Ibinimator.Service.Tools
             p?.Dispose();
             p2?.Dispose();
         }
-
-        public override bool TextInput(string text) { return false; }
 
         private void Move(IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
         {

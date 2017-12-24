@@ -24,19 +24,19 @@ namespace Ibinimator.Service.Tools
                 switch (type)
                 {
                     case ToolType.Select:
-                        Tool = new SelectionTool(this, Context.SelectionManager);
+                        Tool = new SelectionTool(this);
                         break;
                     case ToolType.Node:
-                        Tool = new NodeTool(this, Context.SelectionManager);
+                        Tool = new NodeTool(this);
                         break;
                     case ToolType.Pencil:
-                        Tool = new PencilTool(this, Context.SelectionManager);
+                        Tool = new PencilTool(this);
                         break;
                     case ToolType.Text:
-                        Tool = new TextTool(this, Context.SelectionManager);
+                        Tool = new TextTool(this);
                         break;
                     case ToolType.Gradient:
-                        Tool = new GradientTool(this, Context.SelectionManager);
+                        Tool = new GradientTool(this);
                         break;
                     default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }

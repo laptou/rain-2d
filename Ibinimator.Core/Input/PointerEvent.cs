@@ -8,15 +8,15 @@ namespace Ibinimator.Core.Input
 {
     public class PointerEvent : InputEventBase
     {
-        public PointerEvent(Vector2 position, Vector2 delta, ModifierState state)
+        public PointerEvent(Vector2 position, Vector2 delta, ModifierState modifierState)
         {
             Position = position;
             Delta = delta;
-            State = state;
+            ModifierState = modifierState;
         }
 
         public Vector2 Delta { get; }
-        public ModifierState State { get; }
+        public ModifierState ModifierState { get; }
         public Vector2 Position { get; }
     }
 }
