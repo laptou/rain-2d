@@ -23,11 +23,11 @@ namespace Ibinimator.Service
 
         private void OnFillUpdated(object sender, IBrushInfo e) { Query(); }
 
-        private void OnStrokeUpdated(object sender, IPenInfo e) { Query(); }
-
         private void OnHistoryTraversed(object sender, long e) { Query(); }
 
         private void OnSelectionUpdated(object sender, EventArgs args) { Query(); }
+
+        private void OnStrokeUpdated(object sender, IPenInfo e) { Query(); }
 
         #region IBrushManager Members
 
@@ -35,12 +35,30 @@ namespace Ibinimator.Service
 
         public void ApplyStroke() { Context.ToolManager.Tool.ApplyStroke(Stroke); }
 
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.HistoryManager.Traversed += OnHistoryTraversed;
+            context.ToolManager.StrokeUpdated += OnStrokeUpdated;
+            context.ToolManager.FillUpdated += OnFillUpdated;
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            context.HistoryManager.Traversed -= OnHistoryTraversed;
+            context.ToolManager.StrokeUpdated -= OnStrokeUpdated;
+            context.ToolManager.FillUpdated -= OnFillUpdated;
+        }
+
         public void Query()
         {
             var (oldFill, oldStroke) = (Fill, Stroke);
             Fill = Context.ToolManager.Tool.ProvideFill();
             Stroke = Context.ToolManager.Tool.ProvideStroke();
-            
+
             var top = _brushHistory.Count == 0 ? null : _brushHistory.Peek();
 
             if (oldFill != null && top != oldFill)
@@ -67,23 +85,5 @@ namespace Ibinimator.Service
         }
 
         #endregion
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
-            context.HistoryManager.Traversed += OnHistoryTraversed;
-            context.ToolManager.StrokeUpdated += OnStrokeUpdated;
-            context.ToolManager.FillUpdated += OnFillUpdated;
-        }
-
-        /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
-            context.HistoryManager.Traversed -= OnHistoryTraversed;
-            context.ToolManager.StrokeUpdated -= OnStrokeUpdated;
-            context.ToolManager.FillUpdated -= OnFillUpdated;
-        }
     }
 }

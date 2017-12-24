@@ -9,7 +9,7 @@ namespace Ibinimator.Service
     public class Time
     {
         public static long DoubleClick => GetDoubleClickTime();
-        public static long Now         => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        public static long Now => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         [DllImport("user32.dll")]
         private static extern uint GetDoubleClickTime();

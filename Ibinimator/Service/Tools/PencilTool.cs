@@ -42,17 +42,18 @@ namespace Ibinimator.Service.Tools
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            switch ((Key)evt.KeyCode)
+            switch ((Key) evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
+
                     break;
 
                 case Key.Delete:
                     Remove(_nodes.Count - 1);
                     Context.InvalidateRender();
-                    break;
 
+                    break;
             }
 
             base.KeyDown(context, evt);
@@ -71,7 +72,7 @@ namespace Ibinimator.Service.Tools
                 {
                     hit.Selected = true;
 
-                    return ;
+                    return;
                 }
 
                 Context.SelectionManager.ClearSelection();
@@ -147,7 +148,6 @@ namespace Ibinimator.Service.Tools
             _nodes = GetGeometricNodes().ToList();
 
             Context.SelectionManager.UpdateBounds(true);
-
         }
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
@@ -156,14 +156,9 @@ namespace Ibinimator.Service.Tools
             _mouse = (_mouse.down, true, pos);
 
             Context.InvalidateRender();
-
         }
 
-        public override void MouseUp(IArtContext context, ClickEvent evt)
-        {
-            Context.InvalidateRender();
-
-        }
+        public override void MouseUp(IArtContext context, ClickEvent evt) { Context.InvalidateRender(); }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {

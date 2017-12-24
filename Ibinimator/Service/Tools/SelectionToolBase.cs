@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
@@ -34,18 +33,9 @@ namespace Ibinimator.Service.Tools
 
         public abstract void MouseMove(IArtContext context, PointerEvent evt);
 
-        public virtual void KeyDown(IArtContext context, KeyboardEvent evt)
-        {
-            State = evt.ModifierState;
+        public virtual void KeyDown(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
 
-        }
-
-        public virtual void KeyUp(IArtContext context, KeyboardEvent evt)
-        {
-            State = evt.ModifierState;
-
-            return ;
-        }
+        public virtual void KeyUp(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
 
         public virtual void MouseDown(IArtContext context, ClickEvent evt)
         {
@@ -68,7 +58,6 @@ namespace Ibinimator.Service.Tools
 
             if (hit != null)
                 hit.Selected = true;
-
         }
 
         public virtual void MouseUp(IArtContext context, ClickEvent evt)
@@ -77,7 +66,6 @@ namespace Ibinimator.Service.Tools
             _mouse.down = false;
 
             Context.InvalidateRender();
-
         }
 
         protected virtual ILayer HitTest(ILayer layer, Vector2 position)
@@ -185,6 +173,19 @@ namespace Ibinimator.Service.Tools
             Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
 
+        /// <inheritdoc />
+        public virtual void Attach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.MouseDown += (context1, evt) => MouseDown(context1, evt);
+        }
+
+        /// <inheritdoc />
+        public virtual void Detach(IArtContext context)
+        {
+            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+        }
+
         public virtual void Dispose() { SelectionManager.SelectionUpdated -= OnSelectionUpdated; }
 
         public virtual IBrushInfo ProvideFill()
@@ -216,18 +217,5 @@ namespace Ibinimator.Service.Tools
         public ToolType Type { get; protected set; }
 
         #endregion
-
-        /// <inheritdoc />
-        public virtual void Attach(IArtContext context)
-        {
-            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
-            context.MouseDown += (context1, evt) => MouseDown(context1, evt);
-        }
-
-        /// <inheritdoc />
-        public virtual void Detach(IArtContext context)
-        {
-            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
-        }
     }
 }

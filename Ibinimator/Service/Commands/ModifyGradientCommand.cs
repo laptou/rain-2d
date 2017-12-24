@@ -51,7 +51,7 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long              id, Vector2                  delta, IReadOnlyList<int> indices,
+            long id, Vector2 delta, IReadOnlyList<int> indices,
             GradientOperation operation, GradientBrushInfo target)
             : this(id, target)
         {
@@ -61,7 +61,7 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long              id, IReadOnlyList<int>       indices,
+            long id, IReadOnlyList<int> indices,
             GradientOperation operation, GradientBrushInfo target)
             : this(id, target)
         {

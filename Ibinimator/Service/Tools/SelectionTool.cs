@@ -52,6 +52,16 @@ namespace Ibinimator.Service.Tools
             toolManager.RaiseStatus(new Status(Status.StatusType.Info, _statuses["default"]));
         }
 
+        public override string Cursor { get; protected set; }
+
+        public override float CursorRotate
+        {
+            get => SelectionManager.SelectionTransform.GetRotation();
+            protected set { }
+        }
+
+        public GuideManager GuideManager { get; set; } = new GuideManager();
+
         /// <inheritdoc />
         public override void Attach(IArtContext context)
         {
@@ -66,19 +76,10 @@ namespace Ibinimator.Service.Tools
             base.Attach(context);
         }
 
-        public override string Cursor { get; protected set; }
-
-        public override float CursorRotate
-        {
-            get => SelectionManager.SelectionTransform.GetRotation();
-            protected set { }
-        }
-
-        public GuideManager GuideManager { get; set; } = new GuideManager();
-
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
             var key = (Key) evt.KeyCode;
+
             if (key == Key.Delete)
             {
                 var delete = Selection.ToArray();
@@ -123,12 +124,13 @@ namespace Ibinimator.Service.Tools
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
                     _handle = handle.handle;
+
                     return;
                 }
 
             base.MouseDown(context, evt);
 
-            if(Context.SelectionManager.Selection.Any())
+            if (Context.SelectionManager.Selection.Any())
                 _handle = SelectionHandle.Translation;
 
             UpdateStatus();

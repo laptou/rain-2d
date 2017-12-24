@@ -90,6 +90,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
             {
                 base.MouseDown(context, evt);
+
                 return;
             }
 

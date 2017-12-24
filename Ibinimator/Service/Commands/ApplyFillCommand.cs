@@ -10,7 +10,7 @@ namespace Ibinimator.Service.Commands
     public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
     {
         public ApplyFillCommand(
-            long       id, IFilledLayer[] targets,
+            long id, IFilledLayer[] targets,
             IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
         {
             OldFills = old.Select(o => (IBrushInfo) o?.Clone()).ToArray();
@@ -19,7 +19,7 @@ namespace Ibinimator.Service.Commands
 
         public override string Description => $"Filled {Targets.Length} layer(s)";
 
-        public IBrushInfo   NewFill  { get; }
+        public IBrushInfo NewFill { get; }
         public IBrushInfo[] OldFills { get; }
 
         public override void Do(IArtContext artView)

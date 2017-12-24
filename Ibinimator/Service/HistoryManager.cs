@@ -24,6 +24,12 @@ namespace Ibinimator.Service
 
         public event EventHandler<long> Traversed;
 
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            // HistoryManager doesn't subscribe to events from any other managers.
+        }
+
         public void Clear()
         {
             lock (this)
@@ -35,6 +41,12 @@ namespace Ibinimator.Service
 
             CollectionChanged?.Invoke(
                 this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            // HistoryManager doesn't subscribe to events from any other managers.
         }
 
         public void Do(IOperationCommand command)
@@ -189,18 +201,6 @@ namespace Ibinimator.Service
         }
 
         #endregion
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-            // HistoryManager doesn't subscribe to events from any other managers.
-        }
-
-        /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-            // HistoryManager doesn't subscribe to events from any other managers.
-        }
     }
 
     public class KeyComparer<TK, TV> : IEqualityComparer<KeyValuePair<TK, TV>>

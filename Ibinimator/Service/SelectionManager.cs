@@ -44,11 +44,13 @@ namespace Ibinimator.Service
                                            };
         }
 
+        public ObservableList<ILayer> Selection { get; }
+
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(ILayer.Selected)) return;
 
-            var layer = (ILayer)sender;
+            var layer = (ILayer) sender;
 
             var contains = Selection.Contains(layer);
 
@@ -65,20 +67,29 @@ namespace Ibinimator.Service
             }
         }
 
-        private void OnHistoryTraversed(object sender, long e)
-        {
-            UpdateBounds(true);
-        }
-
-        public ObservableList<ILayer> Selection { get; }
+        private void OnHistoryTraversed(object sender, long e) { UpdateBounds(true); }
 
         #region ISelectionManager Members
 
         public event EventHandler SelectionUpdated;
 
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            context.ViewManager.DocumentUpdated += OnDocumentUpdated;
+            context.HistoryManager.Traversed += OnHistoryTraversed;
+        }
+
         public void ClearSelection()
         {
             while (Selection.Count > 0) Selection[0].Selected = false;
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            context.ViewManager.DocumentUpdated -= OnDocumentUpdated;
+            context.HistoryManager.Traversed -= OnHistoryTraversed;
         }
 
         public Vector2 FromSelectionSpace(Vector2 v) { return Vector2.Transform(v, SelectionTransform); }
@@ -182,20 +193,6 @@ namespace Ibinimator.Service
         IEnumerable<ILayer> ISelectionManager.Selection => Selection;
 
         #endregion
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-            context.ViewManager.DocumentUpdated += OnDocumentUpdated;
-            context.HistoryManager.Traversed += OnHistoryTraversed;
-        }
-
-        /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-            context.ViewManager.DocumentUpdated -= OnDocumentUpdated;
-            context.HistoryManager.Traversed -= OnHistoryTraversed;
-        }
     }
 
     public enum GuideType

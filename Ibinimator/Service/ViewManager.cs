@@ -31,6 +31,18 @@ namespace Ibinimator.Service
 
         public event PropertyChangedEventHandler DocumentUpdated;
 
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            // ViewManager doesn't subscribe to events from any other managers.
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            // ViewManager doesn't subscribe to events from any other managers.
+        }
+
         public Vector2 FromArtSpace(Vector2 v) { return Vector2.Transform(v, Transform); }
 
         public RectangleF FromArtSpace(RectangleF v) { return MathUtils.Bounds(v, Transform); }
@@ -103,17 +115,5 @@ namespace Ibinimator.Service
         }
 
         #endregion
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-            // ViewManager doesn't subscribe to events from any other managers.
-        }
-
-        /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-            // ViewManager doesn't subscribe to events from any other managers.
-        }
     }
 }

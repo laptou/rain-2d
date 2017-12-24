@@ -434,14 +434,14 @@ namespace Ibinimator.Service
         }
 
         private static IPenInfo FromSvg(
-            Paint    paint,
-            float    opacity,
-            float    width,
-            float[]  dashes,
-            float    dashOffset,
-            LineCap  lineCap,
+            Paint paint,
+            float opacity,
+            float width,
+            float[] dashes,
+            float dashOffset,
+            LineCap lineCap,
             LineJoin lineJoin,
-            float    miterLimit)
+            float miterLimit)
         {
             var stroke = new PenInfo
             {

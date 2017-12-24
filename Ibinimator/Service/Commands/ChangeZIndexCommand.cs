@@ -16,7 +16,7 @@ namespace Ibinimator.Service.Commands
             Delta = delta;
         }
 
-        public          int    Delta       { get; }
+        public int Delta { get; }
         public override string Description => $"Changed z-index of {Targets.Length} layer(s)";
 
         public override void Do(IArtContext artContext)

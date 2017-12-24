@@ -18,7 +18,6 @@ using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
-using Ibinimator.Native;
 
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
@@ -67,7 +66,9 @@ namespace Ibinimator.Service.Tools
                                         .OrderBy(n => n));
 
             using (var defaultFont = _dwFontCollection.GetFontFamily(0))
+            {
                 Options.Set("font-family", defaultFont.FamilyNames.ToCurrentCulture());
+            }
 
             Options.Create("font-size", "Font Size");
             Options.SetValues("font-size",
@@ -163,7 +164,7 @@ namespace Ibinimator.Service.Tools
 
                 Format format;
 
-                switch ((Key)evt.KeyCode)
+                switch ((Key) evt.KeyCode)
                 {
                     #region Navigation
 
@@ -177,6 +178,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Right:
+
                         if (evt.ModifierState.Shift)
                         {
                             _selection.length++;
@@ -189,6 +191,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Down:
+
                         if (evt.ModifierState.Shift)
                         {
                             var prev = text.Substring(0, _selection.index + _selection.length)
@@ -228,6 +231,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.Up:
+
                         if (evt.ModifierState.Shift)
                         {
                             var start = text.Substring(0, _selection.index)
@@ -258,6 +262,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case Key.End:
+
                         if (evt.ModifierState.Shift)
                         {
                             _selection.length = text.Length - _selection.index;
@@ -378,7 +383,7 @@ namespace Ibinimator.Service.Tools
 
                     default:
 
-                        return ;
+                        return;
                 }
 
                 _selection.index = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0, _selection.index);
@@ -386,9 +391,7 @@ namespace Ibinimator.Service.Tools
                                                     _selection.length);
 
                 Update();
-
             }
-
         }
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
@@ -408,7 +411,7 @@ namespace Ibinimator.Service.Tools
             {
                 _mouse.position = pos;
 
-                return ;
+                return;
             }
 
             _drag.end = pos;
@@ -434,7 +437,6 @@ namespace Ibinimator.Service.Tools
             }
 
             _mouse.position = pos;
-
         }
 
         public override void MouseUp(IArtContext context, ClickEvent evt)
@@ -474,7 +476,7 @@ namespace Ibinimator.Service.Tools
 
                 text.Selected = true;
 
-                return ;
+                return;
             }
 
             var tpos = FromWorldSpace(pos);
@@ -482,6 +484,7 @@ namespace Ibinimator.Service.Tools
             if (!Context.CacheManager.GetBounds(SelectedLayer).Contains(tpos))
             {
                 base.MouseUp(context, evt);
+
                 return;
             }
 
@@ -524,7 +527,6 @@ namespace Ibinimator.Service.Tools
             }
 
             Update();
-
         }
 
         public override IBrushInfo ProvideFill()
@@ -823,7 +825,7 @@ namespace Ibinimator.Service.Tools
         }
 
         private void UpdateOptions(
-            string     family, float     size, FontStretch stretch,
+            string family, float size, FontStretch stretch,
             FontWeight weight, FontStyle style)
         {
             if (_updatingOptions) return;
@@ -875,7 +877,7 @@ namespace Ibinimator.Service.Tools
             }
 
             public FontStretch Stretch { get; }
-            public FontStyle   Style   { get; }
+            public FontStyle Style { get; }
 
             public FontWeight Weight { get; }
 

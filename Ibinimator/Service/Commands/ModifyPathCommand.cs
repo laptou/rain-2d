@@ -178,8 +178,8 @@ namespace Ibinimator.Service.Commands
         }
 
         private void Apply(
-            IArtContext             context, NodeOperation operation, IReadOnlyList<int> indices,
-            IReadOnlyList<PathNode> targetNodes, Vector2   delta)
+            IArtContext context, NodeOperation operation, IReadOnlyList<int> indices,
+            IReadOnlyList<PathNode> targetNodes, Vector2 delta)
         {
             var target = Targets[0];
             var geom = context.CacheManager.GetGeometry(target);

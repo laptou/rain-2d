@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 using Ibinimator.Core;
-using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 
 namespace Ibinimator.Service.Tools
@@ -25,18 +22,23 @@ namespace Ibinimator.Service.Tools
                 {
                     case ToolType.Select:
                         Tool = new SelectionTool(this);
+
                         break;
                     case ToolType.Node:
                         Tool = new NodeTool(this);
+
                         break;
                     case ToolType.Pencil:
                         Tool = new PencilTool(this);
+
                         break;
                     case ToolType.Text:
                         Tool = new TextTool(this);
+
                         break;
                     case ToolType.Gradient:
                         Tool = new GradientTool(this);
+
                         break;
                     default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }
@@ -54,7 +56,19 @@ namespace Ibinimator.Service.Tools
         #region IToolManager Members
 
         public event EventHandler<IBrushInfo> FillUpdated;
-        public event EventHandler<IPenInfo>   StrokeUpdated;
+        public event EventHandler<IPenInfo> StrokeUpdated;
+
+        /// <inheritdoc />
+        public void Attach(IArtContext context)
+        {
+            // ToolManager doesn't subscribe to events from any other managers.
+        }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context)
+        {
+            // ToolManager doesn't subscribe to events from any other managers.
+        }
 
         public void RaiseFillUpdate() { FillUpdated?.Invoke(this, Tool?.ProvideFill()); }
 
@@ -81,17 +95,5 @@ namespace Ibinimator.Service.Tools
         }
 
         #endregion
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-            // ToolManager doesn't subscribe to events from any other managers.
-        }
-
-        /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-            // ToolManager doesn't subscribe to events from any other managers.
-        }
     }
 }

@@ -31,8 +31,15 @@ namespace Ibinimator.Service.Tools
             Type = ToolType.Node;
 
             UpdateNodes();
-
         }
+
+        public IGeometricLayer SelectedLayer =>
+            Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
+
+        public string Status =>
+            "<b>Click</b> to select, " +
+            "<b>Alt Click</b> to delete, " +
+            "<b>Shift Click</b> to multi-select.";
 
         /// <inheritdoc />
         public override void Attach(IArtContext context)
@@ -48,14 +55,6 @@ namespace Ibinimator.Service.Tools
             base.Detach(context);
         }
 
-        public IGeometricLayer SelectedLayer =>
-            Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
-
-        public string Status =>
-            "<b>Click</b> to select, " +
-            "<b>Alt Click</b> to delete, " +
-            "<b>Shift Click</b> to multi-select.";
-
         public override void Dispose()
         {
             _selection.Clear();
@@ -68,7 +67,7 @@ namespace Ibinimator.Service.Tools
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            switch ((Key)evt.KeyCode)
+            switch ((Key) evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
@@ -84,6 +83,7 @@ namespace Ibinimator.Service.Tools
 
                 case Key.Right:
                     Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
+
                     break;
 
                 default: return base.KeyDown(context, evt);
@@ -205,7 +205,7 @@ namespace Ibinimator.Service.Tools
         public override void Render(
             RenderContext target,
             ICacheManager cacheManager,
-            IViewManager  view)
+            IViewManager view)
         {
             if (SelectedLayer == null)
                 return;
@@ -298,6 +298,12 @@ namespace Ibinimator.Service.Tools
             return layer.HitTest<IGeometricLayer>(Context.CacheManager, position, 0);
         }
 
+        protected override void OnSelectionUpdated(object sender, EventArgs e)
+        {
+            UpdateNodes();
+            base.OnSelectionUpdated(sender, e);
+        }
+
         private void ConvertToPath()
         {
             if (SelectedLayer is Path) return;
@@ -361,12 +367,6 @@ namespace Ibinimator.Service.Tools
         }
 
         private void OnTraversed(object sender, long e) { UpdateNodes(); }
-
-        protected override void OnSelectionUpdated(object sender, EventArgs e)
-        {
-            UpdateNodes();
-            base.OnSelectionUpdated(sender, e);
-        }
 
         private void Remove(params int[] indices)
         {

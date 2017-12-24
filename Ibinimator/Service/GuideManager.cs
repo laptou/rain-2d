@@ -34,8 +34,8 @@ namespace Ibinimator.Service
         }
 
         public (Vector2 Point, Guide? Guide) LinearSnap(
-            Vector2   position,
-            Vector2   origin,
+            Vector2 position,
+            Vector2 origin,
             GuideType type)
         {
             var candidates = GetGuides(type);
@@ -70,8 +70,8 @@ namespace Ibinimator.Service
         }
 
         public (Vector2 Point, Guide? Guide) RadialSnap(
-            Vector2   position,
-            Vector2   origin,
+            Vector2 position,
+            Vector2 origin,
             GuideType type)
         {
             var angle = MathUtils.Wrap(
