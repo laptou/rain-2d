@@ -15,7 +15,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class NodeTool : SelectionToolBase
+    public class NodeTool : SelectionToolBase<IGeometricLayer>
     {
         private readonly ISet<int> _selection = new HashSet<int>();
 
@@ -32,9 +32,6 @@ namespace Ibinimator.Service.Tools
 
             UpdateNodes();
         }
-
-        public IGeometricLayer SelectedLayer =>
-            Context.SelectionManager.Selection.LastOrDefault() as IGeometricLayer;
 
         public string Status =>
             "<b>Click</b> to select, " +
@@ -85,11 +82,9 @@ namespace Ibinimator.Service.Tools
                     Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
 
                     break;
-
-                default: return base.KeyDown(context, evt);
             }
 
-            return true;
+            base.KeyDown(context, evt);
         }
 
         public override void MouseDown(IArtContext context, ClickEvent evt)
@@ -98,7 +93,11 @@ namespace Ibinimator.Service.Tools
             _mouse = (true, false, pos);
 
             if (SelectedLayer == null)
-                return base.MouseDown(context, evt);
+            {
+                base.MouseDown(context, evt);
+
+                return;
+            }
 
             _handle = null;
             PathNode? target = null;
@@ -145,14 +144,14 @@ namespace Ibinimator.Service.Tools
             }
 
             Context.SelectionManager.UpdateBounds(true);
-
-            return true;
         }
 
-        public override bool MouseMove(Vector2 pos, ModifierState state)
+        public override void MouseMove(IArtContext context, PointerEvent evt)
         {
             if (SelectedLayer == null)
-                return false;
+                return;
+
+            var pos = evt.Position;
 
             var tlpos = Vector2.Transform(_mouse.pos,
                                           MathUtils.Invert(SelectedLayer.AbsoluteTransform));
@@ -183,23 +182,21 @@ namespace Ibinimator.Service.Tools
                 }
 
                 Context.InvalidateRender();
-
-                return true;
             }
-
-            return false;
         }
 
         public override void MouseUp(IArtContext context, ClickEvent evt)
         {
             if (SelectedLayer == null)
-                return base.MouseUp(context, evt);
+            {
+                base.MouseUp(context, evt);
+
+                return;
+            }
 
             _mouse = (false, _mouse.moved, evt.Position);
 
             Context.InvalidateRender();
-
-            return true;
         }
 
         public override void Render(

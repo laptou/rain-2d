@@ -15,7 +15,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class PencilTool : SelectionToolBase
+    public sealed class PencilTool : SelectionToolBase<Path>
     {
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode>                      _nodes;
@@ -29,16 +29,10 @@ namespace Ibinimator.Service.Tools
             _nodes = GetGeometricNodes().ToList();
         }
 
-        public Path SelectedPath => Selection.LastOrDefault() as Path;
-
         public string Status => "";
 
         private IContainerLayer Root => Context.ViewManager.Root;
-
-        public Vector2 FromWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, MathUtils.Invert(SelectedPath.AbsoluteTransform));
-        }
+        
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
@@ -64,7 +58,7 @@ namespace Ibinimator.Service.Tools
             var pos = evt.Position;
             _mouse = (true, false, pos);
 
-            if (SelectedPath == null)
+            if (SelectedLayer == null)
             {
                 var hit = Root.HitTest<Path>(Context.CacheManager, pos, 0);
 
@@ -124,7 +118,7 @@ namespace Ibinimator.Service.Tools
                                 Context.HistoryManager.Do(
                                     new ModifyPathCommand(
                                         Context.HistoryManager.Position + 1,
-                                        SelectedPath, new[] {_nodes.Count - 1},
+                                        SelectedLayer, new[] {_nodes.Count - 1},
                                         ModifyPathCommand.NodeOperation.EndFigureClosed));
                         }
                     }
@@ -140,7 +134,7 @@ namespace Ibinimator.Service.Tools
                     Context.HistoryManager.Do(
                         new ModifyPathCommand(
                             Context.HistoryManager.Position + 1,
-                            SelectedPath, new[] {new PathNode(_nodes.Count, tpos)},
+                            SelectedLayer, new[] {new PathNode(_nodes.Count, tpos)},
                             _nodes.Count, ModifyPathCommand.NodeOperation.Add));
                 }
             }
@@ -183,7 +177,7 @@ namespace Ibinimator.Service.Tools
                 target.DrawRectangle(rect, p2);
             }
 
-            if (SelectedPath == null)
+            if (SelectedLayer == null)
             {
                 p.Dispose();
                 p2.Dispose();
@@ -191,10 +185,10 @@ namespace Ibinimator.Service.Tools
                 return;
             }
 
-            var transform = SelectedPath.AbsoluteTransform;
+            var transform = SelectedLayer.AbsoluteTransform;
             target.Transform(transform);
 
-            using (var geom = cache.GetGeometry(SelectedPath))
+            using (var geom = cache.GetGeometry(SelectedLayer))
             using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
             {
                 target.DrawGeometry(geom, pen);
@@ -236,12 +230,7 @@ namespace Ibinimator.Service.Tools
             p.Dispose();
             p2.Dispose();
         }
-
-        public Vector2 ToWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectedPath.AbsoluteTransform);
-        }
-
+        
         protected override void OnSelectionUpdated(object sender, EventArgs args)
         {
             _nodes = GetGeometricNodes().ToList();
@@ -250,9 +239,9 @@ namespace Ibinimator.Service.Tools
 
         private IEnumerable<PathNode> GetGeometricNodes()
         {
-            if (SelectedPath == null) return Enumerable.Empty<PathNode>();
+            if (SelectedLayer == null) return Enumerable.Empty<PathNode>();
 
-            return Context.CacheManager.GetGeometry(SelectedPath).ReadNodes();
+            return Context.CacheManager.GetGeometry(SelectedLayer).ReadNodes();
         }
 
         private void Remove(int index)
@@ -260,7 +249,7 @@ namespace Ibinimator.Service.Tools
             Context.HistoryManager.Do(
                 new ModifyPathCommand(
                     Context.HistoryManager.Position + 1,
-                    SelectedPath,
+                    SelectedLayer,
                     new[] {index},
                     ModifyPathCommand.NodeOperation.Remove));
 

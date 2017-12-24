@@ -17,14 +17,6 @@ namespace Ibinimator.View.Control
         public ArtContext(ArtView artView)
         {
             _artView = artView;
-            _artView.RenderTargetCreated += ArtViewOnRenderTargetCreated;
-        }
-
-        private void ArtViewOnRenderTargetCreated(object sender, EventArgs eventArgs)
-        {
-            CacheManager?.ResetDeviceResources();
-            if (ViewManager?.Root != null)
-                CacheManager?.BindLayer(ViewManager.Document.Root);
         }
 
         public void SetManager<T>(T manager) where T : IArtContextManager
@@ -129,7 +121,7 @@ namespace Ibinimator.View.Control
 
         public void RaiseMouseUp(ClickEvent evt) { MouseUp?.Invoke(this, evt); }
 
-        public void RaiseMouseDown(ClickEvent evt) { MouseUp?.Invoke(this, evt); }
+        public void RaiseMouseDown(ClickEvent evt) { MouseDown?.Invoke(this, evt); }
 
         public void RaiseMouseMove(PointerEvent evt) { MouseMove?.Invoke(this, evt); }
 

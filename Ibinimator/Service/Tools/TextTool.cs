@@ -26,7 +26,7 @@ using FontWeight = Ibinimator.Core.Model.FontWeight;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class TextTool : SelectionToolBase
+    public sealed class TextTool : SelectionToolBase<Text>
     {
         private readonly DW.Factory        _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
@@ -114,7 +114,19 @@ namespace Ibinimator.Service.Tools
             Update();
         }
 
-        public Text SelectedLayer => Selection.LastOrDefault() as Text;
+        /// <inheritdoc />
+        public override void Attach(IArtContext context)
+        {
+            context.Text += TextInput;
+            base.Attach(context);
+        }
+
+        /// <inheritdoc />
+        public override void Detach(IArtContext context)
+        {
+            context.Text -= TextInput;
+            base.Detach(context);
+        }
 
         public string Status
         {
@@ -151,10 +163,7 @@ namespace Ibinimator.Service.Tools
             _dwFactory?.Dispose();
         }
 
-        public Vector2 FromWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-        }
+        
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
@@ -319,8 +328,7 @@ namespace Ibinimator.Service.Tools
                         break;
 
                     case Key.Return:
-                        TextInput(Environment.NewLine);
-
+                        TextInput(Context, new TextEvent(Environment.NewLine, evt.ModifierState));
                         break;
 
                     #endregion
@@ -569,26 +577,19 @@ namespace Ibinimator.Service.Tools
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        public bool TextInput(string text)
+        public void TextInput(IArtContext sender, TextEvent evt)
         {
-            if (SelectedLayer == null) return false;
+            if (SelectedLayer == null) return;
 
             if (_selection.length > 0)
                 Remove(_selection.index, _selection.length);
 
-            Insert(_selection.index, text);
+            Insert(_selection.index, evt.Text);
 
-            _selection.index += text.Length;
+            _selection.index += evt.Text.Length;
             _selection.length = 0;
 
             Update();
-
-            return true;
-        }
-
-        public Vector2 ToWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
         }
 
         protected override void OnSelectionUpdated(object sender, EventArgs e) { Update(); }

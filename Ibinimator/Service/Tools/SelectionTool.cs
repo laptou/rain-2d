@@ -16,7 +16,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public sealed class SelectionTool : SelectionToolBase
+    public sealed class SelectionTool : SelectionToolBase<ILayer>
     {
         private readonly Dictionary<string, string> _statuses = new Dictionary<string, string>
         {

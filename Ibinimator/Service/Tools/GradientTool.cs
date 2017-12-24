@@ -15,7 +15,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public class GradientTool : SelectionToolBase
+    public class GradientTool : SelectionToolBase<IFilledLayer>
     {
         private readonly ISet<int> _selection = new HashSet<int>();
 
@@ -28,10 +28,7 @@ namespace Ibinimator.Service.Tools
 
         public GradientBrushInfo SelectedBrush =>
             SelectedLayer?.Fill as GradientBrushInfo;
-
-        public IFilledLayer SelectedLayer =>
-            Context.SelectionManager.Selection.LastOrDefault() as IFilledLayer;
-
+        
         public string Status =>
             "<b>Click</b> to select, " +
             "<b>Alt Click</b> to delete, " +

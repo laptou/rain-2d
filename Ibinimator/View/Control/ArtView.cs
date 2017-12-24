@@ -148,9 +148,7 @@ namespace Ibinimator.View.Control
 
             ac.ViewManager.Root.Render(target, ac.CacheManager, ac.ViewManager);
 
-            if (ac.ToolManager?.Tool == null) return;
-
-            ac.ToolManager.Tool.Render(target, ac.CacheManager, ac.ViewManager);
+            ac.ToolManager?.Tool?.Render(target, ac.CacheManager, ac.ViewManager);
         }
 
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)

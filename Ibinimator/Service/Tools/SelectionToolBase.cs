@@ -13,7 +13,7 @@ using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Service.Tools
 {
-    public abstract class SelectionToolBase : Core.Model.Model, ITool
+    public abstract class SelectionToolBase<T> : Core.Model.Model, ITool where T : class, ILayer
     {
         private   int                                      _depth = 1;
         private   (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
@@ -25,112 +25,9 @@ namespace Ibinimator.Service.Tools
             Options = new ToolOptions();
         }
 
-        protected IArtContext Context => Manager.Context;
-
-        protected IEnumerable<ILayer> Selection => SelectionManager.Selection;
-
-        protected ISelectionManager SelectionManager => Context.SelectionManager;
-
-        public abstract void MouseMove(IArtContext context, PointerEvent evt);
-
-        public virtual void KeyDown(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
-
-        public virtual void KeyUp(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
-
-        public virtual void MouseDown(IArtContext context, ClickEvent evt)
-        {
-            var deltaTime = Time.Now - _mouse.time;
-            var pos = evt.Position;
-            var state = evt.ModifierState;
-
-            _mouse = (pos, true, Time.Now);
-
-            if (deltaTime < 500)
-                _depth++;
-
-            var hit = HitTest(pos);
-
-            if (deltaTime < 500 && hit == null)
-                _depth--;
-
-            if (!state.Shift && hit?.Selected != true)
-                SelectionManager.ClearSelection();
-
-            if (hit != null)
-                hit.Selected = true;
-        }
-
-        public virtual void MouseUp(IArtContext context, ClickEvent evt)
-        {
-            _mouse.position = evt.Position;
-            _mouse.down = false;
-
-            Context.InvalidateRender();
-        }
-
-        protected virtual ILayer HitTest(ILayer layer, Vector2 position)
-        {
-            return layer.HitTest<ILayer>(Context.CacheManager, position, 0);
-        }
-
         protected virtual void OnSelectionUpdated(object sender, EventArgs args)
         {
             _depth = Selection.Any() ? Selection.Select(l => l.Depth).Min() : 1;
-        }
-
-        protected void RenderBoundingBox(RenderContext target, ICacheManager cache, IViewManager view)
-        {
-            // bounding box outlines
-            target.Transform(SelectionManager.SelectionTransform);
-
-            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-            {
-                target.DrawRectangle(SelectionManager.SelectionBounds, pen);
-            }
-
-            target.Transform(MathUtils.Invert(SelectionManager.SelectionTransform));
-        }
-
-        protected void RenderPathOutlines(RenderContext target, ICacheManager cache, IViewManager view)
-        {
-            foreach (var shape in Selection.OfType<IGeometricLayer>())
-            {
-                target.Transform(shape.AbsoluteTransform);
-
-                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-                {
-                    target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
-                }
-
-                target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
-            }
-        }
-
-        private ILayer HitTest(Vector2 position)
-        {
-            // for every element in the scene, perform a hit-test
-            var root = Context.ViewManager.Root;
-
-            // start by hit-testing in the existing selection, and if we find nothing,
-            // then hit-test in the root
-            ILayer hit = null;
-
-            foreach (var layer in root.Flatten(_depth).Skip(1))
-            {
-                var test = HitTest(layer, position);
-
-                if (test == null) continue;
-
-                hit = test;
-
-                if (hit.Depth < _depth) continue;
-
-                if (State.Alt && hit.Selected) continue;
-
-                break;
-            }
-
-            return hit;
         }
 
         #region ITool Members
@@ -177,7 +74,11 @@ namespace Ibinimator.Service.Tools
         public virtual void Attach(IArtContext context)
         {
             context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
-            context.MouseDown += (context1, evt) => MouseDown(context1, evt);
+            context.MouseDown += MouseDown;
+            context.MouseMove += MouseMove;
+            context.MouseUp += MouseUp;
+            context.KeyDown += KeyDown;
+            context.KeyUp += KeyUp;
         }
 
         /// <inheritdoc />
@@ -215,6 +116,141 @@ namespace Ibinimator.Service.Tools
         public IToolManager Manager { get; }
         public ToolOptions Options { get; protected set; }
         public ToolType Type { get; protected set; }
+
+        #endregion
+
+        #region Vector Transformation
+
+        protected Vector2 FromWorldSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+        }
+
+        protected Vector2 ToWorldSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
+        }
+
+        #endregion
+
+        #region Context and Selection
+
+        protected IArtContext Context => Manager.Context;
+
+        protected IEnumerable<ILayer> Selection => SelectionManager.Selection;
+
+        public T SelectedLayer => Selection.LastOrDefault() as T;
+
+        protected ISelectionManager SelectionManager => Context.SelectionManager;
+
+        #endregion
+
+        #region Events
+
+        public abstract void MouseMove(IArtContext context, PointerEvent evt);
+
+        public virtual void KeyDown(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
+
+        public virtual void KeyUp(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
+
+        public virtual void MouseDown(IArtContext context, ClickEvent evt)
+        {
+            var deltaTime = Time.Now - _mouse.time;
+            var pos = evt.Position;
+            var state = evt.ModifierState;
+
+            _mouse = (pos, true, Time.Now);
+
+            if (deltaTime < 500)
+                _depth++;
+
+            var hit = HitTest(pos);
+
+            if (deltaTime < 500 && hit == null)
+                _depth--;
+
+            if (!state.Shift && hit?.Selected != true)
+                SelectionManager.ClearSelection();
+
+            if (hit != null)
+                hit.Selected = true;
+        }
+
+        public virtual void MouseUp(IArtContext context, ClickEvent evt)
+        {
+            _mouse.position = evt.Position;
+            _mouse.down = false;
+
+            Context.InvalidateRender();
+        }
+
+        #endregion
+
+        #region Rendering
+
+        protected void RenderBoundingBox(RenderContext target, ICacheManager cache, IViewManager view)
+        {
+            // bounding box outlines
+            target.Transform(SelectionManager.SelectionTransform);
+
+            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+            {
+                target.DrawRectangle(SelectionManager.SelectionBounds, pen);
+            }
+
+            target.Transform(MathUtils.Invert(SelectionManager.SelectionTransform));
+        }
+
+        protected void RenderPathOutlines(RenderContext target, ICacheManager cache, IViewManager view)
+        {
+            foreach (var shape in Selection.OfType<IGeometricLayer>())
+            {
+                target.Transform(shape.AbsoluteTransform);
+
+                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                {
+                    target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
+                }
+
+                target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
+            }
+        }
+
+        #endregion
+
+        #region Hit Testing
+
+        protected virtual ILayer HitTest(ILayer layer, Vector2 position)
+        {
+            return layer.HitTest<ILayer>(Context.CacheManager, position, 0);
+        }
+
+        private ILayer HitTest(Vector2 position)
+        {
+            // for every element in the scene, perform a hit-test
+            var root = Context.ViewManager.Root;
+
+            // start by hit-testing in the existing selection, and if we find nothing,
+            // then hit-test in the root
+            ILayer hit = null;
+
+            foreach (var layer in root.Flatten(_depth).Skip(1))
+            {
+                var test = HitTest(layer, position);
+
+                if (test == null) continue;
+
+                hit = test;
+
+                if (hit.Depth < _depth) continue;
+
+                if (State.Alt && hit.Selected) continue;
+
+                break;
+            }
+
+            return hit;
+        }
 
         #endregion
     }
