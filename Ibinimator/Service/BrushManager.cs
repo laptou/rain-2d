@@ -17,72 +17,43 @@ namespace Ibinimator.Service
         {
             Context = artContext;
             _brushHistory = new Stack<IBrushInfo>();
-            Fill = new SolidColorBrushInfo(new Color(0, 0, 0));
-            Stroke = null;
         }
-
-        private void OnFillUpdated(object sender, IBrushInfo e) { Query(); }
-
-        private void OnHistoryTraversed(object sender, long e) { Query(); }
-
-        private void OnSelectionUpdated(object sender, EventArgs args) { Query(); }
-
-        private void OnStrokeUpdated(object sender, IPenInfo e) { Query(); }
 
         #region IBrushManager Members
 
-        public void ApplyFill() { Context.ToolManager.Tool.ApplyFill(Fill); }
+        public void Apply(IBrushInfo fill) => Context.ToolManager.Tool.ApplyFill(fill);
 
-        public void ApplyStroke() { Context.ToolManager.Tool.ApplyStroke(Stroke); }
+        public void Apply(IPenInfo pen) => Context.ToolManager.Tool.ApplyStroke(pen);
 
         /// <inheritdoc />
         public void Attach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
-            context.HistoryManager.Traversed += OnHistoryTraversed;
-            context.ToolManager.StrokeUpdated += OnStrokeUpdated;
-            context.ToolManager.FillUpdated += OnFillUpdated;
         }
 
         /// <inheritdoc />
         public void Detach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
-            context.HistoryManager.Traversed -= OnHistoryTraversed;
-            context.ToolManager.StrokeUpdated -= OnStrokeUpdated;
-            context.ToolManager.FillUpdated -= OnFillUpdated;
         }
 
-        public void Query()
+        public (IBrushInfo Fill, IPenInfo Stroke) Query()
         {
-            var (oldFill, oldStroke) = (Fill, Stroke);
-            Fill = Context.ToolManager.Tool.ProvideFill();
-            Stroke = Context.ToolManager.Tool.ProvideStroke();
+            var fill = Context.ToolManager.Tool.ProvideFill();
+            var stroke = Context.ToolManager.Tool.ProvideStroke();
 
             var top = _brushHistory.Count == 0 ? null : _brushHistory.Peek();
 
-            if (oldFill != null && top != oldFill)
-                _brushHistory.Push(Fill);
+            if (fill != null && top != fill)
+                _brushHistory.Push(fill);
 
-            if (oldStroke?.Brush != null && top != oldStroke.Brush)
-                _brushHistory.Push(oldStroke.Brush);
+            if (stroke?.Brush != null && top != stroke.Brush)
+                _brushHistory.Push(stroke.Brush);
+
+            return (fill, stroke);
         }
 
         public IReadOnlyCollection<IBrushInfo> BrushHistory => _brushHistory;
 
         public IArtContext Context { get; }
-
-        public IBrushInfo Fill
-        {
-            get => Get<IBrushInfo>();
-            set => Set(value);
-        }
-
-        public IPenInfo Stroke
-        {
-            get => Get<IPenInfo>();
-            set => Set(value);
-        }
 
         #endregion
     }

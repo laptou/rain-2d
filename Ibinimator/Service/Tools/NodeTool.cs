@@ -287,10 +287,10 @@ namespace Ibinimator.Service.Tools
             return layer.HitTest<IGeometricLayer>(Context.CacheManager, position, 0);
         }
 
-        protected override void OnSelectionUpdated(object sender, EventArgs e)
+        protected override void OnSelectionChanged(object sender, EventArgs e)
         {
             UpdateNodes();
-            base.OnSelectionUpdated(sender, e);
+            base.OnSelectionChanged(sender, e);
         }
 
         private void ConvertToPath()

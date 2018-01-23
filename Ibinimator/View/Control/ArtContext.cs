@@ -149,30 +149,30 @@ namespace Ibinimator.View.Control
         public void RaiseText(TextEvent evt) { Text?.Invoke(this, evt); }
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<ClickEvent> MouseUp;
+        public event ArtContextInputEventHandler<ClickEvent> MouseUp;
 
         public event EventHandler StatusChanged;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<TextEvent> Text;
+        public event ArtContextInputEventHandler<TextEvent> Text;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<FocusEvent> GainedFocus;
+        public event ArtContextInputEventHandler<FocusEvent> GainedFocus;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<KeyboardEvent> KeyDown;
+        public event ArtContextInputEventHandler<KeyboardEvent> KeyDown;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<KeyboardEvent> KeyUp;
+        public event ArtContextInputEventHandler<KeyboardEvent> KeyUp;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<FocusEvent> LostFocus;
+        public event ArtContextInputEventHandler<FocusEvent> LostFocus;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<ClickEvent> MouseDown;
+        public event ArtContextInputEventHandler<ClickEvent> MouseDown;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<PointerEvent> MouseMove;
+        public event ArtContextInputEventHandler<PointerEvent> MouseMove;
 
         #endregion
     }

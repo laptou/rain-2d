@@ -163,31 +163,31 @@ namespace Ibinimator.View.Control
         #region IArtContext Members
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<FocusEvent> GainedFocus;
+        public event ArtContextInputEventHandler<FocusEvent> GainedFocus;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<KeyboardEvent> KeyDown;
+        public new event ArtContextInputEventHandler<KeyboardEvent> KeyDown;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<KeyboardEvent> KeyUp;
+        public new event ArtContextInputEventHandler<KeyboardEvent> KeyUp;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<FocusEvent> LostFocus;
+        public new event ArtContextInputEventHandler<FocusEvent> LostFocus;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<ClickEvent> MouseDown;
+        public new event ArtContextInputEventHandler<ClickEvent> MouseDown;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<PointerEvent> MouseMove;
+        public new event ArtContextInputEventHandler<PointerEvent> MouseMove;
 
         /// <inheritdoc />
-        public new event ArtContextEventHandler<ClickEvent> MouseUp;
+        public new event ArtContextInputEventHandler<ClickEvent> MouseUp;
 
         /// <inheritdoc />
         public event EventHandler StatusChanged;
 
         /// <inheritdoc />
-        public event ArtContextEventHandler<TextEvent> Text;
+        public event ArtContextInputEventHandler<TextEvent> Text;
 
         public void InvalidateRender() { InvalidateVisual(); }
 

@@ -40,7 +40,7 @@ namespace Ibinimator.Service
             Selection.CollectionChanged += (sender, args) =>
                                            {
                                                UpdateBounds();
-                                               SelectionUpdated?.Invoke(this, null);
+                                               SelectionChanged?.Invoke(this, null);
                                            };
         }
 
@@ -77,7 +77,7 @@ namespace Ibinimator.Service
 
         #region ISelectionManager Members
 
-        public event EventHandler SelectionUpdated;
+        public event EventHandler SelectionChanged;
 
         /// <inheritdoc />
         public void Attach(IArtContext context)
@@ -146,7 +146,7 @@ namespace Ibinimator.Service
 
             Context.InvalidateRender();
 
-            SelectionUpdated?.Invoke(this, null);
+            SelectionChanged?.Invoke(this, null);
         }
 
         public void UpdateBounds()
@@ -174,7 +174,7 @@ namespace Ibinimator.Service
 
             Context.InvalidateRender();
 
-            SelectionUpdated?.Invoke(this, null);
+            SelectionChanged?.Invoke(this, null);
         }
 
         public IArtContext Context { get; }

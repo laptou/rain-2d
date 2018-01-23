@@ -25,7 +25,7 @@ namespace Ibinimator.Service.Tools
             Options = new ToolOptions();
         }
 
-        protected virtual void OnSelectionUpdated(object sender, EventArgs args)
+        protected virtual void OnSelectionChanged(object sender, EventArgs args)
         {
             _depth = Selection.Any() ? Selection.Select(l => l.Depth).Min() : 1;
         }
@@ -73,7 +73,7 @@ namespace Ibinimator.Service.Tools
         /// <inheritdoc />
         public virtual void Attach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.SelectionManager.SelectionChanged += OnSelectionChanged;
             context.MouseDown += MouseDown;
             context.MouseMove += MouseMove;
             context.MouseUp += MouseUp;
@@ -84,7 +84,7 @@ namespace Ibinimator.Service.Tools
         /// <inheritdoc />
         public virtual void Detach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            context.SelectionManager.SelectionChanged -= OnSelectionChanged;
             context.MouseDown -= MouseDown;
             context.MouseMove -= MouseMove;
             context.MouseUp -= MouseUp;

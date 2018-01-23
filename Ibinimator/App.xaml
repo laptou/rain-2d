@@ -10,6 +10,12 @@
                 <util:DesignerTimeResourceDictionary DesignTimeSource="Theme.Light.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <util:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
+            <util:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
+            <util:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <util:PercentageConverter x:Key="PercentageConverter" />
+            <util:InversionConverter x:Key="Inverter" />
+
             <FontFamily x:Key="UIFont">/Ibinimator;component/Resources/Font/#Roboto</FontFamily>
 
             <Style TargetType="{x:Type control:Icon}">

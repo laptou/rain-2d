@@ -43,13 +43,14 @@ namespace Ibinimator.ViewModel
             artView.ArtContext.SetManager(ToolManager);
             artView.ArtContext.SetManager(BrushManager);
 
-            FillPicker = new FillPickerViewModel(this, BrushManager);
+            ColorViewModel = new ColorViewModel(ArtContext);
             TransformViewModel = new TransformViewModel(ArtContext);
 
             ToolManager.Type = ToolType.Select;
 
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
-            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
+            JumpHistoryCommand =
+                new DelegateCommand<long>(id => HistoryManager.Position = id, null);
 
             MenuItems = LoadMenus("menus").ToList();
             ToolbarItems = LoadToolbars("toolbars").ToList();
@@ -68,83 +69,6 @@ namespace Ibinimator.ViewModel
         }
 
         public IArtContext ArtContext { get; set; }
-
-        public IBrushManager BrushManager
-        {
-            get => Get<IBrushManager>();
-            set
-            {
-                if (BrushManager != null)
-                    BrushManager.PropertyChanged -= BrushUpdated;
-
-                Set(value);
-
-                if (BrushManager != null)
-                    BrushManager.PropertyChanged += BrushUpdated;
-            }
-        }
-
-        public FillPickerViewModel FillPicker { get; }
-
-        public IHistoryManager HistoryManager
-        {
-            get => Get<IHistoryManager>();
-            set
-            {
-                Set(value);
-                BindingOperations.EnableCollectionSynchronization(value, value);
-            }
-        }
-
-        public DelegateCommand<long> JumpHistoryCommand { get; }
-
-        public List<MenuItem> MenuItems { get; set; }
-
-        public ISelectionManager SelectionManager
-        {
-            get => Get<ISelectionManager>();
-            set
-            {
-                if (SelectionManager != null)
-                    SelectionManager.SelectionUpdated -= SelectionUpdated;
-
-                Set(value);
-
-                if (SelectionManager != null)
-                    SelectionManager.SelectionUpdated += SelectionUpdated;
-            }
-        }
-
-        public DelegateCommand<Layer> SelectLayerCommand { get; }
-
-        public DelegateCommand<ToolType> SelectToolCommand { get; }
-
-        public List<InputBinding> Shortcuts { get; } = new List<InputBinding>();
-
-        public List<ToolbarItem> ToolbarItems { get; set; }
-
-        public IToolManager ToolManager
-        {
-            get => Get<IToolManager>();
-            set => Set(value);
-        }
-
-        public TransformViewModel TransformViewModel { get; }
-
-        public IViewManager ViewManager
-        {
-            get => Get<IViewManager>();
-            set
-            {
-                if (ViewManager != null)
-                    ViewManager.DocumentUpdated -= LayerUpdated;
-
-                Set(value);
-
-                if (ViewManager != null)
-                    ViewManager.DocumentUpdated += LayerUpdated;
-            }
-        }
 
         public event PropertyChangedEventHandler BrushUpdated;
 
@@ -260,9 +184,11 @@ namespace Ibinimator.ViewModel
                 {
                     var name = SettingsManager.GetString(localPath + ".name");
                     var cmd = SettingsManager.GetString(localPath + ".command", null);
-                    var shortcut = cmd != null ?
-                                       SettingsManager.GetString(".shortcuts." + cmd + "[0]", null) :
-                                       null;
+                    var shortcut = cmd != null
+                                       ? SettingsManager.GetString(
+                                           ".shortcuts." + cmd + "[0]",
+                                           null)
+                                       : null;
 
                     var item = new MenuItem(name,
                                             LoadMenus(localPath + ".menus"),
@@ -272,14 +198,14 @@ namespace Ibinimator.ViewModel
 
                     yield return item;
 
-                    if (item.Command == null || item.Shortcut == null) continue;
+                    if (item.Command == null ||
+                        item.Shortcut == null) continue;
 
                     var gesture = ShortcutHelper.GetGesture(shortcut);
-                    var binding =
-                        new InputBinding(item.Command, gesture)
-                        {
-                            CommandParameter = ArtContext
-                        };
+                    var binding = new InputBinding(item.Command, gesture)
+                    {
+                        CommandParameter = ArtContext
+                    };
 
                     Shortcuts.Add(binding);
                 }
@@ -308,11 +234,14 @@ namespace Ibinimator.ViewModel
 
                         break;
                     case ToolbarItemType.Button:
-                        yield return new ToolbarItem(
-                            SettingsManager.GetString(localPath + ".name"),
-                            MapCommand(SettingsManager.GetString(localPath + ".command", null)),
-                            SettingsManager.GetString(localPath + ".icon"),
-                            ArtContext);
+
+                        yield return new ToolbarItem(SettingsManager.GetString(localPath + ".name"),
+                                                     MapCommand(
+                                                         SettingsManager.GetString(
+                                                             localPath + ".command",
+                                                             null)),
+                                                     SettingsManager.GetString(localPath + ".icon"),
+                                                     ArtContext);
 
                         break;
                     default:
@@ -326,25 +255,27 @@ namespace Ibinimator.ViewModel
         {
             switch (name)
             {
-                case "file.open":                return FileCommands.OpenCommand;
-                case "file.save":                return FileCommands.SaveCommand;
-                case "edit.undo":                return HistoryCommands.UndoCommand;
-                case "edit.redo":                return HistoryCommands.RedoCommand;
-                case "object.union":             return ObjectCommands.UnionCommand;
-                case "object.difference":        return ObjectCommands.DifferenceCommand;
-                case "object.intersection":      return ObjectCommands.IntersectionCommand;
-                case "object.exclusion":         return ObjectCommands.XorCommand;
-                case "object.pathify":           return ObjectCommands.PathifyCommand;
-                case "selection.group":          return SelectionCommands.GroupCommand;
-                case "selection.ungroup":        return SelectionCommands.UngroupCommand;
-                case "selection.move-bottom":    return SelectionCommands.MoveToBottomCommand;
-                case "selection.move-down":      return SelectionCommands.MoveDownCommand;
-                case "selection.move-up":        return SelectionCommands.MoveUpCommand;
-                case "selection.move-top":       return SelectionCommands.MoveToTopCommand;
-                case "selection.mirror-x":       return SelectionCommands.FlipHorizontalCommand;
-                case "selection.mirror-y":       return SelectionCommands.FlipVerticalCommand;
-                case "selection.rotate-cw":      return SelectionCommands.RotateClockwiseCommand;
-                case "selection.rotate-ccw":     return SelectionCommands.RotateCounterClockwiseCommand;
+                case "file.open":             return FileCommands.OpenCommand;
+                case "file.save":             return FileCommands.SaveCommand;
+                case "edit.undo":             return HistoryCommands.UndoCommand;
+                case "edit.redo":             return HistoryCommands.RedoCommand;
+                case "object.union":          return ObjectCommands.UnionCommand;
+                case "object.difference":     return ObjectCommands.DifferenceCommand;
+                case "object.intersection":   return ObjectCommands.IntersectionCommand;
+                case "object.exclusion":      return ObjectCommands.XorCommand;
+                case "object.pathify":        return ObjectCommands.PathifyCommand;
+                case "selection.group":       return SelectionCommands.GroupCommand;
+                case "selection.ungroup":     return SelectionCommands.UngroupCommand;
+                case "selection.move-bottom": return SelectionCommands.MoveToBottomCommand;
+                case "selection.move-down":   return SelectionCommands.MoveDownCommand;
+                case "selection.move-up":     return SelectionCommands.MoveUpCommand;
+                case "selection.move-top":    return SelectionCommands.MoveToTopCommand;
+                case "selection.mirror-x":    return SelectionCommands.FlipHorizontalCommand;
+                case "selection.mirror-y":    return SelectionCommands.FlipVerticalCommand;
+                case "selection.rotate-cw":   return SelectionCommands.RotateClockwiseCommand;
+                case "selection.rotate-ccw":
+
+                    return SelectionCommands.RotateCounterClockwiseCommand;
                 case "selection.align-left":     return SelectionCommands.AlignLeftCommand;
                 case "selection.align-right":    return SelectionCommands.AlignRightCommand;
                 case "selection.align-top":      return SelectionCommands.AlignTopCommand;
@@ -375,7 +306,8 @@ namespace Ibinimator.ViewModel
                             if (inRange)
                                 l.Selected = true;
 
-                            if (l == layer || l == first)
+                            if (l == layer ||
+                                l == first)
                                 inRange = !inRange;
                         }
                     }
@@ -389,6 +321,100 @@ namespace Ibinimator.ViewModel
             else if (param != null)
                 throw new ArgumentException(nameof(param));
         }
+
+
+        #region Input
+
+        public List<MenuItem> MenuItems { get; set; }
+
+        public List<InputBinding> Shortcuts { get; } = new List<InputBinding>();
+
+        public List<ToolbarItem> ToolbarItems { get; set; }
+
+        #endregion
+
+        #region Commands
+
+        public DelegateCommand<long> JumpHistoryCommand { get; }
+
+        public DelegateCommand<Layer> SelectLayerCommand { get; }
+
+        public DelegateCommand<ToolType> SelectToolCommand { get; }
+
+        #endregion
+
+        #region ArtContext Managers
+
+        public IHistoryManager HistoryManager
+        {
+            get => Get<IHistoryManager>();
+            set
+            {
+                Set(value);
+                BindingOperations.EnableCollectionSynchronization(value, value);
+            }
+        }
+
+        public IBrushManager BrushManager
+        {
+            get => Get<IBrushManager>();
+            set
+            {
+                if (BrushManager != null)
+                    BrushManager.PropertyChanged -= BrushUpdated;
+
+                Set(value);
+
+                if (BrushManager != null)
+                    BrushManager.PropertyChanged += BrushUpdated;
+            }
+        }
+
+        public ISelectionManager SelectionManager
+        {
+            get => Get<ISelectionManager>();
+            set
+            {
+                if (SelectionManager != null)
+                    SelectionManager.SelectionChanged -= SelectionUpdated;
+
+                Set(value);
+
+                if (SelectionManager != null)
+                    SelectionManager.SelectionChanged += SelectionUpdated;
+            }
+        }
+
+        public IToolManager ToolManager
+        {
+            get => Get<IToolManager>();
+            set => Set(value);
+        }
+
+        public IViewManager ViewManager
+        {
+            get => Get<IViewManager>();
+            set
+            {
+                if (ViewManager != null)
+                    ViewManager.DocumentUpdated -= LayerUpdated;
+
+                Set(value);
+
+                if (ViewManager != null)
+                    ViewManager.DocumentUpdated += LayerUpdated;
+            }
+        }
+
+        #endregion
+
+        #region Sub View Models
+
+        public TransformViewModel TransformViewModel { get; }
+
+        public ColorViewModel ColorViewModel { get; }
+
+        #endregion
     }
 
     public class MenuItem
@@ -396,10 +422,7 @@ namespace Ibinimator.ViewModel
         public MenuItem() { Type = MenuItemType.Separator; }
 
         public MenuItem(
-            string name,
-            IEnumerable<MenuItem> subMenus,
-            ICommand command,
-            string shortcut,
+            string name, IEnumerable<MenuItem> subMenus, ICommand command, string shortcut,
             IArtContext artContext)
         {
             SubMenus = subMenus.ToList();
@@ -431,11 +454,7 @@ namespace Ibinimator.ViewModel
             Type = ToolbarItemType.Space;
         }
 
-        public ToolbarItem(
-            string name,
-            ICommand command,
-            string icon,
-            IArtContext artContext)
+        public ToolbarItem(string name, ICommand command, string icon, IArtContext artContext)
         {
             Command = command;
             Name = name;

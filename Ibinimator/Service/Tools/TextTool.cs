@@ -608,7 +608,7 @@ namespace Ibinimator.Service.Tools
             Update();
         }
 
-        protected override void OnSelectionUpdated(object sender, EventArgs e) { Update(); }
+        protected override void OnSelectionChanged(object sender, EventArgs e) { Update(); }
 
         private void Format(Format format, bool merge = false)
         {

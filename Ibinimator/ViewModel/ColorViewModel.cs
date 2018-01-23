@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Renderer.Utility;
 
@@ -27,6 +26,8 @@ namespace Ibinimator.ViewModel
     {
         private bool   _changing;
         private double _hue, _saturation, _lightness, _alpha;
+
+        public ColorViewModel(IArtContext artContext) { Context = artContext; }
 
         public IArtContext Context
         {
@@ -85,9 +86,37 @@ namespace Ibinimator.ViewModel
         private void HistoryManagerOnCollectionChanged(
             object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
+            Update();
+        }
+
+        private void OnContextChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (Context == null)
+                return;
+
+            Context.HistoryManager.CollectionChanged += HistoryManagerOnCollectionChanged;
+            Context.SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
+        }
+
+        private void OnContextChanging(object sender, PropertyChangingEventArgs e)
+        {
+            if (Context == null)
+                return;
+
+            Context.HistoryManager.CollectionChanged -= HistoryManagerOnCollectionChanged;
+            Context.SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
+        }
+
+        private void SelectionManagerOnSelectionChanged(object sender, EventArgs eventArgs)
+        {
+            Update();
+        }
+
+        private void Update()
+        {
             RaisePropertyChanged(nameof(Fill), nameof(Stroke));
 
-            if (!_changing)
+            if (!_changing && Current != null)
             {
                 (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(Current.Color);
                 RaisePropertyChanged(nameof(Hue),
@@ -97,27 +126,11 @@ namespace Ibinimator.ViewModel
             }
         }
 
-        private void OnContextChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (Context == null)
-                return;
-
-            Context.HistoryManager.CollectionChanged += HistoryManagerOnCollectionChanged;
-        }
-
-        private void OnContextChanging(object sender, PropertyChangingEventArgs e)
-        {
-            if (Context == null)
-                return;
-
-            Context.HistoryManager.CollectionChanged -= HistoryManagerOnCollectionChanged;
-        }
-
         #region Brush Properties
 
-        public WPF.Brush Fill => Context?.BrushManager.Query().Fill.CreateWpfBrush();
+        public WPF.Brush Fill => Context?.BrushManager.Query().Fill?.CreateWpfBrush();
 
-        public WPF.Brush Stroke => Context?.BrushManager.Query().Stroke.Brush.CreateWpfBrush();
+        public WPF.Brush Stroke => Context?.BrushManager.Query().Stroke?.Brush?.CreateWpfBrush();
 
         #endregion
 

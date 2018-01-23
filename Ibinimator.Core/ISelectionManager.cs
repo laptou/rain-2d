@@ -14,7 +14,7 @@ namespace Ibinimator.Core
         RectangleF SelectionBounds { get; }
         Matrix3x2 SelectionTransform { get; }
 
-        event EventHandler SelectionUpdated;
+        event EventHandler SelectionChanged;
         void ClearSelection();
 
         Vector2 FromSelectionSpace(Vector2 v);

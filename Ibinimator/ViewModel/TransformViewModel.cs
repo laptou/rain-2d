@@ -17,7 +17,7 @@ namespace Ibinimator.ViewModel
         public TransformViewModel(IArtContext artContext)
         {
             ArtContext = artContext;
-            artContext.SelectionManager.SelectionUpdated += (s, e) =>
+            artContext.SelectionManager.SelectionChanged += (s, e) =>
                                                    {
                                                        RaisePropertyChanged(nameof(X));
                                                        RaisePropertyChanged(nameof(Y));

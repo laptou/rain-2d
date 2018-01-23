@@ -43,18 +43,6 @@ namespace Ibinimator.Core
 
         event EventHandler StatusChanged;
 
-        event ArtContextManagerEventHandler<IBrushManager> BrushManagerChanged;
-
-        event ArtContextManagerEventHandler<ICacheManager> CacheManagerChanged;
-
-        event ArtContextManagerEventHandler<IHistoryManager> HistoryManagerChanged;
-
-        event ArtContextManagerEventHandler<ISelectionManager> SelectionManagerChanged;
-
-        event ArtContextManagerEventHandler<IToolManager> ToolManagerChanged;
-
-        event ArtContextManagerEventHandler<IViewManager> ViewManagerChanged;
-
         void InvalidateRender();
 
         T Create<T>(params object[] parameters) where T : class;
@@ -62,7 +50,4 @@ namespace Ibinimator.Core
 
     public delegate void ArtContextInputEventHandler<in T>(IArtContext sender, T evt)
         where T : IInputEvent;
-
-    public delegate void ArtContextManagerEventHandler<in T>(
-        IArtContext sender, T oldManager, T newManager) where T : IArtContextManager;
 }

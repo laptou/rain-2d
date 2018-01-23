@@ -231,10 +231,10 @@ namespace Ibinimator.Service.Tools
             p2.Dispose();
         }
         
-        protected override void OnSelectionUpdated(object sender, EventArgs args)
+        protected override void OnSelectionChanged(object sender, EventArgs args)
         {
             _nodes = GetGeometricNodes().ToList();
-            base.OnSelectionUpdated(sender, args);
+            base.OnSelectionChanged(sender, args);
         }
 
         private IEnumerable<PathNode> GetGeometricNodes()

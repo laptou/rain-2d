@@ -65,14 +65,14 @@ namespace Ibinimator.Service.Tools
         /// <inheritdoc />
         public override void Attach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated += OnSelectionUpdated;
+            context.SelectionManager.SelectionChanged += OnSelectionChanged;
             base.Attach(context);
         }
 
         /// <inheritdoc />
         public override void Detach(IArtContext context)
         {
-            context.SelectionManager.SelectionUpdated -= OnSelectionUpdated;
+            context.SelectionManager.SelectionChanged -= OnSelectionChanged;
             base.Detach(context);
         }
 
@@ -439,9 +439,9 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        protected override void OnSelectionUpdated(object sender, EventArgs args)
+        protected override void OnSelectionChanged(object sender, EventArgs args)
         {
-            base.OnSelectionUpdated(sender, args);
+            base.OnSelectionChanged(sender, args);
             UpdateStatus();
         }
 
