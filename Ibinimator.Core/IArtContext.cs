@@ -25,28 +25,44 @@ namespace Ibinimator.Core
 
         IViewManager ViewManager { get; }
 
-        event ArtContextEventHandler<FocusEvent> GainedFocus;
+        event ArtContextInputEventHandler<FocusEvent> GainedFocus;
 
-        event ArtContextEventHandler<KeyboardEvent> KeyDown;
+        event ArtContextInputEventHandler<KeyboardEvent> KeyDown;
 
-        event ArtContextEventHandler<KeyboardEvent> KeyUp;
+        event ArtContextInputEventHandler<KeyboardEvent> KeyUp;
 
-        event ArtContextEventHandler<FocusEvent> LostFocus;
+        event ArtContextInputEventHandler<FocusEvent> LostFocus;
 
-        event ArtContextEventHandler<ClickEvent> MouseDown;
+        event ArtContextInputEventHandler<ClickEvent> MouseDown;
 
-        event ArtContextEventHandler<PointerEvent> MouseMove;
+        event ArtContextInputEventHandler<PointerEvent> MouseMove;
 
-        event ArtContextEventHandler<ClickEvent> MouseUp;
+        event ArtContextInputEventHandler<ClickEvent> MouseUp;
+
+        event ArtContextInputEventHandler<TextEvent> Text;
 
         event EventHandler StatusChanged;
 
-        event ArtContextEventHandler<TextEvent> Text;
+        event ArtContextManagerEventHandler<IBrushManager> BrushManagerChanged;
+
+        event ArtContextManagerEventHandler<ICacheManager> CacheManagerChanged;
+
+        event ArtContextManagerEventHandler<IHistoryManager> HistoryManagerChanged;
+
+        event ArtContextManagerEventHandler<ISelectionManager> SelectionManagerChanged;
+
+        event ArtContextManagerEventHandler<IToolManager> ToolManagerChanged;
+
+        event ArtContextManagerEventHandler<IViewManager> ViewManagerChanged;
 
         void InvalidateRender();
 
         T Create<T>(params object[] parameters) where T : class;
     }
 
-    public delegate void ArtContextEventHandler<in T>(IArtContext sender, T evt) where T : IInputEvent;
+    public delegate void ArtContextInputEventHandler<in T>(IArtContext sender, T evt)
+        where T : IInputEvent;
+
+    public delegate void ArtContextManagerEventHandler<in T>(
+        IArtContext sender, T oldManager, T newManager) where T : IArtContextManager;
 }

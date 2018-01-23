@@ -222,6 +222,7 @@
     <Compile Include="Service\Tools\GradientTool.cs" />
     <Compile Include="Service\Tools\NodeTool.cs" />
     <Compile Include="Service\Tools\SelectionToolBase.cs" />
+    <Compile Include="Utility\BrushExtensions.cs" />
     <Compile Include="Utility\ObjectHelper.cs" />
     <Compile Include="Utility\ScreenExtensions.cs" />
     <Compile Include="View\Command\CommandManager.cs" />
@@ -238,7 +239,7 @@
     <Compile Include="View\Command\ViewCommands.cs" />
     <Compile Include="Shared\WeakDictionary.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
-    <Compile Include="ViewModel\FillPickerViewModel.cs" />
+    <Compile Include="ViewModel\ColorViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModel\TransformViewModel.cs" />

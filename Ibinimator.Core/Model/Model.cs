@@ -11,18 +11,20 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model
 {
-    public abstract class Model
-        : IModel
+    public abstract class Model : IModel
     {
-        private readonly Dictionary<string, Delegate> _handlers   = new Dictionary<string, Delegate>();
-        private          Dictionary<string, object>   _properties = new Dictionary<string, object>();
+        private readonly Dictionary<string, Delegate>
+            _handlers = new Dictionary<string, Delegate>();
+
+        private Dictionary<string, object> _properties = new Dictionary<string, object>();
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
             return _properties.TryGetValue(propertyName, out var o) && o is T ? (T) o : default;
         }
 
-        protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
+        protected PropertyInfo GetPropertyInfo<TProperty>(
+            Expression<Func<TProperty>> propertyLambda)
         {
             var member = propertyLambda.Body as MemberExpression;
 
@@ -39,11 +41,12 @@ namespace Ibinimator.Core.Model
             return propInfo;
         }
 
-        protected void RaisePropertyChanged(string propertyName)
+        protected void RaisePropertyChanged(params string[] propertyNames)
         {
             try
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                foreach (var propertyName in propertyNames)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
             catch (Exception ex)
             {
@@ -81,16 +84,17 @@ namespace Ibinimator.Core.Model
             RaisePropertyChanging(propertyName);
         }
 
-        protected void Set<T>(T value, [CallerMemberName] string propertyName = "")
+        protected void Set<T>(T value, [CallerMemberName] string propertyName = "", 
+                              params string[] dependentProperties)
         {
-            // if (Equals(Get<T>(propertyName), value)) return;
-
             if (value is INotifyCollectionChanged collection)
             {
                 var old = Get<INotifyCollectionChanged>(propertyName);
 
-                if (old != null && _handlers.ContainsKey(propertyName))
-                    old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
+                if (old != null &&
+                    _handlers.ContainsKey(propertyName))
+                    old.CollectionChanged -=
+                        (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
                 _handlers[propertyName] =
                     new NotifyCollectionChangedEventHandler((s, e) =>
@@ -98,12 +102,45 @@ namespace Ibinimator.Core.Model
                                                                 RaisePropertyChanged(propertyName);
                                                             });
 
-                collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
+                collection.CollectionChanged +=
+                    (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }
 
             RaisePropertyChanging(propertyName);
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
+
+            foreach (var property in dependentProperties)
+                RaisePropertyChanged(property);
+        }
+
+        protected void Set<T>(
+            T value, 
+            PropertyChangedEventHandler after,
+            [CallerMemberName] string propertyName = "")
+        {
+            Set(value, propertyName);
+            after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected void Set<T>(
+            T value,
+            out T variable,
+            PropertyChangedEventHandler after,
+            [CallerMemberName] string propertyName = "")
+        {
+            Set(value, out variable, propertyName);
+            after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected void Set<T>(
+            T value, 
+            PropertyChangingEventHandler before,
+            PropertyChangedEventHandler after,
+            [CallerMemberName] string propertyName = "")
+        {
+            before?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+            Set(value, after, propertyName);
         }
 
         protected void Set<T>(T value, out T variable, [CallerMemberName] string propertyName = "")
@@ -144,9 +181,9 @@ namespace Ibinimator.Core.Model
         public object Clone(Type type)
         {
             var t = (Model) Activator.CreateInstance(type);
-            t._properties = _properties.ToDictionary(
-                kv => kv.Key,
-                kv => (kv.Value as Model)?.Clone() ?? kv.Value);
+            t._properties =
+                _properties.ToDictionary(kv => kv.Key,
+                                         kv => (kv.Value as Model)?.Clone() ?? kv.Value);
 
             return t;
         }

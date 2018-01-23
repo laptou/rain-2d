@@ -22,8 +22,7 @@ namespace Ibinimator.Core
         long Position { get; set; }
 
         /// <summary>
-        ///     Fires when Time is changed manually (not when it changes
-        ///     automatically, like when the stack is changed).
+        ///     Fires when Time is changed.
         /// </summary>
         event EventHandler<long> Traversed;
 
