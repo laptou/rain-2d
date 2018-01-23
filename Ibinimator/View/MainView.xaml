@@ -96,19 +96,19 @@
                             Padding="12,6"
                             Command="{x:Static SystemCommands.MinimizeWindowCommand}"
                             Style="{StaticResource ToolbarButton}">
-                        <control:SvgImage Source="{DynamicResource IconMinimize}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="icon-minimize" />
                     </Button>
                     <Button Height="30"
                             Padding="12,6"
                             Command="{x:Static SystemCommands.RestoreWindowCommand}"
                             Style="{StaticResource ToolbarButton}">
-                        <control:SvgImage Source="{DynamicResource IconRestore}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="icon-restore" />
                     </Button>
                     <Button Height="30"
                             Padding="12,6"
                             Command="{x:Static SystemCommands.CloseWindowCommand}"
                             Style="{StaticResource ToolbarButton}">
-                        <control:SvgImage Source="{DynamicResource IconClose}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="icon-close" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -133,7 +133,7 @@
                                 CommandParameter="{Binding ArtContext}"
                                 Style="{StaticResource ToolbarButton}"
                                 ToolTip="{Binding Name}">
-                            <control:SvgImage Source="{Binding Icon}" Style="{DynamicResource Icon}" />
+                            <control:Icon IconName="{Binding Icon}" />
                         </Button>
                     </DataTemplate>
 
@@ -232,61 +232,61 @@
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Select}, Mode=TwoWay}"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Select">
-                        <control:SvgImage Source="{DynamicResource IconSelect}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-select" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Node}, Mode=TwoWay}"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Node">
-                        <control:SvgImage Source="{DynamicResource IconNode}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-node" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Pencil}, Mode=TwoWay}"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Pencil">
-                        <control:SvgImage Source="{DynamicResource IconPencil}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-pencil" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Pen">
-                        <control:SvgImage Source="{DynamicResource IconPen}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-pen" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Text}, Mode=TwoWay}"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Text">
-                        <control:SvgImage Source="{DynamicResource IconText}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-text" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Color Picker">
-                        <control:SvgImage Source="{DynamicResource IconEyedropper}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-eyedropper" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Flood">
-                        <control:SvgImage Source="{DynamicResource IconFlood}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-flood" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool"
                                  IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Gradient}, Mode=TwoWay}"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Gradient">
-                        <control:SvgImage Source="{DynamicResource IconGradient}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-gradient" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Keyframe">
-                        <control:SvgImage Source="{DynamicResource IconKeyframe}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-keyframe" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Mask">
-                        <control:SvgImage Source="{DynamicResource IconMask}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-mask" />
                     </RadioButton>
                     <RadioButton GroupName="selectedTool" IsEnabled="False"
                                  Style="{StaticResource ToolbarButton}"
                                  ToolTip="Zoom">
-                        <control:SvgImage Source="{DynamicResource IconZoom}" Style="{DynamicResource Icon}" />
+                        <control:Icon IconName="tool-zoom" />
                     </RadioButton>
                 </ToolBar>
             </ToolBarTray>
@@ -294,8 +294,8 @@
                 <TabItem Background="White">
                     <Grid>
                         <control:ArtView x:Name="ArtView" />
-                        <TextBlock Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                   Text="{Binding Fps, ElementName=ArtView, Mode=OneWay, StringFormat=\{0:N1\} FPS}" />
+                        <!--<TextBlock Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                   Text="{Binding Fps, ElementName=ArtView, Mode=OneWay, StringFormat=\{0:N1\} FPS}" />-->
                     </Grid>
                 </TabItem>
             </TabControl>
@@ -614,14 +614,14 @@
                                                  GroupName="strokeDashStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconStrokeSolid}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-stroke-solid" />
                                     </RadioButton>
                                     <RadioButton Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center"
                                                  GroupName="strokeDashStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, Converter={StaticResource Inverter}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconStrokeDashed}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-stroke-dash" />
                                     </RadioButton>
                                 </UniformGrid>
 
@@ -637,21 +637,21 @@
                                                  GroupName="strokeEndStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Butt}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconEndFlat}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-end-flat" />
                                     </RadioButton>
                                     <RadioButton Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"
                                                  GroupName="strokeEndStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Square}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconEndSquare}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-end-square" />
                                     </RadioButton>
                                     <RadioButton Width="Auto" Height="25.6"
                                                  Padding="0" VerticalAlignment="Center"
                                                  GroupName="strokeEndStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Round}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconEndRound}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-end-round" />
                                     </RadioButton>
                                 </UniformGrid>
 
@@ -667,21 +667,21 @@
                                                  GroupName="strokeJoinStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Miter}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconCornerMiter}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-corner-miter" />
                                     </RadioButton>
                                     <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"
+                                                 Padding="0" VerticalAlignment="Center"
                                                  GroupName="strokeEndStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Bevel}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconCornerBevel}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-corner-bevel" />
                                     </RadioButton>
                                     <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"
+                                                 Padding="0" VerticalAlignment="Center"
                                                  GroupName="strokeEndStyle"
                                                  IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Round}, Mode=TwoWay}"
                                                  Style="{StaticResource ToolbarButton}">
-                                        <control:SvgImage Source="{DynamicResource IconCornerRound}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-corner-round" />
                                     </RadioButton>
                                 </UniformGrid>
 
@@ -748,15 +748,13 @@
                                             <ControlTemplate TargetType="{x:Type ToggleButton}">
                                                 <Border Width="12" Height="12"
                                                         Background="Transparent">
-                                                    <control:SvgImage x:Name="ExpandPath"
-                                                                      Width="12" Height="12"
-                                                                      Cursor="Hand" RenderTransformOrigin="0.5,0.5"
-                                                                      Source="{DynamicResource IconExpander}"
-                                                                      Style="{StaticResource Icon}">
-                                                        <control:SvgImage.RenderTransform>
+                                                    <control:Icon x:Name="ExpandPath"
+                                                                  Width="12" Height="12"
+                                                                  Cursor="Hand" IconName="icon-expander" RenderTransformOrigin="0.5,0.5">
+                                                        <control:Icon.RenderTransform>
                                                             <RotateTransform Angle="-90" />
-                                                        </control:SvgImage.RenderTransform>
-                                                    </control:SvgImage>
+                                                        </control:Icon.RenderTransform>
+                                                    </control:Icon>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsChecked" Value="True">

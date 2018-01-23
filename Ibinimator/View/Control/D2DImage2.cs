@@ -103,7 +103,8 @@ namespace Ibinimator.View.Control
                                                         ScrollDirection.Horizontal,
                                                     KeyboardHelper.GetModifierState(wParam));
 
-                    _events.Enqueue(scrollEvt);
+                    lock (_events)
+                        _events.Enqueue(scrollEvt);
                     _eventFlag.Set();
 
                     break;
@@ -114,8 +115,9 @@ namespace Ibinimator.View.Control
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
 
-                    _events.Enqueue(new PointerEvent(pos, _lastMousePos - pos,
-                                                     KeyboardHelper.GetModifierState(wParam)));
+                    lock (_events)
+                        _events.Enqueue(new PointerEvent(pos, _lastMousePos - pos,
+                                                         KeyboardHelper.GetModifierState(wParam)));
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -129,8 +131,9 @@ namespace Ibinimator.View.Control
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
 
-                    _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Down,
-                                                   KeyboardHelper.GetModifierState(wParam)));
+                    lock (_events)
+                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Down,
+                                                       KeyboardHelper.GetModifierState(wParam)));
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -142,8 +145,9 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
-                    _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Up,
-                                                   KeyboardHelper.GetModifierState(wParam)));
+                    lock (_events)
+                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Up,
+                                                       KeyboardHelper.GetModifierState(wParam)));
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -155,8 +159,9 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
-                    _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Double,
-                                                   KeyboardHelper.GetModifierState(wParam)));
+                    lock (_events)
+                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Double,
+                                                       KeyboardHelper.GetModifierState(wParam)));
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -176,7 +181,9 @@ namespace Ibinimator.View.Control
 
                     if (repeat != 0) goto default;
 
-                    _events.Enqueue(new KeyboardEvent((int) key, true, KeyboardHelper.GetModifierState()));
+                    lock (_events)
+                        _events.Enqueue(
+                            new KeyboardEvent((int) key, true, KeyboardHelper.GetModifierState()));
                     _eventFlag.Set();
 
                     // since the messages are processed asynchronously, 
@@ -186,7 +193,9 @@ namespace Ibinimator.View.Control
                 case WindowMessage.SysKeyUp:
                     key = KeyInterop.KeyFromVirtualKey((int) wParam);
 
-                    _events.Enqueue(new KeyboardEvent((int) key, false, KeyboardHelper.GetModifierState()));
+                    lock (_events)
+                        _events.Enqueue(
+                            new KeyboardEvent((int) key, false, KeyboardHelper.GetModifierState()));
                     _eventFlag.Set();
 
                     return (IntPtr) 1;
@@ -198,20 +207,20 @@ namespace Ibinimator.View.Control
                     if (str.Length == 1 && char.IsControl(str[0]))
                         break;
 
-                    _events.Enqueue(new TextEvent(str, KeyboardHelper.GetModifierState()));
+                    lock (_events)
+                        _events.Enqueue(new TextEvent(str, KeyboardHelper.GetModifierState()));
                     _eventFlag.Set();
 
                     break;
+
+                // here we call OnInput() directly instead of using the queue
+                // because any delay in responding to focus events causes problems
                 case WindowMessage.SetFocus:
-                    _events.Enqueue(new FocusEvent(true, KeyboardHelper.GetModifierState()));
-                    _eventFlag.Set();
-
-                    break;
+                    OnInput(new FocusEvent(true, KeyboardHelper.GetModifierState()));
+                    goto default;
                 case WindowMessage.KillFocus:
-                    _events.Enqueue(new FocusEvent(false, KeyboardHelper.GetModifierState()));
-                    _eventFlag.Set();
-
-                    break;
+                    OnInput(new FocusEvent(false, KeyboardHelper.GetModifierState()));
+                    goto default;
                 case WindowMessage.Size:
                     InvalidateSurface();
                     goto default;

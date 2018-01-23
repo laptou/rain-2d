@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Ibinimator.Native {
     internal static class CaretHelper {
         [DllImport("user32.dll")]
-        public static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitap, int width, int height);
+        public static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitmap, int width, int height);
 
         [DllImport("user32.dll")]
         public static extern bool DestroyCaret();

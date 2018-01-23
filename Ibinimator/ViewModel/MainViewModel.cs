@@ -51,8 +51,8 @@ namespace Ibinimator.ViewModel
             SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
             JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
 
-            MenuItems = LoadMenus(".menus").ToList();
-            ToolbarItems = LoadToolbars(".toolbars").ToList();
+            MenuItems = LoadMenus("menus").ToList();
+            ToolbarItems = LoadToolbars("toolbars").ToList();
         }
 
         public MainViewModel()
@@ -288,7 +288,7 @@ namespace Ibinimator.ViewModel
 
         private IEnumerable<ToolbarItem> LoadToolbars(string path)
         {
-            var theme = SettingsManager.GetString(".theme", "");
+            var theme = SettingsManager.GetString("theme", "");
 
             if (!SettingsManager.Contains(path + ".$count"))
                 yield break;
@@ -308,14 +308,10 @@ namespace Ibinimator.ViewModel
 
                         break;
                     case ToolbarItemType.Button:
-                        var icon = SettingsManager.GetString(localPath + ".icon");
-                        var name = SettingsManager.GetString(localPath + ".name");
-                        var cmd = SettingsManager.GetString(localPath + ".command", null);
-
                         yield return new ToolbarItem(
-                            name,
-                            MapCommand(cmd),
-                            $"/Ibinimator;component/Resources/Icon/{icon}-{theme}.svg",
+                            SettingsManager.GetString(localPath + ".name"),
+                            MapCommand(SettingsManager.GetString(localPath + ".command", null)),
+                            SettingsManager.GetString(localPath + ".icon"),
                             ArtContext);
 
                         break;

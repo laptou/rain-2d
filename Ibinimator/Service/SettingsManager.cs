@@ -15,8 +15,8 @@ namespace Ibinimator.Service
 {
     public static class SettingsManager
     {
-        private static readonly IDictionary<string, object> Cache =
-            new Dictionary<string, object>();
+        private static readonly IDictionary<string, object>
+            Cache = new Dictionary<string, object>();
 
         public static bool Contains(string path) { return Cache.ContainsKey(path); }
 
@@ -53,18 +53,15 @@ namespace Ibinimator.Service
                 var filePath = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
 
                 if (!File.Exists(filePath))
-                    using (var file =
-                        File.Open(filePath,
-                                  FileMode.Create,
-                                  FileAccess.Write,
-                                  FileShare.None))
+                    using (var file = File.Open(filePath, FileMode.Create, FileAccess.Write,
+                                                FileShare.None))
                     {
-                        var defaultFile =
-                            Application.GetResourceStream(
-                                            new Uri("/Ibinimator;component" +
-                                                    "/settings.default.json",
-                                                    UriKind.Relative))
-                                      ?.Stream;
+                        var defaultFile = Application
+                                         .GetResourceStream(
+                                              new Uri(
+                                                  "/Ibinimator;component" +
+                                                  "/settings.default.json", UriKind.Relative))
+                                        ?.Stream;
 
                         if (defaultFile == null)
                             throw new Exception("Default settings file is missing.");
@@ -74,11 +71,8 @@ namespace Ibinimator.Service
                         defaultFile.Dispose();
                     }
 
-                using (var file = File.Open(
-                    filePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read))
+                using (var file =
+                    File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var reader = new JsonTextReader(new StreamReader(file));
 
@@ -89,12 +83,11 @@ namespace Ibinimator.Service
             }
             else
             {
-                using (var file =
-                    Application.GetResourceStream(
-                                    new Uri("/Ibinimator;component" +
-                                            "/settings.default.json",
-                                            UriKind.Relative))
-                              ?.Stream)
+                using (var file = Application
+                                 .GetResourceStream(
+                                      new Uri("/Ibinimator;component" + "/settings.default.json",
+                                              UriKind.Relative))
+                                ?.Stream)
                 {
                     if (file == null)
                         throw new Exception("Default settings file is missing.");
@@ -110,11 +103,8 @@ namespace Ibinimator.Service
 
         public static async Task SaveAsync()
         {
-            using (var file = File.Open(
-                AppDomain.CurrentDomain.BaseDirectory + "settings.json",
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.Read))
+            using (var file = File.Open(AppDomain.CurrentDomain.BaseDirectory + "settings.json",
+                                        FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 var writer = new JsonTextWriter(new StreamWriter(file));
 
@@ -134,7 +124,8 @@ namespace Ibinimator.Service
             {
                 case JObject obj:
                     foreach (var property in obj.Properties())
-                        Load(property.Value, path + "." + property.Name);
+                        Load(property.Value,
+                             path.Length == 0 ? property.Name : path + "." + property.Name);
 
                     break;
                 case JArray arr:
@@ -151,8 +142,7 @@ namespace Ibinimator.Service
             }
         }
 
-        private static async Task<JToken> Serialize(
-            IDictionary<string, object> set = null)
+        private static async Task<JToken> Serialize(IDictionary<string, object> set = null)
         {
             if (set == null)
                 set = Cache.OrderBy(k => k.Key).ToDictionary();
@@ -166,10 +156,9 @@ namespace Ibinimator.Service
                 for (var i = 0; i < count; i++)
                 {
                     var indice = $"[{i}]";
-                    var newSet =
-                        set.Where(k => k.Key.StartsWith(indice))
-                           .Select(k => (k.Key.Substring(indice.Length), k.Value))
-                           .ToDictionary();
+                    var newSet = set.Where(k => k.Key.StartsWith(indice))
+                                    .Select(k => (k.Key.Substring(indice.Length), k.Value))
+                                    .ToDictionary();
 
                     arr.Add(await Serialize(newSet));
                 }
@@ -182,9 +171,7 @@ namespace Ibinimator.Service
 
             var obj = new JObject();
 
-            var props = set
-                       .Select(k => "." + k.Key.Split('.', '[')[1])
-                       .Distinct();
+            var props = set.Select(k => "." + k.Key.Split('.', '[')[1]).Distinct();
 
             foreach (var prop in props)
             {

@@ -67,12 +67,18 @@ namespace Ibinimator.View.Control
             if (_document == null)
                 return new WPF.Size();
 
-            var width = availableSize.Width;
-            var height = availableSize.Height;
-            var aspect = width / height;
-
             var docWidth = _document.Bounds.Width;
             var docHeight = _document.Bounds.Height;
+
+            var width = availableSize.Width;
+            var height = availableSize.Height;
+
+            if (double.IsPositiveInfinity(height))
+                height = docHeight;
+            if (double.IsPositiveInfinity(width))
+                width = docWidth;
+
+            var aspect = width / height;
             var docAspect = docWidth / docHeight;
 
             return aspect > docAspect ?
@@ -184,6 +190,9 @@ namespace Ibinimator.View.Control
         public event ArtContextEventHandler<TextEvent> Text;
 
         public void InvalidateRender() { InvalidateVisual(); }
+
+        /// <inheritdoc />
+        public T Create<T>(params object[] parameters) where T : class { throw new NotImplementedException(); }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();
 

@@ -247,6 +247,9 @@
     <Compile Include="View\Control\D2DImage2.cs" />
     <Compile Include="View\Control\SvgImage.cs" />
     <Compile Include="View\Control\Pane.cs" />
+    <Compile Include="View\Panes\ColorPane.xaml.cs">
+      <DependentUpon>ColorPane.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Panes\HistoryPane.xaml.cs">
       <DependentUpon>HistoryPane.xaml</DependentUpon>
     </Compile>
@@ -260,6 +263,7 @@
       <DependentUpon>SplashScreen.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Utility\DesignerResourceDictionary.cs" />
+    <Compile Include="View\Control\Icon.cs" />
     <Compile Include="View\Utility\InversionConverter.cs" />
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
@@ -359,6 +363,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\MainView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Panes\ColorPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

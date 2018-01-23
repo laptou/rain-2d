@@ -40,7 +40,7 @@ namespace Ibinimator
             SettingsManager.Load();
 
             var themeUri =
-                new Uri($"/Ibinimator;component/theme.{SettingsManager.GetString(".theme")}.xaml",
+                new Uri($"/Ibinimator;component/theme.{SettingsManager.GetString("theme")}.xaml",
                         UriKind.Relative);
 
             Resources.MergedDictionaries.Add((ResourceDictionary) LoadComponent(themeUri));

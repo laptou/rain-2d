@@ -116,7 +116,6 @@ namespace Ibinimator.View.Control
                         ac.RaiseGainedFocus(focusEvent);
                     else
                         ac.RaiseLostFocus(focusEvent);
-
                     break;
                 case ScrollEvent scrollEvent:
                     if (scrollEvent.ModifierState.Control)

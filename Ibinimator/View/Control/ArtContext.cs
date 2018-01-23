@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Native;
 
 namespace Ibinimator.View.Control
 {
@@ -90,6 +91,18 @@ namespace Ibinimator.View.Control
         #region IArtContext Members
 
         public void InvalidateRender() { _artView.InvalidateSurface(); }
+
+        /// <inheritdoc />
+        public T Create<T>(params object[] parameters) where T : class
+        {
+            if (typeof(T) == typeof(ICaret))
+            {
+                if(WindowHelper.GetFocus() == _artView.Handle)
+                    return new Caret(_artView.Handle, (int) parameters[0], (int) parameters[1]) as T;
+            }
+
+            return null;
+        }
 
         public RenderContext RenderContext => _artView.RenderContext;
 

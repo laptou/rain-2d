@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Direct2D;
@@ -15,6 +16,7 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Native;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -31,7 +33,8 @@ namespace Ibinimator.Service.Tools
         private readonly DW.Factory        _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
-        private (Vector2 position, Vector2 size, bool visible) _caret;
+        private ICaret _caret;
+        private bool _focus;
         private (Vector2 start, Vector2 end, long time)        _drag;
 
         private (Vector2 position, bool down, long time, long previousTime) _mouse;
@@ -114,22 +117,6 @@ namespace Ibinimator.Service.Tools
             Update();
         }
 
-        /// <inheritdoc />
-        public override void Attach(IArtContext context)
-        {
-            context.Text += TextInput;
-            base.Attach(context);
-        }
-
-        /// <inheritdoc />
-        public override void Detach(IArtContext context)
-        {
-            context.Text -= TextInput;
-            Dispose();
-
-            base.Detach(context);
-        }
-
         public string Status
         {
             get => Get<string>();
@@ -158,13 +145,47 @@ namespace Ibinimator.Service.Tools
             }, true);
         }
 
+        /// <inheritdoc />
+        public override void Attach(IArtContext context)
+        {
+            context.Text += OnText;
+            context.GainedFocus += OnGainedFocus;
+            context.LostFocus += OnLostFocus;
+
+            base.Attach(context);
+        }
+
+        private void OnLostFocus(IArtContext sender, FocusEvent evt)
+        {
+            _focus = false;
+            _caret?.Dispose();
+            _caret = null;
+        }
+
+        private void OnGainedFocus(IArtContext sender, FocusEvent evt)
+        {
+            _focus = true;
+            UpdateCaret();
+        }
+
+        /// <inheritdoc />
+        public override void Detach(IArtContext context)
+        {
+            context.Text -= OnText;
+            context.GainedFocus -= OnGainedFocus;
+            context.LostFocus -= OnLostFocus;
+            Dispose();
+
+            base.Detach(context);
+        }
+
         public void Dispose()
         {
-
+            _caret?.Dispose();
             _dwFontCollection?.Dispose();
             _dwFactory?.Dispose();
         }
-        
+
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
@@ -176,7 +197,7 @@ namespace Ibinimator.Service.Tools
 
                 switch ((Key) evt.KeyCode)
                 {
-                    #region Navigation
+#region Navigation
 
                     case Key.Left:
                         _selection.index--;
@@ -301,9 +322,9 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-                    #endregion
+#endregion
 
-                    #region Manipulation
+#region Manipulation
 
                     case Key.Back:
 
@@ -329,12 +350,13 @@ namespace Ibinimator.Service.Tools
                         break;
 
                     case Key.Return:
-                        TextInput(Context, new TextEvent(Environment.NewLine, evt.ModifierState));
+                        OnText(Context, new TextEvent(Environment.NewLine, evt.ModifierState));
+
                         break;
 
-                    #endregion
+#endregion
 
-                    #region Shorcuts
+#region Shorcuts
 
                     case Key.A when evt.ModifierState.Control:
                         _selection.index = 0;
@@ -388,7 +410,7 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-                    #endregion
+#endregion
 
                     default:
 
@@ -533,6 +555,8 @@ namespace Ibinimator.Service.Tools
                 var textPosition = layout.GetPosition(tpos, out var isTrailingHit);
 
                 _selection.index = textPosition + (isTrailingHit ? 1 : 0);
+
+                UpdateCaret();
             }
 
             Update();
@@ -560,15 +584,6 @@ namespace Ibinimator.Service.Tools
 
             target.Transform(SelectedLayer.AbsoluteTransform);
 
-            if (_selection.length == 0 && Time.Now % (GetCaretBlinkTime() * 2) < GetCaretBlinkTime())
-
-                target.FillRectangle(
-                    _caret.position.X,
-                    _caret.position.Y,
-                    _caret.size.X,
-                    _caret.size.Y,
-                    cache.GetBrush(nameof(EditorColors.TextCaret)));
-
             if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(
@@ -578,7 +593,7 @@ namespace Ibinimator.Service.Tools
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        public void TextInput(IArtContext sender, TextEvent evt)
+        public void OnText(IArtContext sender, TextEvent evt)
         {
             if (SelectedLayer == null) return;
 
@@ -602,9 +617,7 @@ namespace Ibinimator.Service.Tools
                 Context.HistoryManager.Position + 1,
                 SelectedLayer, format);
 
-            if (merge)
-
-                history.Merge(cmd, Time.DoubleClick);
+            if (merge) history.Merge(cmd, Time.DoubleClick);
             else history.Do(cmd);
         }
 
@@ -796,14 +809,9 @@ namespace Ibinimator.Service.Tools
         {
             if (SelectedLayer == null) return;
 
-            // if (!_caret.visible) 
-
             var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
-            var metrics = layout.MeasurePosition(_selection.index);
-
-            _caret.position = new Vector2(metrics.Left, metrics.Top);
-            _caret.size = new Vector2((float) SystemParameters.CaretWidth, metrics.Height);
+            UpdateCaret();
 
             _selectionRects = _selection.length > 0 ?
                                   layout.MeasureRange(_selection.index, _selection.length) :
@@ -824,6 +832,51 @@ namespace Ibinimator.Service.Tools
             }
 
             Context.InvalidateRender();
+        }
+
+        private void UpdateCaret()
+        {
+            if (SelectedLayer == null)
+            {
+                if(_caret != null)
+                    _caret.Visible = false;
+
+                return;
+            }
+
+            if (!_focus)
+            {
+                _caret?.Dispose();
+                _caret = null;
+            }
+
+            var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
+
+            var metrics = layout.MeasurePosition(_selection.index);
+
+            if (_caret == null)
+            {
+                try
+                {
+                    _caret = Context.Create<ICaret>(0, (int) metrics.Height);
+                }
+                catch
+                {
+                    return;
+                }
+
+                // if it's still null, then we can't create a caret right now.
+                // give up i guess
+                if (_caret == null)
+                    return;
+            }
+
+            _caret.Visible = false;
+
+            var caretPos = ToWorldSpace(metrics.TopLeft);
+            Debug.WriteLine($"Caret Position: {caretPos}");
+            _caret.Position = caretPos;
+            _caret.Visible = true;
         }
 
         private void UpdateOptions(
@@ -867,7 +920,7 @@ namespace Ibinimator.Service.Tools
             _updatingOptions = false;
         }
 
-        #region Nested type: FontFace
+#region Nested type: FontFace
 
         private struct FontFace : IEquatable<FontFace>
         {
@@ -925,7 +978,7 @@ namespace Ibinimator.Service.Tools
 
             public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
 
-            #region IEquatable<FontFace> Members
+#region IEquatable<FontFace> Members
 
             public bool Equals(FontFace other)
             {
@@ -934,9 +987,9 @@ namespace Ibinimator.Service.Tools
                        Stretch == other.Stretch;
             }
 
-            #endregion
+#endregion
         }
 
-        #endregion
+#endregion
     }
 }

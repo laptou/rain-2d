@@ -44,6 +44,8 @@ namespace Ibinimator.Core
         event ArtContextEventHandler<TextEvent> Text;
 
         void InvalidateRender();
+
+        T Create<T>(params object[] parameters) where T : class;
     }
 
     public delegate void ArtContextEventHandler<in T>(IArtContext sender, T evt) where T : IInputEvent;

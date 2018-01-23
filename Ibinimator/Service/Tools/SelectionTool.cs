@@ -224,9 +224,8 @@ namespace Ibinimator.Service.Tools
                             origin,
                             SelectionManager.SelectionTransform.GetRotation(),
                             GuideType.Rotation));
-
-                    _deltaRotation += rotate;
-                    rotate = 0;
+                    
+                    rotate = MathUtils.Atan2(pos.Y - origin.Y, pos.X - origin.X);
 
                     // setting rotate to 0 means that the transformation matrix is
                     // identity, which will cause rendering to stop so we invalidate
@@ -238,7 +237,7 @@ namespace Ibinimator.Service.Tools
                         var delta = Math.Sign(_deltaRotation) *
                                     MathUtils.PiOverFour;
 
-                        rotate = delta;
+                        rotate = rotate;
                         _deltaRotation -= delta;
                     }
                 }

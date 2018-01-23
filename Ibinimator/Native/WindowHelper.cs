@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
-namespace Ibinimator.Native {
-    internal static class WindowHelper {
+namespace Ibinimator.Native
+{
+    internal static class WindowHelper
+    {
         [DllImport("user32.dll")]
-        public static extern IntPtr BeginPaint(IntPtr hwnd, out PaintStruct lpPaint);
+        public static extern IntPtr BeginPaint(IntPtr hWnd, out PaintStruct lpPaint);
 
         [DllImport("user32.dll", EntryPoint = "CreateWindowEx", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateWindowEx(
@@ -14,7 +19,7 @@ namespace Ibinimator.Native {
             WindowStyles style,
             int x, int y,
             int width, int height,
-            IntPtr hwndParent,
+            IntPtr hWndParent,
             IntPtr hMenu,
             IntPtr hInst,
             [MarshalAs(UnmanagedType.AsAny)] object pvParam);
@@ -24,7 +29,7 @@ namespace Ibinimator.Native {
             IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll", EntryPoint = "DestroyWindow", CharSet = CharSet.Unicode)]
-        public static extern bool DestroyWindow(IntPtr hwnd);
+        public static extern bool DestroyWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern bool EndPaint(IntPtr hWnd, [In] ref PaintStruct lpPaint);
@@ -37,6 +42,9 @@ namespace Ibinimator.Native {
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hWnd, out NativeRect lpRect);
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(
@@ -57,23 +65,23 @@ namespace Ibinimator.Native {
         public static extern ushort RegisterClass(ref WndClass lpWndClass);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr SetFocus([Optional] IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern int SetWindowCompositionAttribute(
+            IntPtr hWnd, ref WindowCompositionAttributeData data);
+
+        [DllImport("user32.dll")]
         public static extern ushort UnregisterClass(
             [MarshalAs(UnmanagedType.LPTStr)] string lpClassName,
             [Optional] IntPtr hInstance);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr UpdateWindow(IntPtr hwnd);
+        public static extern IntPtr UpdateWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         public static extern bool ValidateRect(
             [In] IntPtr hWnd,
             [In] ref NativeRect lpRect);
-
-        [DllImport("user32.dll")]
-        public static extern int SetWindowCompositionAttribute(
-            IntPtr hwnd, ref WindowCompositionAttributeData data);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetFocus([Optional] IntPtr hWnd);
     }
 }
