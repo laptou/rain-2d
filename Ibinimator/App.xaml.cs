@@ -33,17 +33,9 @@ namespace Ibinimator
     {
         public App()
         {
-
-
             InitializeComponent();
 
-            Settings.Load();
-
-            var themeUri =
-                new Uri($"/Ibinimator;component/theme.{Settings.GetString("theme")}.xaml",
-                        UriKind.Relative);
-
-            Resources.MergedDictionaries.Add((ResourceDictionary) LoadComponent(themeUri));
+            AppSettings.LoadDefault();
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }

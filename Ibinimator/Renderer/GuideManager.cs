@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
+using Ibinimator.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service;
 

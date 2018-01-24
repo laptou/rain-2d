@@ -163,6 +163,8 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
+#pragma warning disable CS0067
+
         /// <inheritdoc />
         public event ArtContextInputEventHandler<FocusEvent> GainedFocus;
 

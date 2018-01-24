@@ -8,15 +8,15 @@ using Ibinimator.Service;
 
 namespace Ibinimator.View.Utility
 {
-    public class SettingsBinding : MarkupExtension
+    public class SettingExtension : MarkupExtension
     {
-        public SettingsBinding(string path) { Path = path; }
+        public SettingExtension(string path) { Path = path; }
 
         public string Path { get; }
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return Settings.GetObject(Path);
+            return AppSettings.Current[Path];
         }
     }
 }

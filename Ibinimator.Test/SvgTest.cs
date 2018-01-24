@@ -13,7 +13,6 @@ namespace Ibinimator.Test
         [TestMethod]
         public void TestMethod1()
         {
-            var path = "";
         }
     }
 }

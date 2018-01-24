@@ -28,9 +28,9 @@ namespace Ibinimator.View.Control
 
         private static void IconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Icon icon)
+            if (d is Icon icon && icon.IconName != null)
             {
-                var theme = Settings.GetString("theme");
+                var theme = AppSettings.Current.GetString("theme");
 
                 if (icon.Inverted)
                 {
@@ -48,7 +48,8 @@ namespace Ibinimator.View.Control
                 }
 
                 icon.Source =
-                    new Uri($"/Ibinimator;component/Resources/Icon/{icon.IconName}-{theme}.svg", UriKind.Relative);
+                    new Uri($"/Ibinimator;component/Resources/Icon/{icon.IconName}-{theme}.svg", 
+                            UriKind.Relative);
             }
         }
 

@@ -63,7 +63,7 @@ namespace Ibinimator.ViewModel
                               "This constructor only exists so that the XAML designer doesn't " +
                               "complain. Do not call this."));
 
-            Settings.Load();
+            AppSettings.LoadDefault();
 
             MenuItems = LoadMenus("menus").ToList();
             ToolbarItems = LoadToolbars("toolbars").ToList();
@@ -167,28 +167,28 @@ namespace Ibinimator.ViewModel
 
         private IEnumerable<MenuItem> LoadMenus(string path)
         {
-            if (!Settings.Contains(path + ".$count"))
+            var settings = AppSettings.Current;
+
+            if (!settings.Contains(path + ".$count"))
                 yield break;
 
-            var menuCount = Settings.GetInt(path + ".$count");
+            var menuCount = settings.GetInt(path + ".$count");
 
             for (var i = 0; i < menuCount; i++)
             {
                 var localPath = path + "[" + i + "]";
 
-                if (Settings.Contains(localPath) &&
-                    Settings.GetObject(localPath) == null)
+                if (settings.Contains(localPath) &&
+                    settings[localPath] == null)
                 {
                     yield return new MenuItem();
                 }
                 else
                 {
-                    var name = Settings.GetString(localPath + ".name");
-                    var cmd = Settings.GetString(localPath + ".command", null);
+                    var name = settings.GetString(localPath + ".name");
+                    var cmd = settings.GetString(localPath + ".command");
                     var shortcut = cmd != null
-                                       ? Settings.GetString(
-                                           ".shortcuts." + cmd + "[0]",
-                                           null)
+                                       ? settings.GetString(".shortcuts." + cmd + "[0]", null)
                                        : null;
 
                     var item = new MenuItem(name,
@@ -215,17 +215,17 @@ namespace Ibinimator.ViewModel
 
         private IEnumerable<ToolbarItem> LoadToolbars(string path)
         {
-            var theme = Settings.GetString("theme", "");
+            var settings = AppSettings.Current;
 
-            if (!Settings.Contains(path + ".$count"))
+            if (!settings.Contains(path + ".$count"))
                 yield break;
 
-            var tbCount = Settings.GetInt(path + ".$count");
+            var tbCount = settings.GetInt(path + ".$count");
 
             for (var i = 0; i < tbCount; i++)
             {
                 var localPath = path + "[" + i + "]";
-                var type = Settings.GetEnum<ToolbarItemType>(localPath + ".type");
+                var type = settings.GetEnum<ToolbarItemType>(localPath + ".type");
 
                 switch (type)
                 {
@@ -236,12 +236,11 @@ namespace Ibinimator.ViewModel
                         break;
                     case ToolbarItemType.Button:
 
-                        yield return new ToolbarItem(Settings.GetString(localPath + ".name"),
+                        yield return new ToolbarItem(settings.GetString(localPath + ".name"),
                                                      MapCommand(
-                                                         Settings.GetString(
-                                                             localPath + ".command",
-                                                             null)),
-                                                     Settings.GetString(localPath + ".icon"),
+                                                         settings.GetString(
+                                                             localPath + ".command")),
+                                                     settings.GetString(localPath + ".icon"),
                                                      ArtContext);
 
                         break;
@@ -339,8 +338,6 @@ namespace Ibinimator.ViewModel
         public DelegateCommand<long> JumpHistoryCommand { get; }
 
         public DelegateCommand<Layer> SelectLayerCommand { get; }
-
-        public DelegateCommand<ToolType> SelectToolCommand { get; }
 
         #endregion
 

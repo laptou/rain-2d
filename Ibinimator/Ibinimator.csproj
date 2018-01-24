@@ -217,7 +217,7 @@
     <Compile Include="Commands\TransformCommand.cs" />
     <Compile Include="Commands\UngroupCommand.cs" />
     <Compile Include="Renderer\GuideManager.cs" />
-    <Compile Include="Service\Settings.cs" />
+    <Compile Include="Service\AppSettings.cs" />
     <Compile Include="Service\SvgConverter.cs" />
     <Compile Include="Service\Theme.cs" />
     <Compile Include="Tools\GradientTool.cs" />
@@ -286,7 +286,8 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Utility\SettingsBinding.cs" />
+    <Compile Include="View\Utility\ThemeExtension.cs" />
+    <Compile Include="View\Utility\SettingExtension.cs" />
     <Compile Include="View\Utility\TextBlockHelper.cs" />
     <Compile Include="View\Utility\TextBoxEnterBehavior.cs" />
     <Compile Include="View\Utility\TreeViewBehavior.cs" />

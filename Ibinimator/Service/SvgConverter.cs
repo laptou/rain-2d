@@ -422,13 +422,7 @@ namespace Ibinimator.Service
         public static Paint ToSvg(IBrushInfo brush)
         {
             if (brush is SolidColorBrushInfo solidBrush)
-                return new SolidColor(
-                    new Svg.Color(
-                            solidBrush.Color.Red,
-                            solidBrush.Color.Green,
-                            solidBrush.Color.Blue,
-                            solidBrush.Color.Alpha
-                        ));
+                return new SolidColor(solidBrush.Color);
 
             return null;
         }

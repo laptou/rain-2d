@@ -5,7 +5,7 @@
         "background-2": "#E1E1E1",
         "background-3": "#D7D7D7",
 
-        "background-inverse-1": "#333333",
+        "background-1-inverse": "#333333",
 
         "accent-1": "#58D432",
         "accent-2": "#387691",
@@ -23,7 +23,7 @@
 
         "text-1": "#404040",
 
-        "text-inverse-1": "#FFFFFF",
+        "text-1-inverse": "#FFFFFF",
 
         "divider": "#404040",
         "divider-inverse": "#808080",

@@ -4,11 +4,10 @@
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:local="clr-namespace:Ibinimator.View.Panes"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:utility="clr-namespace:Ibinimator.View.Utility"
       xmlns:vm="clr-namespace:Ibinimator.ViewModel;assembly=Ibinimator"
-      Title="ColorPane"
       d:DataContext="{d:DesignInstance vm:ColorViewModel}"
       d:DesignHeight="300" d:DesignWidth="384"
       mc:Ignorable="d">
-    <Grid MinWidth="384">
+    <Grid MinWidth="384" Background="{utility:Theme background-2}">
         <Grid Width="50" Height="50"
               Margin="8" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid.RowDefinitions>

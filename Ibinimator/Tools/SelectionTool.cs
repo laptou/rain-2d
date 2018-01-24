@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -238,7 +239,6 @@ namespace Ibinimator.Service.Tools
                         var delta = Math.Sign(_deltaRotation) *
                                     MathUtils.PiOverFour;
 
-                        rotate = rotate;
                         _deltaRotation -= delta;
                     }
                 }

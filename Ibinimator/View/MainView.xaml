@@ -3,9 +3,8 @@
         xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:core="clr-namespace:Ibinimator.Core;assembly=Ibinimator.Core"
         xmlns:coremodel="clr-namespace:Ibinimator.Core.Model;assembly=Ibinimator.Core"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:model="clr-namespace:Ibinimator.Renderer.Model;assembly=Ibinimator.Renderer"
-        xmlns:utility="clr-namespace:Ibinimator.View.Utility" xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:utility="clr-namespace:Ibinimator.View.Utility"
+        xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         Title="Ibinimator"
         d:DesignHeight="1080" d:DesignWidth="1920" Icon="/Ibinimator;component/Resources/logo.png"
         WindowState="Maximized"
@@ -29,27 +28,107 @@
     <d:Window.DataContext>
         <viewmodel:MainViewModel />
     </d:Window.DataContext>
-    <Grid>
-        <Grid.Background>
-            <SolidColorBrush Opacity="0.5" Color="{DynamicResource L0}" />
-        </Grid.Background>
+
+    <Grid Background="{utility:Theme background-3}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="48" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
-            <RowDefinition Height="50" />
-            <RowDefinition Height="40" />
+            <RowDefinition Height="36" />
+            <RowDefinition Height="48" />
+            <RowDefinition Height="36" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border>
+        <Border Grid.RowSpan="4" Grid.Column="0"
+                Panel.ZIndex="98"
+                Background="Black">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Opacity="0.75" ShadowDepth="0" />
+            </Border.Effect>
+        </Border>
+
+        <Grid Grid.Row="0" Grid.RowSpan="4" Grid.Column="0"
+              Panel.ZIndex="99"
+              Background="{utility:Theme background-1-inverse}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Image Width="24"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   RenderOptions.BitmapScalingMode="HighQuality" SnapsToDevicePixels="True" Source="/Ibinimator;component/Resources/logo.png" />
+
+            <ToolBarTray Grid.Row="1" Orientation="Vertical">
+                <ToolBar VerticalAlignment="Stretch">
+                    <RadioButton GroupName="selectedTool"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Select}, Mode=TwoWay}"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Select">
+                        <control:Icon IconName="tool-select" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Node}, Mode=TwoWay}"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Node">
+                        <control:Icon IconName="tool-node" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Pencil}, Mode=TwoWay}"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Pencil">
+                        <control:Icon IconName="tool-pencil" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Pen">
+                        <control:Icon IconName="tool-pen" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Text}, Mode=TwoWay}"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Text">
+                        <control:Icon IconName="tool-text" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Color Picker">
+                        <control:Icon IconName="tool-eyedropper" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Flood">
+                        <control:Icon IconName="tool-flood" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool"
+                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Gradient}, Mode=TwoWay}"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Gradient">
+                        <control:Icon IconName="tool-gradient" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Keyframe">
+                        <control:Icon IconName="tool-keyframe" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Mask">
+                        <control:Icon IconName="tool-mask" Inverted="True" />
+                    </RadioButton>
+                    <RadioButton GroupName="selectedTool" IsEnabled="False"
+                                 Style="{StaticResource ToolbarButton}"
+                                 ToolTip="Zoom">
+                        <control:Icon IconName="tool-zoom" Inverted="True" />
+                    </RadioButton>
+                </ToolBar>
+            </ToolBarTray>
+        </Grid>
+
+        <Border Grid.Row="0" Grid.Column="1"
+                Background="{utility:Theme background-2}">
             <Grid UseLayoutRounding="True">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="50" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Image Width="24"
-                       Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Source="/Ibinimator;component/Resources/logo.png" />
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+                <StackPanel Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
                     <Menu Margin="16,0,0,0" VerticalAlignment="Center"
                           ItemsSource="{Binding MenuItems}">
                         <Menu.ItemContainerStyle>
@@ -64,7 +143,7 @@
                                             <Setter.Value>
                                                 <ControlTemplate>
                                                     <Separator Margin="0,4"
-                                                               BorderBrush="{DynamicResource T2Brush}"
+                                                               BorderBrush="{utility:Theme divider}"
                                                                BorderThickness="1" Opacity="0.25" />
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -82,8 +161,7 @@
                         </Menu.ItemTemplate>
                     </Menu>
                 </StackPanel>
-                <StackPanel Grid.Column="1"
-                            HorizontalAlignment="Right"
+                <StackPanel HorizontalAlignment="Right"
                             Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Height="30"
                             Padding="12,6"
@@ -106,12 +184,9 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <Border Grid.Row="1">
-            <ToolBar Margin="50,0,0,0" Padding="0"
-                     Background="{x:Null}"
-                     BorderBrush="Transparent"
-                     ItemsSource="{Binding ToolbarItems}"
-                     ToolBarTray.IsLocked="True" UseLayoutRounding="True">
+        <Border Grid.Row="1" Grid.Column="1"
+                Background="{utility:Theme background-1}">
+            <ToolBar ItemsSource="{Binding ToolbarItems}">
                 <ToolBar.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />
@@ -136,13 +211,13 @@
                 </ToolBar.Resources>
             </ToolBar>
         </Border>
-        <Separator Grid.Row="2" Grid.ColumnSpan="3"
-                   Margin="0" VerticalAlignment="Top"
-                   BorderBrush="{DynamicResource L1Brush}"
+        <Separator Grid.Row="1" Grid.Column="1"
+                   Margin="0" VerticalAlignment="Bottom"
+                   BorderBrush="{utility:Theme divider}"
                    BorderThickness="1" />
-        <Border Grid.Row="2">
+        <Border Grid.Row="2" Grid.Column="1">
             <Grid>
-                <ItemsControl utility:Helper.Accent="{DynamicResource TA4}" ItemsSource="{Binding ToolManager.Tool.Options}">
+                <ItemsControl utility:Helper.Accent="{utility:Theme color(accent-4-inverse)}" ItemsSource="{Binding ToolManager.Tool.Options}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal" />
@@ -159,7 +234,7 @@
                                 </TextBlock>
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
-                                          utility:Helper.Accent="{DynamicResource A4}"
+                                          utility:Helper.Accent="{utility:Theme color(accent-4)}"
                                           ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}" />
                             </StackPanel>
@@ -171,7 +246,7 @@
                                 </TextBlock>
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
-                                          utility:Helper.Accent="{DynamicResource A4}"
+                                          utility:Helper.Accent="{utility:Theme color(accent-4)}"
                                           ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}">
                                     <ComboBox.ItemTemplate>
@@ -204,109 +279,36 @@
                 </ItemsControl>
             </Grid>
         </Border>
-        <Grid Grid.Row="3">
+
+        <Grid Grid.Row="3" Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
-            <ToolBarTray Grid.RowSpan="2" Grid.Column="0"
-                         Width="50"
-                         Background="{DynamicResource L2Brush}"
-                         Orientation="Vertical">
-                <ToolBar Margin="0" Padding="0" VerticalAlignment="Stretch"
-                         Background="{x:Null}"
-                         ToolBarTray.IsLocked="True">
-                    <RadioButton GroupName="selectedTool"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Select}, Mode=TwoWay}"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Select">
-                        <control:Icon IconName="tool-select" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Node}, Mode=TwoWay}"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Node">
-                        <control:Icon IconName="tool-node" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Pencil}, Mode=TwoWay}"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Pencil">
-                        <control:Icon IconName="tool-pencil" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Pen">
-                        <control:Icon IconName="tool-pen" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Text}, Mode=TwoWay}"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Text">
-                        <control:Icon IconName="tool-text" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Color Picker">
-                        <control:Icon IconName="tool-eyedropper" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Flood">
-                        <control:Icon IconName="tool-flood" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool"
-                                 IsChecked="{Binding ToolManager.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:ToolType.Gradient}, Mode=TwoWay}"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Gradient">
-                        <control:Icon IconName="tool-gradient" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Keyframe">
-                        <control:Icon IconName="tool-keyframe" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Mask">
-                        <control:Icon IconName="tool-mask" />
-                    </RadioButton>
-                    <RadioButton GroupName="selectedTool" IsEnabled="False"
-                                 Style="{StaticResource ToolbarButton}"
-                                 ToolTip="Zoom">
-                        <control:Icon IconName="tool-zoom" />
-                    </RadioButton>
-                </ToolBar>
-            </ToolBarTray>
-            <TabControl Grid.Column="1">
+            <TabControl Background="Transparent">
                 <TabItem Background="White">
-                    <Grid>
-                        <control:ArtView x:Name="ArtView" />
-                        <!--<TextBlock Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                   Text="{Binding Fps, ElementName=ArtView, Mode=OneWay, StringFormat=\{0:N1\} FPS}" />-->
-                    </Grid>
+                    <control:ArtView x:Name="ArtView" />
                 </TabItem>
             </TabControl>
             <GridSplitter Grid.Row="0" Grid.Column="1"
                           Width="5"
                           Background="Transparent" />
-            <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="2">
+            <Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TabControl utility:Helper.Accent="{DynamicResource TA2}">
+                <TabControl utility:Helper.Accent="{utility:Theme color(accent-2-inverse)}">
                     <control:Pane DataContext="{Binding ColorViewModel}"
                                   Header="Fill" Source="Ibinimator;component/View/Panes/ColorPane.xaml" />
                     <TabItem Header="Swatches" />
                     <TabItem Header="Stroke">
-                        <Grid>
+                        <Grid Background="{utility:Theme background-2}">
                             <Grid Margin="0,8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
@@ -462,11 +464,11 @@
                         </Grid>
                     </TabItem>
                 </TabControl>
-                <TabControl Grid.Row="1" utility:Helper.Accent="{DynamicResource TA1}">
+                <TabControl Grid.Row="1" utility:Helper.Accent="{utility:Theme color(accent-1-inverse)}">
                     <TabItem Header="Layers">
                         <TreeView x:Name="LayerTree"
                                   Padding="0"
-                                  Background="{DynamicResource L1Brush}"
+                                  Background="{utility:Theme background-3}"
                                   BorderThickness="0"
                                   ItemsSource="{Binding ViewManager.Root.SubLayers}">
                             <TreeView.Resources>
@@ -523,8 +525,8 @@
                             </TreeView.ItemTemplate>
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}">
-                                    <Setter Property="Background" Value="{DynamicResource L1Brush}" />
-                                    <Setter Property="Foreground" Value="{DynamicResource T1Brush}" />
+                                    <Setter Property="Background" Value="{utility:Theme background-2}" />
+                                    <Setter Property="Foreground" Value="{utility:Theme text-1}" />
                                     <Setter Property="HorizontalContentAlignment" Value="Left" />
                                     <Setter Property="Padding" Value="0,10,0,0" />
                                     <Setter Property="Template">
@@ -579,7 +581,7 @@
                                                         <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
                                                     </Trigger>
                                                     <DataTrigger Binding="{Binding Selected}" Value="true">
-                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource L2Brush}" />
+                                                        <Setter TargetName="Bd" Property="Background" Value="{utility:Theme background-1}" />
                                                     </DataTrigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -606,7 +608,7 @@
                     </TabItem>
                     <TabItem Header="Effects" />
                 </TabControl>
-                <TabControl Grid.Row="2" utility:Helper.Accent="{DynamicResource TA3}">
+                <TabControl Grid.Row="2" utility:Helper.Accent="{utility:Theme color(accent-3-inverse)}">
                     <control:Pane DataContext="{Binding TransformViewModel}"
                                   Header="Transform" Source="Ibinimator;component/View/Panes/TransformPane.xaml" />
 
@@ -614,17 +616,17 @@
                                   Header="History" Source="Ibinimator;component/View/Panes/HistoryPane.xaml" />
                 </TabControl>
             </Grid>
-            <StatusBar Grid.Row="1" Grid.Column="1"
+            <StatusBar Grid.Row="1" Grid.Column="0"
                        Height="25">
                 <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}">
                     <TextBlock.Style>
                         <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Info">
-                                    <Setter Property="Foreground" Value="{DynamicResource T1Brush}" />
+                                    <Setter Property="Foreground" Value="{utility:Theme text-1}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Error">
-                                    <Setter Property="Foreground" Value="{DynamicResource TEBrush}" />
+                                    <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
