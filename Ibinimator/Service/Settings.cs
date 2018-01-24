@@ -8,60 +8,59 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+using Ibinimator.Core.Model;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Ibinimator.Service
 {
-    public static class Settings
+    public class Settings
     {
-        private static readonly IDictionary<string, object>
-            Cache = new Dictionary<string, object>();
+        private readonly IDictionary<string, object> _cache = new Dictionary<string, object>();
 
-        public static bool Contains(string path) { return Cache.ContainsKey(path); }
+        public static Settings Current { get; private set; }
 
-        public static T GetEnum<T>(string path) where T : struct
+        public bool Contains(string path) { return _cache.ContainsKey(path); }
+
+        public T GetEnum<T>(string path) where T : struct
         {
             return Enum.TryParse(GetString(path).Dedash(), out T e) ? e : default;
         }
 
-        public static float GetFloat(string path)
+        public float GetFloat(string path)
         {
-            return Cache[path] is float f ? f : Convert.ToSingle(Cache[path]);
+            return _cache[path] is float f ? f : Convert.ToSingle(_cache[path]);
         }
 
-        public static int GetInt(string path)
+        public int GetInt(string path)
         {
-            return Cache[path] is int i ? i : Convert.ToInt32(Cache[path]);
+            return _cache[path] is int i ? i : Convert.ToInt32(_cache[path]);
         }
 
-        public static dynamic GetObject(string path) { return Cache[path]; }
-
-        public static string GetString(string path) { return Cache[path] as string; }
-
-        public static string GetString(string path, string @default)
+        public Color GetColor(string path, Color @default = new Color())
         {
-            return Contains(path) ? GetString(path) : @default;
+            return Contains(path) ? Color. : @default;
+        }
+
+        public string GetString(string path, string @default = null)
+        {
+            return Contains(path) ? _cache[path] as string : @default;
         }
 
         public static void Load()
         {
-            Cache.Clear();
+            var defaultUri = new Uri("/Ibinimator;component/settings.default.json",
+                                     UriKind.Relative);
 
             if (!App.IsDesigner)
             {
                 var filePath = AppDomain.CurrentDomain.BaseDirectory + "settings.json";
 
                 if (!File.Exists(filePath))
-                    using (var file = File.Open(filePath, FileMode.Create, FileAccess.Write,
-                                                FileShare.None))
+                    using (var file = File.Open(filePath, FileMode.Create, FileAccess.Write))
                     {
-                        var defaultFile = Application
-                                         .GetResourceStream(
-                                              new Uri(
-                                                  "/Ibinimator;component" +
-                                                  "/settings.default.json", UriKind.Relative))
-                                        ?.Stream;
+                        var defaultFile = Application.GetResourceStream(defaultUri)?.Stream;
 
                         if (defaultFile == null)
                             throw new Exception("Default settings file is missing.");
@@ -76,35 +75,31 @@ namespace Ibinimator.Service
                 {
                     var reader = new JsonTextReader(new StreamReader(file));
 
-                    var obj = JObject.Load(reader);
-
-                    Load(obj);
+                    Current = new Settings();
+                    Current.Load(JObject.Load(reader));
                 }
             }
             else
             {
-                using (var file = Application
-                                 .GetResourceStream(
-                                      new Uri("/Ibinimator;component" + "/settings.default.json",
-                                              UriKind.Relative))
-                                ?.Stream)
+                using (var file = Application.GetResourceStream(defaultUri)?.Stream)
                 {
                     if (file == null)
                         throw new Exception("Default settings file is missing.");
 
                     var reader = new JsonTextReader(new StreamReader(file));
 
-                    var obj = JObject.Load(reader);
-
-                    Load(obj);
+                    Current = new Settings();
+                    Current.Load(JObject.Load(reader));
                 }
             }
         }
 
-        public static async Task SaveAsync()
+        public async Task SaveAsync()
         {
             using (var file = File.Open(AppDomain.CurrentDomain.BaseDirectory + "settings.json",
-                                        FileMode.Create, FileAccess.Write, FileShare.Read))
+                                        FileMode.Create,
+                                        FileAccess.Write,
+                                        FileShare.Read))
             {
                 var writer = new JsonTextWriter(new StreamWriter(file));
 
@@ -116,9 +111,7 @@ namespace Ibinimator.Service
             }
         }
 
-        public static void Set<T>(string path, T value) { Cache[path] = value; }
-
-        private static void Load(JToken tok, string path = "")
+        private void Load(JToken tok, string path = "")
         {
             switch (tok)
             {
@@ -132,20 +125,20 @@ namespace Ibinimator.Service
                     for (var i = 0; i < arr.Count; i++)
                         Load(arr[i], path + $"[{i}]");
 
-                    Cache[path + ".$count"] = arr.Count;
+                    _cache[path + ".$count"] = arr.Count;
 
                     break;
                 default:
-                    Cache[path] = tok.ToObject<dynamic>();
+                    _cache[path] = tok.ToObject<dynamic>();
 
                     break;
             }
         }
 
-        private static async Task<JToken> Serialize(IDictionary<string, object> set = null)
+        private async Task<JToken> Serialize(IDictionary<string, object> set = null)
         {
             if (set == null)
-                set = Cache.OrderBy(k => k.Key).ToDictionary();
+                set = _cache.OrderBy(k => k.Key).ToDictionary();
 
             if (set.ContainsKey(".$count"))
             {

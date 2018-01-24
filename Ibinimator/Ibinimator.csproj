@@ -219,6 +219,7 @@
     <Compile Include="Renderer\GuideManager.cs" />
     <Compile Include="Service\Settings.cs" />
     <Compile Include="Service\SvgConverter.cs" />
+    <Compile Include="Service\Theme.cs" />
     <Compile Include="Tools\GradientTool.cs" />
     <Compile Include="Tools\NodeTool.cs" />
     <Compile Include="Tools\SelectionToolBase.cs" />

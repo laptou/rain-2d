@@ -40,10 +40,10 @@ namespace Ibinimator.Renderer.Direct2D
                                               Stops.Select(s => new SharpDX.Direct2D1.GradientStop
                                                     {
                                                         Color = new RawColor4(
-                                                            s.Color.R,
-                                                            s.Color.G,
-                                                            s.Color.B,
-                                                            s.Color.A),
+                                                            s.Color.Red,
+                                                            s.Color.Green,
+                                                            s.Color.Blue,
+                                                            s.Color.Alpha),
                                                         Position = s.Offset
                                                     })
                                                    .ToArray(),

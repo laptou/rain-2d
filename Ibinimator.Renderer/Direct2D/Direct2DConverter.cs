@@ -15,7 +15,7 @@ namespace Ibinimator.Renderer.Direct2D
     {
         public static Color4 Convert(this Color color)
         {
-            return new Color4(color.R, color.G, color.B, color.A);
+            return new Color4(color.Red, color.Green, color.Blue, color.Alpha);
         }
 
         public static Color Convert(this RawColor4 color)

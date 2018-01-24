@@ -18,7 +18,7 @@ namespace Ibinimator.Renderer.Direct2D
         {
             NativeBrush =
                 new D2D1.SolidColorBrush(target,
-                                         new RawColor4(color.R, color.G, color.B, color.A));
+                                         new RawColor4(color.Red, color.Green, color.Blue, color.Alpha));
         }
 
         #region ISolidColorBrush Members
@@ -33,10 +33,10 @@ namespace Ibinimator.Renderer.Direct2D
 
             set => ((D2D1.SolidColorBrush) NativeBrush).Color =
                    new RawColor4(
-                       value.R,
-                       value.G,
-                       value.B,
-                       value.A);
+                       value.Red,
+                       value.Green,
+                       value.Blue,
+                       value.Alpha);
         }
 
         #endregion

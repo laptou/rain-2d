@@ -26,10 +26,10 @@ namespace Ibinimator.Renderer.WPF
         public static System.Windows.Media.Color Convert(this Color c)
         {
             return System.Windows.Media.Color.FromArgb(
-                (byte) (c.A * 255),
-                (byte) (c.R * 255),
-                (byte) (c.G * 255),
-                (byte) (c.B * 255));
+                (byte) (c.Alpha * 255),
+                (byte) (c.Red * 255),
+                (byte) (c.Green * 255),
+                (byte) (c.Blue * 255));
         }
 
         public static Point Convert(this Vector2 vec) { return new Point(vec.X, vec.Y); }

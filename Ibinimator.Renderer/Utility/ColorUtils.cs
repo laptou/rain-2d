@@ -19,7 +19,7 @@ namespace Ibinimator.Renderer.Utility
 
         public static (double Red, double Green, double Blue, double Alpha) ColorToRgba(Color color)
         {
-            return (color.R, color.G, color.B, color.A);
+            return (color.Red, color.Green, color.Blue, color.Alpha);
         }
 
         public static Color HslaToColor(double h, double s, double l, double alpha)
@@ -63,10 +63,10 @@ namespace Ibinimator.Renderer.Utility
         {
             return new Color
             {
-                A = (float) a,
-                R = (float) r,
-                G = (float) g,
-                B = (float) b
+                Alpha = (float) a,
+                Red = (float) r,
+                Green = (float) g,
+                Blue = (float) b
             };
         }
 

@@ -424,10 +424,10 @@ namespace Ibinimator.Service
             if (brush is SolidColorBrushInfo solidBrush)
                 return new SolidColor(
                     new Svg.Color(
-                            solidBrush.Color.R,
-                            solidBrush.Color.G,
-                            solidBrush.Color.B,
-                            solidBrush.Color.A
+                            solidBrush.Color.Red,
+                            solidBrush.Color.Green,
+                            solidBrush.Color.Blue,
+                            solidBrush.Color.Alpha
                         ));
 
             return null;
