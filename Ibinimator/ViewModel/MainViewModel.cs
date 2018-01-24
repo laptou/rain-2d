@@ -14,6 +14,7 @@ using System.Windows.Input;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
 using Ibinimator.Service.Tools;
@@ -62,10 +63,10 @@ namespace Ibinimator.ViewModel
                               "This constructor only exists so that the XAML designer doesn't " +
                               "complain. Do not call this."));
 
-            SettingsManager.Load();
+            Settings.Load();
 
-            MenuItems = LoadMenus(".menus").ToList();
-            ToolbarItems = LoadToolbars(".toolbars").ToList();
+            MenuItems = LoadMenus("menus").ToList();
+            ToolbarItems = LoadToolbars("toolbars").ToList();
         }
 
         public IArtContext ArtContext { get; set; }
@@ -166,26 +167,26 @@ namespace Ibinimator.ViewModel
 
         private IEnumerable<MenuItem> LoadMenus(string path)
         {
-            if (!SettingsManager.Contains(path + ".$count"))
+            if (!Settings.Contains(path + ".$count"))
                 yield break;
 
-            var menuCount = SettingsManager.GetInt(path + ".$count");
+            var menuCount = Settings.GetInt(path + ".$count");
 
             for (var i = 0; i < menuCount; i++)
             {
                 var localPath = path + "[" + i + "]";
 
-                if (SettingsManager.Contains(localPath) &&
-                    SettingsManager.GetObject(localPath) == null)
+                if (Settings.Contains(localPath) &&
+                    Settings.GetObject(localPath) == null)
                 {
                     yield return new MenuItem();
                 }
                 else
                 {
-                    var name = SettingsManager.GetString(localPath + ".name");
-                    var cmd = SettingsManager.GetString(localPath + ".command", null);
+                    var name = Settings.GetString(localPath + ".name");
+                    var cmd = Settings.GetString(localPath + ".command", null);
                     var shortcut = cmd != null
-                                       ? SettingsManager.GetString(
+                                       ? Settings.GetString(
                                            ".shortcuts." + cmd + "[0]",
                                            null)
                                        : null;
@@ -214,17 +215,17 @@ namespace Ibinimator.ViewModel
 
         private IEnumerable<ToolbarItem> LoadToolbars(string path)
         {
-            var theme = SettingsManager.GetString("theme", "");
+            var theme = Settings.GetString("theme", "");
 
-            if (!SettingsManager.Contains(path + ".$count"))
+            if (!Settings.Contains(path + ".$count"))
                 yield break;
 
-            var tbCount = SettingsManager.GetInt(path + ".$count");
+            var tbCount = Settings.GetInt(path + ".$count");
 
             for (var i = 0; i < tbCount; i++)
             {
                 var localPath = path + "[" + i + "]";
-                var type = SettingsManager.GetEnum<ToolbarItemType>(localPath + ".type");
+                var type = Settings.GetEnum<ToolbarItemType>(localPath + ".type");
 
                 switch (type)
                 {
@@ -235,12 +236,12 @@ namespace Ibinimator.ViewModel
                         break;
                     case ToolbarItemType.Button:
 
-                        yield return new ToolbarItem(SettingsManager.GetString(localPath + ".name"),
+                        yield return new ToolbarItem(Settings.GetString(localPath + ".name"),
                                                      MapCommand(
-                                                         SettingsManager.GetString(
+                                                         Settings.GetString(
                                                              localPath + ".command",
                                                              null)),
-                                                     SettingsManager.GetString(localPath + ".icon"),
+                                                     Settings.GetString(localPath + ".icon"),
                                                      ArtContext);
 
                         break;

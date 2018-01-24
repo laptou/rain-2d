@@ -11,6 +11,7 @@ using System.Xml.Linq;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
+using Ibinimator.Renderer;
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;

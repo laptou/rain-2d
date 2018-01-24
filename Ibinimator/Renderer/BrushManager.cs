@@ -4,10 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Core.Model;
-using Ibinimator.Renderer.Model;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public class BrushManager : Core.Model.Model, IBrushManager
     {

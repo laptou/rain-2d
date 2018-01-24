@@ -4,7 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Service
+using Ibinimator.Renderer;
+
+namespace Ibinimator.Model
 {
     public struct Guide
     {

@@ -3,7 +3,7 @@
       xmlns:control="clr-namespace:Ibinimator.View.Control" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:local="clr-namespace:Ibinimator.View.Panes"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:utility="clr-namespace:Ibinimator.View.Utility"
-      xmlns:vm="clr-namespace:Ibinimator.ViewModel;assembly="
+      xmlns:vm="clr-namespace:Ibinimator.ViewModel;assembly=Ibinimator"
       Title="ColorPane"
       d:DataContext="{d:DesignInstance vm:ColorViewModel}"
       d:DesignHeight="300" d:DesignWidth="384"

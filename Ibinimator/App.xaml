@@ -407,7 +407,7 @@
                                                   FocusVisualStyle="{x:Null}"
                                                   IsChecked="{Binding IsOverflowOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   IsEnabled="{TemplateBinding HasOverflowItems}">
-                                        <control:SvgImage Source="{DynamicResource IconExpander}" Style="{DynamicResource Icon}" />
+                                        <control:Icon IconName="icon-expander" />
                                     </ToggleButton>
                                     <Popup x:Name="OverflowPopup"
                                            AllowsTransparency="true" Focusable="false"

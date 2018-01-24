@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-
-using Ibinimator.Core.Utility;
-
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +8,11 @@ using System.Windows;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public class CacheManager : Core.Model.Model, ICacheManager
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public class HistoryManager : Core.Model.Model, IHistoryManager
     {

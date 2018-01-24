@@ -1,0 +1,39 @@
+{
+    "name": "Light",
+    "colors": {
+        "background-1": "#EBEBEB",
+        "background-2": "#E1E1E1",
+        "background-3": "#D7D7D7",
+
+        "background-inverse-1": "#333333",
+
+        "accent-1": "#58D432",
+        "accent-2": "#387691",
+        "accent-3": "#731A91",
+        "accent-4": "#A04C14",
+        "accent-5": "#E2302D",
+
+        "accent-1-inverse": "#58D432",
+        "accent-2-inverse": "#5BC0EB",
+        "accent-3-inverse": "#EAC435",
+        "accent-4-inverse": "#FA7921",
+        "accent-5-inverse": "#891D1B",
+
+        "accent-error": "#E2302D",
+
+        "text-1": "#404040",
+
+        "text-inverse-1": "#FFFFFF",
+
+        "divider": "#404040",
+        "divider-inverse": "#808080",
+        "textbox": "#FFFFFF",
+        "control": "#EBEBEB",
+        "control-inverse": "#1A1A1A",
+        "button": "@control",
+        "button-inverse": "@control",
+        "dropdown": "@control",
+        "dropdown-list": "#FFFFFF",
+        "slider": "#FFFFFF"
+    }
+}

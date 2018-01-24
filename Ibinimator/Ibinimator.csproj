@@ -179,6 +179,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\Guide.cs" />
     <Compile Include="Native\AccentPolicy.cs" />
     <Compile Include="Native\AccentState.cs" />
     <Compile Include="Native\Caret.cs" />
@@ -197,31 +198,30 @@
     <Compile Include="Native\WndClass.cs" />
     <Compile Include="Native\WndProc.cs" />
     <Compile Include="Resources\EditorColors.cs" />
-    <Compile Include="Service\BrushManager.cs" />
-    <Compile Include="Service\Commands\AddLayerCommand.cs" />
-    <Compile Include="Service\Commands\AlignCommand.cs" />
-    <Compile Include="Service\Commands\ApplyFillCommand.cs" />
-    <Compile Include="Service\Commands\ApplyFormatCommand.cs" />
-    <Compile Include="Service\Commands\ApplyStrokeCommand.cs" />
-    <Compile Include="Service\Commands\BinaryOperationCommand.cs" />
-    <Compile Include="Service\Commands\ChangeZIndexCommand.cs" />
-    <Compile Include="Service\Commands\ConvertToPathCommand.cs" />
-    <Compile Include="Service\Commands\GroupCommand.cs" />
-    <Compile Include="Service\Commands\InsertTextCommand.cs" />
-    <Compile Include="Service\Commands\LayerCommandBase.cs" />
-    <Compile Include="Service\Commands\ModifyGradientCommand.cs" />
-    <Compile Include="Service\Commands\ModifyPathCommand.cs" />
-    <Compile Include="Service\Commands\RemoveLayerCommand.cs" />
-    <Compile Include="Service\Commands\RemoveTextCommand.cs" />
-    <Compile Include="Service\Commands\TransformCommand.cs" />
-    <Compile Include="Service\Commands\UngroupCommand.cs" />
-    <Compile Include="Service\GuideManager.cs" />
-    <Compile Include="Service\Guide.cs" />
-    <Compile Include="Service\SettingsManager.cs" />
+    <Compile Include="Renderer\BrushManager.cs" />
+    <Compile Include="Commands\AddLayerCommand.cs" />
+    <Compile Include="Commands\AlignCommand.cs" />
+    <Compile Include="Commands\ApplyFillCommand.cs" />
+    <Compile Include="Commands\ApplyFormatCommand.cs" />
+    <Compile Include="Commands\ApplyStrokeCommand.cs" />
+    <Compile Include="Commands\BinaryOperationCommand.cs" />
+    <Compile Include="Commands\ChangeZIndexCommand.cs" />
+    <Compile Include="Commands\ConvertToPathCommand.cs" />
+    <Compile Include="Commands\GroupCommand.cs" />
+    <Compile Include="Commands\InsertTextCommand.cs" />
+    <Compile Include="Commands\LayerCommandBase.cs" />
+    <Compile Include="Commands\ModifyGradientCommand.cs" />
+    <Compile Include="Commands\ModifyPathCommand.cs" />
+    <Compile Include="Commands\RemoveLayerCommand.cs" />
+    <Compile Include="Commands\RemoveTextCommand.cs" />
+    <Compile Include="Commands\TransformCommand.cs" />
+    <Compile Include="Commands\UngroupCommand.cs" />
+    <Compile Include="Renderer\GuideManager.cs" />
+    <Compile Include="Service\Settings.cs" />
     <Compile Include="Service\SvgConverter.cs" />
-    <Compile Include="Service\Tools\GradientTool.cs" />
-    <Compile Include="Service\Tools\NodeTool.cs" />
-    <Compile Include="Service\Tools\SelectionToolBase.cs" />
+    <Compile Include="Tools\GradientTool.cs" />
+    <Compile Include="Tools\NodeTool.cs" />
+    <Compile Include="Tools\SelectionToolBase.cs" />
     <Compile Include="Utility\BrushExtensions.cs" />
     <Compile Include="Utility\ObjectHelper.cs" />
     <Compile Include="Utility\ScreenExtensions.cs" />
@@ -229,13 +229,13 @@
     <Compile Include="View\Command\FileCommands.cs" />
     <Compile Include="View\Command\HistoryCommands.cs" />
     <Compile Include="View\Command\ObjectCommands.cs" />
-    <Compile Include="Service\HistoryManager.cs" />
-    <Compile Include="Service\Tools\PencilTool.cs" />
-    <Compile Include="Service\Tools\SelectionTool.cs" />
-    <Compile Include="Service\Tools\TextTool.cs" />
-    <Compile Include="Service\Time.cs" />
+    <Compile Include="Renderer\HistoryManager.cs" />
+    <Compile Include="Tools\PencilTool.cs" />
+    <Compile Include="Tools\SelectionTool.cs" />
+    <Compile Include="Tools\TextTool.cs" />
+    <Compile Include="Utility\Time.cs" />
     <Compile Include="View\Command\SelectionCommands.cs" />
-    <Compile Include="Service\Tools\ToolManager.cs" />
+    <Compile Include="Tools\ToolManager.cs" />
     <Compile Include="View\Command\ViewCommands.cs" />
     <Compile Include="Shared\WeakDictionary.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
@@ -268,13 +268,13 @@
     <Compile Include="View\Utility\InversionConverter.cs" />
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
-    <Compile Include="Service\CacheManager.cs" />
+    <Compile Include="Renderer\CacheManager.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
     <Compile Include="View\Control\HSLWheel.xaml.cs">
       <DependentUpon>HSLWheel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Service\SelectionManager.cs" />
-    <Compile Include="Service\ViewManager.cs" />
+    <Compile Include="Renderer\SelectionManager.cs" />
+    <Compile Include="Renderer\ViewManager.cs" />
     <Compile Include="View\Utility\DataBinder.cs" />
     <Compile Include="View\Utility\EnumTemplateSelector.cs" />
     <Compile Include="View\Utility\EnumToBooleanConverter.cs" />
@@ -286,7 +286,6 @@
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Utility\SettingsBinding.cs" />
-    <Compile Include="View\Utility\SvgMarkupExtension.cs" />
     <Compile Include="View\Utility\TextBlockHelper.cs" />
     <Compile Include="View\Utility\TextBoxEnterBehavior.cs" />
     <Compile Include="View\Utility\TreeViewBehavior.cs" />
@@ -319,6 +318,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Content Include="Theme\light.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="settings.default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -350,10 +352,6 @@
     <Page Include="Theme.Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Theme.Light.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Control\HSLWheel.xaml">
       <SubType>Designer</SubType>

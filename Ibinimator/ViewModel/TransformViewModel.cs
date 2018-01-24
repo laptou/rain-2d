@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Renderer;
 using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel

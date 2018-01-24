@@ -1,16 +1,16 @@
-﻿using System.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 using Ibinimator.Service.Commands;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public enum SelectionHandle
     {

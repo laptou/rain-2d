@@ -16,7 +16,7 @@ namespace Ibinimator.View.Utility
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return SettingsManager.GetObject(Path);
+            return Settings.GetObject(Path);
         }
     }
 }

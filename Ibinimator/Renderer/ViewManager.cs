@@ -9,7 +9,7 @@ using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public class ViewManager : Core.Model.Model, IViewManager
     {

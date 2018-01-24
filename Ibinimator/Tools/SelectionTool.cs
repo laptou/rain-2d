@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Renderer;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
 

@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Utility;
 using Ibinimator.Resources;
+using Ibinimator.Service;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Renderer
 {
     public class GuideManager
     {

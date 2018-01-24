@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Ibinimator.Service
 {
-    public static class SettingsManager
+    public static class Settings
     {
         private static readonly IDictionary<string, object>
             Cache = new Dictionary<string, object>();

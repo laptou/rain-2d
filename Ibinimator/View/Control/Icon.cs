@@ -30,7 +30,7 @@ namespace Ibinimator.View.Control
         {
             if (d is Icon icon)
             {
-                var theme = SettingsManager.GetString("theme");
+                var theme = Settings.GetString("theme");
 
                 if (icon.Inverted)
                 {
