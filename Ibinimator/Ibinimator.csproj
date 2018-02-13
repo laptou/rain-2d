@@ -218,8 +218,9 @@
     <Compile Include="Commands\UngroupCommand.cs" />
     <Compile Include="Renderer\GuideManager.cs" />
     <Compile Include="Service\AppSettings.cs" />
+    <Compile Include="Service\Settings.cs" />
     <Compile Include="Service\SvgConverter.cs" />
-    <Compile Include="Service\Theme.cs" />
+    <Compile Include="Service\ThemeSettings.cs" />
     <Compile Include="Tools\GradientTool.cs" />
     <Compile Include="Tools\NodeTool.cs" />
     <Compile Include="Tools\SelectionToolBase.cs" />
@@ -286,6 +287,7 @@
     <Compile Include="View\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Utility\MultiplyExtension.cs" />
     <Compile Include="View\Utility\ThemeExtension.cs" />
     <Compile Include="View\Utility\SettingExtension.cs" />
     <Compile Include="View\Utility\TextBlockHelper.cs" />

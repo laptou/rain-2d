@@ -8,11 +8,11 @@ using System.Windows;
 
 namespace Ibinimator.Service
 {
-    public class Theme : AppSettings
+    public class ThemeSettings : Settings
     {
         private readonly string _name;
 
-        internal Theme(string name)
+        internal ThemeSettings(string name)
         {
             _name = name;
             Load();

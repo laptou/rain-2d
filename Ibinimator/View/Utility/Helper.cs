@@ -15,40 +15,43 @@ namespace Ibinimator.View.Utility
     public class Helper
     {
         public static readonly DependencyProperty AccentProperty =
-            DependencyProperty.RegisterAttached(
-                "Accent",
-                typeof(Color),
-                typeof(Helper),
-                new FrameworkPropertyMetadata(
-                    Color.FromRgb(255, 255, 255),
-                    FPMO.Inherits | FPMO.AffectsRender));
+            DependencyProperty.RegisterAttached("Accent",
+                                                typeof(Color),
+                                                typeof(Helper),
+                                                new FrameworkPropertyMetadata(
+                                                    Color.FromRgb(255, 255, 255),
+                                                    FPMO.Inherits | FPMO.AffectsRender));
 
         public static readonly DependencyProperty InputBindingSourceProperty =
-            DependencyProperty.RegisterAttached(
-                "InputBindingSource",
-                typeof(IEnumerable<InputBinding>),
-                typeof(Helper),
-                new PropertyMetadata(InputBindingsChanged));
+            DependencyProperty.RegisterAttached("InputBindingSource",
+                                                typeof(IEnumerable<InputBinding>),
+                                                typeof(Helper),
+                                                new PropertyMetadata(InputBindingsChanged));
 
-        public static readonly DependencyProperty BackgroundProperty =
-            DependencyProperty.RegisterAttached(
-                "Background", typeof(Color), typeof(Helper),
-                new FrameworkPropertyMetadata(
-                    Color.FromRgb(255, 255, 255),
-                    FPMO.Inherits | FPMO.AffectsRender));
+        public static readonly DependencyProperty ElevationProperty =
+            DependencyProperty.RegisterAttached("Elevation",
+                                                typeof(int),
+                                                typeof(Helper),
+                                                new FrameworkPropertyMetadata(0, FPMO.AffectsRender));
 
-        public static Color GetAccent(DependencyObject obj) { return (Color) obj.GetValue(AccentProperty); }
-
-        public static Color GetBackground(DependencyObject element)
+        public static void SetElevation(DependencyObject element, int value)
         {
-            return (Color) element.GetValue(BackgroundProperty);
+            element.SetValue(ElevationProperty, value);
         }
 
-        public static IEnumerable<InputBinding>
-            GetInputBindingSource(DependencyObject element)
+        public static int GetElevation(DependencyObject element)
         {
-            return (IEnumerable<InputBinding>) element.GetValue(
-                InputBindingSourceProperty);
+            return (int) element.GetValue(ElevationProperty);
+        }
+
+        public static Color GetAccent(DependencyObject obj)
+        {
+            return (Color) obj.GetValue(AccentProperty);
+        }
+
+        public static IEnumerable<InputBinding> GetInputBindingSource(DependencyObject element)
+        {
+            return (IEnumerable<InputBinding>) element.GetValue(InputBindingSourceProperty);
         }
 
         public static void SetAccent(DependencyObject obj, Color value)
@@ -56,22 +59,14 @@ namespace Ibinimator.View.Utility
             obj.SetValue(AccentProperty, value);
         }
 
-        public static void SetBackground(DependencyObject element, Color value)
-        {
-            element.SetValue(BackgroundProperty, value);
-        }
-
-
         public static void SetInputBindingSource(
-            DependencyObject element,
-            IEnumerable<InputBinding> value)
+            DependencyObject element, IEnumerable<InputBinding> value)
         {
             element.SetValue(InputBindingSourceProperty, value);
         }
 
         private static void InputBindingsChanged(
-            DependencyObject d,
-            DependencyPropertyChangedEventArgs e)
+            DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var value = (IEnumerable<InputBinding>) e.NewValue;
 
@@ -89,11 +84,7 @@ namespace Ibinimator.View.Utility
     {
         #region IValueConverter Members
 
-        public object Convert(
-            object value,
-            Type targetType,
-            object parameter,
-            CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var fraction = System.Convert.ToDecimal(value);
 
@@ -101,10 +92,7 @@ namespace Ibinimator.View.Utility
         }
 
         public object ConvertBack(
-            object value,
-            Type targetType,
-            object parameter,
-            CultureInfo culture)
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             decimal.TryParse(value.ToString().Trim(culture.NumberFormat.PercentSymbol[0]),
                              NumberStyles.Any,
