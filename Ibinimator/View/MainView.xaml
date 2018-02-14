@@ -7,7 +7,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:utility="clr-namespace:Ibinimator.View.Utility" xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:utility="clr-namespace:Ibinimator.View.Utility"
+        xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
         Title="Ibinimator"
         d:DesignHeight="1080" d:DesignWidth="1920" Icon="/Ibinimator;component/Resources/logo.png"
         WindowState="Maximized"
@@ -292,7 +293,7 @@
                     <TabItem Header="Swatches" />
                     <TabItem Header="Stroke">
                         <Grid Background="{utility:Theme background-2}">
-                            <Grid Margin="0,8">
+                            <Grid Margin="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="*" />
@@ -307,136 +308,109 @@
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Margin="16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <TextBlock Margin="16,8,16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="Width:" />
 
                                 <TextBox Grid.Row="0" Grid.Column="1"
-                                         Margin="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                         BorderThickness="0,0,0,1"
-                                         Text="{Binding FillPicker.StrokeInfo.Width, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
+                                         Margin="4" HorizontalContentAlignment="Center"
+                                         Text="{Binding StrokeViewModel.Width, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
                                     <i:Interaction.Behaviors>
                                         <utility:TextBoxEnterBehavior />
                                     </i:Interaction.Behaviors>
                                 </TextBox>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2"
-                                           Margin="16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="Style:" />
 
-                                <UniformGrid Grid.Row="0" Grid.Column="3"
-                                             Margin="0"
-                                             Columns="2">
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeDashStyle" IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                <control:SegmentButton Grid.Row="0" Grid.Column="3"
+                                                       Margin="4"
+                                                       SelectedValue="{Binding StrokeViewModel.HasDashes, Mode=TwoWay}">
+                                    <control:Segment ToolTip="No Dashes">
+                                        <control:Segment.Value>
+                                            <sys:Boolean>False</sys:Boolean>
+                                        </control:Segment.Value>
                                         <control:Icon IconName="icon-stroke-solid" />
-                                    </RadioButton>
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeDashStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.HasDashes, Converter={StaticResource Inverter}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                    </control:Segment>
+                                    <control:Segment ToolTip="Dashes">
+                                        <control:Segment.Value>
+                                            <sys:Boolean>True</sys:Boolean>
+                                        </control:Segment.Value>
                                         <control:Icon IconName="icon-stroke-dash" />
-                                    </RadioButton>
-                                </UniformGrid>
+                                    </control:Segment>
+                                </control:SegmentButton>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
-                                           Margin="16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="End:" />
 
-                                <UniformGrid Grid.Row="1" Grid.Column="1"
-                                             Margin="0,8,0,0"
-                                             Columns="3">
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeEndStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Butt}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                <control:SegmentButton Grid.Row="1" Grid.Column="1"
+                                                       Margin="4"
+                                                       SelectedValue="{Binding StrokeViewModel.LineCap, Mode=TwoWay}">
+                                    <control:Segment ToolTip="Flat" Value="{x:Static coremodel:LineCap.Butt}">
                                         <control:Icon IconName="icon-end-flat" />
-                                    </RadioButton>
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"
-                                                 GroupName="strokeEndStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Square}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
-                                        <control:Icon IconName="icon-end-square" />
-                                    </RadioButton>
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeEndStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineCap, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineCap.Round}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                    </control:Segment>
+                                    <control:Segment ToolTip="Round" Value="{x:Static coremodel:LineCap.Round}">
                                         <control:Icon IconName="icon-end-round" />
-                                    </RadioButton>
-                                </UniformGrid>
+                                    </control:Segment>
+                                    <control:Segment ToolTip="Square" Value="{x:Static coremodel:LineCap.Square}">
+                                        <control:Icon IconName="icon-end-square" />
+                                    </control:Segment>
+                                </control:SegmentButton>
 
                                 <TextBlock Grid.Row="1" Grid.Column="2"
-                                           Margin="16,8,16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="Corner:" />
 
-                                <UniformGrid Grid.Row="1" Grid.Column="3"
-                                             Margin="0,8,0,0"
-                                             Columns="3">
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"
-                                                 GroupName="strokeJoinStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Miter}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                <control:SegmentButton Grid.Row="1" Grid.Column="3"
+                                                       Margin="4"
+                                                       SelectedValue="{Binding StrokeViewModel.LineJoin, Mode=TwoWay}">
+                                    <control:Segment ToolTip="Miter" Value="{x:Static coremodel:LineJoin.Miter}">
                                         <control:Icon IconName="icon-corner-miter" />
-                                    </RadioButton>
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeEndStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Bevel}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                    </control:Segment>
+                                    <control:Segment ToolTip="Bevel" Value="{x:Static coremodel:LineJoin.Bevel}">
                                         <control:Icon IconName="icon-corner-bevel" />
-                                    </RadioButton>
-                                    <RadioButton Width="Auto" Height="25.6"
-                                                 Padding="0" VerticalAlignment="Center"
-                                                 GroupName="strokeEndStyle"
-                                                 IsChecked="{Binding FillPicker.StrokeInfo.LineJoin, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static coremodel:LineJoin.Round}, Mode=TwoWay}"
-                                                 Style="{StaticResource ToolbarButton}">
+                                    </control:Segment>
+                                    <control:Segment ToolTip="Round" Value="{x:Static coremodel:LineJoin.Round}">
                                         <control:Icon IconName="icon-corner-round" />
-                                    </RadioButton>
-                                </UniformGrid>
+                                    </control:Segment>
+                                </control:SegmentButton>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0"
-                                           Margin="16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="Miter:" />
 
                                 <TextBox Grid.Row="2" Grid.Column="1"
-                                         Margin="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                         BorderThickness="0,0,0,1"
-                                         Text="{Binding FillPicker.StrokeInfo.MiterLimit, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
+                                         Margin="4" HorizontalContentAlignment="Center"
+                                         Text="{Binding StrokeViewModel.MiterLimit, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
                                     <i:Interaction.Behaviors>
                                         <utility:TextBoxEnterBehavior />
                                     </i:Interaction.Behaviors>
                                 </TextBox>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0"
-                                           Margin="16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            DockPanel.Dock="Left" Text="Dashes:" />
 
                                 <UniformGrid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                                             Margin="0,8,0,0"
+                                             Margin="0,4"
                                              Columns="4">
-                                    <TextBox Margin="0,0,16,0" Text="{Binding FillPicker.StrokeDashes[0], Mode=TwoWay}">
+                                    <TextBox Margin="4,0" Text="{Binding StrokeViewModel.Dashes[0], Mode=TwoWay}">
                                         <i:Interaction.Behaviors>
                                             <utility:TextBoxEnterBehavior />
                                         </i:Interaction.Behaviors>
                                     </TextBox>
-                                    <TextBox Margin="0,0,16,0" Text="{Binding FillPicker.StrokeDashes[1], Mode=TwoWay}">
+                                    <TextBox Margin="4,0" Text="{Binding StrokeViewModel.Dashes[1], Mode=TwoWay}">
                                         <i:Interaction.Behaviors>
                                             <utility:TextBoxEnterBehavior />
                                         </i:Interaction.Behaviors>
                                     </TextBox>
-                                    <TextBox Margin="0,0,16,0" Text="{Binding FillPicker.StrokeDashes[2], Mode=TwoWay}">
+                                    <TextBox Margin="4,0" Text="{Binding StrokeViewModel.Dashes[2], Mode=TwoWay}">
                                         <i:Interaction.Behaviors>
                                             <utility:TextBoxEnterBehavior />
                                         </i:Interaction.Behaviors>
                                     </TextBox>
-                                    <TextBox Margin="0,0,16,0" Text="{Binding FillPicker.StrokeDashes[3], Mode=TwoWay}">
+                                    <TextBox Margin="4,0" Text="{Binding StrokeViewModel.Dashes[3], Mode=TwoWay}">
                                         <i:Interaction.Behaviors>
                                             <utility:TextBoxEnterBehavior />
                                         </i:Interaction.Behaviors>

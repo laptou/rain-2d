@@ -17,7 +17,7 @@ using D2D = SharpDX.Direct2D1;
 
 namespace Ibinimator.View.Control
 {
-    public class ArtView : D2DImage2
+    public class ArtView : D2DImage
     {
         private readonly Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
 

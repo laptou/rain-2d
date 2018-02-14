@@ -227,6 +227,7 @@
     <Compile Include="Utility\BrushExtensions.cs" />
     <Compile Include="Utility\ObjectHelper.cs" />
     <Compile Include="Utility\ScreenExtensions.cs" />
+    <Compile Include="ViewModel\StrokeViewModel.cs" />
     <Compile Include="View\Command\CommandManager.cs" />
     <Compile Include="View\Command\FileCommands.cs" />
     <Compile Include="View\Command\HistoryCommands.cs" />
@@ -247,7 +248,10 @@
     <Compile Include="ViewModel\TransformViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\Control\ArtContext.cs" />
-    <Compile Include="View\Control\D2DImage2.cs" />
+    <Compile Include="View\Control\D2DImage.cs" />
+    <Compile Include="View\Control\SegmentButton.xaml.cs">
+      <DependentUpon>SegmentButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Control\SvgImage.cs" />
     <Compile Include="View\Control\Pane.cs" />
     <Compile Include="View\Panes\ColorPane.xaml.cs">
@@ -271,7 +275,6 @@
     <Compile Include="View\Utility\ComparisonBinding.cs" />
     <Compile Include="View\Control\ArtView.cs" />
     <Compile Include="Renderer\CacheManager.cs" />
-    <Compile Include="View\Control\D2DImage.cs" />
     <Compile Include="View\Control\HSLWheel.xaml.cs">
       <DependentUpon>HSLWheel.xaml</DependentUpon>
     </Compile>
@@ -382,6 +385,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\Control\HSLWheel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Control\SegmentButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

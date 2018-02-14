@@ -46,6 +46,7 @@ namespace Ibinimator.ViewModel
 
             ColorViewModel = new ColorViewModel(ArtContext);
             TransformViewModel = new TransformViewModel(ArtContext);
+            StrokeViewModel = new StrokeViewModel(ArtContext);
 
             ToolManager.Type = ToolType.Select;
 
@@ -409,7 +410,7 @@ namespace Ibinimator.ViewModel
         #region Sub View Models
 
         public TransformViewModel TransformViewModel { get; }
-
+        public StrokeViewModel StrokeViewModel { get; }
         public ColorViewModel ColorViewModel { get; }
 
         #endregion
