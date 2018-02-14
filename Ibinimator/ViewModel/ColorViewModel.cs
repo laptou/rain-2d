@@ -54,7 +54,7 @@ namespace Ibinimator.ViewModel
 
                 var res = Context.BrushManager.Query();
 
-                return (Mode == ColorPickerTarget.Fill ? res.Fill : res.Stroke.Brush) as
+                return (Mode == ColorPickerTarget.Fill ? res.Fill : res.Stroke?.Brush) as
                        SolidColorBrushInfo;
             }
         }

@@ -57,7 +57,7 @@
             <RadioButton Grid.RowSpan="2" Grid.ColumnSpan="2"
                          GroupName="colorPickerTarget"
                          IsChecked="{Binding Mode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ColorPickerTarget.Stroke}, Mode=TwoWay}">
-                <Path Stretch="Uniform" Stroke="{DynamicResource T2Brush}" StrokeThickness="1">
+                <Path Stretch="Uniform" Stroke="{utility:Theme control-border}" StrokeThickness="1">
                     <Path.Data>
                         <CombinedGeometry GeometryCombineMode="Exclude">
                             <CombinedGeometry.Geometry1>
@@ -84,7 +84,7 @@
                          Grid.ColumnSpan="2"
                          GroupName="colorPickerTarget"
                          IsChecked="{Binding Mode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ColorPickerTarget.Fill}, Mode=TwoWay}">
-                <Ellipse Stretch="Uniform" Stroke="{DynamicResource T2Brush}" StrokeThickness="1">
+                <Ellipse Stretch="Uniform" Stroke="{utility:Theme control-border}" StrokeThickness="1">
                     <Ellipse.Style>
                         <Style TargetType="Shape">
                             <Setter Property="Fill" Value="{Binding Fill, Mode=OneWay}" />
@@ -98,7 +98,7 @@
                 </Ellipse>
             </RadioButton>
             <Ellipse Grid.Row="2" Grid.Column="0"
-                     Fill="{DynamicResource NullBrush}" Stretch="Uniform" Stroke="{DynamicResource T2Brush}"
+                     Fill="{DynamicResource NullBrush}" Stretch="Uniform" Stroke="{utility:Theme control-border}"
                      StrokeThickness="1" />
         </Grid>
 

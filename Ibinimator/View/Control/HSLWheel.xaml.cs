@@ -130,7 +130,10 @@ namespace Ibinimator.View.Control
                 var tpos = e.GetPosition(Triangle).Convert();
 
                 Saturation = Math.Max(0, Math.Min(1, 1 - tpos.Y / height));
-                Lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
+                var lightness = Math.Max(0, Math.Min(1, tpos.X / Triangle.ActualWidth));
+                var offset = Math.Abs(0.5f - lightness);
+                var maxOffset = (1 - Saturation) / 2;
+                Lightness = 0.5f - Math.Min(offset, maxOffset) * Math.Sign(0.5f - lightness);
 
                 UpdateHandles();
             }
@@ -199,7 +202,7 @@ namespace Ibinimator.View.Control
         {
             var transform = (RotateTransform) Triangle.RenderTransform;
             transform.Angle = Hue + 90;
-            ringRotate.Angle = Hue;
+            RingHandleTransform.Angle = Hue;
 
             var height = (int) (Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
             var slope = 1.0 / Math.Sqrt(3);
@@ -211,8 +214,13 @@ namespace Ibinimator.View.Control
 
             hpos = Triangle.TranslatePoint(hpos, this);
 
-            Canvas.SetLeft(triangleHandle, hpos.X);
-            Canvas.SetTop(triangleHandle, hpos.Y);
+            var rcolor = ColorUtils.HslToColor(Hue, 1f, 0.5f);
+            var tcolor = ColorUtils.HslToColor(Hue, Saturation, Lightness);
+            ((SolidColorBrush) RingHandle.Fill).Color = rcolor.Convert();
+            ((SolidColorBrush) TriangleHandle.Fill).Color = tcolor.Convert();
+
+            Canvas.SetLeft(TriangleHandle, hpos.X);
+            Canvas.SetTop(TriangleHandle, hpos.Y);
         }
 
         private unsafe void UpdateRing()

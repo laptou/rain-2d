@@ -118,6 +118,9 @@ namespace Ibinimator.Renderer.Direct2D
             if (Path != null)
                 return;
 
+            if (_geom == null)
+                return;
+
             using (var sink = new ReadingSink())
             {
                 _geom.Simplify(

@@ -28,12 +28,11 @@
         "divider": "#404040",
         "divider-inverse": "#808080",
         "textbox": "#FFFFFF",
-        "textbox-border": "#404040",
 
         "control": "@colors.background-1",
         "control-hover": "@colors.background-2",
         "control-active": "@colors.background-3",
-        "control-border": "@colors.text-1",
+        "control-border": "#888888",
         "control-inverse": "#D7D7D7",
 
         "button": "@colors.control",

@@ -4,13 +4,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Ibinimator.View.Control"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:utility="clr-namespace:Ibinimator.View.Utility"
              d:DesignHeight="300" d:DesignWidth="300"
              mc:Ignorable="d">
     <Grid>
         <Path x:Name="Ring"
-              Stretch="Uniform"
-              Stroke="{DynamicResource T2Brush}"
-              StrokeThickness="1">
+              Stretch="Uniform" Stroke="{utility:Theme control-border}" StrokeThickness="1">
             <Path.Data>
                 <CombinedGeometry GeometryCombineMode="Exclude">
                     <CombinedGeometry.Geometry1>
@@ -29,30 +28,37 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RenderTransform>
-                <RotateTransform x:Name="ringRotate" />
+                <RotateTransform x:Name="RingHandleTransform" />
             </Grid.RenderTransform>
-            <Ellipse Grid.Column="1"
+            <Ellipse x:Name="RingHandle"
+                     Grid.Column="1"
                      Width="10" Height="10"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                     Stroke="{DynamicResource T2Brush}" />
+                     Stroke="{utility:Theme control-border}">
+                <Ellipse.Fill>
+                    <SolidColorBrush />
+                </Ellipse.Fill>
+            </Ellipse>
         </Grid>
 
         <Path x:Name="Triangle"
               HorizontalAlignment="Center" VerticalAlignment="Center"
               Data="M0,64.95191 L75,64.95191 37.5,0 Z M75,86.60254" RenderTransformOrigin="0.5,0.5" Stretch="Uniform"
-              Stroke="{DynamicResource T2Brush}"
-              StrokeThickness="1">
+              Stroke="{utility:Theme control-border}" StrokeThickness="1">
             <Path.RenderTransform>
-
                 <RotateTransform Angle="90" />
             </Path.RenderTransform>
         </Path>
 
         <Canvas>
-            <Ellipse x:Name="triangleHandle"
+            <Ellipse x:Name="TriangleHandle"
                      Width="10" Height="10"
                      Margin="-5,-5,0,0"
-                     Stroke="{DynamicResource T2Brush}" />
+                     Stroke="{utility:Theme control-border}">
+                <Ellipse.Fill>
+                    <SolidColorBrush />
+                </Ellipse.Fill>
+            </Ellipse>
         </Canvas>
     </Grid>
 </UserControl>

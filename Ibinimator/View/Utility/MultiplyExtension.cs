@@ -18,7 +18,7 @@ namespace Ibinimator.View.Utility
             Operand1 = operand1;
             Operand2 = operand2;
         }
-        
+
         private decimal Resolve(object o, IServiceProvider serviceProvider)
         {
             if (o is MarkupExtension ext)
