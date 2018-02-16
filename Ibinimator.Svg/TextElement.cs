@@ -32,7 +32,10 @@ namespace Ibinimator.Svg
 
         public bool Contains(IInlineTextElement item) { return _spans.Contains(item); }
 
-        public void CopyTo(IInlineTextElement[] array, int arrayIndex) { _spans.CopyTo(array, arrayIndex); }
+        public void CopyTo(IInlineTextElement[] array, int arrayIndex)
+        {
+            _spans.CopyTo(array, arrayIndex);
+        }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -43,7 +46,8 @@ namespace Ibinimator.Svg
             FontStretch = LazyGet(element, "font-stretch", Core.Model.FontStretch.Normal, true);
             FontStyle = LazyGet(element, "font-style", Core.Model.FontStyle.Normal, true);
             FontWeight = LazyGet(element, "font-weight", Core.Model.FontWeight.Normal, true);
-            AlignmentBaseline = LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
+            AlignmentBaseline =
+                LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
 
             Text = element.Value;
 
@@ -87,13 +91,13 @@ namespace Ibinimator.Svg
         {
             var element = base.ToXml(context);
 
-            LazySet(element, "alignment-baseline", AlignmentBaseline.Svgify());
+            LazySet(element, "alignment-baseline", AlignmentBaseline, AlignmentBaseline.Auto);
             LazySet(element, "baseline-shift", BaselineShift);
             LazySet(element, "font-family", FontFamily);
             LazySet(element, "font-size", FontSize, (12, LengthUnit.Points));
-            LazySet(element, "font-stretch", FontStretch);
-            LazySet(element, "font-style", FontStyle);
-            LazySet(element, "font-weight", (int?) FontWeight);
+            LazySet(element, "font-stretch", FontStretch ?? default, Core.Model.FontStretch.Normal);
+            LazySet(element, "font-style", FontStyle ?? default, Core.Model.FontStyle.Normal);
+            LazySet(element, "font-weight", (int) (FontWeight ?? default), 400);
 
             LazySet(element, "x", X);
             LazySet(element, "y", Y);
@@ -106,7 +110,8 @@ namespace Ibinimator.Svg
 
             while (i < Text.Length)
             {
-                if (indices.Count > 0 && indices.Peek().Position == i)
+                if (indices.Count > 0 &&
+                    indices.Peek().Position == i)
                 {
                     element.Add(new XText(text));
 

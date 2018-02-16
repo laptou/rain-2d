@@ -71,7 +71,10 @@ namespace Ibinimator.Svg
             throw new NotImplementedException();
         }
 
-        public override string ToString() { return Color.ToString(); }
+        public override string ToString()
+        {
+            return $"rgba({Color.Red * 100}%,{Color.Green * 100}%,{Color.Blue * 100}%,{Color.Alpha * 100}%)";
+        }
 
         public override XElement ToXml(SvgContext svgContext) { throw new NotImplementedException(); }
     }

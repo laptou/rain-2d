@@ -85,13 +85,21 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var old = (SharpDX.Direct2D1.LinearGradientBrush) NativeBrush;
 
-            // the gradient stop collection continues to exist until it is decoupled
-            // and then manually disposed of
-            var stops = old.GradientStopCollection;
+            if (!old.IsDisposed)
+            {
 
-            base.Dispose();
+                // the gradient stop collection continues to exist until it is decoupled
+                // and then manually disposed of
+                var stops = old.GradientStopCollection;
 
-            stops.Dispose();
+                base.Dispose();
+
+                stops.Dispose();
+            }
+            else
+            {
+                base.Dispose();
+            }
         }
 
         public float EndX

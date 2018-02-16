@@ -43,17 +43,24 @@ namespace Ibinimator.Svg
         {
             var element = base.ToXml(context);
 
-            LazySet(element, "fill", Fill);
-            LazySet(element, "fill-opacity", FillOpacity, 1);
-            LazySet(element, "fill-rule", FillRule);
-            LazySet(element, "stroke", Stroke);
-            LazySet(element, "stroke-dasharray", StrokeDashArray);
-            LazySet(element, "stroke-dash-offset", StrokeDashOffset);
-            LazySet(element, "stroke-opacity", StrokeOpacity, 1);
-            LazySet(element, "stroke-linecap", StrokeLineCap);
-            LazySet(element, "stroke-linejoin", StrokeLineJoin);
-            LazySet(element, "stroke-miterlimit", StrokeMiterLimit);
-            LazySet(element, "stroke-width", StrokeWidth, new Length(1, LengthUnit.Pixels));
+            if (Fill != null)
+            {
+                LazySet(element, "fill", Fill);
+                LazySet(element, "fill-opacity", FillOpacity, 1);
+                LazySet(element, "fill-rule", FillRule);
+            }
+
+            if (Stroke != null)
+            {
+                LazySet(element, "stroke", Stroke);
+                LazySet(element, "stroke-dasharray", StrokeDashArray);
+                LazySet(element, "stroke-dash-offset", StrokeDashOffset);
+                LazySet(element, "stroke-opacity", StrokeOpacity, 1);
+                LazySet(element, "stroke-linecap", StrokeLineCap);
+                LazySet(element, "stroke-linejoin", StrokeLineJoin);
+                LazySet(element, "stroke-miterlimit", StrokeMiterLimit);
+                LazySet(element, "stroke-width", StrokeWidth, new Length(1, LengthUnit.Pixels));
+            }
 
             return element;
         }

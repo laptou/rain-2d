@@ -125,31 +125,48 @@ namespace Ibinimator.Renderer
 
         private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var brush = (IBrushInfo) sender;
-            var (shape, fill) = Get(_brushBindings, brush, k => (null, null));
+            var info = (IBrushInfo) sender;
+            var (shape, fill) = Get(_brushBindings, info, k => (null, null));
 
             if (fill == null) return;
 
-            switch (e.PropertyName)
+            GradientBrushInfo gradInfo;
+
+            switch (fill)
             {
-                case "Opacity":
-                    fill.Opacity = brush.Opacity;
-
+                case IBrush _ when e.PropertyName == nameof(BrushInfo.Opacity):
+                    fill.Opacity = info.Opacity;
                     break;
-
-                case "Transform":
-                    fill.Transform = brush.Transform;
-
+                case IBrush _ when e.PropertyName == nameof(BrushInfo.Transform):
+                    fill.Transform = info.Transform;
                     break;
-
-                case "Color":
-                    ((ISolidColorBrush) fill).Color = ((SolidColorBrushInfo) brush).Color;
-
+                case ISolidColorBrush solid when e.PropertyName == nameof(SolidColorBrushInfo.Color):
+                    var solidInfo = (SolidColorBrushInfo) info;
+                    solid.Color = solidInfo.Color;
                     break;
-
-                case "Stops":
-                    ((IGradientBrush) fill).Stops.ReplaceRange(((GradientBrushInfo) brush).Stops);
-
+                case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Stops):
+                    gradInfo = (GradientBrushInfo) info;
+                    grad.Stops.ReplaceRange(gradInfo.Stops);
+                    break;
+                case ILinearGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
+                    gradInfo = (GradientBrushInfo) info;
+                    grad.StartX = gradInfo.StartPoint.X;
+                    grad.StartY = gradInfo.StartPoint.Y;
+                    break;
+                case ILinearGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
+                    gradInfo = (GradientBrushInfo)info;
+                    grad.EndX = gradInfo.EndPoint.X;
+                    grad.EndY = gradInfo.EndPoint.Y;
+                    break;
+                case IRadialGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
+                    gradInfo = (GradientBrushInfo)info;
+                    grad.CenterX = gradInfo.StartPoint.X;
+                    grad.CenterY = gradInfo.StartPoint.Y;
+                    break;
+                case IRadialGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
+                    gradInfo = (GradientBrushInfo)info;
+                    grad.RadiusX = gradInfo.EndPoint.X - gradInfo.StartPoint.X;
+                    grad.RadiusY = gradInfo.EndPoint.Y - gradInfo.StartPoint.Y;
                     break;
             }
 
