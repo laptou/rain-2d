@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
@@ -80,7 +81,8 @@ namespace Ibinimator.View.Control
             WindowHelper.InvalidateRect(_host, IntPtr.Zero, false);
         }
 
-        protected virtual IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        protected virtual IntPtr OnMessage(
+            IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
@@ -91,7 +93,8 @@ namespace Ibinimator.View.Control
 
                     try
                     {
-                        if (_invalidated && _renderTarget.CheckWindowState() == D2D.WindowState.None)
+                        if (_invalidated &&
+                            _renderTarget.CheckWindowState() == D2D.WindowState.None)
                         {
                             _invalidated = false;
                             RenderContext.Begin(null);
@@ -99,8 +102,8 @@ namespace Ibinimator.View.Control
                             RenderContext.End();
                         }
                     }
-                    catch (DX.SharpDXException ex) when
-                        (ex.Descriptor == D2D.ResultCode.RecreateTarget)
+                    catch (DX.SharpDXException ex) when (ex.Descriptor ==
+                                                         D2D.ResultCode.RecreateTarget)
                     {
                         Initialize();
                         RenderContext.Begin(null);
@@ -113,19 +116,29 @@ namespace Ibinimator.View.Control
                     break;
                 case WindowMessage.MouseWheelHorizontal:
                 case WindowMessage.MouseWheel:
+                {
                     var delta = NativeHelper.HighWord(wParam);
 
+                    var pos = NativeHelper.GetCoordinates(lParam,
+                                                          _d2dFactory.DesktopDpi.Height,
+                                                          hWnd);
+
                     var scrollEvt = new ScrollEvent(delta,
-                                                    msg == WindowMessage.MouseWheel ?
-                                                        ScrollDirection.Vertical :
-                                                        ScrollDirection.Horizontal,
+                                                    pos,
+                                                    msg == WindowMessage.MouseWheel
+                                                        ? ScrollDirection.Vertical
+                                                        : ScrollDirection.Horizontal,
                                                     KeyboardHelper.GetModifierState(wParam));
 
                     lock (_events)
+                    {
                         _events.Enqueue(scrollEvt);
+                    }
+
                     _eventFlag.Set();
 
                     break;
+                }
 
                 case WindowMessage.MouseMove:
                 {
@@ -134,8 +147,11 @@ namespace Ibinimator.View.Control
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
 
                     lock (_events)
-                        _events.Enqueue(new PointerEvent(pos, _lastMousePos - pos,
+                    {
+                        _events.Enqueue(new PointerEvent(pos,
+                                                         _lastMousePos - pos,
                                                          KeyboardHelper.GetModifierState(wParam)));
+                    }
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -150,8 +166,12 @@ namespace Ibinimator.View.Control
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
 
                     lock (_events)
-                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Down,
+                    {
+                        _events.Enqueue(new ClickEvent(pos,
+                                                       MouseButton.Left,
+                                                       ClickType.Down,
                                                        KeyboardHelper.GetModifierState(wParam)));
+                    }
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -163,9 +183,14 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+
                     lock (_events)
-                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Up,
+                    {
+                        _events.Enqueue(new ClickEvent(pos,
+                                                       MouseButton.Left,
+                                                       ClickType.Up,
                                                        KeyboardHelper.GetModifierState(wParam)));
+                    }
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -177,9 +202,14 @@ namespace Ibinimator.View.Control
                     WindowHelper.SetFocus(hWnd);
 
                     var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+
                     lock (_events)
-                        _events.Enqueue(new ClickEvent(pos, MouseButton.Left, ClickType.Double,
+                    {
+                        _events.Enqueue(new ClickEvent(pos,
+                                                       MouseButton.Left,
+                                                       ClickType.Double,
                                                        KeyboardHelper.GetModifierState(wParam)));
+                    }
 
                     _eventFlag.Set();
                     _lastMousePos = pos;
@@ -200,8 +230,11 @@ namespace Ibinimator.View.Control
                     if (repeat != 0) goto default;
 
                     lock (_events)
+                    {
                         _events.Enqueue(
                             new KeyboardEvent((int) key, true, KeyboardHelper.GetModifierState()));
+                    }
+
                     _eventFlag.Set();
 
                     // since the messages are processed asynchronously, 
@@ -212,21 +245,29 @@ namespace Ibinimator.View.Control
                     key = KeyInterop.KeyFromVirtualKey((int) wParam);
 
                     lock (_events)
+                    {
                         _events.Enqueue(
                             new KeyboardEvent((int) key, false, KeyboardHelper.GetModifierState()));
+                    }
+
                     _eventFlag.Set();
 
                     return (IntPtr) 1;
                 case WindowMessage.Char:
                 case WindowMessage.UniChar:
+                case WindowMessage.ImeChar:
                     var str = char.ConvertFromUtf32((int) wParam);
 
                     // ignore control characters such as backspace
-                    if (str.Length == 1 && char.IsControl(str[0]))
+                    if (str.Length == 1 &&
+                        char.IsControl(str[0]))
                         break;
 
                     lock (_events)
+                    {
                         _events.Enqueue(new TextEvent(str, KeyboardHelper.GetModifierState()));
+                    }
+
                     _eventFlag.Set();
 
                     break;
@@ -272,18 +313,18 @@ namespace Ibinimator.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _host = WindowHelper.CreateWindowEx(
-                0,
-                cls, "",
-                WindowStyles.Child |
-                WindowStyles.Visible,
-                0, 0,
-                (int) ActualWidth + 1,
-                (int) ActualHeight + 1,
-                hwndParent.Handle,
-                (IntPtr) 1,
-                IntPtr.Zero,
-                0);
+            _host = WindowHelper.CreateWindowEx(0,
+                                                cls,
+                                                "",
+                                                WindowStyles.Child | WindowStyles.Visible,
+                                                0,
+                                                0,
+                                                (int) ActualWidth + 1,
+                                                (int) ActualHeight + 1,
+                                                hwndParent.Handle,
+                                                (IntPtr) 1,
+                                                IntPtr.Zero,
+                                                0);
 
             if (_host == IntPtr.Zero)
             {
@@ -345,8 +386,7 @@ namespace Ibinimator.View.Control
             var height = (int) Math.Max(1, ActualHeight * _d2dFactory.DesktopDpi.Height / 96.0);
 
             var rtp = new D2D.RenderTargetProperties(
-                    new D2D.PixelFormat(Format.Unknown,
-                                        D2D.AlphaMode.Premultiplied))
+                    new D2D.PixelFormat(Format.Unknown, D2D.AlphaMode.Premultiplied))
                 {
                     DpiX = _d2dFactory.DesktopDpi.Width,
                     DpiY = _d2dFactory.DesktopDpi.Height,

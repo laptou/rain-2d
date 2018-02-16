@@ -11,6 +11,7 @@ using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Utility;
 using Ibinimator.Native;
+using Ibinimator.Renderer.WPF;
 
 using Color = Ibinimator.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
@@ -119,13 +120,30 @@ namespace Ibinimator.View.Control
                     break;
                 case ScrollEvent scrollEvent:
                     if (scrollEvent.ModifierState.Control)
-                        ac.ViewManager.Zoom *= (float) Math.Pow(10, scrollEvent.Delta / 100) / 10f;
+                    {
+                        var position = scrollEvent.Position;
 
-                    if (scrollEvent.ModifierState.Shift ||
-                        scrollEvent.Direction == ScrollDirection.Horizontal)
-                        ac.ViewManager.Pan += new Vector2(scrollEvent.Delta * ac.ViewManager.Zoom / 6, 0);
+                        var factor = scrollEvent.Delta / 100;
+                        if (factor < 0)
+                            factor = 2 - Math.Abs(factor);
+
+                        var transform = ac.ViewManager.Transform *
+                            Matrix3x2.CreateScale(factor, position);
+
+                        ac.ViewManager.Pan = transform.Translation;
+                        ac.ViewManager.Zoom = transform.GetScale().X;
+                    }
                     else
-                        ac.ViewManager.Pan += new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
+                    {
+
+                        if (scrollEvent.ModifierState.Shift ||
+                            scrollEvent.Direction == ScrollDirection.Horizontal)
+                            ac.ViewManager.Pan +=
+                                new Vector2(scrollEvent.Delta * ac.ViewManager.Zoom / 6, 0);
+                        else
+                            ac.ViewManager.Pan +=
+                                new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
+                    }
 
                     ac.InvalidateRender();
                     break;

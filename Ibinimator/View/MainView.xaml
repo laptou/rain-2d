@@ -224,7 +224,13 @@
                                 <ComboBox x:Name="Dropdown"
                                           Margin="8,0"
                                           utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
-                                          SelectedValue="{Binding Value}" />
+                                          SelectedValue="{Binding Value}">
+                                    <ComboBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ComboBox.ItemsPanel>
+                                </ComboBox>
                             </StackPanel>
                         </DataTemplate>
                         <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}">

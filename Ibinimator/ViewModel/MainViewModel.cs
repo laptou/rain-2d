@@ -188,14 +188,20 @@ namespace Ibinimator.ViewModel
                 {
                     var name = settings.GetString(localPath + ".name");
                     var cmd = settings.GetString(localPath + ".command");
-                    var shortcut = cmd != null
-                                       ? settings.GetString(".shortcuts." + cmd + "[0]", null)
-                                       : null;
+                    var shortcuts = cmd == null
+                                       ? Enumerable.Empty<string>()
+                                       : Enumerable
+                                        .Range(0,
+                                               (int) settings.GetFloat(
+                                                   "shortcuts." + cmd + ".$count"))
+                                        .Select(j => settings.GetString(
+                                                    "shortcuts." + cmd + $"[{j}]"))
+                                        .ToList();
 
                     var item = new MenuItem(name,
                                             LoadMenus(localPath + ".menus"),
                                             MapCommand(cmd),
-                                            shortcut,
+                                            shortcuts.FirstOrDefault(),
                                             ArtContext);
 
                     yield return item;
@@ -203,13 +209,16 @@ namespace Ibinimator.ViewModel
                     if (item.Command == null ||
                         item.Shortcut == null) continue;
 
-                    var gesture = ShortcutHelper.GetGesture(shortcut);
-                    var binding = new InputBinding(item.Command, gesture)
+                    foreach (var shortcut in shortcuts)
                     {
-                        CommandParameter = ArtContext
-                    };
+                        var gesture = ShortcutHelper.GetGesture(shortcut);
+                        var binding = new InputBinding(item.Command, gesture)
+                        {
+                            CommandParameter = ArtContext
+                        };
 
-                    Shortcuts.Add(binding);
+                        Shortcuts.Add(binding);
+                    }
                 }
             }
         }

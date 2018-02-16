@@ -199,7 +199,7 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
                 return;
 
-            RenderBoundingBox(target, cacheManager, view);
+            RenderBoundingBoxes(target, cacheManager, view);
             RenderPathOutlines(target, cacheManager, view);
 
             var transform = SelectedLayer.AbsoluteTransform;

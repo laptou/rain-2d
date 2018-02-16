@@ -25,7 +25,7 @@ namespace Ibinimator.ViewModel
     public class ColorViewModel : ViewModel
     {
         private bool   _changing;
-        private double _hue, _saturation, _lightness, _alpha;
+        private double _hue, _saturation, _lightness, _alpha = 1;
 
         public ColorViewModel(IArtContext artContext) { Context = artContext; }
 
@@ -94,6 +94,8 @@ namespace Ibinimator.ViewModel
             if (Context == null)
                 return;
 
+            Context.ToolManager.FillUpdated += ToolManagerOnFillUpdated;
+            Context.ToolManager.StrokeUpdated += ToolManagerOnStrokeUpdated;
             Context.HistoryManager.CollectionChanged += HistoryManagerOnCollectionChanged;
             Context.SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
         }
@@ -112,11 +114,16 @@ namespace Ibinimator.ViewModel
             Update();
         }
 
+        private void ToolManagerOnFillUpdated(object sender, IBrushInfo brushInfo) { Update(); }
+
+        private void ToolManagerOnStrokeUpdated(object sender, IPenInfo e) { Update(); }
+
         private void Update()
         {
             RaisePropertyChanged(nameof(Fill), nameof(Stroke));
 
-            if (!_changing && Current != null)
+            if (!_changing &&
+                Current != null)
             {
                 (_hue, _saturation, _lightness, _alpha) = ColorUtils.ColorToHsla(Current.Color);
                 RaisePropertyChanged(nameof(Hue),

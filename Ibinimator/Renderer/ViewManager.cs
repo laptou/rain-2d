@@ -25,8 +25,6 @@ namespace Ibinimator.Renderer
             DocumentUpdated?.Invoke(sender, e);
         }
 
-        private void Update() { Transform = Matrix3x2.CreateTranslation(Pan) * Matrix3x2.CreateScale(Zoom); }
-
         #region IViewManager Members
 
         public event PropertyChangedEventHandler DocumentUpdated;
@@ -88,7 +86,7 @@ namespace Ibinimator.Renderer
             set
             {
                 Set(Vector2.Clamp(value, -Document.Bounds.Size, Document.Bounds.Size));
-                Update();
+                RaisePropertyChanged(nameof(Transform));
             }
         }
 
@@ -98,11 +96,7 @@ namespace Ibinimator.Renderer
             set => Document.Root = value;
         }
 
-        public Matrix3x2 Transform
-        {
-            get => Get<Matrix3x2>();
-            private set => Set(value);
-        }
+        public Matrix3x2 Transform => Matrix3x2.CreateScale(Zoom) * Matrix3x2.CreateTranslation(Pan);
 
         public float Zoom
         {
@@ -110,7 +104,7 @@ namespace Ibinimator.Renderer
             set
             {
                 Set(MathUtils.Clamp(1e-4f, 1e4f, value));
-                Update();
+                RaisePropertyChanged(nameof(Transform));
             }
         }
 

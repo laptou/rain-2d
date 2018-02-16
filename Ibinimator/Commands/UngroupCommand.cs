@@ -34,6 +34,7 @@ namespace Ibinimator.Service.Commands
                 {
                     target.Remove(layer);
                     target.Parent.Add(layer);
+                    target.Selected = true;
 
                     layer.ApplyTransform(global: target.Transform);
 

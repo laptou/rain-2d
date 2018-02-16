@@ -191,7 +191,7 @@ namespace Ibinimator.Service.Tools
 
         #region Rendering
 
-        protected void RenderBoundingBox(RenderContext target, ICacheManager cache, IViewManager view)
+        protected void RenderBoundingBoxes(RenderContext target, ICacheManager cache, IViewManager view)
         {
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);
@@ -202,6 +202,18 @@ namespace Ibinimator.Service.Tools
             }
 
             target.Transform(MathUtils.Invert(SelectionManager.SelectionTransform));
+
+            foreach (var layer in Selection)
+            {
+                target.Transform(layer.AbsoluteTransform);
+
+                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                {
+                    target.DrawRectangle(cache.GetBounds(layer), pen);
+                }
+
+                target.Transform(MathUtils.Invert(layer.AbsoluteTransform));
+            }
         }
 
         protected void RenderPathOutlines(RenderContext target, ICacheManager cache, IViewManager view)

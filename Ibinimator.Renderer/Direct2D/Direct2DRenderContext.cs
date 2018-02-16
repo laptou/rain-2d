@@ -320,7 +320,7 @@ namespace Ibinimator.Renderer.Direct2D
 
             if (_effects.Count == 0)
             {
-                _virtualTarget.EndDraw();
+                _virtualTarget.TryEndDraw(out _, out _);
 
                 var t = _target.Transform;
 

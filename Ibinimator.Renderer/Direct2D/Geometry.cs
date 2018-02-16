@@ -41,9 +41,12 @@ namespace Ibinimator.Renderer.Direct2D
         {
             get
             {
-                if (_geom?.IsDisposed == true) return null;
+                lock (_geom)
+                {
+                    if (_geom?.IsDisposed == true) return null;
 
-                return _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+                    return _geom?.QueryInterfaceOrNull<D2D1.PathGeometry>();
+                }
             }
         }
 

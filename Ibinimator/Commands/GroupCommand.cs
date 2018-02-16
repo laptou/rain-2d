@@ -41,6 +41,7 @@ namespace Ibinimator.Service.Commands
             }
 
             parents[0].Add(_group);
+            _group.Selected = true;
         }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)

@@ -12,11 +12,13 @@ namespace Ibinimator.Native
 {
     public class Caret : ICaret
     {
-        private readonly IntPtr _hWnd;
-        private          bool   _visible;
-        private          bool   _disposed;
-        private readonly int    _width;
         private readonly int    _height;
+        private readonly IntPtr _hWnd;
+        private readonly int    _width;
+        private          bool   _disposed;
+        private          bool   _visible;
+        private          int    _x;
+        private          int    _y;
 
         public Caret(IntPtr hWnd, int width, int height)
         {
@@ -31,48 +33,90 @@ namespace Ibinimator.Native
             _disposed = false;
         }
 
+        ~Caret() { ReleaseUnmanagedResources(); }
+
         public Vector2 GetPosition()
         {
             if (_disposed) throw new NullReferenceException();
 
-            var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
-            CaretHelper.GetCaretPos(out var pt);
+            if (!_visible) return new Vector2(_x, _y);
 
-            return new Vector2(pt.x / scale, pt.y / scale);
+            return App.Dispatcher.Invoke(() =>
+                                         {
+                                             var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
+                                             if (!CaretHelper.GetCaretPos(out var pt))
+                                                 CheckError();
+
+                                             return new Vector2(pt.x / scale, pt.y / scale);
+                                         });
+        }
+
+        public bool Hide()
+        {
+            if (!_visible) return true;
+
+            return App.Dispatcher.Invoke(() =>
+                                         {
+                                             if (!CaretHelper.HideCaret(_hWnd))
+                                             {
+                                                 CheckError();
+
+                                                 return false;
+                                             }
+
+                                             _visible = false;
+
+                                             return true;
+                                         });
         }
 
         public void SetPosition(float x, float y)
         {
             if (_disposed) throw new NullReferenceException();
 
-            var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
+            App.Dispatcher.Invoke(() =>
+                                  {
+                                      var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
 
-            if(!CaretHelper.SetCaretPos((int) (x * scale),
-                                    (int) (y * scale)))
-                CheckError();
+                                      if (!CaretHelper.SetCaretPos(
+                                              (int) (x * scale),
+                                              (int) (y * scale)))
+                                          CheckError();
+                                  });
         }
 
-        ~Caret() { ReleaseUnmanagedResources(); }
-
-        public void Hide()
+        public bool Show()
         {
-            if (!_visible) return;
+            if (_visible) return true;
 
-            CaretHelper.HideCaret(_hWnd);
-            _visible = false;
+            return App.Dispatcher.Invoke(() =>
+                                         {
+                                             if (!CaretHelper.ShowCaret(_hWnd))
+                                             {
+                                                 CheckError();
+
+                                                 return false;
+                                             }
+
+                                             if (GetPosition() != new Vector2(_x, _y))
+                                                 SetPosition(_x, _y);
+
+                                             _visible = true;
+
+                                             return true;
+                                         });
         }
 
-        public void Show()
+        private void ReleaseUnmanagedResources()
         {
-            if (_visible) return;
-
-            CaretHelper.ShowCaret(_hWnd);
-            _visible = true;
+            App.Dispatcher.Invoke(() =>
+                                  {
+                                      if (!CaretHelper.DestroyCaret())
+                                          CheckError();
+                                  });
         }
 
-        private void ReleaseUnmanagedResources() { CaretHelper.DestroyCaret(); }
-
-        #region IDisposable Members
+        #region ICaret Members
 
         public void Dispose()
         {
@@ -80,8 +124,6 @@ namespace Ibinimator.Native
             ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
         }
-
-        #endregion
 
         /// <inheritdoc />
         public Vector2 Position
@@ -101,5 +143,7 @@ namespace Ibinimator.Native
                 else Hide();
             }
         }
+
+        #endregion
     }
 }

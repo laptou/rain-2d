@@ -51,5 +51,15 @@ namespace Ibinimator.Native
 
             return new Vector2(x, y);
         }
+
+        public static Vector2 GetCoordinates(IntPtr lParam, float dpi, IntPtr hWnd)
+        {
+            var pt = new NativePoint { x = LowWord(lParam), y = HighWord(lParam) };
+            WindowHelper.ScreenToClient(hWnd, ref pt);
+            var x = pt.x / dpi * 96f;
+            var y = pt.y / dpi * 96f;
+
+            return new Vector2(x, y);
+        }
     }
 }

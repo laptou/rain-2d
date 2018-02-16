@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 
 using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Direct2D;
@@ -16,7 +15,6 @@ using System.Windows.Input;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
-using Ibinimator.Native;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service.Commands;
@@ -33,9 +31,9 @@ namespace Ibinimator.Service.Tools
         private readonly DW.Factory        _dwFactory;
         private readonly DW.FontCollection _dwFontCollection;
 
-        private ICaret _caret;
-        private bool _focus;
-        private (Vector2 start, Vector2 end, long time)        _drag;
+        private ICaret                                  _caret;
+        private (Vector2 start, Vector2 end, long time) _drag;
+        private bool                                    _focus;
 
         private (Vector2 position, bool down, long time, long previousTime) _mouse;
         private (int index, int length)                                     _selection;
@@ -43,8 +41,7 @@ namespace Ibinimator.Service.Tools
         private RectangleF[] _selectionRects = new RectangleF[0];
         private bool         _updatingOptions;
 
-        public TextTool(IToolManager manager)
-            : base(manager)
+        public TextTool(IToolManager manager) : base(manager)
         {
             Type = ToolType.Text;
             Status = "<b>Double Click</b> on canvas to create new text object. " +
@@ -62,8 +59,8 @@ namespace Ibinimator.Service.Tools
                                                     using (var dwFontFamily =
                                                         _dwFontCollection.GetFontFamily(i))
                                                     {
-                                                        return dwFontFamily.FamilyNames
-                                                                           .ToCurrentCulture();
+                                                        return dwFontFamily
+                                                              .FamilyNames.ToCurrentCulture();
                                                     }
                                                 })
                                         .OrderBy(n => n));
@@ -77,9 +74,7 @@ namespace Ibinimator.Service.Tools
             Options.SetValues("font-size",
                               new float[]
                               {
-                                  8, 9, 10, 11, 12,
-                                  14, 16, 18, 20, 22, 24, 28,
-                                  32, 36, 40, 44, 48,
+                                  8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48,
                                   72, 96, 120, 144, 288, 352
                               });
             Options.SetUnit("font-size", Unit.Points);
@@ -91,26 +86,29 @@ namespace Ibinimator.Service.Tools
             Options.Create("font-stretch", "Stretch");
             Options.Set("font-stretch", FontStretch.Normal);
             Options.SetType("font-stretch", ToolOptionType.Dropdown);
-            Options.SetValues("font-stretch", new[]
-            {
-                FontStretch.Normal
-            });
+            Options.SetValues("font-stretch",
+                              new[]
+                              {
+                                  FontStretch.Normal
+                              });
 
             Options.Create("font-weight", "Weight");
             Options.Set("font-weight", FontWeight.Normal);
             Options.SetType("font-weight", ToolOptionType.Dropdown);
-            Options.SetValues("font-weight", new[]
-            {
-                FontWeight.Normal
-            });
+            Options.SetValues("font-weight",
+                              new[]
+                              {
+                                  FontWeight.Normal
+                              });
 
             Options.Create("font-style", "Style");
             Options.Set("font-style", FontStyle.Normal);
             Options.SetType("font-style", ToolOptionType.Dropdown);
-            Options.SetValues("font-style", new[]
-            {
-                FontStyle.Normal
-            });
+            Options.SetValues("font-style",
+                              new[]
+                              {
+                                  FontStyle.Normal
+                              });
 
             Options.OptionChanged += OnOptionChanged;
 
@@ -125,24 +123,28 @@ namespace Ibinimator.Service.Tools
 
         public override void ApplyFill(IBrushInfo brush)
         {
-            if (SelectedLayer == null || brush == null) return;
+            if (SelectedLayer == null ||
+                brush == null) return;
 
             Format(new Format
-            {
-                Fill = brush,
-                Range = (_selection.index, _selection.length)
-            }, true);
+                   {
+                       Fill = brush,
+                       Range = (_selection.index, _selection.length)
+                   },
+                   true);
         }
 
         public override void ApplyStroke(IPenInfo pen)
         {
-            if (SelectedLayer == null || pen == null) return;
+            if (SelectedLayer == null ||
+                pen == null) return;
 
             Format(new Format
-            {
-                Stroke = pen,
-                Range = _selection
-            }, true);
+                   {
+                       Stroke = pen,
+                       Range = _selection
+                   },
+                   true);
         }
 
         /// <inheritdoc />
@@ -153,19 +155,6 @@ namespace Ibinimator.Service.Tools
             context.LostFocus += OnLostFocus;
 
             base.Attach(context);
-        }
-
-        private void OnLostFocus(IArtContext sender, FocusEvent evt)
-        {
-            _focus = false;
-            _caret?.Dispose();
-            _caret = null;
-        }
-
-        private void OnGainedFocus(IArtContext sender, FocusEvent evt)
-        {
-            _focus = true;
-            UpdateCaret();
         }
 
         /// <inheritdoc />
@@ -197,7 +186,7 @@ namespace Ibinimator.Service.Tools
 
                 switch ((Key) evt.KeyCode)
                 {
-#region Navigation
+                    #region Navigation
 
                     case Key.Left:
                         _selection.index--;
@@ -229,12 +218,12 @@ namespace Ibinimator.Service.Tools
                                            .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var end = text.Substring(_selection.index + _selection.length)
-                                          .IndexOf("\n", StringComparison.Ordinal)
-                                    + _selection.index + _selection.length;
+                                          .IndexOf("\n", StringComparison.Ordinal) +
+                                      _selection.index + _selection.length;
 
-                            var next = text.Substring(end + 1)
-                                           .IndexOf("\n", StringComparison.Ordinal)
-                                     + end + 1;
+                            var next =
+                                text.Substring(end + 1).IndexOf("\n", StringComparison.Ordinal) +
+                                end + 1;
 
                             var pos = _selection.index + _selection.length - prev;
 
@@ -242,17 +231,16 @@ namespace Ibinimator.Service.Tools
                         }
                         else
                         {
-                            var prev = text
-                                      .Substring(0, _selection.index)
-                                      .LastIndexOf("\n", StringComparison.Ordinal);
+                            var prev = text.Substring(0, _selection.index)
+                                           .LastIndexOf("\n", StringComparison.Ordinal);
 
                             var end = text.Substring(_selection.index)
-                                          .IndexOf("\n", StringComparison.Ordinal)
-                                    + _selection.index;
+                                          .IndexOf("\n", StringComparison.Ordinal) +
+                                      _selection.index;
 
-                            var next = text.Substring(end + 1)
-                                           .IndexOf("\n", StringComparison.Ordinal)
-                                     + end + 1;
+                            var next =
+                                text.Substring(end + 1).IndexOf("\n", StringComparison.Ordinal) +
+                                end + 1;
 
                             var pos = _selection.index - prev;
 
@@ -322,13 +310,14 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-#endregion
+                    #endregion
 
-#region Manipulation
+                    #region Manipulation
 
                     case Key.Back:
 
-                        if (_selection.index == 0 && _selection.length == 0) break;
+                        if (_selection.index == 0 &&
+                            _selection.length == 0) break;
 
                         if (_selection.length == 0)
                             Remove(--_selection.index, 1);
@@ -354,9 +343,9 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-#endregion
+                    #endregion
 
-#region Shorcuts
+                    #region Shorcuts
 
                     case Key.A when evt.ModifierState.Control:
                         _selection.index = 0;
@@ -370,7 +359,8 @@ namespace Ibinimator.Service.Tools
 
                         Format(new Format
                         {
-                            FontWeight = weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal,
+                            FontWeight =
+                                weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal,
                             Range = (_selection.index, _selection.length)
                         });
 
@@ -382,7 +372,8 @@ namespace Ibinimator.Service.Tools
 
                         Format(new Format
                         {
-                            FontStyle = style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal,
+                            FontStyle =
+                                style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal,
                             Range = (_selection.index, _selection.length)
                         });
 
@@ -410,15 +401,18 @@ namespace Ibinimator.Service.Tools
 
                         break;
 
-#endregion
+                    #endregion
 
                     default:
 
                         return;
                 }
 
-                _selection.index = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0, _selection.index);
-                _selection.length = MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0 - _selection.index,
+                _selection.index =
+                    MathUtils.Clamp(0, SelectedLayer?.Value?.Length ?? 0, _selection.index);
+                _selection.length = MathUtils.Clamp(0,
+                                                    SelectedLayer?.Value?.Length ??
+                                                    0 - _selection.index,
                                                     _selection.length);
 
                 Update();
@@ -449,7 +443,8 @@ namespace Ibinimator.Service.Tools
 
             var bounds = Context.CacheManager.GetAbsoluteBounds(SelectedLayer);
 
-            if (_mouse.down && bounds.Contains(_drag.start))
+            if (_mouse.down &&
+                bounds.Contains(_drag.start))
             {
                 var start = FromWorldSpace(_drag.start);
                 var end = FromWorldSpace(_drag.end);
@@ -459,7 +454,8 @@ namespace Ibinimator.Service.Tools
                 var selectionStart = layout.GetPosition(start, out var isTrailingHit) +
                                      (isTrailingHit ? 1 : 0);
 
-                var selectionEnd = layout.GetPosition(end, out isTrailingHit) + (isTrailingHit ? 1 : 0);
+                var selectionEnd = layout.GetPosition(end, out isTrailingHit) +
+                                   (isTrailingHit ? 1 : 0);
 
                 _selection.index = Math.Min(selectionStart, selectionEnd);
                 _selection.length = Math.Max(selectionStart, selectionEnd) - _selection.index;
@@ -533,13 +529,17 @@ namespace Ibinimator.Service.Tools
                     var end = start + _selection.length;
 
                     // move backwards until we encounter an alphanumeric character
-                    while (start > 0 && !char.IsLetterOrDigit(str[start])) start--;
+                    while (start > 0 &&
+                           !char.IsLetterOrDigit(str[start])) start--;
 
                     // continue moving backwards a non-alphanumeric character (word boundary)
-                    while (start > 0 && char.IsLetterOrDigit(str[start])) start--;
+                    while (start > 0 &&
+                           char.IsLetterOrDigit(str[start])) start--;
 
-                    while (end < str.Length && !char.IsLetterOrDigit(str[end])) end++;
-                    while (end < str.Length && char.IsLetterOrDigit(str[end])) end++;
+                    while (end < str.Length &&
+                           !char.IsLetterOrDigit(str[end])) end++;
+                    while (end < str.Length &&
+                           char.IsLetterOrDigit(str[end])) end++;
 
                     _selection.index = start;
                     _selection.length = end - start;
@@ -562,6 +562,21 @@ namespace Ibinimator.Service.Tools
             Update();
         }
 
+        public void OnText(IArtContext sender, TextEvent evt)
+        {
+            if (SelectedLayer == null) return;
+
+            if (_selection.length > 0)
+                Remove(_selection.index, _selection.length);
+
+            Insert(_selection.index, evt.Text);
+
+            _selection.index += evt.Text.Length;
+            _selection.length = 0;
+
+            Update();
+        }
+
         public override IBrushInfo ProvideFill()
         {
             var format = SelectedLayer?.GetFormat(_selection.index);
@@ -580,32 +595,16 @@ namespace Ibinimator.Service.Tools
         {
             if (SelectedLayer == null) return;
 
-            RenderBoundingBox(target, cache, view);
+            RenderBoundingBoxes(target, cache, view);
 
             target.Transform(SelectedLayer.AbsoluteTransform);
 
             if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
-                    target.FillRectangle(
-                        selectionRect,
-                        cache.GetBrush(nameof(EditorColors.TextHighlight)));
+                    target.FillRectangle(selectionRect,
+                                         cache.GetBrush(nameof(EditorColors.TextHighlight)));
 
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
-        }
-
-        public void OnText(IArtContext sender, TextEvent evt)
-        {
-            if (SelectedLayer == null) return;
-
-            if (_selection.length > 0)
-                Remove(_selection.index, _selection.length);
-
-            Insert(_selection.index, evt.Text);
-
-            _selection.index += evt.Text.Length;
-            _selection.length = 0;
-
-            Update();
         }
 
         protected override void OnSelectionChanged(object sender, EventArgs e) { Update(); }
@@ -613,9 +612,9 @@ namespace Ibinimator.Service.Tools
         private void Format(Format format, bool merge = false)
         {
             var history = Context.HistoryManager;
-            var cmd = new ApplyFormatCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer, format);
+            var cmd = new ApplyFormatCommand(Context.HistoryManager.Position + 1,
+                                             SelectedLayer,
+                                             format);
 
             if (merge) history.Merge(cmd, Time.DoubleClick);
             else history.Do(cmd);
@@ -626,7 +625,8 @@ namespace Ibinimator.Service.Tools
 
         private IEnumerable<FontFace> GetFontFaces()
         {
-            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index))
+            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index)
+                )
                 yield break;
 
             using (var dwFamily = _dwFontCollection.GetFontFamily(index))
@@ -647,11 +647,27 @@ namespace Ibinimator.Service.Tools
             if (text.Length == 0) return;
 
             var history = Context.HistoryManager;
-            var current = new InsertTextCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer, text, index);
+            var current =
+                new InsertTextCommand(Context.HistoryManager.Position + 1,
+                                      SelectedLayer,
+                                      text,
+                                      index);
 
             history.Do(current);
+        }
+
+        private void OnGainedFocus(IArtContext sender, FocusEvent evt)
+        {
+            _focus = true;
+            if (_caret != null) _caret.Visible = true;
+            UpdateCaret();
+        }
+
+        private void OnLostFocus(IArtContext sender, FocusEvent evt)
+        {
+            _focus = false;
+            _caret?.Dispose();
+            _caret = null;
         }
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
@@ -796,11 +812,10 @@ namespace Ibinimator.Service.Tools
             if (length == 0) return;
 
             var history = Context.HistoryManager;
-            var current = new RemoveTextCommand(
-                Context.HistoryManager.Position + 1,
-                SelectedLayer,
-                SelectedLayer.Value.Substring(index, length),
-                index);
+            var current = new RemoveTextCommand(Context.HistoryManager.Position + 1,
+                                                SelectedLayer,
+                                                SelectedLayer.Value.Substring(index, length),
+                                                index);
 
             history.Do(current);
         }
@@ -813,9 +828,9 @@ namespace Ibinimator.Service.Tools
 
             UpdateCaret();
 
-            _selectionRects = _selection.length > 0 ?
-                                  layout.MeasureRange(_selection.index, _selection.length) :
-                                  new RectangleF[0];
+            _selectionRects = _selection.length > 0
+                                  ? layout.MeasureRange(_selection.index, _selection.length)
+                                  : new RectangleF[0];
 
             var format = SelectedLayer.GetFormat(_selection.index);
 
@@ -838,7 +853,7 @@ namespace Ibinimator.Service.Tools
         {
             if (SelectedLayer == null)
             {
-                if(_caret != null)
+                if (_caret != null)
                     _caret.Visible = false;
 
                 return;
@@ -848,11 +863,13 @@ namespace Ibinimator.Service.Tools
             {
                 _caret?.Dispose();
                 _caret = null;
+
+                return;
             }
 
             var layout = Context.CacheManager.GetTextLayout(SelectedLayer);
 
-            var metrics = layout.MeasurePosition(_selection.index);
+            var metrics = layout.MeasurePosition(_selection.index + _selection.length);
 
             if (_caret == null)
             {
@@ -869,19 +886,17 @@ namespace Ibinimator.Service.Tools
                 // give up i guess
                 if (_caret == null)
                     return;
+
+                _caret.Visible = true;
             }
 
-            _caret.Visible = false;
-
-            var caretPos = ToWorldSpace(metrics.TopLeft);
-            Debug.WriteLine($"Caret Position: {caretPos}");
-            _caret.Position = caretPos;
-            _caret.Visible = true;
+            _caret.Position =
+                ToWorldSpace(new Vector2(metrics.Left,
+                                         (metrics.Top + metrics.Height - metrics.Baseline) * 1.5f));
         }
 
         private void UpdateOptions(
-            string family, float size, FontStretch stretch,
-            FontWeight weight, FontStyle style)
+            string family, float size, FontStretch stretch, FontWeight weight, FontStyle style)
         {
             if (_updatingOptions) return;
 
@@ -890,10 +905,7 @@ namespace Ibinimator.Service.Tools
             Options.Set("font-family", family);
             Options.Set("font-size", size);
 
-            var stretches = GetFontFaces()
-                           .Select(f => f.Stretch)
-                           .Distinct()
-                           .ToArray();
+            var stretches = GetFontFaces().Select(f => f.Stretch).Distinct().ToArray();
 
             Options.SetValues("font-stretch", stretches);
             Options.Set("font-stretch", stretch);
@@ -908,8 +920,7 @@ namespace Ibinimator.Service.Tools
             Options.Set("font-weight", weight);
 
             var styles = GetFontFaces()
-                        .Where(f => f.Stretch == stretch &&
-                                    f.Weight == weight)
+                        .Where(f => f.Stretch == stretch && f.Weight == weight)
                         .Select(f => f.Style)
                         .Distinct()
                         .ToArray();
@@ -920,7 +931,7 @@ namespace Ibinimator.Service.Tools
             _updatingOptions = false;
         }
 
-#region Nested type: FontFace
+        #region Nested type: FontFace
 
         private struct FontFace : IEquatable<FontFace>
         {
@@ -964,7 +975,10 @@ namespace Ibinimator.Service.Tools
                 return string.Join(" ", G(this));
             }
 
-            public static bool operator ==(FontFace face1, FontFace face2) { return face1.Equals(face2); }
+            public static bool operator ==(FontFace face1, FontFace face2)
+            {
+                return face1.Equals(face2);
+            }
 
             public static implicit operator (FontStretch, FontStyle, FontWeight)(FontFace face)
             {
@@ -976,20 +990,21 @@ namespace Ibinimator.Service.Tools
                 return new FontFace(face.Item1, face.Item2, face.Item3);
             }
 
-            public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
+            public static bool operator !=(FontFace face1, FontFace face2)
+            {
+                return !(face1 == face2);
+            }
 
-#region IEquatable<FontFace> Members
+            #region IEquatable<FontFace> Members
 
             public bool Equals(FontFace other)
             {
-                return Weight == other.Weight &&
-                       Style == other.Style &&
-                       Stretch == other.Stretch;
+                return Weight == other.Weight && Style == other.Style && Stretch == other.Stretch;
             }
 
-#endregion
+            #endregion
         }
 
-#endregion
+        #endregion
     }
 }

@@ -418,7 +418,7 @@ namespace Ibinimator.Service.Tools
 
             if (rect.IsEmpty) return;
 
-            RenderBoundingBox(target, cache, view);
+            RenderBoundingBoxes(target, cache, view);
             RenderPathOutlines(target, cache, view);
 
             // transform guides
