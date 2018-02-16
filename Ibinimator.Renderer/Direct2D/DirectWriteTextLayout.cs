@@ -281,11 +281,11 @@ namespace Ibinimator.Renderer.Direct2D
             return rect;
         }
 
-        public RectangleF MeasurePosition(int index)
+        public TextPositionMetric MeasurePosition(int index)
         {
             var m = _dwLayout.HitTestTextPosition(index, false, out var _, out var _);
 
-            return new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height);
+            return new TextPositionMetric(m.Top - FontHeight, m.Left, FontHeight, m.Height, index, 0);
         }
 
         public RectangleF[] MeasureRange(int index, int length)

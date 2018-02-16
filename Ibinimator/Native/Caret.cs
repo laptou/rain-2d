@@ -17,8 +17,8 @@ namespace Ibinimator.Native
         private readonly int    _width;
         private          bool   _disposed;
         private          bool   _visible;
-        private          int    _x;
-        private          int    _y;
+        private          float    _x;
+        private          float    _y;
 
         public Caret(IntPtr hWnd, int width, int height)
         {
@@ -73,6 +73,8 @@ namespace Ibinimator.Native
         public void SetPosition(float x, float y)
         {
             if (_disposed) throw new NullReferenceException();
+
+            (_x, _y) = (x, y);
 
             App.Dispatcher.Invoke(() =>
                                   {

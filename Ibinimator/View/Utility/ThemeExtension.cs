@@ -17,9 +17,9 @@ namespace Ibinimator.View.Utility
 {
     public class ThemeExtension : MarkupExtension
     {
-        private static readonly Regex Func = new Regex(@"^([A-Za-z0-9\-_]+)\(([A-Za-z0-9_\-\.]+)\)$",
-                                                       RegexOptions.Compiled |
-                                                       RegexOptions.IgnoreCase);
+        private static readonly Regex Func =
+            new Regex(@"^([A-Za-z0-9\-_]+)\(([A-Za-z0-9_\-\.]+)\)$",
+                      RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public ThemeExtension(string path) { Path = path; }
 
@@ -43,16 +43,15 @@ namespace Ibinimator.View.Utility
             var val = AppSettings.Current.Theme[path];
 
             if (val is Color color)
-            {
                 switch (modifier)
                 {
                     case "color":
+
                         return color.Convert();
                     default:
 
                         return new SolidColorBrush(color.Convert());
                 }
-            }
 
             return val;
         }

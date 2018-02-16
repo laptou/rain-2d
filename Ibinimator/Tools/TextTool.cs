@@ -17,14 +17,16 @@ using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
+using Ibinimator.Service;
 using Ibinimator.Service.Commands;
+using Ibinimator.Service.Tools;
 
 using DW = SharpDX.DirectWrite;
 using FontStretch = Ibinimator.Core.Model.FontStretch;
 using FontStyle = Ibinimator.Core.Model.FontStyle;
 using FontWeight = Ibinimator.Core.Model.FontWeight;
 
-namespace Ibinimator.Service.Tools
+namespace Ibinimator.Tools
 {
     public sealed class TextTool : SelectionToolBase<Text>
     {
@@ -50,10 +52,7 @@ namespace Ibinimator.Service.Tools
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
             _dwFontCollection = _dwFactory.GetSystemFontCollection(true);
 
-            Options.Create("font-family", "Font Family");
-            Options.SetType("font-family", ToolOptionType.Font);
-            Options.SetValues("font-family",
-                              Enumerable.Range(0, _dwFontCollection.FontFamilyCount)
+            var familyNames = Enumerable.Range(0, _dwFontCollection.FontFamilyCount)
                                         .Select(i =>
                                                 {
                                                     using (var dwFontFamily =
@@ -63,52 +62,49 @@ namespace Ibinimator.Service.Tools
                                                               .FamilyNames.ToCurrentCulture();
                                                     }
                                                 })
-                                        .OrderBy(n => n));
+                                        .OrderBy(n => n);
+            string defaultFamily;
 
             using (var defaultFont = _dwFontCollection.GetFontFamily(0))
             {
-                Options.Set("font-family", defaultFont.FamilyNames.ToCurrentCulture());
+                defaultFamily = defaultFont.FamilyNames.ToCurrentCulture();
             }
 
-            Options.Create("font-size", "Font Size");
-            Options.SetValues("font-size",
-                              new float[]
-                              {
-                                  8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48,
-                                  72, 96, 120, 144, 288, 352
-                              });
-            Options.SetUnit("font-size", Unit.Points);
-            Options.SetType("font-size", ToolOptionType.Length);
-            Options.SetMinimum("font-size", 6);
-            Options.SetMaximum("font-size", 60000);
-            Options.Set("font-size", 12);
+            Options.Create<string>("font-family", ToolOptionType.Font, "Font Family")
+                   .SetValues(familyNames.ToList())
+                   .Set(defaultFamily);
 
-            Options.Create("font-stretch", "Stretch");
-            Options.Set("font-stretch", FontStretch.Normal);
-            Options.SetType("font-stretch", ToolOptionType.Dropdown);
-            Options.SetValues("font-stretch",
-                              new[]
-                              {
-                                  FontStretch.Normal
-                              });
+            Options.Create<float>("font-size", ToolOptionType.Length, "Font Size")
+                   .SetValues(new[]
+                    {
+                        8f, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48, 72, 96,
+                        120, 144, 288, 352
+                    })
+                   .SetUnit(Unit.Points)
+                   .SetMinimum(6)
+                   .SetMaximum(60000)
+                   .Set(12);
 
-            Options.Create("font-weight", "Weight");
-            Options.Set("font-weight", FontWeight.Normal);
-            Options.SetType("font-weight", ToolOptionType.Dropdown);
-            Options.SetValues("font-weight",
-                              new[]
-                              {
-                                  FontWeight.Normal
-                              });
+            Options.Create<FontStretch>("font-stretch", ToolOptionType.Dropdown, "Stretch")
+                   .Set(FontStretch.Normal)
+                   .SetValues(new[]
+                    {
+                        FontStretch.Normal
+                    });
 
-            Options.Create("font-style", "Style");
-            Options.Set("font-style", FontStyle.Normal);
-            Options.SetType("font-style", ToolOptionType.Dropdown);
-            Options.SetValues("font-style",
-                              new[]
-                              {
-                                  FontStyle.Normal
-                              });
+            Options.Create<FontWeight>("font-weight", ToolOptionType.Dropdown, "Weight")
+                   .Set(FontWeight.Normal)
+                   .SetValues(new[]
+                    {
+                        FontWeight.Normal
+                    });
+
+            Options.Create<FontStyle>("font-style", ToolOptionType.Dropdown, "Style")
+                   .Set(FontStyle.Normal)
+                   .SetValues(new[]
+                    {
+                        FontStyle.Normal
+                    });
 
             Options.OptionChanged += OnOptionChanged;
 
@@ -174,7 +170,6 @@ namespace Ibinimator.Service.Tools
             _dwFontCollection?.Dispose();
             _dwFactory?.Dispose();
         }
-
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
@@ -674,11 +669,11 @@ namespace Ibinimator.Service.Tools
         {
             if (_updatingOptions) return;
 
-            var option = (ToolOption) sender;
+            var option = (ToolOptionBase) sender;
 
             if (SelectedLayer == null) return;
-            if (!(e.PropertyName == nameof(ToolOption.Value) ||
-                  e.PropertyName == nameof(ToolOption.Values)))
+            if (!(e.PropertyName == nameof(ToolOption<object>.Value) ||
+                  e.PropertyName == nameof(ToolOption<object>.Values)))
                 return;
 
             var updated = false;
@@ -696,13 +691,13 @@ namespace Ibinimator.Service.Tools
                     if (_selection.length == 0)
                         Format(new Format
                         {
-                            FontFamilyName = (string) option.Value,
+                            FontFamilyName = ((ToolOption<string>) option).Value,
                             Range = (0, SelectedLayer.Value.Length)
                         });
                     else
                         Format(new Format
                         {
-                            FontFamilyName = (string) option.Value,
+                            FontFamilyName = ((ToolOption<string>)option).Value,
                             Range = (_selection.index, _selection.length)
                         });
                     goto case "font-stretch";
@@ -791,13 +786,13 @@ namespace Ibinimator.Service.Tools
                     if (_selection.length == 0)
                         Format(new Format
                         {
-                            FontSize = (float) option.Value,
+                            FontSize = ((ToolOption<float>)option).Value,
                             Range = (0, SelectedLayer.Value.Length)
                         });
                     else
                         Format(new Format
                         {
-                            FontSize = (float) option.Value,
+                            FontSize = ((ToolOption<float>)option).Value,
                             Range = (_selection.index, _selection.length)
                         });
 
@@ -907,7 +902,7 @@ namespace Ibinimator.Service.Tools
 
             var stretches = GetFontFaces().Select(f => f.Stretch).Distinct().ToArray();
 
-            Options.SetValues("font-stretch", stretches);
+            Options.GetOption<FontStretch>("font-stretch").SetValues(stretches);
             Options.Set("font-stretch", stretch);
 
             var weights = GetFontFaces()
@@ -916,7 +911,7 @@ namespace Ibinimator.Service.Tools
                          .Distinct()
                          .ToArray();
 
-            Options.SetValues("font-weight", weights);
+            Options.GetOption<FontWeight>("font-weight").SetValues(weights);
             Options.Set("font-weight", weight);
 
             var styles = GetFontFaces()
@@ -925,7 +920,7 @@ namespace Ibinimator.Service.Tools
                         .Distinct()
                         .ToArray();
 
-            Options.SetValues("font-style", styles);
+            Options.GetOption<FontStyle>("font-style").SetValues(styles);
             Options.Set("font-style", style);
 
             _updatingOptions = false;
@@ -944,7 +939,6 @@ namespace Ibinimator.Service.Tools
 
             public FontStretch Stretch { get; }
             public FontStyle Style { get; }
-
             public FontWeight Weight { get; }
 
             public override bool Equals(object obj) { return obj is FontFace face && Equals(face); }

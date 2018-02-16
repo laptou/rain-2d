@@ -221,8 +221,7 @@
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Name}" /><Run Text=":" />
                                 </TextBlock>
-                                <ComboBox x:Name="Dropdown"
-                                          Margin="8,0"
+                                <ComboBox Margin="8,0"
                                           utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}">
                                     <ComboBox.ItemsPanel>
@@ -233,13 +232,22 @@
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}">
+                            <StackPanel Margin="16,0" Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center">
+                                    <Run Text="{Binding Name}" /><Run Text=":" />
+                                </TextBlock>
+                                <control:SegmentButton Margin="8,0"
+                                                       utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
+                                                       SelectedValue="{Binding Value}" />
+                            </StackPanel>
+                        </DataTemplate>
                         <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Name}" /><Run Text=":" />
                                 </TextBlock>
-                                <ComboBox x:Name="Dropdown"
-                                          Margin="8,0"
+                                <ComboBox Margin="8,0"
                                           utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}">
                                     <ComboBox.ItemTemplate>
@@ -247,6 +255,11 @@
                                             <TextBlock FontFamily="{Binding}" Text="{Binding}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
+                                    <ComboBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ComboBox.ItemsPanel>
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>

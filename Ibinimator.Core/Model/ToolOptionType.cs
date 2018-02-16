@@ -13,6 +13,6 @@ namespace Ibinimator.Core.Model
         Dropdown,
         Length,
         Switch,
-        MultiSwitch
+        Segment
     }
 }

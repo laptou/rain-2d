@@ -7,9 +7,13 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
 {
-    public class ToolOption : Model.Model
+    public abstract class ToolOptionBase : Model.Model
     {
-        public ToolOption(string id) { Id = id; }
+        protected ToolOptionBase(string id, ToolOptionType type)
+        {
+            Id = id;
+            Type = type;
+        }
 
         public string Icon
         {
@@ -40,7 +44,7 @@ namespace Ibinimator.Core
         public ToolOptionType Type
         {
             get => Get<ToolOptionType>();
-            set => Set(value);
+            private set => Set(value);
         }
 
         public Unit Unit
@@ -48,17 +52,63 @@ namespace Ibinimator.Core
             get => Get<Unit>();
             set => Set(value);
         }
+    }
+    public class ToolOption<T> : ToolOptionBase
+    {
+        /// <inheritdoc />
+        public ToolOption(string id, ToolOptionType type) : base(id, type) { }
 
-        public object Value
+        public T Value
         {
-            get => Get<object>();
+            get => Get<T>();
+            set => base.Set(value);
+        }
+
+        public IEnumerable<T> Values
+        {
+            get => Get<IEnumerable<T>>();
             set => Set(value);
         }
 
-        public IEnumerable<object> Values
+        #region Convenience Setters
+
+        // These methods allow calls to be chained together
+
+        public ToolOption<T> Set(T value)
         {
-            get => Get<IEnumerable<object>>();
-            set => Set(value);
+            Value = value;
+
+            return this;
         }
+
+        public ToolOption<T> SetMaximum(float maximum)
+        {
+            Maximum = maximum;
+
+            return this;
+        }
+
+        public ToolOption<T> SetMinimum(float minimum)
+        {
+            Minimum = minimum;
+
+            return this;
+        }
+
+        public ToolOption<T> SetUnit(Unit unit)
+        {
+            Unit = unit;
+
+            return this;
+        }
+
+        public ToolOption<T> SetValues(IEnumerable<T> values)
+        {
+            Values = values;
+
+            return this;
+        }
+
+        #endregion
     }
 }

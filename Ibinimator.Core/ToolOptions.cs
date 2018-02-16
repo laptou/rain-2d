@@ -10,46 +10,41 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
 {
-    public class ToolOptions : INotifyCollectionChanged, IEnumerable<ToolOption>
+    public class ToolOptions : INotifyCollectionChanged, IEnumerable<ToolOptionBase>
     {
-        private readonly Dictionary<string, ToolOption> _options = new Dictionary<string, ToolOption>();
+        private readonly Dictionary<string, ToolOptionBase> _options = new Dictionary<string, ToolOptionBase>();
 
         public event PropertyChangedEventHandler OptionChanged;
 
-        public void Create(string id, string name)
+        public ToolOption<T> Create<T>(string id, ToolOptionType type, string label = null)
         {
-            var op = new ToolOption(id) {Name = name};
+            var op = new ToolOption<T>(id, type) { Name = label };
             op.PropertyChanged += OnOptionChanged;
             _options[id] = op;
+
+            return op;
         }
 
         public T Get<T>(string id)
         {
-            switch (_options[id].Value)
+            if (!(_options[id] is ToolOption<T> option))
+                return default;
+
+            switch (option.Value)
             {
                 case T t:
-
                     return t;
-                case null:
-
-                    return default;
                 default:
-
-                    return (T) Convert.ChangeType(_options[id].Value, typeof(T));
+                    return (T) Convert.ChangeType(option.Value, typeof(T));
             }
         }
 
-        public void Set<T>(string id, T value) { _options[id].Value = value; }
+        public ToolOption<T> GetOption<T>(string id) { return (ToolOption<T>) _options[id]; }
 
-        public void SetMaximum(string id, float maximum) { _options[id].Maximum = maximum; }
-        public void SetMinimum(string id, float minimum) { _options[id].Minimum = minimum; }
-        public void SetType(string id, ToolOptionType type) { _options[id].Type = type; }
-
-        public void SetUnit(string id, Unit unit) { _options[id].Unit = unit; }
-
-        public void SetValues<T>(string id, IEnumerable<T> values)
+        public void Set<T>(string id, T value)
         {
-            _options[id].Values = values.Cast<object>();
+            if(_options[id] is ToolOption<T> option)
+            option.Value = value;
         }
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
@@ -59,7 +54,7 @@ namespace Ibinimator.Core
 
         #region IEnumerable<ToolOption> Members
 
-        public IEnumerator<ToolOption> GetEnumerator() { return _options.Values.GetEnumerator(); }
+        public IEnumerator<ToolOptionBase> GetEnumerator() { return _options.Values.GetEnumerator(); }
 
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 

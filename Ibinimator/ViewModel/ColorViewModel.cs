@@ -129,6 +129,9 @@ namespace Ibinimator.ViewModel
                 RaisePropertyChanged(nameof(Hue),
                                      nameof(Saturation),
                                      nameof(Lightness),
+                                     nameof(Red),
+                                     nameof(Green),
+                                     nameof(Blue),
                                      nameof(Alpha));
             }
         }

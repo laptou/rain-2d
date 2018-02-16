@@ -71,6 +71,9 @@ namespace Ibinimator.View.Command
 
                 await App.Dispatcher.InvokeAsync(() => sfd.ShowDialog());
 
+                if (string.IsNullOrWhiteSpace(sfd.FileName))
+                    return;
+
                 doc.Path = sfd.FileName;
             }
 

@@ -8,6 +8,27 @@ using Ibinimator.Core.Model;
 
 namespace Ibinimator.Core
 {
+    public struct TextPositionMetric
+    {
+        public float Top;
+        public float Baseline;
+        public float Height;
+        public int Position;
+        public int Line;
+        public float Left;
+
+        public TextPositionMetric(
+            float top, float left, float baseline, float height, int position, int line)
+        {
+            Top = top;
+            Baseline = baseline;
+            Height = height;
+            Position = position;
+            Line = line;
+            Left = left;
+        }
+    }
+
     public interface ITextLayout : IResource
     {
         string FontFamily { get; set; }
@@ -29,7 +50,7 @@ namespace Ibinimator.Core
 
         void InsertText(int index, string text);
         RectangleF Measure();
-        RectangleF MeasurePosition(int index);
+        TextPositionMetric MeasurePosition(int index);
         RectangleF[] MeasureRange(int index, int length);
         void RemoveText(int index, int range);
 

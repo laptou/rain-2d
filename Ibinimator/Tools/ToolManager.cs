@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Tools;
 
 namespace Ibinimator.Service.Tools
 {
