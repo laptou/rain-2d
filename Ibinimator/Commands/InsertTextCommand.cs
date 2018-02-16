@@ -9,8 +9,9 @@ namespace Ibinimator.Service.Commands
 {
     public sealed class InsertTextCommand : LayerCommandBase<ITextLayer>
     {
-        public InsertTextCommand(long id, ITextLayer target, string text, int index)
-            : base(id, new[] {target})
+        public InsertTextCommand(long id, ITextLayer target, string text, int index) : base(
+            id,
+            new[] {target})
         {
             Text = text;
             Index = index;

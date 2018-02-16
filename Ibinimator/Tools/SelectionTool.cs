@@ -24,13 +24,10 @@ namespace Ibinimator.Service.Tools
         {
             {
                 "default",
-                "<b>Alt Click</b> to select-behind. " +
-                "<b>Shift Click</b> to multi-select."
+                "<b>Alt Click</b> to select-behind. " + "<b>Shift Click</b> to multi-select."
             },
             {
-                "selection",
-                "<b>{0}</b> layer(s) selected " +
-                "[{1}]"
+                "selection", "<b>{0}</b> layer(s) selected " + "[{1}]"
             },
             {
                 "transform",
@@ -46,8 +43,7 @@ namespace Ibinimator.Service.Tools
 
         private (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
 
-        public SelectionTool(IToolManager toolManager)
-            : base(toolManager)
+        public SelectionTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Select;
 
@@ -89,16 +85,17 @@ namespace Ibinimator.Service.Tools
 
                 foreach (var layer in delete)
                     Context.HistoryManager.Do(
-                        new RemoveLayerCommand(
-                            Context.HistoryManager.Position + 1,
-                            layer.Parent,
-                            layer));
+                        new RemoveLayerCommand(Context.HistoryManager.Position + 1,
+                                               layer.Parent,
+                                               layer));
 
                 return;
             }
 
-            if (key == Key.LeftShift || key == Key.RightShift ||
-                key == Key.LeftAlt || key == Key.RightAlt)
+            if (key == Key.LeftShift ||
+                key == Key.RightShift ||
+                key == Key.LeftAlt ||
+                key == Key.RightAlt)
                 GuideManager.ClearVirtualGuides();
 
             base.KeyDown(context, evt);
@@ -108,8 +105,10 @@ namespace Ibinimator.Service.Tools
         {
             var key = (Key) evt.KeyCode;
 
-            if (key == Key.LeftShift || key == Key.RightShift ||
-                key == Key.LeftAlt || key == Key.RightAlt)
+            if (key == Key.LeftShift ||
+                key == Key.RightShift ||
+                key == Key.LeftAlt ||
+                key == Key.RightAlt)
                 GuideManager.ClearVirtualGuides();
 
             base.KeyUp(context, evt);
@@ -195,7 +194,8 @@ namespace Ibinimator.Service.Tools
 
             #region transformation
 
-            if (!_mouse.down || !Selection.Any()) return;
+            if (!_mouse.down ||
+                !Selection.Any()) return;
 
             var relativeOrigin = new Vector2(0.5f);
 
@@ -208,9 +208,9 @@ namespace Ibinimator.Service.Tools
 
             if (_handle == SelectionHandle.Rotation)
             {
-                var origin = SelectionManager.FromSelectionSpace(
-                    bounds.TopLeft +
-                    bounds.Size * relativeOrigin);
+                var origin =
+                    SelectionManager.FromSelectionSpace(
+                        bounds.TopLeft + bounds.Size * relativeOrigin);
 
                 rotate = MathUtils.Angle(pos - origin, false) -
                          MathUtils.Angle(_mouse.position - origin, false);
@@ -219,14 +219,13 @@ namespace Ibinimator.Service.Tools
 
                 if (evt.ModifierState.Shift)
                 {
-                    GuideManager.SetGuide(
-                        new Guide(
-                            0,
-                            true,
-                            origin,
-                            SelectionManager.SelectionTransform.GetRotation(),
-                            GuideType.Rotation));
-                    
+                    GuideManager.SetGuide(new Guide(0,
+                                                    true,
+                                                    origin,
+                                                    SelectionManager
+                                                       .SelectionTransform.GetRotation(),
+                                                    GuideType.Rotation));
+
                     rotate = MathUtils.Atan2(pos.Y - origin.Y, pos.X - origin.X);
 
                     // setting rotate to 0 means that the transformation matrix is
@@ -236,8 +235,7 @@ namespace Ibinimator.Service.Tools
 
                     if (Math.Abs(_deltaRotation) > MathUtils.PiOverFour / 2)
                     {
-                        var delta = Math.Sign(_deltaRotation) *
-                                    MathUtils.PiOverFour;
+                        var delta = Math.Sign(_deltaRotation) * MathUtils.PiOverFour;
 
                         _deltaRotation -= delta;
                     }
@@ -258,8 +256,7 @@ namespace Ibinimator.Service.Tools
 
                 if (evt.ModifierState.Shift)
                 {
-                    var localCenter = bounds.TopLeft +
-                                      relativeOrigin * bounds.Size;
+                    var localCenter = bounds.TopLeft + relativeOrigin * bounds.Size;
 
                     var center = SelectionManager.FromSelectionSpace(localCenter);
                     var origin = center - _deltaTranslation;
@@ -283,25 +280,20 @@ namespace Ibinimator.Service.Tools
                             (axisX, axisY) = (Vector2.UnitX, Vector2.UnitY);
                         }
 
-                        GuideManager.SetGuide(
-                            new Guide(
-                                0,
-                                true,
-                                origin,
-                                MathUtils.Angle(axisX, true),
-                                GuideType.Position));
+                        GuideManager.SetGuide(new Guide(0,
+                                                        true,
+                                                        origin,
+                                                        MathUtils.Angle(axisX, true),
+                                                        GuideType.Position));
 
-                        GuideManager.SetGuide(
-                            new Guide(
-                                1,
-                                true,
-                                origin,
-                                MathUtils.Angle(axisY, true),
-                                GuideType.Position));
+                        GuideManager.SetGuide(new Guide(1,
+                                                        true,
+                                                        origin,
+                                                        MathUtils.Angle(axisY, true),
+                                                        GuideType.Position));
                     }
 
-                    var dest = GuideManager.LinearSnap(pos, origin, GuideType.Position)
-                                           .Point;
+                    var dest = GuideManager.LinearSnap(pos, origin, GuideType.Position).Point;
 
                     translate = dest - origin - _deltaTranslation;
                 }
@@ -316,43 +308,35 @@ namespace Ibinimator.Service.Tools
             if (_handle.HasFlag(SelectionHandle.Top))
             {
                 relativeOrigin.Y = 1.0f;
-                scale.Y = (bounds.Bottom - localPos.Y) /
-                          bounds.Height;
+                scale.Y = (bounds.Bottom - localPos.Y) / bounds.Height;
             }
 
             if (_handle.HasFlag(SelectionHandle.Left))
             {
                 relativeOrigin.X = 1.0f;
-                scale.X = (bounds.Right - localPos.X) /
-                          bounds.Width;
+                scale.X = (bounds.Right - localPos.X) / bounds.Width;
             }
 
             if (_handle.HasFlag(SelectionHandle.Right))
             {
                 relativeOrigin.X = 0.0f;
-                scale.X = (localPos.X - bounds.Left) /
-                          bounds.Width;
+                scale.X = (localPos.X - bounds.Left) / bounds.Width;
             }
 
             if (_handle.HasFlag(SelectionHandle.Bottom))
             {
                 relativeOrigin.Y = 0.0f;
-                scale.Y = (localPos.Y - bounds.Top) /
-                          bounds.Height;
+                scale.Y = (localPos.Y - bounds.Top) / bounds.Height;
             }
 
             #region proportional scaling
 
             if (evt.ModifierState.Shift &&
-                (_handle == SelectionHandle.BottomLeft ||
-                 _handle == SelectionHandle.BottomRight ||
-                 _handle == SelectionHandle.TopRight ||
-                 _handle == SelectionHandle.TopLeft))
+                (_handle == SelectionHandle.BottomLeft || _handle == SelectionHandle.BottomRight ||
+                 _handle == SelectionHandle.TopRight || _handle == SelectionHandle.TopLeft))
             {
-                var localOrigin = bounds.TopLeft +
-                                  relativeOrigin * bounds.Size;
-                var localTarget = bounds.TopLeft +
-                                  (Vector2.One - relativeOrigin) * bounds.Size;
+                var localOrigin = bounds.TopLeft + relativeOrigin * bounds.Size;
+                var localTarget = bounds.TopLeft + (Vector2.One - relativeOrigin) * bounds.Size;
                 var localDest = MathUtils.Scale(localTarget, localOrigin, scale);
 
 
@@ -362,13 +346,11 @@ namespace Ibinimator.Service.Tools
 
                 var axis = origin - target;
 
-                GuideManager.SetGuide(
-                    new Guide(
-                        0,
-                        true,
-                        origin,
-                        MathUtils.Angle(axis, true),
-                        GuideType.Proportion));
+                GuideManager.SetGuide(new Guide(0,
+                                                true,
+                                                origin,
+                                                MathUtils.Angle(axis, true),
+                                                GuideType.Proportion));
 
                 var snap = GuideManager.LinearSnap(dest, origin, GuideType.Proportion);
 
@@ -381,16 +363,17 @@ namespace Ibinimator.Service.Tools
 
             #endregion
 
-            var size = (bounds.Size + Vector2.One) *
-                       SelectionManager.SelectionTransform.GetScale();
+            var size = (bounds.Size + Vector2.One) * SelectionManager.SelectionTransform.GetScale();
             var min = Vector2.One / size;
 
             // filter out problematic scaling values
-            if (float.IsNaN(scale.X) || float.IsInfinity(scale.X)) scale.X = 1;
+            if (float.IsNaN(scale.X) ||
+                float.IsInfinity(scale.X)) scale.X = 1;
             if (Math.Abs(scale.X) < Math.Abs(min.X))
                 scale.X = min.X * MathUtils.NonZeroSign(scale.X);
 
-            if (float.IsNaN(scale.Y) || float.IsInfinity(scale.Y)) scale.Y = 1;
+            if (float.IsNaN(scale.Y) ||
+                float.IsInfinity(scale.Y)) scale.Y = 1;
             if (Math.Abs(scale.Y) < Math.Abs(min.Y))
                 scale.Y = min.Y * MathUtils.NonZeroSign(scale.Y);
 
@@ -427,13 +410,18 @@ namespace Ibinimator.Service.Tools
             // handles
             var handles = GetHandles(view.Zoom).ToDictionary();
 
-            using (var pen = target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
+            using (var pen =
+                target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
             {
-                target.DrawLine(handles[SelectionHandle.Top], handles[SelectionHandle.Rotation], pen);
+                target.DrawLine(handles[SelectionHandle.Top],
+                                handles[SelectionHandle.Rotation],
+                                pen);
 
                 foreach (var v in handles.Values)
                 {
-                    target.FillEllipse(v, 5f / view.Zoom, 5f / view.Zoom,
+                    target.FillEllipse(v,
+                                       5f / view.Zoom,
+                                       5f / view.Zoom,
                                        cache.GetBrush(nameof(EditorColors.SelectionHandle)));
                     target.DrawEllipse(v, 5f / view.Zoom, 5f / view.Zoom, pen);
                 }
@@ -452,10 +440,7 @@ namespace Ibinimator.Service.Tools
 
             if (rect.IsEmpty) yield break;
 
-            float x1 = rect.Left,
-                  y1 = rect.Top,
-                  x2 = rect.Right,
-                  y2 = rect.Bottom;
+            float x1 = rect.Left, y1 = rect.Top, x2 = rect.Right, y2 = rect.Bottom;
 
             Vector2 Transform(float x, float y)
             {
@@ -489,13 +474,11 @@ namespace Ibinimator.Service.Tools
             {
                 if (!_mouse.down)
                 {
-                    var names = Selection.Select(l => l.Name ?? l.DefaultName)
-                                         .ToArray();
+                    var names = Selection.Select(l => l.Name ?? l.DefaultName).ToArray();
 
-                    var msg = string.Format(
-                        _statuses["selection"],
-                        names.Length,
-                        string.Join(", ", names));
+                    var msg = string.Format(_statuses["selection"],
+                                            names.Length,
+                                            string.Join(", ", names));
 
                     Manager.RaiseStatus(new Status(Status.StatusType.Info, msg));
                 }

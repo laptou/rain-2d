@@ -20,7 +20,8 @@ namespace Ibinimator.Model
         }
 
         public Guide(
-            int id, bool @virtual, Vector2 origin, float angle, int divisions, GuideType type) : this()
+            int id, bool @virtual, Vector2 origin, float angle, int divisions,
+            GuideType type) : this()
         {
             Id = id;
             Virtual = @virtual;

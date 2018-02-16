@@ -6,7 +6,5 @@
         xmlns:local="clr-namespace:Ibinimator.View"
         mc:Ignorable="d"
         Title="SplashScreen" Height="300" Width="300">
-    <Grid>
-        
-    </Grid>
+    <Grid />
 </Window>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -10,14 +9,14 @@ namespace Ibinimator.View.Utility
 {
     public class MultiplyExtension : Binding
     {
-        public object Operand1 { get; }
-        public object Operand2 { get; }
-
         public MultiplyExtension(object operand1, object operand2)
         {
             Operand1 = operand1;
             Operand2 = operand2;
         }
+
+        public object Operand1 { get; }
+        public object Operand2 { get; }
 
         private decimal Resolve(object o, IServiceProvider serviceProvider)
         {

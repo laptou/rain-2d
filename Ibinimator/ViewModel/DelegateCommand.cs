@@ -55,8 +55,9 @@ namespace Ibinimator.ViewModel
         public bool CanExecute(object parameter)
         {
             return _action != null &&
-                   _predicate?.Invoke(default(T) != null && parameter == null ? default : (T) parameter) !=
-                   false;
+                   _predicate?.Invoke(default(T) != null && parameter == null
+                                          ? default
+                                          : (T) parameter) != false;
         }
 
         public void Execute(object parameter)
@@ -81,8 +82,8 @@ namespace Ibinimator.ViewModel
 
         public AsyncDelegateCommand(Func<T, Task> task) { _task = task; }
 
-        public AsyncDelegateCommand(Action<T> task) :
-            this(p => System.Threading.Tasks.Task.Run(() => task(p))) { }
+        public AsyncDelegateCommand(Action<T> task) : this(
+            p => System.Threading.Tasks.Task.Run(() => task(p))) { }
 
         public NotifyTaskCompletion Execution { get; private set; }
 
@@ -91,7 +92,8 @@ namespace Ibinimator.ViewModel
             get => _task;
             set
             {
-                if (_task != value && (_task == null || value == null))
+                if (_task != value &&
+                    (_task == null || value == null))
                     CanExecuteChanged?.Invoke(this, null);
 
                 _task = value;

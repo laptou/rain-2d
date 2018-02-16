@@ -37,8 +37,8 @@ namespace Ibinimator.View.Command
         public static readonly DelegateCommand<IArtContext> FlipHorizontalCommand =
             CommandManager.Register<IArtContext>(FlipHorizontal);
 
-        public static readonly DelegateCommand<IArtContext> RotateCounterClockwiseCommand
-            = CommandManager.Register<IArtContext>(RotateCounterClockwise);
+        public static readonly DelegateCommand<IArtContext> RotateCounterClockwiseCommand =
+            CommandManager.Register<IArtContext>(RotateCounterClockwise);
 
         public static readonly DelegateCommand<IArtContext> RotateClockwiseCommand =
             CommandManager.Register<IArtContext>(RotateClockwise);
@@ -81,15 +81,27 @@ namespace Ibinimator.View.Command
             artContext.SelectionManager.UpdateBounds();
         }
 
-        private static void AlignBottom(IArtContext artContext) { Align(artContext, Direction.Down); }
+        private static void AlignBottom(IArtContext artContext)
+        {
+            Align(artContext, Direction.Down);
+        }
 
-        private static void AlignCenterX(IArtContext artContext) { Align(artContext, Direction.Horizontal); }
+        private static void AlignCenterX(IArtContext artContext)
+        {
+            Align(artContext, Direction.Horizontal);
+        }
 
-        private static void AlignCenterY(IArtContext artContext) { Align(artContext, Direction.Vertical); }
+        private static void AlignCenterY(IArtContext artContext)
+        {
+            Align(artContext, Direction.Vertical);
+        }
 
         private static void AlignLeft(IArtContext artContext) { Align(artContext, Direction.Left); }
 
-        private static void AlignRight(IArtContext artContext) { Align(artContext, Direction.Right); }
+        private static void AlignRight(IArtContext artContext)
+        {
+            Align(artContext, Direction.Right);
+        }
 
         private static void AlignTop(IArtContext artContext) { Align(artContext, Direction.Up); }
 
@@ -123,9 +135,8 @@ namespace Ibinimator.View.Command
             if (!selectionManager.Selection.Any())
                 return;
 
-            var command = new GroupCommand(
-                ctx.HistoryManager.Position + 1,
-                selectionManager.Selection.ToArray());
+            var command = new GroupCommand(ctx.HistoryManager.Position + 1,
+                                           selectionManager.Selection.ToArray());
 
             ctx.HistoryManager.Do(command);
         }
@@ -139,44 +150,36 @@ namespace Ibinimator.View.Command
         {
             var history = artContext.SelectionManager.Context.HistoryManager;
 
-            history.Do(
-                new ChangeZIndexCommand(
-                    history.Position + 1,
-                    artContext.SelectionManager.Selection.ToArray(),
-                    1));
+            history.Do(new ChangeZIndexCommand(history.Position + 1,
+                                               artContext.SelectionManager.Selection.ToArray(),
+                                               1));
         }
 
         private static void MoveToBottom(IArtContext artContext)
         {
             var history = artContext.SelectionManager.Context.HistoryManager;
 
-            history.Do(
-                new ChangeZIndexCommand(
-                    history.Position + 1,
-                    artContext.SelectionManager.Selection.ToArray(),
-                    100000000));
+            history.Do(new ChangeZIndexCommand(history.Position + 1,
+                                               artContext.SelectionManager.Selection.ToArray(),
+                                               100000000));
         }
 
         private static void MoveToTop(IArtContext artContext)
         {
             var history = artContext.SelectionManager.Context.HistoryManager;
 
-            history.Do(
-                new ChangeZIndexCommand(
-                    history.Position + 1,
-                    artContext.SelectionManager.Selection.ToArray(),
-                    -100000000));
+            history.Do(new ChangeZIndexCommand(history.Position + 1,
+                                               artContext.SelectionManager.Selection.ToArray(),
+                                               -100000000));
         }
 
         private static void MoveUp(IArtContext artContext)
         {
             var history = artContext.SelectionManager.Context.HistoryManager;
 
-            history.Do(
-                new ChangeZIndexCommand(
-                    history.Position + 1,
-                    artContext.SelectionManager.Selection.ToArray(),
-                    -1));
+            history.Do(new ChangeZIndexCommand(history.Position + 1,
+                                               artContext.SelectionManager.Selection.ToArray(),
+                                               -1));
         }
 
         private static void RotateClockwise(IArtContext artContext)
@@ -214,9 +217,10 @@ namespace Ibinimator.View.Command
             if (!selectionManager.Selection.Any())
                 return;
 
-            var command = new UngroupCommand(
-                ctx.HistoryManager.Position + 1,
-                selectionManager.Selection.OfType<IContainerLayer>().ToArray());
+            var command = new UngroupCommand(ctx.HistoryManager.Position + 1,
+                                             selectionManager
+                                                .Selection.OfType<IContainerLayer>()
+                                                .ToArray());
             ctx.HistoryManager.Do(command);
         }
     }

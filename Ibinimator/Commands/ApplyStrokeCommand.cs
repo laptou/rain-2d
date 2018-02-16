@@ -10,8 +10,8 @@ namespace Ibinimator.Service.Commands
     public sealed class ApplyStrokeCommand : LayerCommandBase<IStrokedLayer>
     {
         public ApplyStrokeCommand(
-            long id, IStrokedLayer[] targets,
-            IPenInfo newPenInfo, IEnumerable<IPenInfo> oldPenInfos) : base(id, targets)
+            long id, IStrokedLayer[] targets, IPenInfo newPenInfo,
+            IEnumerable<IPenInfo> oldPenInfos) : base(id, targets)
         {
             OldStrokes = oldPenInfos.Select(i => i?.Clone<IPenInfo>()).ToArray();
 
@@ -38,8 +38,7 @@ namespace Ibinimator.Service.Commands
 
             var applyStrokeCommand = (ApplyStrokeCommand) newCommand;
 
-            return new ApplyStrokeCommand(Id, Targets,
-                                          applyStrokeCommand.NewStroke, OldStrokes);
+            return new ApplyStrokeCommand(Id, Targets, applyStrokeCommand.NewStroke, OldStrokes);
         }
 
         public override void Undo(IArtContext artView)

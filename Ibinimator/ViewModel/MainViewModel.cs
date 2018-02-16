@@ -189,14 +189,14 @@ namespace Ibinimator.ViewModel
                     var name = settings.GetString(localPath + ".name");
                     var cmd = settings.GetString(localPath + ".command");
                     var shortcuts = cmd == null
-                                       ? Enumerable.Empty<string>()
-                                       : Enumerable
-                                        .Range(0,
-                                               (int) settings.GetFloat(
-                                                   "shortcuts." + cmd + ".$count"))
-                                        .Select(j => settings.GetString(
-                                                    "shortcuts." + cmd + $"[{j}]"))
-                                        .ToList();
+                                        ? Enumerable.Empty<string>()
+                                        : Enumerable
+                                         .Range(0,
+                                                (int) settings.GetFloat(
+                                                    "shortcuts." + cmd + ".$count"))
+                                         .Select(j => settings.GetString(
+                                                     "shortcuts." + cmd + $"[{j}]"))
+                                         .ToList();
 
                     var item = new MenuItem(name,
                                             LoadMenus(localPath + ".menus"),

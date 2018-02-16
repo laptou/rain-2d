@@ -33,7 +33,9 @@ namespace Ibinimator.View.Utility
 
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty BaseUnitProperty =
-            DependencyProperty.Register("BaseUnit", typeof(Unit), typeof(UnitConverter),
+            DependencyProperty.Register("BaseUnit",
+                                        typeof(Unit),
+                                        typeof(UnitConverter),
                                         new PropertyMetadata(Unit.Radians));
 
         public Unit BaseUnit
@@ -44,7 +46,8 @@ namespace Ibinimator.View.Utility
 
         public static float ConversionFactor(Unit source, Unit target)
         {
-            if (source == Unit.None || target == Unit.None) return 1;
+            if (source == Unit.None ||
+                target == Unit.None) return 1;
 
             return Factors[target] / Factors[source];
         }
@@ -102,7 +105,7 @@ namespace Ibinimator.View.Utility
 
                 case "deg":
                 case "\u00B0": return Unit.Degrees;
-                default:       return Unit.None;
+                default: return Unit.None;
             }
         }
 
@@ -153,17 +156,21 @@ namespace Ibinimator.View.Utility
 
         #region IMultiValueConverter Members
 
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(
+            object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return Convert(values[0], targetType, values.ElementAtOrDefault(1) ?? parameter, culture);
+            return Convert(values[0],
+                           targetType,
+                           values.ElementAtOrDefault(1) ?? parameter,
+                           culture);
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object[] ConvertBack(
+            object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             return new[]
             {
-                ConvertBack(value, targetTypes[0], parameter, culture),
-                BaseUnit
+                ConvertBack(value, targetTypes[0], parameter, culture), BaseUnit
             };
         }
 
@@ -177,7 +184,8 @@ namespace Ibinimator.View.Utility
 
             if (value == null) return 0;
 
-            if (value.GetType().IsNumeric() || value is string)
+            if (value.GetType().IsNumeric() ||
+                value is string)
             {
                 var input = System.Convert.ToSingle(value);
 
@@ -192,7 +200,8 @@ namespace Ibinimator.View.Utility
             throw new ArgumentException();
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             var unit = parameter as Unit? ?? BaseUnit;
 

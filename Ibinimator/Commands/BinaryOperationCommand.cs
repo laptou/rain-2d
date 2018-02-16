@@ -17,8 +17,9 @@ namespace Ibinimator.Service.Commands
             new Dictionary<ILayer, (IContainerLayer, int)>();
 
         public BinaryOperationCommand(
-            long id, IEnumerable<IGeometricLayer> targets, CombineMode operation) :
-            base(id, targets.OrderByDescending(l => l.Order).ToArray())
+            long id, IEnumerable<IGeometricLayer> targets, CombineMode operation) : base(
+            id,
+            targets.OrderByDescending(l => l.Order).ToArray())
         {
             Operation = operation;
         }

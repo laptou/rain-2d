@@ -1,17 +1,17 @@
 ﻿using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+
+using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Numerics;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
-using Ibinimator.Core.Utility;
 using Ibinimator.Native;
-using Ibinimator.Renderer.WPF;
 
 using Color = Ibinimator.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
@@ -36,53 +36,7 @@ namespace Ibinimator.View.Control
             ArtContext = new ArtContext(this);
         }
 
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            foreach (var (_, cursor) in _cursors.AsTuples())
-                CursorHelper.DestroyCursor(cursor);
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            _cursors["cursor-resize-ns"] = LoadCursor("cursor-resize-ns");
-            _cursors["cursor-resize-ew"] = LoadCursor("cursor-resize-ew");
-            _cursors["cursor-resize-nwse"] = LoadCursor("cursor-resize-nwse");
-            _cursors["cursor-resize-nesw"] = LoadCursor("cursor-resize-nesw");
-            _cursors["cursor-rotate"] = LoadCursor("cursor-rotate");
-            _cursors["default"] = CursorHelper.LoadCursor(lpCursorName: (IntPtr) 32512);
-        }
-
-        private IntPtr LoadCursor(string name)
-        {
-            var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
-
-
-            if (WindowHelper.GetDpiForWindow(Handle) > 96)
-                uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
-
-            return CursorHelper.CreateCursor(uri, MathUtils.PiOverFour);
-        }
-
         public ArtContext ArtContext { get; }
-
-        protected override IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
-        {
-            switch (msg)
-            {
-                case WindowMessage.SetCursor:
-                    CursorHelper.SetCursor(ArtContext.ToolManager.Tool.Cursor != null
-                                               ? _cursors[ArtContext.ToolManager.Tool.Cursor]
-                                               : _cursors["default"]);
-
-                    break;
-
-                default:
-
-                    return base.OnMessage(hWnd, msg, wParam, lParam);
-            }
-
-            return IntPtr.Zero;
-        }
 
         protected override void OnInput(IInputEvent evt)
         {
@@ -117,8 +71,10 @@ namespace Ibinimator.View.Control
                         ac.RaiseGainedFocus(focusEvent);
                     else
                         ac.RaiseLostFocus(focusEvent);
+
                     break;
                 case ScrollEvent scrollEvent:
+
                     if (scrollEvent.ModifierState.Control)
                     {
                         var position = scrollEvent.Position;
@@ -128,14 +84,13 @@ namespace Ibinimator.View.Control
                             factor = 2 - Math.Abs(factor);
 
                         var transform = ac.ViewManager.Transform *
-                            Matrix3x2.CreateScale(factor, position);
+                                        Matrix3x2.CreateScale(factor, position);
 
                         ac.ViewManager.Pan = transform.Translation;
                         ac.ViewManager.Zoom = transform.GetScale().X;
                     }
                     else
                     {
-
                         if (scrollEvent.ModifierState.Shift ||
                             scrollEvent.Direction == ScrollDirection.Horizontal)
                             ac.ViewManager.Pan +=
@@ -146,9 +101,30 @@ namespace Ibinimator.View.Control
                     }
 
                     ac.InvalidateRender();
+
                     break;
                 default: throw new ArgumentOutOfRangeException();
             }
+        }
+
+        protected override IntPtr OnMessage(
+            IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        {
+            switch (msg)
+            {
+                case WindowMessage.SetCursor:
+                    CursorHelper.SetCursor(ArtContext.ToolManager.Tool.Cursor != null
+                                               ? _cursors[ArtContext.ToolManager.Tool.Cursor]
+                                               : _cursors["default"]);
+
+                    break;
+
+                default:
+
+                    return base.OnMessage(hWnd, msg, wParam, lParam);
+            }
+
+            return IntPtr.Zero;
         }
 
         protected override void OnRender(RenderContext target)
@@ -168,6 +144,27 @@ namespace Ibinimator.View.Control
             ac.ToolManager?.Tool?.Render(target, ac.CacheManager, ac.ViewManager);
         }
 
+        private IntPtr LoadCursor(string name)
+        {
+            var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
+
+
+            if (WindowHelper.GetDpiForWindow(Handle) > 96)
+                uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
+
+            return CursorHelper.CreateCursor(uri, MathUtils.PiOverFour);
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _cursors["cursor-resize-ns"] = LoadCursor("cursor-resize-ns");
+            _cursors["cursor-resize-ew"] = LoadCursor("cursor-resize-ew");
+            _cursors["cursor-resize-nwse"] = LoadCursor("cursor-resize-nwse");
+            _cursors["cursor-resize-nesw"] = LoadCursor("cursor-resize-nesw");
+            _cursors["cursor-rotate"] = LoadCursor("cursor-rotate");
+            _cursors["default"] = CursorHelper.LoadCursor(lpCursorName: (IntPtr) 32512);
+        }
+
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
         {
             ArtContext.CacheManager?.ResetResources();
@@ -178,6 +175,12 @@ namespace Ibinimator.View.Control
                 ArtContext.CacheManager?.BindLayer(ArtContext.ViewManager.Document.Root);
 
             InvalidateVisual();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var (_, cursor) in _cursors.AsTuples())
+                CursorHelper.DestroyCursor(cursor);
         }
     }
 }

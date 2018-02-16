@@ -12,8 +12,9 @@ namespace Ibinimator.Service.Commands
     public sealed class TransformCommand : LayerCommandBase<ILayer>
     {
         public TransformCommand(
-            long id, ILayer[] targets,
-            Matrix3x2? local = null, Matrix3x2? global = null) : base(id, targets)
+            long id, ILayer[] targets, Matrix3x2? local = null, Matrix3x2? global = null) : base(
+            id,
+            targets)
         {
             Local = local ?? Matrix3x2.Identity;
             Global = global ?? Matrix3x2.Identity;
@@ -39,7 +40,9 @@ namespace Ibinimator.Service.Commands
 
             var transformCommand = (TransformCommand) newCommand;
 
-            return new TransformCommand(Id, Targets, Local * transformCommand.Local,
+            return new TransformCommand(Id,
+                                        Targets,
+                                        Local * transformCommand.Local,
                                         Global * transformCommand.Global);
         }
 

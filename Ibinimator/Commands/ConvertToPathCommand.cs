@@ -13,8 +13,8 @@ namespace Ibinimator.Service.Commands
         private Path[]            _products;
         private IContainerLayer[] _targetParents;
 
-        public ConvertToPathCommand(long id, IReadOnlyCollection<IGeometricLayer> targets)
-            : base(id, targets.Where(l => !(l is Path)).ToArray())
+        public ConvertToPathCommand(long id, IReadOnlyCollection<IGeometricLayer> targets) :
+            base(id, targets.Where(l => !(l is Path)).ToArray())
         {
             Description = $"Converted {targets.Count} layer(s) to paths";
         }
@@ -31,7 +31,8 @@ namespace Ibinimator.Service.Commands
                 _products = Targets.Select(t =>
                                            {
                                                var path = new Path();
-                                               var geometry = artContext.CacheManager.GetGeometry(t);
+                                               var geometry =
+                                                   artContext.CacheManager.GetGeometry(t);
                                                path.Instructions.AddItems(geometry.Read());
                                                path.Fill = t.Fill;
                                                path.Stroke = t.Stroke;

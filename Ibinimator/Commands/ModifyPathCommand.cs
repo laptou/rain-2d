@@ -60,8 +60,9 @@ namespace Ibinimator.Service.Commands
         /// <param name="indices">The indices of the nodes to modify.</param>
         /// <param name="operation">The operation to perform.</param>
         public ModifyPathCommand(
-            long id, Path target, Vector2 delta, int[] indices, NodeOperation operation) :
-            base(id, new[] {target})
+            long id, Path target, Vector2 delta, int[] indices, NodeOperation operation) : base(
+            id,
+            new[] {target})
         {
             if (operation != NodeOperation.Move &&
                 operation != NodeOperation.MoveInHandle &&
@@ -132,7 +133,10 @@ namespace Ibinimator.Service.Commands
 
         public NodeOperation Operation { get; }
 
-        public override void Do(IArtContext context) { Apply(context, Operation, Indices, Nodes, Delta); }
+        public override void Do(IArtContext context)
+        {
+            Apply(context, Operation, Indices, Nodes, Delta);
+        }
 
         public override IOperationCommand Merge(IOperationCommand newCommand)
         {
@@ -192,12 +196,12 @@ namespace Ibinimator.Service.Commands
                     for (var i = 0; i < Indices.Length; i++)
                     {
                         if (nodes.Count == indices[i] + i)
-                            nodes[indices[i] + i - 1] =
-                                new PathNode(nodes[indices[i] + i - 1].Index,
-                                             nodes[indices[i] + i - 1].Position,
-                                             nodes[indices[i] + i - 1].IncomingControl,
-                                             nodes[indices[i] + i - 1].OutgoingControl,
-                                             null);
+                            nodes[indices[i] + i - 1] = new PathNode(
+                                nodes[indices[i] + i - 1].Index,
+                                nodes[indices[i] + i - 1].Position,
+                                nodes[indices[i] + i - 1].IncomingControl,
+                                nodes[indices[i] + i - 1].OutgoingControl,
+                                null);
 
                         nodes.Insert(indices[i] + i, targetNodes[i]);
                     }

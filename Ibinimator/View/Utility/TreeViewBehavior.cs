@@ -23,22 +23,28 @@ namespace Ibinimator.View.Utility
         /// <summary>
         ///     The dependency property definition for the SelectedItems property.
         /// </summary>
-        public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(
-            "SelectedItems", typeof(IList), typeof(TreeViewMultipleSelectionBehavior));
+        public static readonly DependencyProperty SelectedItemsProperty =
+            DependencyProperty.Register("SelectedItems",
+                                        typeof(IList),
+                                        typeof(TreeViewMultipleSelectionBehavior));
 
         /// <summary>
         ///     The dependency property definition for the AnchorItem property.
         /// </summary>
-        private static readonly DependencyProperty AnchorItemProperty = DependencyProperty.Register(
-            "AnchorItem", typeof(TreeViewItem), typeof(TreeViewMultipleSelectionBehavior));
+        private static readonly DependencyProperty AnchorItemProperty =
+            DependencyProperty.Register("AnchorItem",
+                                        typeof(TreeViewItem),
+                                        typeof(TreeViewMultipleSelectionBehavior));
 
         /// <summary>
         ///     The dependency property definition for the IsItemSelected attached property.
         /// </summary>
         public static readonly DependencyProperty IsItemSelectedProperty =
-            DependencyProperty.RegisterAttached(
-                "IsItemSelected", typeof(bool), typeof(TreeViewMultipleSelectionBehavior),
-                new FrameworkPropertyMetadata(OnIsItemSelectedChanged));
+            DependencyProperty.RegisterAttached("IsItemSelected",
+                                                typeof(bool),
+                                                typeof(TreeViewMultipleSelectionBehavior),
+                                                new FrameworkPropertyMetadata(
+                                                    OnIsItemSelectedChanged));
 
         /// <summary>
         ///     Gets or sets the selected items.
@@ -89,7 +95,8 @@ namespace Ibinimator.View.Utility
                 var items = DeSelectAll();
 
                 foreach (var item in items)
-                    if (ReferenceEquals(item, treeViewItem) || ReferenceEquals(item, AnchorItem))
+                    if (ReferenceEquals(item, treeViewItem) ||
+                        ReferenceEquals(item, AnchorItem))
                     {
                         // Toggle isBetweenAnchors when first item is found, and back again when last item is found.
                         isBetweenAnchors = !isBetweenAnchors;
@@ -150,10 +157,12 @@ namespace Ibinimator.View.Utility
         {
             base.OnAttached();
 
-            AssociatedObject.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown),
+            AssociatedObject.AddHandler(UIElement.KeyDownEvent,
+                                        new KeyEventHandler(OnTreeViewItemKeyDown),
                                         true);
             AssociatedObject.AddHandler(UIElement.MouseLeftButtonUpEvent,
-                                        new MouseButtonEventHandler(OnTreeViewItemMouseUp), true);
+                                        new MouseButtonEventHandler(OnTreeViewItemMouseUp),
+                                        true);
         }
 
         /// <summary>
@@ -236,8 +245,7 @@ namespace Ibinimator.View.Utility
         /// <param name="item">The item.</param>
         /// <param name="relativePosition">The relative position offset (e.g. +1, -1).</param>
         /// <returns>The item in the relative position, otherwise null.</returns>
-        private T GetRelativeItem<T>(T item, int relativePosition)
-            where T : ItemsControl
+        private T GetRelativeItem<T>(T item, int relativePosition) where T : ItemsControl
         {
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
@@ -249,7 +257,8 @@ namespace Ibinimator.View.Utility
             {
                 var relativeIndex = index + relativePosition;
 
-                if (relativeIndex >= 0 && relativeIndex < items.Count)
+                if (relativeIndex >= 0 &&
+                    relativeIndex < items.Count)
                     return items[relativeIndex];
             }
 
@@ -382,8 +391,7 @@ namespace Ibinimator.View.Utility
         /// <typeparam name="T">The type of the ancestor.</typeparam>
         /// <param name="obj">The object to search.</param>
         /// <returns>The closest matching visual ancestor, otherwise null.</returns>
-        public static T FindVisualAncestor<T>(this DependencyObject obj)
-            where T : DependencyObject
+        public static T FindVisualAncestor<T>(this DependencyObject obj) where T : DependencyObject
         {
             var parent = VisualTreeHelper.GetParent(obj.FindVisualTreeRoot());
 
@@ -404,8 +412,7 @@ namespace Ibinimator.View.Utility
         /// <typeparam name="T">The type of the child.</typeparam>
         /// <param name="obj">The object to search.</param>
         /// <returns>A matching visual child, otherwise null.</returns>
-        public static T FindVisualChild<T>(this DependencyObject obj)
-            where T : DependencyObject
+        public static T FindVisualChild<T>(this DependencyObject obj) where T : DependencyObject
         {
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
@@ -460,7 +467,8 @@ namespace Ibinimator.View.Utility
             {
                 result = current;
 
-                if (current is Visual || current is Visual3D)
+                if (current is Visual ||
+                    current is Visual3D)
                     break;
 
                 // If the current item is not a visual, try to walk up the logical tree.

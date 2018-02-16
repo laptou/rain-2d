@@ -25,13 +25,17 @@
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid>
                             <Border x:Name="border"
-                                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
                                 <ContentPresenter x:Name="contentPresenter"
-                                                  Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  Margin="{TemplateBinding Padding}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                                  ContentTemplate="{TemplateBinding ContentTemplate}" Focusable="False" RecognizesAccessKey="True"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}" Focusable="False"
+                                                  RecognizesAccessKey="True"
                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </Border>
                         </Grid>
@@ -76,4 +80,3 @@
         </ControlTemplate>
     </ItemsControl.Template>
 </ItemsControl>
-

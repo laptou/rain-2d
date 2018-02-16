@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -23,14 +22,13 @@ namespace Ibinimator.Service
         /// <inheritdoc />
         protected override Stream GetReadStream()
         {
-            var defaultUri = new Uri($"/Ibinimator;component/theme/{_name}.json",
-                                     UriKind.Relative);
+            var defaultUri = new Uri($"/Ibinimator;component/theme/{_name}.json", UriKind.Relative);
 
             if (App.IsDesigner)
                 return Application.GetResourceStream(defaultUri)?.Stream;
 
-            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                                        $"theme/{_name}.json");
+            var filePath =
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"theme/{_name}.json");
 
             if (!File.Exists(filePath))
                 using (var file = File.Open(filePath, FileMode.Create, FileAccess.Write))
@@ -50,11 +48,11 @@ namespace Ibinimator.Service
 
         protected override Stream GetWriteStream()
         {
-            return File.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                                          $"theme/{_name}.json"),
-                             FileMode.Create,
-                             FileAccess.Write,
-                             FileShare.Read);
+            return File.Open(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"theme/{_name}.json"),
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.Read);
         }
     }
 }

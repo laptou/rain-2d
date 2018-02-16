@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 
-using Ibinimator.Native;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.View
@@ -28,7 +25,8 @@ namespace Ibinimator.View
                                                    (s, e) => SystemCommands.MinimizeWindow(this)));
             CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
                                                    (s, e) => WindowState =
-                                                                 WindowState == WindowState.Maximized
+                                                                 WindowState ==
+                                                                 WindowState.Maximized
                                                                      ? WindowState.Normal
                                                                      : WindowState.Maximized));
 

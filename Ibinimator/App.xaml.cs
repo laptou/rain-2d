@@ -65,39 +65,30 @@ namespace Ibinimator
         {
             var ex = o as Exception;
 
-            await writer.WriteLineAsync(
-                new string('\t', level - 1) + $"Error [{DateTime.Now}]");
+            await writer.WriteLineAsync(new string('\t', level - 1) + $"Error [{DateTime.Now}]");
 
             if (ex != null)
             {
-                await writer.WriteLineAsync(
-                    new string('\t', level) +
-                    $"Type: {ex.GetType().AssemblyQualifiedName}");
                 await writer.WriteLineAsync(new string('\t', level) +
-                                            $"Message: {ex.Message}");
-                await writer.WriteLineAsync(new string('\t', level) +
-                                            $"HResult: 0x{ex.HResult:X}");
-                await writer.WriteLineAsync(new string('\t', level) +
-                                            $"Source: {ex.Source}");
+                                            $"Type: {ex.GetType().AssemblyQualifiedName}");
+                await writer.WriteLineAsync(new string('\t', level) + $"Message: {ex.Message}");
+                await writer.WriteLineAsync(new string('\t', level) + $"HResult: 0x{ex.HResult:X}");
+                await writer.WriteLineAsync(new string('\t', level) + $"Source: {ex.Source}");
 
                 var stack = ex.StackTrace.Replace(Environment.NewLine,
-                                                  Environment.NewLine +
-                                                  new string('\t', level));
+                                                  Environment.NewLine + new string('\t', level));
 
-                await writer.WriteLineAsync(new string('\t', level) +
-                                            $"Stack Trace:\r\n{stack}");
+                await writer.WriteLineAsync(new string('\t', level) + $"Stack Trace:\r\n{stack}");
 
                 if (ex.InnerException != null)
                 {
-                    await writer.WriteLineAsync(new string('\t', level) +
-                                                "Inner Exception: ");
+                    await writer.WriteLineAsync(new string('\t', level) + "Inner Exception: ");
                     await LogError(ex.InnerException, level + 1, writer);
                 }
             }
             else
             {
-                await writer.WriteLineAsync(
-                    new string('\t', level) + $"{o}");
+                await writer.WriteLineAsync(new string('\t', level) + $"{o}");
             }
 
             await writer.FlushAsync();
@@ -112,17 +103,14 @@ namespace Ibinimator
 
         private void SetDefaultFont()
         {
-            var font = new FontFamily(
-                new Uri("pack://application:,,,/", UriKind.Absolute),
-                "./Resources/Font/#Roboto");
+            var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute),
+                                      "./Resources/Font/#Roboto");
 
-            TextElement.FontFamilyProperty.OverrideMetadata(
-                typeof(TextElement),
-                new FrameworkPropertyMetadata(font));
+            TextElement.FontFamilyProperty.OverrideMetadata(typeof(TextElement),
+                                                            new FrameworkPropertyMetadata(font));
 
-            TextBlock.FontFamilyProperty.OverrideMetadata(
-                typeof(TextBlock),
-                new FrameworkPropertyMetadata(font));
+            TextBlock.FontFamilyProperty.OverrideMetadata(typeof(TextBlock),
+                                                          new FrameworkPropertyMetadata(font));
         }
     }
 }

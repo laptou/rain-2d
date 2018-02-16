@@ -22,7 +22,8 @@ namespace Ibinimator.Utility
             return (x, y);
         }
 
-        public static (uint x, uint y) GetDpiForWindow(this Screen screen, DpiType type, Window window)
+        public static (uint x, uint y) GetDpiForWindow(
+            this Screen screen, DpiType type, Window window)
         {
             var wih = new WindowInteropHelper(window);
 
@@ -34,8 +35,7 @@ namespace Ibinimator.Utility
 
         [DllImport("Shcore.dll")]
         private static extern IntPtr GetDpiForMonitor(
-            [In]      IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX,
-            [Out] out uint   dpiY);
+            [In] IntPtr hmonitor, [In] DpiType dpiType, [Out] out uint dpiX, [Out] out uint dpiY);
 
         [DllImport("User32.dll")]
         private static extern IntPtr MonitorFromPoint([In] Point pt, [In] uint dwFlags);

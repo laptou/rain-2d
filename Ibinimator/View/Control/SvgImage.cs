@@ -30,15 +30,15 @@ namespace Ibinimator.View.Control
     public class SvgImage : WPF.FrameworkElement, IArtContext
     {
         public static readonly WPF.DependencyProperty SourceProperty =
-            WPF.DependencyProperty.Register(
-                "Source",
-                typeof(Uri),
-                typeof(SvgImage),
-                new WPF.FrameworkPropertyMetadata(
-                    null,
-                    WPF.FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    WPF.FrameworkPropertyMetadataOptions.AffectsRender,
-                    SourceChanged));
+            WPF.DependencyProperty.Register("Source",
+                                            typeof(Uri),
+                                            typeof(SvgImage),
+                                            new WPF.FrameworkPropertyMetadata(
+                                                null,
+                                                WPF.FrameworkPropertyMetadataOptions
+                                                   .AffectsMeasure |
+                                                WPF.FrameworkPropertyMetadataOptions.AffectsRender,
+                                                SourceChanged));
 
         private readonly CacheManager _cache;
         private readonly IViewManager _view;
@@ -61,7 +61,10 @@ namespace Ibinimator.View.Control
             set => SetValue(SourceProperty, value);
         }
 
-        protected override WPF.Size ArrangeOverride(WPF.Size finalSize) { return MeasureOverride(finalSize); }
+        protected override WPF.Size ArrangeOverride(WPF.Size finalSize)
+        {
+            return MeasureOverride(finalSize);
+        }
 
         protected override WPF.Size MeasureOverride(WPF.Size availableSize)
         {
@@ -82,9 +85,9 @@ namespace Ibinimator.View.Control
             var aspect = width / height;
             var docAspect = docWidth / docHeight;
 
-            return aspect > docAspect ?
-                       new WPF.Size(docWidth * height / docHeight, height) :
-                       new WPF.Size(width, docHeight * width / docWidth);
+            return aspect > docAspect
+                       ? new WPF.Size(docWidth * height / docHeight, height)
+                       : new WPF.Size(width, docHeight * width / docWidth);
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -98,8 +101,7 @@ namespace Ibinimator.View.Control
 
             RenderContext.Begin(drawingContext);
 
-            RenderContext.Transform(
-                Matrix3x2.CreateTranslation(-_document.Bounds.TopLeft));
+            RenderContext.Transform(Matrix3x2.CreateTranslation(-_document.Bounds.TopLeft));
 
             // don't scale towards center - they are not center-aligned in the first place!
             RenderContext.Transform(Matrix3x2.CreateScale(scale));
@@ -119,10 +121,10 @@ namespace Ibinimator.View.Control
                         return File.OpenRead(Source.LocalPath);
                     case "http":
                         var request = WebRequest.CreateHttp(Source);
-                        var response = await Task.Factory.FromAsync(
-                                           request.BeginGetResponse,
-                                           request.EndGetResponse,
-                                           null);
+                        var response =
+                            await Task.Factory.FromAsync(request.BeginGetResponse,
+                                                         request.EndGetResponse,
+                                                         null);
 
                         return response.GetResponseStream();
                     default:
@@ -134,8 +136,7 @@ namespace Ibinimator.View.Control
         }
 
         private static async void SourceChanged(
-            WPF.DependencyObject d,
-            WPF.DependencyPropertyChangedEventArgs e)
+            WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
                 await svgImage.UpdateAsync();
@@ -162,8 +163,6 @@ namespace Ibinimator.View.Control
         }
 
         #region IArtContext Members
-
-#pragma warning disable CS0067
 
         /// <inheritdoc />
         public event ArtContextInputEventHandler<FocusEvent> GainedFocus;
@@ -192,10 +191,13 @@ namespace Ibinimator.View.Control
         /// <inheritdoc />
         public event ArtContextInputEventHandler<TextEvent> Text;
 
-        public void InvalidateRender() { InvalidateVisual(); }
-
         /// <inheritdoc />
-        public T Create<T>(params object[] parameters) where T : class { throw new NotImplementedException(); }
+        public T Create<T>(params object[] parameters) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InvalidateRender() { InvalidateVisual(); }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();
 

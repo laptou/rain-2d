@@ -21,7 +21,8 @@ namespace Ibinimator.ViewModel
 
         public void ShowView() { ShowRequested?.Invoke(); }
 
-        protected async Task<T> DesignOrRunTimeAsync<T>(Func<Task<T>> designTime, Func<Task<T>> runTime)
+        protected async Task<T> DesignOrRunTimeAsync<T>(
+            Func<Task<T>> designTime, Func<Task<T>> runTime)
         {
             if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
                 return await designTime();

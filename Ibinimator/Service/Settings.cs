@@ -55,21 +55,6 @@ namespace Ibinimator.Service
             return Get(path, @default) as string;
         }
 
-        private object Get(string path, object @default = default)
-        {
-            if (!Contains(path)) return @default;
-
-            var data = _cache[path];
-
-            while (data is string str && str.StartsWith("@"))
-            {
-                path = str.Substring(1);
-                data = _cache[path];
-            }
-
-            return data;
-        }
-
         public void Load()
         {
             using (var file = GetReadStream())
@@ -140,6 +125,22 @@ namespace Ibinimator.Service
 
                     break;
             }
+        }
+
+        private object Get(string path, object @default = default)
+        {
+            if (!Contains(path)) return @default;
+
+            var data = _cache[path];
+
+            while (data is string str &&
+                   str.StartsWith("@"))
+            {
+                path = str.Substring(1);
+                data = _cache[path];
+            }
+
+            return data;
         }
 
         private JToken Serialize(IDictionary<string, object> set = null)

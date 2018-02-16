@@ -19,19 +19,15 @@ namespace Ibinimator.Renderer
 
         #region IBrushManager Members
 
-        public void Apply(IBrushInfo fill) => Context.ToolManager.Tool.ApplyFill(fill);
+        public void Apply(IBrushInfo fill) { Context.ToolManager.Tool.ApplyFill(fill); }
 
-        public void Apply(IPenInfo pen) => Context.ToolManager.Tool.ApplyStroke(pen);
-
-        /// <inheritdoc />
-        public void Attach(IArtContext context)
-        {
-        }
+        public void Apply(IPenInfo pen) { Context.ToolManager.Tool.ApplyStroke(pen); }
 
         /// <inheritdoc />
-        public void Detach(IArtContext context)
-        {
-        }
+        public void Attach(IArtContext context) { }
+
+        /// <inheritdoc />
+        public void Detach(IArtContext context) { }
 
         public (IBrushInfo Fill, IPenInfo Stroke) Query()
         {
@@ -40,10 +36,12 @@ namespace Ibinimator.Renderer
 
             var top = _brushHistory.Count == 0 ? null : _brushHistory.Peek();
 
-            if (fill != null && top != fill)
+            if (fill != null &&
+                top != fill)
                 _brushHistory.Push(fill);
 
-            if (stroke?.Brush != null && top != stroke.Brush)
+            if (stroke?.Brush != null &&
+                top != stroke.Brush)
                 _brushHistory.Push(stroke.Brush);
 
             return (fill, stroke);

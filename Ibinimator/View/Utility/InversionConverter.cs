@@ -11,11 +11,7 @@ namespace Ibinimator.View.Utility
     {
         #region IValueConverter Members
 
-        public object Convert(
-            object      value,
-            Type        targetType,
-            object      parameter,
-            CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool b)
                 return !b;
@@ -24,10 +20,7 @@ namespace Ibinimator.View.Utility
         }
 
         public object ConvertBack(
-            object      value,
-            Type        targetType,
-            object      parameter,
-            CultureInfo culture)
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool b)
                 return !b;

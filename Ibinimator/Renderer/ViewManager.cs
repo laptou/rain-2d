@@ -59,7 +59,10 @@ namespace Ibinimator.Renderer
             }
         }
 
-        public Vector2 ToArtSpace(Vector2 v) { return Vector2.Transform(v, MathUtils.Invert(Transform)); }
+        public Vector2 ToArtSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, MathUtils.Invert(Transform));
+        }
 
         public RectangleF ToArtSpace(RectangleF v)
         {
@@ -96,7 +99,8 @@ namespace Ibinimator.Renderer
             set => Document.Root = value;
         }
 
-        public Matrix3x2 Transform => Matrix3x2.CreateScale(Zoom) * Matrix3x2.CreateTranslation(Pan);
+        public Matrix3x2 Transform =>
+            Matrix3x2.CreateScale(Zoom) * Matrix3x2.CreateTranslation(Pan);
 
         public float Zoom
         {

@@ -64,14 +64,12 @@ namespace Ibinimator.ViewModel
             {
                 propertyChanged(this, new PropertyChangedEventArgs("IsFaulted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Exception"));
-                propertyChanged(this,
-                                new PropertyChangedEventArgs("InnerException"));
+                propertyChanged(this, new PropertyChangedEventArgs("InnerException"));
                 propertyChanged(this, new PropertyChangedEventArgs("ErrorMessage"));
             }
             else
             {
-                propertyChanged(this,
-                                new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
+                propertyChanged(this, new PropertyChangedEventArgs("IsSuccessfullyCompleted"));
                 propertyChanged(this, new PropertyChangedEventArgs("Result"));
             }
         }

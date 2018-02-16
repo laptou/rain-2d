@@ -33,8 +33,9 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long id, float delta, IReadOnlyList<int> indices, GradientBrushInfo target)
-            : this(id, target)
+            long id, float delta, IReadOnlyList<int> indices, GradientBrushInfo target) : this(
+            id,
+            target)
         {
             StopIndices = indices;
             ScalarDelta = delta;
@@ -42,8 +43,9 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long id, Vector4 delta, IReadOnlyList<int> indices, GradientBrushInfo target)
-            : this(id, target)
+            long id, Vector4 delta, IReadOnlyList<int> indices, GradientBrushInfo target) : this(
+            id,
+            target)
         {
             ColorDelta = delta;
             StopIndices = indices;
@@ -51,9 +53,8 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long id, Vector2 delta, IReadOnlyList<int> indices,
-            GradientOperation operation, GradientBrushInfo target)
-            : this(id, target)
+            long id, Vector2 delta, IReadOnlyList<int> indices, GradientOperation operation,
+            GradientBrushInfo target) : this(id, target)
         {
             VectorDelta = delta;
             StopIndices = indices;
@@ -61,9 +62,8 @@ namespace Ibinimator.Service.Commands
         }
 
         public ModifyGradientCommand(
-            long id, IReadOnlyList<int> indices,
-            GradientOperation operation, GradientBrushInfo target)
-            : this(id, target)
+            long id, IReadOnlyList<int> indices, GradientOperation operation,
+            GradientBrushInfo target) : this(id, target)
         {
             StopIndices = indices;
             Operation = operation;
@@ -89,16 +89,16 @@ namespace Ibinimator.Service.Commands
             {
                 case GradientOperation.ChangeOffset:
                     foreach (var stopIndex in StopIndices)
-                        Target.Stops[stopIndex] =
-                            new GradientStop(Target.Stops[stopIndex].Color,
-                                             Target.Stops[stopIndex].Offset + ScalarDelta);
+                        Target.Stops[stopIndex] = new GradientStop(
+                            Target.Stops[stopIndex].Color,
+                            Target.Stops[stopIndex].Offset + ScalarDelta);
 
                     break;
                 case GradientOperation.ChangeColor:
                     foreach (var stopIndex in StopIndices)
-                        Target.Stops[stopIndex] =
-                            new GradientStop(Target.Stops[stopIndex].Color + ColorDelta,
-                                             Target.Stops[stopIndex].Offset);
+                        Target.Stops[stopIndex] = new GradientStop(
+                            Target.Stops[stopIndex].Color + ColorDelta,
+                            Target.Stops[stopIndex].Offset);
 
                     break;
                 case GradientOperation.ChangeFocus:
@@ -129,26 +129,31 @@ namespace Ibinimator.Service.Commands
 
         public IOperationCommand Merge(IOperationCommand newCommand)
         {
-            if (newCommand is ModifyGradientCommand mgc && mgc.Operation == Operation)
+            if (newCommand is ModifyGradientCommand mgc &&
+                mgc.Operation == Operation)
                 switch (Operation)
                 {
                     case GradientOperation.ChangeOffset:
 
-                        return new ModifyGradientCommand(
-                            Id, ScalarDelta + mgc.ScalarDelta,
-                            StopIndices, Target);
+                        return new ModifyGradientCommand(Id,
+                                                         ScalarDelta + mgc.ScalarDelta,
+                                                         StopIndices,
+                                                         Target);
                     case GradientOperation.ChangeColor:
 
-                        return new ModifyGradientCommand(
-                            Id, ColorDelta + mgc.ColorDelta,
-                            StopIndices, Target);
+                        return new ModifyGradientCommand(Id,
+                                                         ColorDelta + mgc.ColorDelta,
+                                                         StopIndices,
+                                                         Target);
                     case GradientOperation.ChangeFocus:
                     case GradientOperation.ChangeEnd:
                     case GradientOperation.ChangeStart:
 
-                        return new ModifyGradientCommand(
-                            Id, VectorDelta + mgc.VectorDelta,
-                            StopIndices, Operation, Target);
+                        return new ModifyGradientCommand(Id,
+                                                         VectorDelta + mgc.VectorDelta,
+                                                         StopIndices,
+                                                         Operation,
+                                                         Target);
                     case GradientOperation.RemoveStop:
                     case GradientOperation.AddStop:
                     default:
@@ -165,16 +170,16 @@ namespace Ibinimator.Service.Commands
             {
                 case GradientOperation.ChangeOffset:
                     foreach (var stopIndex in StopIndices)
-                        Target.Stops[stopIndex] =
-                            new GradientStop(Target.Stops[stopIndex].Color,
-                                             Target.Stops[stopIndex].Offset - ScalarDelta);
+                        Target.Stops[stopIndex] = new GradientStop(
+                            Target.Stops[stopIndex].Color,
+                            Target.Stops[stopIndex].Offset - ScalarDelta);
 
                     break;
                 case GradientOperation.ChangeColor:
                     foreach (var stopIndex in StopIndices)
-                        Target.Stops[stopIndex] =
-                            new GradientStop(Target.Stops[stopIndex].Color - ColorDelta,
-                                             Target.Stops[stopIndex].Offset);
+                        Target.Stops[stopIndex] = new GradientStop(
+                            Target.Stops[stopIndex].Color - ColorDelta,
+                            Target.Stops[stopIndex].Offset);
 
                     break;
                 case GradientOperation.ChangeFocus:

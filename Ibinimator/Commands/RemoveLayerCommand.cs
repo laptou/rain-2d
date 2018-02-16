@@ -12,7 +12,8 @@ namespace Ibinimator.Service.Commands
     {
         private int _index;
 
-        public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
+        public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) :
+            base(id, new[] {target})
         {
             Layer = layer;
         }

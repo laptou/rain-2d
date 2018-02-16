@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Renderer;
-using Ibinimator.Service;
 
 namespace Ibinimator.ViewModel
 {
@@ -19,14 +18,16 @@ namespace Ibinimator.ViewModel
         {
             ArtContext = artContext;
             artContext.SelectionManager.SelectionChanged += (s, e) =>
-                                                   {
-                                                       RaisePropertyChanged(nameof(X));
-                                                       RaisePropertyChanged(nameof(Y));
-                                                       RaisePropertyChanged(nameof(Width));
-                                                       RaisePropertyChanged(nameof(Height));
-                                                       RaisePropertyChanged(nameof(Rotation));
-                                                       RaisePropertyChanged(nameof(Shear));
-                                                   };
+                                                            {
+                                                                RaisePropertyChanged(nameof(X));
+                                                                RaisePropertyChanged(nameof(Y));
+                                                                RaisePropertyChanged(nameof(Width));
+                                                                RaisePropertyChanged(
+                                                                    nameof(Height));
+                                                                RaisePropertyChanged(
+                                                                    nameof(Rotation));
+                                                                RaisePropertyChanged(nameof(Shear));
+                                                            };
         }
 
         public IArtContext ArtContext { get; }
@@ -100,22 +101,20 @@ namespace Ibinimator.ViewModel
 
         private void SetPosition(Vector2 position)
         {
-            ArtContext.SelectionManager?.TransformSelection(
-                Vector2.One,
-                position - GetPosition(),
-                0,
-                0,
-                Vector2.Zero);
+            ArtContext.SelectionManager?.TransformSelection(Vector2.One,
+                                                            position - GetPosition(),
+                                                            0,
+                                                            0,
+                                                            Vector2.Zero);
         }
 
         private void SetSize(Vector2 size)
         {
-            ArtContext.SelectionManager?.TransformSelection(
-                size / GetSize(),
-                Vector2.Zero,
-                0,
-                0,
-                Vector2.Zero);
+            ArtContext.SelectionManager?.TransformSelection(size / GetSize(),
+                                                            Vector2.Zero,
+                                                            0,
+                                                            0,
+                                                            Vector2.Zero);
         }
     }
 }

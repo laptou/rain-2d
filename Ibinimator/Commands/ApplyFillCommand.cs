@@ -10,8 +10,7 @@ namespace Ibinimator.Service.Commands
     public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
     {
         public ApplyFillCommand(
-            long id, IFilledLayer[] targets,
-            IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
+            long id, IFilledLayer[] targets, IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
         {
             OldFills = old.Select(o => (IBrushInfo) o?.Clone()).ToArray();
             NewFill = (IBrushInfo) @new?.Clone();

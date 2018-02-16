@@ -10,7 +10,8 @@ namespace Ibinimator.Service.Commands
 {
     public sealed class AddLayerCommand : LayerCommandBase<IContainerLayer>
     {
-        public AddLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
+        public AddLayerCommand(long id, IContainerLayer target, ILayer layer) :
+            base(id, new[] {target})
         {
             Layer = layer;
         }

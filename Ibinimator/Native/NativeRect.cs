@@ -6,7 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Native {
+namespace Ibinimator.Native
+{
     [StructLayout(LayoutKind.Sequential)]
     public struct NativeRect
     {
@@ -94,7 +95,11 @@ namespace Ibinimator.Native {
         public override string ToString()
         {
             return string.Format(CultureInfo.CurrentCulture,
-                                 "{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
+                                 "{{Left={0},Top={1},Right={2},Bottom={3}}}",
+                                 Left,
+                                 Top,
+                                 Right,
+                                 Bottom);
         }
 
         public static bool operator ==(NativeRect r1, NativeRect r2) { return r1.Equals(r2); }

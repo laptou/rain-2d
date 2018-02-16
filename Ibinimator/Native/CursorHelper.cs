@@ -6,23 +6,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 
-using Ibinimator.Core.Utility;
-
 namespace Ibinimator.Native
 {
     internal class CursorHelper
     {
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetCursor([In, Optional] IntPtr hCursor);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr LoadCursor([In, Optional] IntPtr hInstance, IntPtr lpCursorName);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr LoadCursor(
-            [In, Optional] IntPtr hInstance,
-            [MarshalAs(UnmanagedType.LPTStr)] string lpCursorName);
-
         public static IntPtr CreateCursor(Uri resource, float angle)
         {
             var res = Application.GetResourceStream(resource);
@@ -34,7 +21,7 @@ namespace Ibinimator.Native
                 var bmp = new Bitmap(res.Stream);
                 var height = bmp.Height * 96f / bmp.VerticalResolution;
                 var width = bmp.Width * 96f / bmp.HorizontalResolution;
-                bmp = new Bitmap(bmp, (int)width, (int)height);
+                bmp = new Bitmap(bmp, (int) width, (int) height);
                 var ptr = bmp.GetHicon();
                 var tmp = new IconInfo();
                 GetIconInfo(ptr, ref tmp);
@@ -49,11 +36,23 @@ namespace Ibinimator.Native
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetIconInfo(IntPtr hIcon, ref IconInfo pIconInfo);
+        public static extern bool DestroyCursor(IntPtr hCursor);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DestroyCursor(IntPtr hCursor);
+        public static extern bool GetIconInfo(IntPtr hIcon, ref IconInfo pIconInfo);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr LoadCursor(
+            [In] [Optional] IntPtr hInstance, IntPtr lpCursorName);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr LoadCursor(
+            [In] [Optional] IntPtr hInstance,
+            [MarshalAs(UnmanagedType.LPTStr)] string lpCursorName);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetCursor([In] [Optional] IntPtr hCursor);
 
         #region Nested type: IconInfo
 

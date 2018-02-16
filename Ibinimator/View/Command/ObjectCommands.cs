@@ -38,7 +38,10 @@ namespace Ibinimator.View.Command
                                       operation));
         }
 
-        private static void Difference(IArtContext manager) { BinaryOperation(manager, CombineMode.Exclude); }
+        private static void Difference(IArtContext manager)
+        {
+            BinaryOperation(manager, CombineMode.Exclude);
+        }
 
         private static void Intersection(IArtContext manager)
         {
@@ -47,16 +50,16 @@ namespace Ibinimator.View.Command
 
         private static void Pathify(IArtContext ctx)
         {
-            ctx.HistoryManager.Do(
-                new ConvertToPathCommand(
-                    ctx.HistoryManager.Position + 1,
-                    ctx.SelectionManager
-                       .Selection
-                       .OfType<IGeometricLayer>()
-                       .ToArray()));
+            ctx.HistoryManager.Do(new ConvertToPathCommand(ctx.HistoryManager.Position + 1,
+                                                           ctx.SelectionManager.Selection
+                                                              .OfType<IGeometricLayer>()
+                                                              .ToArray()));
         }
 
-        private static void Union(IArtContext manager) { BinaryOperation(manager, CombineMode.Union); }
+        private static void Union(IArtContext manager)
+        {
+            BinaryOperation(manager, CombineMode.Union);
+        }
 
         private static void Xor(IArtContext manager) { BinaryOperation(manager, CombineMode.Xor); }
     }

@@ -17,8 +17,7 @@ namespace Ibinimator.Shared
     // reference to still appear to be alive.
     internal class WeakReference<T> : WeakReference where T : class
     {
-        protected WeakReference(T target)
-            : base(target, false) { }
+        protected WeakReference(T target) : base(target, false) { }
 
         public new T Target => (T) base.Target;
 
@@ -50,8 +49,7 @@ namespace Ibinimator.Shared
     {
         public readonly int HashCode;
 
-        public WeakKeyReference(T key, WeakKeyComparer<T> comparer)
-            : base(key)
+        public WeakKeyReference(T key, WeakKeyComparer<T> comparer) : base(key)
         {
             // retain the object's hash code immediately so that even
             // if the target is GC'ed we will be able to find and
@@ -66,8 +64,7 @@ namespace Ibinimator.Shared
     // other common base between T and WeakKeyReference<T>. We need a
     // single comparer to handle both types because we don't want to
     // allocate a new weak reference for every lookup.
-    internal sealed class WeakKeyComparer<T> : IEqualityComparer<object>
-        where T : class
+    internal sealed class WeakKeyComparer<T> : IEqualityComparer<object> where T : class
     {
         private readonly IEqualityComparer<T> _comparer;
 
@@ -161,21 +158,17 @@ namespace Ibinimator.Shared
     ///     CopyTo will copy fewer than Count elements in this situation.
     /// </remarks>
     public sealed class WeakDictionary<TKey, TValue> : BaseDictionary<TKey, TValue>
-        where TKey : class
-        where TValue : class
+        where TKey : class where TValue : class
     {
         private readonly WeakKeyComparer<TKey> _comparer;
 
         private readonly Dictionary<object, WeakReference<TValue>> _dictionary;
 
-        public WeakDictionary()
-            : this(0, null) { }
+        public WeakDictionary() : this(0, null) { }
 
-        public WeakDictionary(int capacity)
-            : this(capacity, null) { }
+        public WeakDictionary(int capacity) : this(capacity, null) { }
 
-        public WeakDictionary(IEqualityComparer<TKey> comparer)
-            : this(0, comparer) { }
+        public WeakDictionary(IEqualityComparer<TKey> comparer) : this(0, comparer) { }
 
         public WeakDictionary(int capacity, IEqualityComparer<TKey> comparer)
         {
@@ -231,7 +224,8 @@ namespace Ibinimator.Shared
                 var weakKey = (WeakReference<TKey>) pair.Key;
                 var weakValue = pair.Value;
 
-                if (!weakKey.IsAlive || !weakValue.IsAlive)
+                if (!weakKey.IsAlive ||
+                    !weakValue.IsAlive)
                 {
                     if (toRemove == null)
                         toRemove = new List<object>();
@@ -292,7 +286,8 @@ namespace Ibinimator.Shared
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
 
-            if (arrayIndex < 0 || arrayIndex > array.Length)
+            if (arrayIndex < 0 ||
+                arrayIndex > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
             if (array.Length - arrayIndex < source.Count)
@@ -349,7 +344,7 @@ namespace Ibinimator.Shared
             return Remove(item.Key);
         }
 
-        public abstract bool Remove(TKey      key);
+        public abstract bool Remove(TKey key);
         public abstract bool TryGetValue(TKey key, out TValue value);
 
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -387,9 +382,15 @@ namespace Ibinimator.Shared
 
             public void CopyTo(T[] array, int arrayIndex) { Copy(this, array, arrayIndex); }
 
-            public IEnumerator<T> GetEnumerator() { return Dictionary.Select(GetItem).GetEnumerator(); }
+            public IEnumerator<T> GetEnumerator()
+            {
+                return Dictionary.Select(GetItem).GetEnumerator();
+            }
 
-            public bool Remove(T item) { throw new NotSupportedException("Collection is read-only."); }
+            public bool Remove(T item)
+            {
+                throw new NotSupportedException("Collection is read-only.");
+            }
 
             IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
@@ -408,8 +409,7 @@ namespace Ibinimator.Shared
         [DebuggerTypeProxy(Prefix + "DictionaryKeyCollectionDebugView`2" + Suffix)]
         private class KeyCollection : Collection<TKey>
         {
-            public KeyCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary) { }
+            public KeyCollection(IDictionary<TKey, TValue> dictionary) : base(dictionary) { }
 
             public override bool Contains(TKey item) { return Dictionary.ContainsKey(item); }
 
@@ -424,10 +424,12 @@ namespace Ibinimator.Shared
         [DebuggerTypeProxy(Prefix + "DictionaryValueCollectionDebugView`2" + Suffix)]
         private class ValueCollection : Collection<TValue>
         {
-            public ValueCollection(IDictionary<TKey, TValue> dictionary)
-                : base(dictionary) { }
+            public ValueCollection(IDictionary<TKey, TValue> dictionary) : base(dictionary) { }
 
-            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair) { return pair.Value; }
+            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair)
+            {
+                return pair.Value;
+            }
         }
 
         #endregion

@@ -9,11 +9,11 @@ namespace Ibinimator.View.Utility
 {
     public static class DataBinder
     {
-        private static readonly DependencyProperty DummyProperty = DependencyProperty.RegisterAttached(
-            "Dummy",
-            typeof(object),
-            typeof(DependencyObject),
-            new UIPropertyMetadata(null));
+        private static readonly DependencyProperty DummyProperty =
+            DependencyProperty.RegisterAttached("Dummy",
+                                                typeof(object),
+                                                typeof(DependencyObject),
+                                                new UIPropertyMetadata(null));
 
         public static object Eval(object container, string expression)
         {

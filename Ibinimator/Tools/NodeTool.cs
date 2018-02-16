@@ -25,8 +25,7 @@ namespace Ibinimator.Service.Tools
         private (bool down, bool moved, Vector2 pos) _mouse;
         private IList<PathNode>                      _nodes;
 
-        public NodeTool(IToolManager toolManager)
-            : base(toolManager)
+        public NodeTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Node;
 
@@ -34,8 +33,7 @@ namespace Ibinimator.Service.Tools
         }
 
         public string Status =>
-            "<b>Click</b> to select, " +
-            "<b>Alt Click</b> to delete, " +
+            "<b>Click</b> to select, " + "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
 
         /// <inheritdoc />
@@ -71,7 +69,9 @@ namespace Ibinimator.Service.Tools
                     break;
 
                 case Key.Right:
-                    Move(_selection.ToArray(), Vector2.UnitX * 10, ModifyPathCommand.NodeOperation.Move);
+                    Move(_selection.ToArray(),
+                         Vector2.UnitX * 10,
+                         ModifyPathCommand.NodeOperation.Move);
 
                     break;
             }
@@ -96,7 +96,8 @@ namespace Ibinimator.Service.Tools
 
             foreach (var node in _nodes)
             {
-                if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position), pos) < 3)
+                if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position),
+                                            pos) < 3)
                 {
                     _handle = 0;
                     target = node;
@@ -108,7 +109,8 @@ namespace Ibinimator.Service.Tools
 
                 if (node.IncomingControl != null &&
                     Vector2.DistanceSquared(
-                        SelectionManager.FromSelectionSpace(node.IncomingControl.Value), pos) < 2)
+                        SelectionManager.FromSelectionSpace(node.IncomingControl.Value),
+                        pos) < 2)
                 {
                     _handle = -1;
                     target = node;
@@ -118,7 +120,8 @@ namespace Ibinimator.Service.Tools
 
                 if (node.OutgoingControl != null &&
                     Vector2.DistanceSquared(
-                        SelectionManager.FromSelectionSpace(node.OutgoingControl.Value), pos) < 2)
+                        SelectionManager.FromSelectionSpace(node.OutgoingControl.Value),
+                        pos) < 2)
                 {
                     _handle = +1;
                     target = node;
@@ -148,19 +151,21 @@ namespace Ibinimator.Service.Tools
             var tlpos = Vector2.Transform(_mouse.pos,
                                           MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
-            var tpos = Vector2.Transform(pos,
-                                         MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var tpos = Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
             var delta = tpos - tlpos;
 
             _mouse = (_mouse.down, true, pos);
 
-            if (_mouse.down && _handle != null)
+            if (_mouse.down &&
+                _handle != null)
             {
                 switch (_handle)
                 {
                     case -1:
-                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveInHandle);
+                        Move(_selection.ToArray(),
+                             delta,
+                             ModifyPathCommand.NodeOperation.MoveInHandle);
 
                         break;
                     case 0:
@@ -168,7 +173,9 @@ namespace Ibinimator.Service.Tools
 
                         break;
                     case +1:
-                        Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.MoveOutHandle);
+                        Move(_selection.ToArray(),
+                             delta,
+                             ModifyPathCommand.NodeOperation.MoveOutHandle);
 
                         break;
                 }
@@ -192,9 +199,7 @@ namespace Ibinimator.Service.Tools
         }
 
         public override void Render(
-            RenderContext target,
-            ICacheManager cacheManager,
-            IViewManager view)
+            RenderContext target, ICacheManager cacheManager, IViewManager view)
         {
             if (SelectedLayer == null)
                 return;
@@ -206,7 +211,8 @@ namespace Ibinimator.Service.Tools
             var zoom = view.Zoom;
 
             var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
-            var p2 = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+            var p2 = target.CreatePen(1,
+                                      cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
 
             IBrush GetBrush(bool over, bool down, bool selected)
             {
@@ -229,7 +235,8 @@ namespace Ibinimator.Service.Tools
                 var radius = 4f / zoom;
                 var selected = _selection.Contains(node.Index);
 
-                if (node.IncomingControl != null || node.OutgoingControl != null)
+                if (node.IncomingControl != null ||
+                    node.OutgoingControl != null)
                 {
                     if (selected)
                     {
@@ -239,7 +246,9 @@ namespace Ibinimator.Service.Tools
                             var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
 
                             target.DrawLine(lPos, pos, p);
-                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.FillCircle(lPos,
+                                              radius / 1.2f,
+                                              GetBrush(lOver, _mouse.down, false));
                             target.DrawCircle(lPos, radius / 1.2f, p);
                         }
 
@@ -249,7 +258,9 @@ namespace Ibinimator.Service.Tools
                             var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
 
                             target.DrawLine(lPos, pos, p);
-                            target.FillCircle(lPos, radius / 1.2f, GetBrush(lOver, _mouse.down, false));
+                            target.FillCircle(lPos,
+                                              radius / 1.2f,
+                                              GetBrush(lOver, _mouse.down, false));
                             target.DrawCircle(lPos, radius / 1.2f, p);
                         }
                     }
@@ -261,10 +272,7 @@ namespace Ibinimator.Service.Tools
                 else
                 {
                     var rect =
-                        new RectangleF(pos.X - radius,
-                                       pos.Y - radius,
-                                       radius * 2,
-                                       radius * 2);
+                        new RectangleF(pos.X - radius, pos.Y - radius, radius * 2, radius * 2);
 
                     var over = rect.Contains(_mouse.pos);
 
@@ -300,9 +308,7 @@ namespace Ibinimator.Service.Tools
             var shape = SelectedLayer;
             shape.Selected = false;
 
-            var ctp = new ConvertToPathCommand(
-                Context.HistoryManager.Position + 1,
-                new[] {shape});
+            var ctp = new ConvertToPathCommand(Context.HistoryManager.Position + 1, new[] {shape});
             Context.HistoryManager.Do(ctp);
 
             ctp.Products[0].Selected = true;
@@ -323,13 +329,11 @@ namespace Ibinimator.Service.Tools
                 cmd.Operation == newCmd.Operation &&
                 newCmd.Time - cmd.Time < 500 &&
                 cmd.Indices.SequenceEqual(newCmd.Indices))
-                history.Replace(
-                    new ModifyPathCommand(
-                        cmd.Id,
-                        cmd.Targets[0],
-                        cmd.Delta + newCmd.Delta,
-                        newCmd.Indices,
-                        cmd.Operation));
+                history.Replace(new ModifyPathCommand(cmd.Id,
+                                                      cmd.Targets[0],
+                                                      cmd.Delta + newCmd.Delta,
+                                                      newCmd.Indices,
+                                                      cmd.Operation));
             else
                 history.Push(newCmd);
         }
@@ -341,12 +345,11 @@ namespace Ibinimator.Service.Tools
             var history = Context.HistoryManager;
 
             var newCmd =
-                new ModifyPathCommand(
-                    history.Position + 1,
-                    SelectedLayer as Path,
-                    delta,
-                    indices,
-                    op);
+                new ModifyPathCommand(history.Position + 1,
+                                      SelectedLayer as Path,
+                                      delta,
+                                      indices,
+                                      op);
 
             newCmd.Do(Context);
 
@@ -361,12 +364,11 @@ namespace Ibinimator.Service.Tools
         {
             ConvertToPath();
 
-            Context.HistoryManager.Do(
-                new ModifyPathCommand(
-                    Context.HistoryManager.Position + 1,
-                    SelectedLayer as Path,
-                    indices,
-                    ModifyPathCommand.NodeOperation.Remove));
+            Context.HistoryManager.Do(new ModifyPathCommand(Context.HistoryManager.Position + 1,
+                                                            SelectedLayer as Path,
+                                                            indices,
+                                                            ModifyPathCommand
+                                                               .NodeOperation.Remove));
 
             UpdateNodes();
 

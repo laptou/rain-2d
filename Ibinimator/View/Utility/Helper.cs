@@ -32,21 +32,18 @@ namespace Ibinimator.View.Utility
             DependencyProperty.RegisterAttached("Elevation",
                                                 typeof(int),
                                                 typeof(Helper),
-                                                new FrameworkPropertyMetadata(0, FPMO.AffectsRender));
+                                                new FrameworkPropertyMetadata(
+                                                    0,
+                                                    FPMO.AffectsRender));
 
-        public static void SetElevation(DependencyObject element, int value)
+        public static Color GetAccent(DependencyObject obj)
         {
-            element.SetValue(ElevationProperty, value);
+            return (Color) obj.GetValue(AccentProperty);
         }
 
         public static int GetElevation(DependencyObject element)
         {
             return (int) element.GetValue(ElevationProperty);
-        }
-
-        public static Color GetAccent(DependencyObject obj)
-        {
-            return (Color) obj.GetValue(AccentProperty);
         }
 
         public static IEnumerable<InputBinding> GetInputBindingSource(DependencyObject element)
@@ -57,6 +54,11 @@ namespace Ibinimator.View.Utility
         public static void SetAccent(DependencyObject obj, Color value)
         {
             obj.SetValue(AccentProperty, value);
+        }
+
+        public static void SetElevation(DependencyObject element, int value)
+        {
+            element.SetValue(ElevationProperty, value);
         }
 
         public static void SetInputBindingSource(

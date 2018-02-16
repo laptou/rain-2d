@@ -6,8 +6,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model;
-
 namespace Ibinimator.Model {}
 
 namespace Ibinimator.Native
@@ -19,6 +17,24 @@ namespace Ibinimator.Native
             var error = Marshal.GetLastWin32Error();
 
             if (error != 0) throw new Win32Exception(error);
+        }
+
+        public static Vector2 GetCoordinates(IntPtr lParam, float dpi)
+        {
+            var x = LowWord(lParam) / dpi * 96f;
+            var y = HighWord(lParam) / dpi * 96f;
+
+            return new Vector2(x, y);
+        }
+
+        public static Vector2 GetCoordinates(IntPtr lParam, float dpi, IntPtr hWnd)
+        {
+            var pt = new NativePoint {x = LowWord(lParam), y = HighWord(lParam)};
+            WindowHelper.ScreenToClient(hWnd, ref pt);
+            var x = pt.x / dpi * 96f;
+            var y = pt.y / dpi * 96f;
+
+            return new Vector2(x, y);
         }
 
         /// <summary>
@@ -42,24 +58,6 @@ namespace Ibinimator.Native
             var val32 = (ulong) ptr;
 
             return (short) (val32 & 0x0000FFFF);
-        }
-
-        public static Vector2 GetCoordinates(IntPtr lParam, float dpi)
-        {
-            var x = LowWord(lParam) / dpi * 96f;
-            var y = HighWord(lParam) / dpi * 96f;
-
-            return new Vector2(x, y);
-        }
-
-        public static Vector2 GetCoordinates(IntPtr lParam, float dpi, IntPtr hWnd)
-        {
-            var pt = new NativePoint { x = LowWord(lParam), y = HighWord(lParam) };
-            WindowHelper.ScreenToClient(hWnd, ref pt);
-            var x = pt.x / dpi * 96f;
-            var y = pt.y / dpi * 96f;
-
-            return new Vector2(x, y);
         }
     }
 }

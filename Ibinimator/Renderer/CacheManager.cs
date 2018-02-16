@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
+using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +11,6 @@ using System.Windows;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Core.Utility;
 using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 
@@ -16,18 +18,15 @@ namespace Ibinimator.Renderer
 {
     public class CacheManager : Core.Model.Model, ICacheManager
     {
-        private readonly Dictionary<string, IBitmap> _bitmaps =
-            new Dictionary<string, IBitmap>();
+        private readonly Dictionary<string, IBitmap> _bitmaps = new Dictionary<string, IBitmap>();
 
         private readonly Dictionary<ILayer, RectangleF> _bounds =
             new Dictionary<ILayer, RectangleF>();
 
-        private readonly Dictionary<IBrushInfo, (ILayer layer, IBrush brush)>
-            _brushBindings =
-                new Dictionary<IBrushInfo, (ILayer, IBrush)>();
+        private readonly Dictionary<IBrushInfo, (ILayer layer, IBrush brush)> _brushBindings =
+            new Dictionary<IBrushInfo, (ILayer, IBrush)>();
 
-        private readonly Dictionary<string, IBrush> _brushes =
-            new Dictionary<string, IBrush>();
+        private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
 
         private readonly Dictionary<IFilledLayer, IBrush> _fills =
             new Dictionary<IFilledLayer, IBrush>();
@@ -38,9 +37,8 @@ namespace Ibinimator.Renderer
         private readonly ReaderWriterLockSlim _renderLock =
             new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-        private readonly Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>
-            _strokeBindings =
-                new Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>();
+        private readonly Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)> _strokeBindings =
+            new Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>();
 
         private readonly Dictionary<IStrokedLayer, IPen> _strokes =
             new Dictionary<IStrokedLayer, IPen>();
@@ -312,9 +310,7 @@ namespace Ibinimator.Renderer
                 foreach (var subLayer in group.SubLayers)
                     BindLayer(subLayer);
 
-                group.LayerAdded +=
-                    (sender, layer1) =>
-                        BindLayer(layer1);
+                group.LayerAdded += (sender, layer1) => BindLayer(layer1);
             }
         }
 
@@ -330,11 +326,17 @@ namespace Ibinimator.Renderer
         public IBitmap GetBitmap(string key) { return _bitmaps[key]; }
 
         /// <inheritdoc />
-        public RectangleF GetBounds(ILayer layer) { return Get(_bounds, layer, l => l.GetBounds(this)); }
+        public RectangleF GetBounds(ILayer layer)
+        {
+            return Get(_bounds, layer, l => l.GetBounds(this));
+        }
 
         public IBrush GetBrush(string key) { return _brushes[key]; }
 
-        public IBrush GetFill(IFilledLayer layer) { return Get(_fills, layer, l => BindBrush(l, l.Fill)); }
+        public IBrush GetFill(IFilledLayer layer)
+        {
+            return Get(_fills, layer, l => BindBrush(l, l.Fill));
+        }
 
         public IGeometry GetGeometry(IGeometricLayer layer)
         {

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Threading;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;

@@ -39,9 +39,12 @@
                                 <Grid x:Name="templateRoot"
                                       Background="Transparent" SnapsToDevicePixels="True">
                                     <ContentPresenter x:Name="contentPresenter"
-                                                      Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                      Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                                      ContentTemplate="{TemplateBinding ContentTemplate}" Focusable="False"
+                                                      Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch"
+                                                      VerticalAlignment="Stretch"
+                                                      Content="{TemplateBinding Content}"
+                                                      ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                      Focusable="False"
                                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                 </Grid>
                             </ControlTemplate>

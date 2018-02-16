@@ -37,16 +37,12 @@ namespace Ibinimator.Service.Tools
             if (!Selection.Any())
                 return;
 
-            var targets =
-                Selection.SelectMany(l => l.Flatten())
-                         .OfType<IFilledLayer>()
-                         .ToArray();
+            var targets = Selection.SelectMany(l => l.Flatten()).OfType<IFilledLayer>().ToArray();
 
-            var command = new ApplyFillCommand(
-                Context.HistoryManager.Position + 1,
-                targets,
-                brush,
-                targets.Select(t => t.Fill).ToArray());
+            var command = new ApplyFillCommand(Context.HistoryManager.Position + 1,
+                                               targets,
+                                               brush,
+                                               targets.Select(t => t.Fill).ToArray());
 
             Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
@@ -56,16 +52,12 @@ namespace Ibinimator.Service.Tools
             if (!Selection.Any())
                 return;
 
-            var targets =
-                Selection.SelectMany(l => l.Flatten())
-                         .OfType<IStrokedLayer>()
-                         .ToArray();
+            var targets = Selection.SelectMany(l => l.Flatten()).OfType<IStrokedLayer>().ToArray();
 
-            var command = new ApplyStrokeCommand(
-                Context.HistoryManager.Position + 1,
-                targets,
-                pen,
-                targets.Select(t => t.Stroke).ToArray());
+            var command = new ApplyStrokeCommand(Context.HistoryManager.Position + 1,
+                                                 targets,
+                                                 pen,
+                                                 targets.Select(t => t.Stroke).ToArray());
 
             Context.HistoryManager.Merge(command, Time.DoubleClick);
         }
@@ -152,9 +144,15 @@ namespace Ibinimator.Service.Tools
 
         public abstract void MouseMove(IArtContext context, PointerEvent evt);
 
-        public virtual void KeyDown(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
+        public virtual void KeyDown(IArtContext context, KeyboardEvent evt)
+        {
+            State = evt.ModifierState;
+        }
 
-        public virtual void KeyUp(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
+        public virtual void KeyUp(IArtContext context, KeyboardEvent evt)
+        {
+            State = evt.ModifierState;
+        }
 
         public virtual void MouseDown(IArtContext context, ClickEvent evt)
         {
@@ -169,10 +167,12 @@ namespace Ibinimator.Service.Tools
 
             var hit = HitTest(pos);
 
-            if (deltaTime < 500 && hit == null)
+            if (deltaTime < 500 &&
+                hit == null)
                 _depth--;
 
-            if (!state.Shift && hit?.Selected != true)
+            if (!state.Shift &&
+                hit?.Selected != true)
                 SelectionManager.ClearSelection();
 
             if (hit != null)
@@ -191,12 +191,14 @@ namespace Ibinimator.Service.Tools
 
         #region Rendering
 
-        protected void RenderBoundingBoxes(RenderContext target, ICacheManager cache, IViewManager view)
+        protected void RenderBoundingBoxes(
+            RenderContext target, ICacheManager cache, IViewManager view)
         {
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);
 
-            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+            using (var pen =
+                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
             {
                 target.DrawRectangle(SelectionManager.SelectionBounds, pen);
             }
@@ -207,7 +209,8 @@ namespace Ibinimator.Service.Tools
             {
                 target.Transform(layer.AbsoluteTransform);
 
-                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                using (var pen =
+                    target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
                 {
                     target.DrawRectangle(cache.GetBounds(layer), pen);
                 }
@@ -216,13 +219,15 @@ namespace Ibinimator.Service.Tools
             }
         }
 
-        protected void RenderPathOutlines(RenderContext target, ICacheManager cache, IViewManager view)
+        protected void RenderPathOutlines(
+            RenderContext target, ICacheManager cache, IViewManager view)
         {
             foreach (var shape in Selection.OfType<IGeometricLayer>())
             {
                 target.Transform(shape.AbsoluteTransform);
 
-                using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                using (var pen =
+                    target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
                 {
                     target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
                 }
@@ -259,7 +264,8 @@ namespace Ibinimator.Service.Tools
 
                 if (hit.Depth < _depth) continue;
 
-                if (State.Alt && hit.Selected) continue;
+                if (State.Alt &&
+                    hit.Selected) continue;
 
                 break;
             }

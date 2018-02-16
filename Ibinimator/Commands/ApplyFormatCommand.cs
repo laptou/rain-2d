@@ -11,7 +11,8 @@ namespace Ibinimator.Service.Commands
     {
         private Format[] _oldFormats;
 
-        public ApplyFormatCommand(long id, ITextLayer target, Format format) : base(id, new[] {target})
+        public ApplyFormatCommand(long id, ITextLayer target, Format format) :
+            base(id, new[] {target})
         {
             Format = format;
         }
@@ -32,7 +33,8 @@ namespace Ibinimator.Service.Commands
         public override IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (newCommand is ApplyFormatCommand cmd)
-                return new ApplyFormatCommand(newCommand.Id, cmd.Targets[0],
+                return new ApplyFormatCommand(newCommand.Id,
+                                              cmd.Targets[0],
                                               Format.Merge(cmd.Format));
 
             return null;

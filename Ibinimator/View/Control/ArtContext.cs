@@ -15,20 +15,18 @@ namespace Ibinimator.View.Control
         private readonly ArtView _artView;
         private          Status  _status;
 
-        public ArtContext(ArtView artView)
-        {
-            _artView = artView;
-        }
+        public ArtContext(ArtView artView) { _artView = artView; }
 
         public void SetManager<T>(T manager) where T : IArtContextManager
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
 
-            var managerInterfaces =
-                typeof(T).FindInterfaces(
-                              (type, criteria) => typeof(IArtContextManager).IsAssignableFrom(type),
-                              null)
-                         .Concat(new[] {typeof(T)});
+            var managerInterfaces = typeof(T)
+                                   .FindInterfaces((type, criteria) =>
+                                                       typeof(IArtContextManager).IsAssignableFrom(
+                                                           type),
+                                                   null)
+                                   .Concat(new[] {typeof(T)});
 
             var interfaces = managerInterfaces.ToList();
 
@@ -90,19 +88,19 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
-        public void InvalidateRender() { _artView.InvalidateSurface(); }
-
         /// <inheritdoc />
         public T Create<T>(params object[] parameters) where T : class
         {
             if (typeof(T) == typeof(ICaret))
-            {
-                if(WindowHelper.GetFocus() == _artView.Handle)
-                    return new Caret(_artView.Handle, (int) parameters[0], (int) parameters[1]) as T;
-            }
+                if (WindowHelper.GetFocus() == _artView.Handle)
+                    return new Caret(_artView.Handle,
+                                     (int) parameters[0],
+                                     (int) parameters[1]) as T;
 
             return null;
         }
+
+        public void InvalidateRender() { _artView.InvalidateSurface(); }
 
         public RenderContext RenderContext => _artView.RenderContext;
 

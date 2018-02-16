@@ -33,6 +33,91 @@ namespace Ibinimator.ViewModel
             }
         }
 
+
+        public ObservableList<float> Dashes
+        {
+            get => Current?.Dashes;
+            set
+            {
+                if (Current == null) return;
+
+                Current.Dashes = value;
+                Apply();
+            }
+        }
+
+        public float DashOffset
+        {
+            get => Current?.DashOffset ?? 0;
+            set
+            {
+                if (Current == null) return;
+
+                Current.DashOffset = value;
+                Apply();
+            }
+        }
+
+        public bool HasDashes
+        {
+            get => Current?.HasDashes ?? false;
+            set
+            {
+                if (Current == null) return;
+
+                Current.HasDashes = value;
+                Apply();
+            }
+        }
+
+        public LineCap LineCap
+        {
+            get => Current?.LineCap ?? LineCap.Butt;
+            set
+            {
+                if (Current == null) return;
+
+                Current.LineCap = value;
+                Apply();
+            }
+        }
+
+        public LineJoin LineJoin
+        {
+            get => Current?.LineJoin ?? LineJoin.Miter;
+            set
+            {
+                if (Current == null) return;
+
+                Current.LineJoin = value;
+                Apply();
+            }
+        }
+
+        public float MiterLimit
+        {
+            get => Current?.MiterLimit ?? 0;
+            set
+            {
+                if (Current == null) return;
+
+                Current.MiterLimit = value;
+                Apply();
+            }
+        }
+
+        public float Width
+        {
+            get => Current?.Width ?? 0;
+            set
+            {
+                if (Current == null) return;
+
+                Current.Width = value;
+                Apply();
+            }
+        }
+
         private void Apply() { Context.BrushManager.Apply(Current); }
 
         private void OnContextChanged(object sender, PropertyChangedEventArgs e)
@@ -62,7 +147,7 @@ namespace Ibinimator.ViewModel
 
         private void Update()
         {
-                RaisePropertyChanged(nameof(Dashes),
+            RaisePropertyChanged(nameof(Dashes),
                                  nameof(DashOffset),
                                  nameof(HasDashes),
                                  nameof(LineCap),
@@ -70,84 +155,5 @@ namespace Ibinimator.ViewModel
                                  nameof(MiterLimit),
                                  nameof(Width));
         }
-
-
-        public ObservableList<float> Dashes
-        {
-            get => Current?.Dashes;
-            set
-            {
-                if (Current == null) return;
-                Current.Dashes = value;
-                Apply();
-            }
-        }
-
-        public float DashOffset
-        {
-            get => Current?.DashOffset ?? 0;
-            set
-            {
-                if (Current == null) return;
-                Current.DashOffset = value;
-                Apply();
-            }
-        }
-
-        public bool HasDashes
-        {
-            get => Current?.HasDashes ?? false;
-            set
-            {
-                if (Current == null) return;
-                Current.HasDashes = value;
-                Apply();
-            }
-        }
-
-        public LineCap LineCap
-        {
-            get => Current?.LineCap ?? LineCap.Butt;
-            set
-            {
-                if (Current == null) return;
-                Current.LineCap = value;
-                Apply();
-            }
-        }
-
-        public LineJoin LineJoin
-        {
-            get => Current?.LineJoin ?? LineJoin.Miter;
-            set
-            {
-                if (Current == null) return;
-                Current.LineJoin = value;
-                Apply();
-            }
-        }
-
-        public float MiterLimit
-        {
-            get => Current?.MiterLimit ?? 0;
-            set
-            {
-                if (Current == null) return;
-                Current.MiterLimit = value;
-                Apply();
-            }
-        }
-
-        public float Width
-        {
-            get => Current?.Width ?? 0;
-            set
-            {
-                if (Current == null) return;
-                Current.Width = value;
-                Apply();
-            }
-        }
-
     }
 }

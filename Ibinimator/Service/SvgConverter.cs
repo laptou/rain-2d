@@ -12,7 +12,6 @@ using Ibinimator.Svg;
 
 using SharpDX.Direct2D1;
 
-using Color = Ibinimator.Core.Model.Color;
 using Document = Ibinimator.Core.Document;
 using Ellipse = Ibinimator.Svg.Ellipse;
 using GradientStop = Ibinimator.Core.GradientStop;
@@ -32,11 +31,10 @@ namespace Ibinimator.Service
             var doc = new Document
             {
                 Root = new Group(),
-                Bounds = new RectangleF(
-                    svgDocument.Viewbox.Left,
-                    svgDocument.Viewbox.Top,
-                    svgDocument.Viewbox.Width,
-                    svgDocument.Viewbox.Height)
+                Bounds = new RectangleF(svgDocument.Viewbox.Left,
+                                        svgDocument.Viewbox.Top,
+                                        svgDocument.Viewbox.Width,
+                                        svgDocument.Viewbox.Height)
             };
 
             foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(FromSvg))
@@ -53,9 +51,7 @@ namespace Ibinimator.Service
             {
                 var group = new Group();
 
-                foreach (var child in containerElement
-                                     .OfType<IGraphicalElement>()
-                                     .Select(FromSvg))
+                foreach (var child in containerElement.OfType<IGraphicalElement>().Select(FromSvg))
                     group.Add(child, 0);
 
                 layer = group;
@@ -105,8 +101,7 @@ namespace Ibinimator.Service
                         var polygonPath = new Path();
 
                         polygonPath.Instructions.AddItems(
-                            polygon.Points.Select(
-                                v => new LinePathInstruction(v)));
+                            polygon.Points.Select(v => new LinePathInstruction(v)));
 
                         polygonPath.Instructions.Add(new ClosePathInstruction(false));
 
@@ -117,8 +112,7 @@ namespace Ibinimator.Service
                         var polylinePath = new Path();
 
                         polylinePath.Instructions.AddItems(
-                            polyline.Points.Select(
-                                v => new LinePathInstruction(v)));
+                            polyline.Points.Select(v => new LinePathInstruction(v)));
 
                         polylinePath.Instructions.Add(new ClosePathInstruction(true));
 
@@ -161,20 +155,21 @@ namespace Ibinimator.Service
                         throw new ArgumentOutOfRangeException(nameof(shapeElement));
                 }
 
-                var dashes = shapeElement
-                            .StrokeDashArray.Select(f => f / shapeElement.StrokeWidth.To(LengthUnit.Pixels))
-                            .ToArray();
+                var dashes = shapeElement.StrokeDashArray
+                                         .Select(
+                                              f => f / shapeElement.StrokeWidth.To(
+                                                       LengthUnit.Pixels))
+                                         .ToArray();
 
                 shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity);
-                shape.Stroke = FromSvg(
-                    shapeElement.Stroke,
-                    shapeElement.StrokeOpacity,
-                    shapeElement.StrokeWidth.To(LengthUnit.Pixels),
-                    dashes,
-                    shapeElement.StrokeDashOffset,
-                    shapeElement.StrokeLineCap,
-                    shapeElement.StrokeLineJoin,
-                    shapeElement.StrokeMiterLimit);
+                shape.Stroke = FromSvg(shapeElement.Stroke,
+                                       shapeElement.StrokeOpacity,
+                                       shapeElement.StrokeWidth.To(LengthUnit.Pixels),
+                                       dashes,
+                                       shapeElement.StrokeDashOffset,
+                                       shapeElement.StrokeLineCap,
+                                       shapeElement.StrokeLineJoin,
+                                       shapeElement.StrokeMiterLimit);
 
                 layer = shape as Layer;
             }
@@ -197,11 +192,7 @@ namespace Ibinimator.Service
                     var color = solidColor.Color;
 
                     return new SolidColorBrushInfo(
-                        new Color(
-                            color.Red,
-                            color.Green,
-                            color.Blue,
-                            color.Alpha * opacity));
+                        new Color(color.Red, color.Green, color.Blue, color.Alpha * opacity));
 
                 case LinearGradient linearGradient:
 
@@ -210,11 +201,10 @@ namespace Ibinimator.Service
                         Stops = new ObservableList<GradientStop>(
                             linearGradient.Stops.Select(s => new GradientStop
                             {
-                                Color = new Color(
-                                    s.Color.Red,
-                                    s.Color.Green,
-                                    s.Color.Blue,
-                                    s.Color.Alpha * s.Opacity),
+                                Color = new Color(s.Color.Red,
+                                                  s.Color.Green,
+                                                  s.Color.Blue,
+                                                  s.Color.Alpha * s.Opacity),
                                 Offset = s.Offset.To(LengthUnit.Pixels, 1)
                             })),
                         StartPoint =
@@ -237,24 +227,24 @@ namespace Ibinimator.Service
                         Stops = new ObservableList<GradientStop>(
                             radialGradient.Stops.Select(s => new GradientStop
                             {
-                                Color = new Color(
-                                    s.Color.Red,
-                                    s.Color.Green,
-                                    s.Color.Blue,
-                                    s.Color.Alpha),
+                                Color = new Color(s.Color.Red,
+                                                  s.Color.Green,
+                                                  s.Color.Blue,
+                                                  s.Color.Alpha),
                                 Offset = s.Offset.To(LengthUnit.Pixels, 1)
                             })),
-                        StartPoint = new Vector2(
-                            radialGradient.CenterX.To(LengthUnit.Pixels, 1),
-                            radialGradient.CenterY.To(LengthUnit.Pixels, 1)),
-                        Focus = new Vector2(
-                            radialGradient.FocusX.To(LengthUnit.Pixels, 1),
-                            radialGradient.FocusY.To(LengthUnit.Pixels, 1)),
-                        EndPoint = new Vector2(
-                            radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
-                            radialGradient.Radius.To(LengthUnit.Pixels, 1),
-                            radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
-                            radialGradient.Radius.To(LengthUnit.Pixels, 1)),
+                        StartPoint =
+                            new Vector2(radialGradient.CenterX.To(LengthUnit.Pixels, 1),
+                                        radialGradient.CenterY.To(LengthUnit.Pixels, 1)),
+                        Focus =
+                            new Vector2(radialGradient.FocusX.To(LengthUnit.Pixels, 1),
+                                        radialGradient.FocusY.To(LengthUnit.Pixels, 1)),
+                        EndPoint =
+                            new Vector2(
+                                radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
+                                radialGradient.Radius.To(LengthUnit.Pixels, 1),
+                                radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
+                                radialGradient.Radius.To(LengthUnit.Pixels, 1)),
                         Name = radialGradient.Id,
                         Transform = radialGradient.Transform,
                         ExtendMode = (ExtendMode) radialGradient.SpreadMethod,
@@ -341,9 +331,8 @@ namespace Ibinimator.Service
                 shape.Stroke = ToSvg(shapeLayer.Stroke?.Brush);
                 shape.StrokeOpacity = shapeLayer.Stroke?.Brush?.Opacity ?? 0;
 
-                var dashes = shapeLayer
-                            .Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
-                            .ToArray();
+                var dashes = shapeLayer.Stroke.Dashes.Select(f => f * shapeLayer.Stroke.Width)
+                                       .ToArray();
 
                 shape.StrokeWidth = new Length(shapeLayer.Stroke.Width, LengthUnit.Pixels);
                 shape.StrokeDashArray = dashes.ToArray();
@@ -387,12 +376,11 @@ namespace Ibinimator.Service
                     FontWeight = format.FontWeight,
                     FontStyle = format.FontStyle,
                     FontSize =
-                        format.FontSize != null ?
-                            new Length?(new Length(format.FontSize.Value, LengthUnit.Points)) :
-                            null,
+                        format.FontSize != null
+                            ? new Length?(new Length(format.FontSize.Value, LengthUnit.Points))
+                            : null,
                     Text = text.Value?.Substring(format.Range.Index, format.Range.Length),
                     Position = format.Range.Index,
-
                     Fill = ToSvg(format.Fill),
                     FillOpacity = format.Fill?.Opacity ?? 1,
                     Stroke = ToSvg(format.Stroke?.Brush),
@@ -428,14 +416,8 @@ namespace Ibinimator.Service
         }
 
         private static IPenInfo FromSvg(
-            Paint paint,
-            float opacity,
-            float width,
-            float[] dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
+            Paint paint, float opacity, float width, float[] dashes, float dashOffset,
+            LineCap lineCap, LineJoin lineJoin, float miterLimit)
         {
             var stroke = new PenInfo
             {

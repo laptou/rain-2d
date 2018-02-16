@@ -21,8 +21,7 @@ namespace Ibinimator.Service.Tools
         private IList<PathNode>                      _nodes;
         private Vector2?                             _start;
 
-        public PencilTool(IToolManager toolManager) :
-            base(toolManager)
+        public PencilTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Pencil;
 
@@ -32,7 +31,7 @@ namespace Ibinimator.Service.Tools
         public string Status => "";
 
         private IContainerLayer Root => Context.ViewManager.Root;
-        
+
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
@@ -89,9 +88,7 @@ namespace Ibinimator.Service.Tools
                 };
 
                 Context.HistoryManager.Do(
-                    new AddLayerCommand(Context.HistoryManager.Position + 1,
-                                        Root,
-                                        path));
+                    new AddLayerCommand(Context.HistoryManager.Position + 1, Root, path));
 
                 path.Selected = true;
                 _start = null;
@@ -114,11 +111,13 @@ namespace Ibinimator.Service.Tools
                         else
                         {
                             // click on start node = close figure
-                            if (node.Index == 0 || _nodes[node.Index - 1].FigureEnd != null)
+                            if (node.Index == 0 ||
+                                _nodes[node.Index - 1].FigureEnd != null)
                                 Context.HistoryManager.Do(
                                     new ModifyPathCommand(
                                         Context.HistoryManager.Position + 1,
-                                        SelectedLayer, new[] {_nodes.Count - 1},
+                                        SelectedLayer,
+                                        new[] {_nodes.Count - 1},
                                         ModifyPathCommand.NodeOperation.EndFigureClosed));
                         }
                     }
@@ -131,11 +130,12 @@ namespace Ibinimator.Service.Tools
                 {
                     var tpos = FromWorldSpace(_mouse.pos);
 
-                    Context.HistoryManager.Do(
-                        new ModifyPathCommand(
-                            Context.HistoryManager.Position + 1,
-                            SelectedLayer, new[] {new PathNode(_nodes.Count, tpos)},
-                            _nodes.Count, ModifyPathCommand.NodeOperation.Add));
+                    Context.HistoryManager.Do(new ModifyPathCommand(
+                                                  Context.HistoryManager.Position + 1,
+                                                  SelectedLayer,
+                                                  new[] {new PathNode(_nodes.Count, tpos)},
+                                                  _nodes.Count,
+                                                  ModifyPathCommand.NodeOperation.Add));
                 }
             }
 
@@ -152,7 +152,10 @@ namespace Ibinimator.Service.Tools
             Context.InvalidateRender();
         }
 
-        public override void MouseUp(IArtContext context, ClickEvent evt) { Context.InvalidateRender(); }
+        public override void MouseUp(IArtContext context, ClickEvent evt)
+        {
+            Context.InvalidateRender();
+        }
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
@@ -167,11 +170,10 @@ namespace Ibinimator.Service.Tools
             {
                 target.DrawLine(_start.Value, _mouse.pos, p);
 
-                var rect =
-                    new RectangleF(_start.Value.X - radius,
-                                   _start.Value.Y - radius,
-                                   radius * 2,
-                                   radius * 2);
+                var rect = new RectangleF(_start.Value.X - radius,
+                                          _start.Value.Y - radius,
+                                          radius * 2,
+                                          radius * 2);
 
                 target.FillRectangle(rect, GetBrush(false, false));
                 target.DrawRectangle(rect, p2);
@@ -189,7 +191,8 @@ namespace Ibinimator.Service.Tools
             target.Transform(transform);
 
             using (var geom = cache.GetGeometry(SelectedLayer))
-            using (var pen = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+            using (var pen =
+                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
             {
                 target.DrawGeometry(geom, pen);
             }
@@ -212,11 +215,7 @@ namespace Ibinimator.Service.Tools
             {
                 var pos = Vector2.Transform(node.Position, transform);
 
-                var rect =
-                    new RectangleF(pos.X - radius,
-                                   pos.Y - radius,
-                                   radius * 2,
-                                   radius * 2);
+                var rect = new RectangleF(pos.X - radius, pos.Y - radius, radius * 2, radius * 2);
 
                 var over = rect.Contains(_mouse.pos);
 
@@ -230,7 +229,7 @@ namespace Ibinimator.Service.Tools
             p.Dispose();
             p2.Dispose();
         }
-        
+
         protected override void OnSelectionChanged(object sender, EventArgs args)
         {
             _nodes = GetGeometricNodes().ToList();
@@ -246,12 +245,11 @@ namespace Ibinimator.Service.Tools
 
         private void Remove(int index)
         {
-            Context.HistoryManager.Do(
-                new ModifyPathCommand(
-                    Context.HistoryManager.Position + 1,
-                    SelectedLayer,
-                    new[] {index},
-                    ModifyPathCommand.NodeOperation.Remove));
+            Context.HistoryManager.Do(new ModifyPathCommand(Context.HistoryManager.Position + 1,
+                                                            SelectedLayer,
+                                                            new[] {index},
+                                                            ModifyPathCommand
+                                                               .NodeOperation.Remove));
 
             _nodes = GetGeometricNodes().ToList();
         }

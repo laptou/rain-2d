@@ -39,8 +39,9 @@ namespace Ibinimator.Renderer
                 Position = 0;
             }
 
-            CollectionChanged?.Invoke(
-                this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            CollectionChanged?.Invoke(this,
+                                      new NotifyCollectionChangedEventArgs(
+                                          NotifyCollectionChangedAction.Reset));
         }
 
         /// <inheritdoc />
@@ -178,14 +179,16 @@ namespace Ibinimator.Renderer
             {
                 lock (this)
                 {
-                    while (value > Position && _redo.Count > 0)
+                    while (value > Position &&
+                           _redo.Count > 0)
                     {
                         var record = _redo.Pop();
                         record.Do(Context);
                         _undo.Push(record);
                     }
 
-                    while (value < Position && _undo.Count > 0)
+                    while (value < Position &&
+                           _undo.Count > 0)
                     {
                         var record = _undo.Pop();
                         record.Undo(Context);

@@ -15,8 +15,7 @@ namespace Ibinimator.Service.Commands
         private readonly Dictionary<ILayer, Matrix3x2> _transformations =
             new Dictionary<ILayer, Matrix3x2>();
 
-        public AlignCommand(long id, ILayer[] targets, Direction direction) :
-            base(id, targets)
+        public AlignCommand(long id, ILayer[] targets, Direction direction) : base(id, targets)
         {
             Direction = direction;
             Description = $"Aligned {Direction}";

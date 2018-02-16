@@ -46,16 +46,19 @@ namespace Ibinimator.Renderer
 
         public ObservableList<ILayer> Selection { get; }
 
+        private void OnBoundsChanged(object sender, EventArgs e) { UpdateBounds(); }
+
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
                 case nameof(ILayer.Selected):
-                    var layer = (ILayer)sender;
+                    var layer = (ILayer) sender;
 
                     var contains = Selection.Contains(layer);
 
-                    if (layer.Selected && !contains)
+                    if (layer.Selected &&
+                        !contains)
                     {
                         Selection.Add(layer);
 
@@ -69,8 +72,6 @@ namespace Ibinimator.Renderer
 
                     break;
             }
-
-            
         }
 
         private void OnHistoryTraversed(object sender, long e) { UpdateBounds(); }
@@ -87,8 +88,6 @@ namespace Ibinimator.Renderer
             context.HistoryManager.Traversed += OnHistoryTraversed;
         }
 
-        private void OnBoundsChanged(object sender, EventArgs e) { UpdateBounds(); }
-
         public void ClearSelection()
         {
             while (Selection.Count > 0) Selection[0].Selected = false;
@@ -101,7 +100,10 @@ namespace Ibinimator.Renderer
             context.HistoryManager.Traversed -= OnHistoryTraversed;
         }
 
-        public Vector2 FromSelectionSpace(Vector2 v) { return Vector2.Transform(v, SelectionTransform); }
+        public Vector2 FromSelectionSpace(Vector2 v)
+        {
+            return Vector2.Transform(v, SelectionTransform);
+        }
 
         public Vector2 ToSelectionSpace(Vector2 v)
         {
@@ -109,38 +111,29 @@ namespace Ibinimator.Renderer
         }
 
         public void TransformSelection(
-            Vector2 scale,
-            Vector2 translate,
-            float rotate,
-            float shear,
-            Vector2 relativeOrigin)
+            Vector2 scale, Vector2 translate, float rotate, float shear, Vector2 relativeOrigin)
         {
-            var localOrigin = SelectionBounds.TopLeft +
-                              SelectionBounds.Size * relativeOrigin;
+            var localOrigin = SelectionBounds.TopLeft + SelectionBounds.Size * relativeOrigin;
             var origin = FromSelectionSpace(localOrigin);
 
             // order doesn't really matter since only one of 
             // these will be non-default at a time
 
-            var transform =
-                MathUtils.Invert(SelectionTransform) *
-                Matrix3x2.CreateScale(scale, localOrigin) *
-                Matrix3x2.CreateSkew(shear, 0, localOrigin) *
-                SelectionTransform *
-                Matrix3x2.CreateTranslation(-origin) *
-                Matrix3x2.CreateRotation(rotate) *
-                Matrix3x2.CreateTranslation(translate) *
-                Matrix3x2.CreateTranslation(origin);
+            var transform = MathUtils.Invert(SelectionTransform) *
+                            Matrix3x2.CreateScale(scale, localOrigin) *
+                            Matrix3x2.CreateSkew(shear, 0, localOrigin) * SelectionTransform *
+                            Matrix3x2.CreateTranslation(-origin) *
+                            Matrix3x2.CreateRotation(rotate) *
+                            Matrix3x2.CreateTranslation(translate) *
+                            Matrix3x2.CreateTranslation(origin);
 
-            SelectionTransform = SelectionTransform *
-                                 transform;
+            SelectionTransform = SelectionTransform * transform;
 
             if (transform.IsIdentity) return;
 
-            var command = new TransformCommand(
-                Context.HistoryManager.Position + 1,
-                Selection.ToArray(),
-                global: transform);
+            var command = new TransformCommand(Context.HistoryManager.Position + 1,
+                                               Selection.ToArray(),
+                                               global: transform);
 
             Context.HistoryManager.Merge(command, 500);
 

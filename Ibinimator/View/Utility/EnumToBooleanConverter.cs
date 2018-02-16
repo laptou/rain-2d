@@ -17,8 +17,7 @@ namespace Ibinimator.View.Utility
         }
 
         public object ConvertBack(
-            object      value, Type targetType, object parameter,
-            CultureInfo culture)
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             return Equals(value, true) ? parameter : Binding.DoNothing;
         }

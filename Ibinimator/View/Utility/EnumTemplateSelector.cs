@@ -15,7 +15,8 @@ namespace Ibinimator.View.Utility
         {
             var itemsControl = container.FindVisualAncestor<ItemsControl>();
 
-            if (item != null && itemsControl != null)
+            if (item != null &&
+                itemsControl != null)
             {
                 var type = item.GetType();
 
@@ -41,7 +42,8 @@ namespace Ibinimator.View.Utility
 
         public override DataTemplate SelectTemplate(object item, ItemsControl itemsControl)
         {
-            if (item != null && itemsControl != null)
+            if (item != null &&
+                itemsControl != null)
             {
                 var type = item.GetType();
 

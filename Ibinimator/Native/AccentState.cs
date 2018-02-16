@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Native {
+namespace Ibinimator.Native
+{
     internal enum AccentState
     {
         ACCENT_DISABLED                   = 1,

@@ -146,12 +146,13 @@ namespace Ibinimator.View.Control
         {
             if (!(d is SegmentButton segmentButton)) return;
 
-            if ( segmentButton._selectionChanging) return;
+            if (segmentButton._selectionChanging) return;
 
             segmentButton._selectionChanging = true;
             var segment = segmentButton.Segments.FirstOrDefault(
                 s => segmentButton.SelectedValue == s.Value ||
-                     segmentButton.SelectedValue?.Equals(s.Value) == true);
+                     segmentButton.SelectedValue?.Equals(s.Value) ==
+                     true);
 
             if (segment != null)
             {

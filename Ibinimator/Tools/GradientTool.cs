@@ -24,14 +24,16 @@ namespace Ibinimator.Service.Tools
         //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
 
-        public GradientTool(IToolManager toolManager) : base(toolManager) { Type = ToolType.Gradient; }
+        public GradientTool(IToolManager toolManager) : base(toolManager)
+        {
+            Type = ToolType.Gradient;
+        }
 
         public GradientBrushInfo SelectedBrush =>
             SelectedLayer?.Fill as GradientBrushInfo;
-        
+
         public string Status =>
-            "<b>Click</b> to select, " +
-            "<b>Alt Click</b> to delete, " +
+            "<b>Click</b> to select, " + "<b>Alt Click</b> to delete, " +
             "<b>Shift Click</b> to multi-select.";
 
         public override void ApplyFill(IBrushInfo brush)
@@ -39,12 +41,13 @@ namespace Ibinimator.Service.Tools
             if (brush is SolidColorBrushInfo solid)
                 foreach (var handle in _selection)
                     Context.HistoryManager.Merge(
-                        new ModifyGradientCommand(
-                                Context.HistoryManager.Position + 1,
-                                solid.Color - SelectedBrush.Stops[handle].Color,
-                                new[] {handle},
-                                SelectedBrush
-                            ), Time.DoubleClick);
+                        new ModifyGradientCommand(Context.HistoryManager.Position + 1,
+                                                  solid.Color - SelectedBrush
+                                                               .Stops[handle]
+                                                               .Color,
+                                                  new[] {handle},
+                                                  SelectedBrush),
+                        Time.DoubleClick);
             else throw new ArgumentException(nameof(brush));
         }
 
@@ -89,8 +92,7 @@ namespace Ibinimator.Service.Tools
             {
                 var t = new Func<float, Vector2>(
                     o => Vector2.Transform(
-                        Vector2.Lerp(SelectedBrush.StartPoint,
-                                     SelectedBrush.EndPoint, o),
+                        Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, o),
                         SelectedLayer.AbsoluteTransform));
 
                 _handle = null;
@@ -132,17 +134,18 @@ namespace Ibinimator.Service.Tools
             if (SelectedLayer == null)
                 return;
 
-            var localLastPos = Vector2.Transform(_mouse.pos,
-                                                 MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var localLastPos =
+                Vector2.Transform(_mouse.pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
-            var localPos = Vector2.Transform(pos,
-                                             MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var localPos =
+                Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
 
             var localDelta = localPos - localLastPos;
 
             _mouse = (_mouse.down, true, pos);
 
-            if (_mouse.down && _handle != null)
+            if (_mouse.down &&
+                _handle != null)
             {
                 switch (_handle)
                 {
@@ -150,25 +153,25 @@ namespace Ibinimator.Service.Tools
                         var stop = SelectedBrush.Stops[_selection.First()];
                         var localStopPos =
                             Vector2.Lerp(SelectedBrush.StartPoint,
-                                         SelectedBrush.EndPoint, stop.Offset) + localDelta;
+                                         SelectedBrush.EndPoint,
+                                         stop.Offset) + localDelta;
 
                         // constrain it to the gradient axis
 
-                        localStopPos = MathUtils.Project(
-                                           localStopPos - SelectedBrush.StartPoint,
-                                           SelectedBrush.EndPoint - SelectedBrush.StartPoint) +
-                                       SelectedBrush.StartPoint;
+                        localStopPos =
+                            MathUtils.Project(localStopPos - SelectedBrush.StartPoint,
+                                              SelectedBrush.EndPoint - SelectedBrush.StartPoint) +
+                            SelectedBrush.StartPoint;
 
-                        var newOffset = Vector2.Distance(SelectedBrush.StartPoint,
-                                                         localStopPos) /
-                                        Vector2.Distance(
-                                            SelectedBrush.StartPoint,
-                                            SelectedBrush.EndPoint);
+                        var newOffset = Vector2.Distance(SelectedBrush.StartPoint, localStopPos) /
+                                        Vector2.Distance(SelectedBrush.StartPoint,
+                                                         SelectedBrush.EndPoint);
 
                         if (localStopPos.X < SelectedBrush.StartPoint.X)
                             newOffset = -newOffset;
 
-                        Move(_selection.ToArray(), newOffset - stop.Offset,
+                        Move(_selection.ToArray(),
+                             newOffset - stop.Offset,
                              ModifyGradientCommand.GradientOperation.ChangeOffset);
 
                         break;
@@ -190,7 +193,8 @@ namespace Ibinimator.Service.Tools
 
         public override IBrushInfo ProvideFill()
         {
-            if (SelectedBrush == null || _selection.Count == 0) return null;
+            if (SelectedBrush == null ||
+                _selection.Count == 0) return null;
 
             var stop = SelectedBrush.Stops[_selection.Last()];
 
@@ -200,9 +204,7 @@ namespace Ibinimator.Service.Tools
         public override IPenInfo ProvideStroke() { return null; }
 
         public override void Render(
-            RenderContext target,
-            ICacheManager cacheManager,
-            IViewManager view)
+            RenderContext target, ICacheManager cacheManager, IViewManager view)
         {
             if (SelectedBrush == null)
                 return;
@@ -212,10 +214,10 @@ namespace Ibinimator.Service.Tools
             var zoom = view.Zoom;
 
             var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
-            var p2 = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+            var p2 = target.CreatePen(1,
+                                      cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
 
-            Vector2 start = t(SelectedBrush.StartPoint),
-                    end = t(SelectedBrush.EndPoint);
+            Vector2 start = t(SelectedBrush.StartPoint), end = t(SelectedBrush.EndPoint);
 
             target.DrawLine(start, end, p);
 
@@ -253,26 +255,26 @@ namespace Ibinimator.Service.Tools
             p2?.Dispose();
         }
 
-        private void Move(IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
+        private void Move(
+            IReadOnlyList<int> indices, float delta, ModifyGradientCommand.GradientOperation op)
         {
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(
-                        Context.HistoryManager.Position + 1,
-                        delta,
-                        indices,
-                        SelectedBrush
-                    ), Time.DoubleClick);
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
+                                          delta,
+                                          indices,
+                                          SelectedBrush),
+                Time.DoubleClick);
         }
 
         private void Remove(params int[] indices)
         {
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(
-                        Context.HistoryManager.Position + 1,
-                        indices,
-                        ModifyGradientCommand.GradientOperation.RemoveStop,
-                        SelectedBrush
-                    ), Time.DoubleClick);
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
+                                          indices,
+                                          ModifyGradientCommand
+                                             .GradientOperation.RemoveStop,
+                                          SelectedBrush),
+                Time.DoubleClick);
         }
     }
 }
