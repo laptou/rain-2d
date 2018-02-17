@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class ChangeZIndexCommand : LayerCommandBase<ILayer>
     {

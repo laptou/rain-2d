@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Service
+namespace Ibinimator.Utility
 {
     public class Time
     {

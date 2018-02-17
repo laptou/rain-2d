@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Text;
 using Ibinimator.Native;
 
 namespace Ibinimator.View.Control

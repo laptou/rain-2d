@@ -4,14 +4,18 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 using Ibinimator.Core.Utility;
 using Ibinimator.Resources;
-using Ibinimator.Service.Commands;
+using Ibinimator.Utility;
 
-namespace Ibinimator.Service.Tools
+namespace Ibinimator.Tools
 {
     public abstract class SelectionToolBase<T> : Core.Model.Model, ITool where T : class, ILayer
     {

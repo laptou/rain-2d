@@ -5,17 +5,19 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Effects;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
 using Ibinimator.Service;
-using Ibinimator.Service.Commands;
-using Ibinimator.Service.Tools;
+using Ibinimator.Utility;
 
-using GradientOp = Ibinimator.Service.Commands.ModifyGradientCommand.GradientOperation;
+using GradientOp = Ibinimator.Commands.ModifyGradientCommand.GradientOperation;
 
 namespace Ibinimator.Tools
 {

@@ -5,6 +5,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 
 namespace Ibinimator.Core
 {

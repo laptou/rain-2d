@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Geometry;
 
 namespace Ibinimator.Core.Utility
 {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Paint;
 
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;

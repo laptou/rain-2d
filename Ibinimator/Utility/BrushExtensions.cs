@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Renderer.WPF;
 
 using WPF = System.Windows.Media;

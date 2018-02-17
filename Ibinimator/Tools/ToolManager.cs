@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Tools;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 
-namespace Ibinimator.Service.Tools
+namespace Ibinimator.Tools
 {
     public class ToolManager : Core.Model.Model, IToolManager
     {

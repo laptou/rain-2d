@@ -5,9 +5,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class ModifyPathCommand : LayerCommandBase<Path>
     {

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Ibinimator.Svg.Utilities;
+
 namespace Ibinimator.Svg
 {
     public sealed class SvgContext

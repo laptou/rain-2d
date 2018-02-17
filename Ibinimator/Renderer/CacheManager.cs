@@ -11,7 +11,9 @@ using System.Windows;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Resources;
 
 namespace Ibinimator.Renderer

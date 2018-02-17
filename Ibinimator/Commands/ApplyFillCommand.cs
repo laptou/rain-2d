@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Paint;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
     {

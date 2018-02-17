@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.Effects;
 using Ibinimator.Core.Utility;
 using Ibinimator.Model;
 using Ibinimator.Resources;

@@ -9,6 +9,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:utility="clr-namespace:Ibinimator.View.Utility"
         xmlns:viewmodel="clr-namespace:Ibinimator.ViewModel"
+        xmlns:documentGraph="clr-namespace:Ibinimator.Core.Model.DocumentGraph;assembly=Ibinimator.Core"
         Title="Ibinimator"
         d:DesignHeight="1080" d:DesignWidth="1920" Icon="/Ibinimator;component/Resources/logo.png"
         WindowState="Maximized"
@@ -485,7 +486,7 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type core:ILayer}" ItemsSource="{Binding SubLayers}">
+                                <HierarchicalDataTemplate DataType="{x:Type documentGraph:ILayer}" ItemsSource="{Binding SubLayers}">
                                     <TextBlock x:Name="layerName"
                                                FontWeight="Bold" Text="{Binding Name}" />
                                     <HierarchicalDataTemplate.Triggers>

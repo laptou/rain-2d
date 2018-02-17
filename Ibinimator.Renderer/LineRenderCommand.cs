@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Renderer
 {

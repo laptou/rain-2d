@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 
 using SharpDX.Direct2D1;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class BinaryOperationCommand : LayerCommandBase<IGeometricLayer>
     {

@@ -7,6 +7,7 @@ using System.Windows;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Geometry;
 
 namespace Ibinimator.Renderer.WPF
 {

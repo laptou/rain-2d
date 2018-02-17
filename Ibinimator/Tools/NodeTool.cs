@@ -5,15 +5,17 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Resources;
-using Ibinimator.Service.Commands;
 
-namespace Ibinimator.Service.Tools
+namespace Ibinimator.Tools
 {
     public class NodeTool : SelectionToolBase<IGeometricLayer>
     {

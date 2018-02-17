@@ -15,6 +15,7 @@ using Ibinimator.Renderer;
 using Ibinimator.Renderer.WPF;
 using Ibinimator.Service;
 using Ibinimator.Svg;
+using Ibinimator.Svg.IO;
 
 using Document = Ibinimator.Core.Document;
 using WPF = System.Windows;
@@ -164,6 +165,8 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
+#pragma warning disable CS0067
+
         /// <inheritdoc />
         public event ArtContextInputEventHandler<FocusEvent> GainedFocus;
 
@@ -190,6 +193,9 @@ namespace Ibinimator.View.Control
 
         /// <inheritdoc />
         public event ArtContextInputEventHandler<TextEvent> Text;
+
+#pragma warning restore CS0067
+
 
         /// <inheritdoc />
         public T Create<T>(params object[] parameters) where T : class

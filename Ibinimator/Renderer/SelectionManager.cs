@@ -5,10 +5,11 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Utility;
-using Ibinimator.Service.Commands;
 
 namespace Ibinimator.Renderer
 {

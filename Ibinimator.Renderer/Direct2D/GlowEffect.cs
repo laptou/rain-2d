@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.Effects;
+using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Renderer.Direct2D {
     public class GlowEffect : Effect, IGlowEffect

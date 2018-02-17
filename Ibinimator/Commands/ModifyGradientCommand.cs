@@ -5,9 +5,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Paint;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class ModifyGradientCommand : IOperationCommand<GradientBrushInfo>
     {
@@ -210,7 +211,7 @@ namespace Ibinimator.Service.Commands
 
         public long Id { get; }
 
-        public long Time { get; } = Service.Time.Now;
+        public long Time { get; } = Utility.Time.Now;
 
         GradientBrushInfo[] IOperationCommand<GradientBrushInfo>.Targets => new[] {Target};
 

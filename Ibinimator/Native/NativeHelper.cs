@@ -6,10 +6,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Model {}
-
-namespace Ibinimator.Native
-{
+namespace Ibinimator.Native {
     internal static class NativeHelper
     {
         public static void CheckError()

@@ -12,19 +12,22 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 using Ibinimator.Resources;
 using Ibinimator.Service;
-using Ibinimator.Service.Commands;
-using Ibinimator.Service.Tools;
+using Ibinimator.Utility;
 
 using DW = SharpDX.DirectWrite;
-using FontStretch = Ibinimator.Core.Model.FontStretch;
-using FontStyle = Ibinimator.Core.Model.FontStyle;
-using FontWeight = Ibinimator.Core.Model.FontWeight;
+using FontStretch = Ibinimator.Core.Model.Text.FontStretch;
+using FontStyle = Ibinimator.Core.Model.Text.FontStyle;
+using FontWeight = Ibinimator.Core.Model.Text.FontWeight;
 
 namespace Ibinimator.Tools
 {

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
-using Ibinimator.Service.Commands;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.ViewModel;
 
 using SharpDX.Direct2D1;

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 using Ibinimator.Core.Utility;
-using Ibinimator.Renderer.Model;
 
 using DW = SharpDX.DirectWrite;
 

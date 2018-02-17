@@ -5,6 +5,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Svg.Enums;
 
 namespace Ibinimator.Svg
 {

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Core.Utility;
-
 using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public class UngroupCommand : LayerCommandBase<IContainerLayer>
     {

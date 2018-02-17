@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Ibinimator.Core;
 using Ibinimator.Service;
 using Ibinimator.Svg;
+using Ibinimator.Svg.IO;
 using Ibinimator.ViewModel;
 
 using Document = Ibinimator.Svg.Document;

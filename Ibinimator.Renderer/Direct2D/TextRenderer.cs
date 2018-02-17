@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 
 using SharpDX;
 using SharpDX.Direct2D1;

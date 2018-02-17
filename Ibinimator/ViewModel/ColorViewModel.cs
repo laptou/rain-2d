@@ -9,7 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
-using Ibinimator.Renderer.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Renderer.Utility;
 
 using WPF = System.Windows.Media;

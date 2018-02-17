@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer

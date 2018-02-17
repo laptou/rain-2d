@@ -6,6 +6,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Effects;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Core
 {

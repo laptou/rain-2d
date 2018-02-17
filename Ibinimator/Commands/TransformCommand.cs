@@ -5,9 +5,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public sealed class TransformCommand : LayerCommandBase<ILayer>
     {

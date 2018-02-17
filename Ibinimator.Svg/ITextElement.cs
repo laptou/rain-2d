@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Core.Model.Text;
+using Ibinimator.Svg.Enums;
+using Ibinimator.Svg.Shapes;
 
 namespace Ibinimator.Svg
 {

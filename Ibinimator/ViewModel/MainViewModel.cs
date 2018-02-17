@@ -14,10 +14,11 @@ using System.Windows.Input;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Renderer;
-using Ibinimator.Renderer.Model;
 using Ibinimator.Service;
-using Ibinimator.Service.Tools;
+using Ibinimator.Tools;
 using Ibinimator.View.Command;
 using Ibinimator.View.Control;
 

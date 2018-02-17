@@ -15,6 +15,7 @@ using Ibinimator.Core.Input;
 using Ibinimator.Native;
 using Ibinimator.Renderer.Direct2D;
 using Ibinimator.Service;
+using Ibinimator.Utility;
 
 using DX = SharpDX;
 using D2D = SharpDX.Direct2D1;

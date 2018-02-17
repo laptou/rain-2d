@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Core.Utility;
-
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Ibinimator.Commands;
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Utility;
 using Ibinimator.Model;
 using Ibinimator.Renderer;
 using Ibinimator.Resources;
-using Ibinimator.Service.Commands;
+using Ibinimator.Utility;
 
-namespace Ibinimator.Service.Tools
+namespace Ibinimator.Tools
 {
     public sealed class SelectionTool : SelectionToolBase<ILayer>
     {

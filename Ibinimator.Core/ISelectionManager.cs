@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.DocumentGraph;
 
 namespace Ibinimator.Core
 {

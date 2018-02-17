@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
+using Ibinimator.Core.Model.DocumentGraph;
 
-namespace Ibinimator.Service.Commands
+namespace Ibinimator.Commands
 {
     public abstract class LayerCommandBase<T> : IOperationCommand<T> where T : class, ILayer
     {
@@ -29,7 +30,7 @@ namespace Ibinimator.Service.Commands
 
         public T[] Targets { get; }
 
-        public long Time { get; } = Service.Time.Now;
+        public long Time { get; } = Utility.Time.Now;
 
         object[] IOperationCommand.Targets => Targets;
 

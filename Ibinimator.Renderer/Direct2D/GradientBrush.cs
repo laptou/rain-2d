@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
-using GradientStop = Ibinimator.Core.GradientStop;
+using GradientStop = Ibinimator.Core.Model.Paint.GradientStop;
 
 namespace Ibinimator.Renderer.Direct2D
 {

@@ -9,9 +9,12 @@ using System.Windows.Media;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Effects;
+using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 
 using Color = Ibinimator.Core.Model.Color;
-using GradientStop = Ibinimator.Core.GradientStop;
+using GradientStop = Ibinimator.Core.Model.Paint.GradientStop;
 
 namespace Ibinimator.Renderer.WPF
 {

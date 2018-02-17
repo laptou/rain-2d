@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Effects;
+using Ibinimator.Core.Model.Paint;
 
 using SharpDX.Mathematics.Interop;
 

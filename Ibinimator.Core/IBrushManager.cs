@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Ibinimator.Core.Model.Paint;
+
 namespace Ibinimator.Core
 {
     public interface IBrushManager : IArtContextManager

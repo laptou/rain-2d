@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Geometry;
 
 namespace Ibinimator.Renderer.Direct2D
 {

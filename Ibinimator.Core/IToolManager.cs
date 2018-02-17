@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 
 namespace Ibinimator.Core
 {

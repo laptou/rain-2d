@@ -7,6 +7,7 @@ using System.Windows.Media;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
+using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Renderer.WPF
 {
