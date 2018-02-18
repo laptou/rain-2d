@@ -15,8 +15,7 @@ namespace Ibinimator.Core.Model
         public static bool TryParse(string input, out Color color)
         {
             color = new Color();
-
-            if (string.IsNullOrWhiteSpace(input)) return false;
+            if(string.IsNullOrWhiteSpace(input)) return false;
 
             var hexMatch = Hex.Match(input);
 
@@ -55,9 +54,26 @@ namespace Ibinimator.Core.Model
                                      .Select(c => c.Value)
                                      .ToArray();
 
-                color = new Color(int.Parse(values[0]) / 256f,
-                                  int.Parse(values[1]) / 256f,
-                                  int.Parse(values[2]) / 256f);
+                color = new Color(float.Parse(values[0]) / 256f,
+                                  float.Parse(values[1]) / 256f,
+                                  float.Parse(values[2]) / 256f);
+
+                return true;
+            }
+
+            var rgbaMatch = Rgba.Match(input);
+
+            if (rgbaMatch.Success)
+            {
+                var values = rgbaMatch.Groups.OfType<Regex.Group>()
+                                      .Skip(1)
+                                      .Select(c => c.Value)
+                                      .ToArray();
+
+                color = new Color(float.Parse(values[0]) / 256f,
+                                  float.Parse(values[1]) / 256f,
+                                  float.Parse(values[2]) / 256f,
+                                  float.Parse(values[2]));
 
                 return true;
             }
@@ -68,79 +84,48 @@ namespace Ibinimator.Core.Model
             {
                 var values = percentMatch.Groups.OfType<Regex.Group>()
                                          .Skip(1)
-                                         .Select(g => g.Value)
+                                         .Select(c => c.Value)
                                          .ToArray();
 
-                color = new Color(int.Parse(values[0]) / 100f,
-                                  int.Parse(values[1]) / 100f,
-                                  int.Parse(values[2]) / 100f);
+                color = new Color(float.Parse(values[0]) / 100f,
+                                  float.Parse(values[1]) / 100f,
+                                  float.Parse(values[2]) / 100f);
 
                 return true;
             }
 
-            var nameColor = FromName(input);
+            var percentWithAlphaMatch = PercentWithAlpha.Match(input);
 
-            if (nameColor.HasValue)
+            if (percentWithAlphaMatch.Success)
             {
-                color = nameColor.Value;
+                var values = percentWithAlphaMatch
+                            .Groups.OfType<Regex.Group>()
+                            .Skip(1)
+                            .Select(c => c.Value)
+                            .ToArray();
+
+                color = new Color(float.Parse(values[0]) / 100f,
+                                  float.Parse(values[1]) / 100f,
+                                  float.Parse(values[2]) / 100f,
+                                  float.Parse(values[3]));
 
                 return true;
             }
 
-            return false;
+            var named = FromName(input);
+
+            if (named == null) return false;
+
+            color = named.Value;
+
+            return true;
         }
 
         public static Color Parse(string input)
         {
-            var hexMatch = Hex.Match(input);
+            if (TryParse(input, out var color)) return color;
 
-            if (hexMatch.Success)
-            {
-                var digits = hexMatch.Groups[1]
-                                     .Captures.OfType<Regex.Capture>()
-                                     .Select(c => c.Value)
-                                     .ToArray();
-
-                if (digits.Length == 3)
-                    return new Color(Convert.ToInt32(digits[0] + digits[0], 16) / 256f,
-                                     Convert.ToInt32(digits[1] + digits[1], 16) / 256f,
-                                     Convert.ToInt32(digits[2] + digits[2], 16) / 256f);
-
-                if (digits.Length == 6)
-                    return new Color(Convert.ToInt32(digits[0] + digits[1], 16) / 256f,
-                                     Convert.ToInt32(digits[2] + digits[3], 16) / 256f,
-                                     Convert.ToInt32(digits[4] + digits[5], 16) / 256f);
-            }
-
-            var rgbMatch = Rgb.Match(input);
-
-            if (rgbMatch.Success)
-            {
-                var values = rgbMatch.Groups.OfType<Regex.Group>()
-                                     .Skip(1)
-                                     .Select(c => c.Value)
-                                     .ToArray();
-
-                return new Color(int.Parse(values[0]) / 256f,
-                                 int.Parse(values[1]) / 256f,
-                                 int.Parse(values[2]) / 256f);
-            }
-
-            var percentMatch = Percent.Match(input);
-
-            if (percentMatch.Success)
-            {
-                var values = percentMatch.Groups[1]
-                                         .Captures.OfType<Regex.Capture>()
-                                         .Select(c => c.Value)
-                                         .ToArray();
-
-                return new Color(int.Parse(values[0]) / 100f,
-                                 int.Parse(values[1]) / 100f,
-                                 int.Parse(values[2]) / 100f);
-            }
-
-            return FromName(input) ?? throw new FormatException("Invalid color.");
+            throw new FormatException("Invalid color.");
         }
 
         private static Color? FromName(string name)
@@ -296,7 +281,7 @@ namespace Ibinimator.Core.Model
                 case "yellowgreen":          return new Color(154 / 255f, 205 / 255f, 50 / 255f);
                 case "transparent":
                 case "none": return new Color(0, 0, 0, 0);
-                default:     return null;
+                default: return null;
             }
         }
 
@@ -305,11 +290,19 @@ namespace Ibinimator.Core.Model
             Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Rgb = new Regex.Regex(
-            @"(?:rgb\(([+-]?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)\))",
+            @"^(?:rgb\(([+-]?(?:[0-9]*[.])?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)\))",
+            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
+
+        private static readonly Regex.Regex Rgba = new Regex.Regex(
+            @"^(?:rgba\(([+-]?(?:[0-9]*[.])?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+),[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)\))",
             Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Percent = new Regex.Regex(
-            @"(?:rgb\(([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?[0-9]+)%\))",
+            @"^(?:rgb\(([+-]?(?:[0-9]*[.])?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)%\))",
+            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
+
+        private static readonly Regex.Regex PercentWithAlpha = new Regex.Regex(
+            @"^(?:rgba\(([+-]?(?:[0-9]*[.])?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)%[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)\))",
             Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         public Color(Vector4 v) : this(v.X, v.Y, v.Z, v.W) { }

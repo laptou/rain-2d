@@ -167,7 +167,7 @@ namespace Ibinimator.View.Control
 
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
         {
-            ArtContext.CacheManager?.ResetResources();
+            ArtContext.CacheManager?.ReleaseResources();
             ArtContext.CacheManager?.LoadBrushes(RenderContext);
             ArtContext.CacheManager?.LoadBitmaps(RenderContext);
 

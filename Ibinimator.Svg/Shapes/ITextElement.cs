@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Text;
 using Ibinimator.Svg.Enums;
-using Ibinimator.Svg.Shapes;
+using Ibinimator.Svg.Structure;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Shapes
 {
     public interface ITextElement : IShapeElement, IContainerElement<IInlineTextElement>
     {
@@ -21,10 +20,5 @@ namespace Ibinimator.Svg
         FontStyle?        FontStyle         { get; set; }
         FontWeight?       FontWeight        { get; set; }
         string            Text              { get; set; }
-    }
-
-    public interface IInlineTextElement : ITextElement
-    {
-        int Position { get; set; }
     }
 }

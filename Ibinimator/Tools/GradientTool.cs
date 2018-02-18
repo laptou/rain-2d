@@ -154,7 +154,7 @@ namespace Ibinimator.Tools
 
             if (!_mouse.down) return;
 
-            if (SelectedBrush != null)
+            if (SelectedBrush != null&& _selection.Any())
             {
                 var stop = SelectedBrush.Stops[_selection.First()];
                 var localStopPos =

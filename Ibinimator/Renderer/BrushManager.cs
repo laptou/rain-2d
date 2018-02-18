@@ -30,6 +30,12 @@ namespace Ibinimator.Renderer
         /// <inheritdoc />
         public void Detach(IArtContext context) { }
 
+        /// <inheritdoc />
+        public event EventHandler Attached;
+
+        /// <inheritdoc />
+        public event EventHandler Detached;
+
         public (IBrushInfo Fill, IPenInfo Stroke) Query()
         {
             var fill = Context.ToolManager.Tool.ProvideFill();

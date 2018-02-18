@@ -138,37 +138,50 @@ namespace Ibinimator.Renderer
             {
                 case IBrush _ when e.PropertyName == nameof(BrushInfo.Opacity):
                     fill.Opacity = info.Opacity;
+
                     break;
                 case IBrush _ when e.PropertyName == nameof(BrushInfo.Transform):
                     fill.Transform = info.Transform;
+
                     break;
-                case ISolidColorBrush solid when e.PropertyName == nameof(SolidColorBrushInfo.Color):
+                case ISolidColorBrush solid
+                    when e.PropertyName == nameof(SolidColorBrushInfo.Color):
                     var solidInfo = (SolidColorBrushInfo) info;
                     solid.Color = solidInfo.Color;
+
                     break;
                 case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Stops):
                     gradInfo = (GradientBrushInfo) info;
                     grad.Stops.ReplaceRange(gradInfo.Stops);
+
                     break;
-                case ILinearGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
+                case ILinearGradientBrush grad
+                    when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
                     gradInfo = (GradientBrushInfo) info;
                     grad.StartX = gradInfo.StartPoint.X;
                     grad.StartY = gradInfo.StartPoint.Y;
+
                     break;
-                case ILinearGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
-                    gradInfo = (GradientBrushInfo)info;
+                case ILinearGradientBrush grad
+                    when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
+                    gradInfo = (GradientBrushInfo) info;
                     grad.EndX = gradInfo.EndPoint.X;
                     grad.EndY = gradInfo.EndPoint.Y;
+
                     break;
-                case IRadialGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
-                    gradInfo = (GradientBrushInfo)info;
+                case IRadialGradientBrush grad
+                    when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
+                    gradInfo = (GradientBrushInfo) info;
                     grad.CenterX = gradInfo.StartPoint.X;
                     grad.CenterY = gradInfo.StartPoint.Y;
+
                     break;
-                case IRadialGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
-                    gradInfo = (GradientBrushInfo)info;
+                case IRadialGradientBrush grad
+                    when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
+                    gradInfo = (GradientBrushInfo) info;
                     grad.RadiusX = gradInfo.EndPoint.X - gradInfo.StartPoint.X;
                     grad.RadiusY = gradInfo.EndPoint.Y - gradInfo.StartPoint.Y;
+
                     break;
             }
 
@@ -234,8 +247,17 @@ namespace Ibinimator.Renderer
         #region ICacheManager Members
 
         /// <inheritdoc />
-        public void Attach(IArtContext context) { }
+        public void Attach(IArtContext context)
+        {
+            context.ManagerDetached += OnManagerDetached;
+            context.RaiseAttached(this);
+        }
 
+        private void OnManagerDetached(object sender, EventArgs e)
+        {
+            if (sender is IViewManager)
+                ReleaseSceneResources();
+        }
 
         /// <inheritdoc />
         public void BindLayer(ILayer layer)
@@ -334,7 +356,12 @@ namespace Ibinimator.Renderer
         }
 
         /// <inheritdoc />
-        public void Detach(IArtContext context) { }
+        public void Detach(IArtContext context)
+        {
+            ReleaseResources();
+            context.ManagerDetached -= OnManagerDetached;
+            context.RaiseDetached(this);
+        }
 
         /// <inheritdoc />
         public RectangleF GetAbsoluteBounds(ILayer layer)
@@ -393,7 +420,7 @@ namespace Ibinimator.Renderer
                 _brushes[field.Name] = target.CreateBrush((Color) field.GetValue(null));
         }
 
-        public void ResetDeviceResources()
+        public void ReleaseDeviceResources()
         {
             EnterWriteLock();
 
@@ -433,11 +460,52 @@ namespace Ibinimator.Renderer
             ExitWriteLock();
         }
 
-        public void ResetResources()
+        public void ReleaseResources()
         {
-            ResetDeviceResources();
+            ReleaseDeviceResources();
 
             EnterWriteLock();
+
+            foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
+            _geometries.Clear();
+
+            foreach (var (_, layout) in _texts.AsTuples())
+                layout.Dispose();
+
+            _texts.Clear();
+
+            ExitWriteLock();
+        }
+
+        /// <inheritdoc />
+        public void ReleaseSceneResources()
+        {
+            EnterWriteLock();
+
+            foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
+            {
+                if (brushInfo != null)
+                    brushInfo.PropertyChanged -= OnBrushPropertyChanged;
+                brush?.Dispose();
+            }
+
+            _brushBindings.Clear();
+
+            foreach (var (strokeInfo, (_, stroke)) in _strokeBindings.AsTuples())
+            {
+                if (strokeInfo != null)
+                    strokeInfo.PropertyChanged -= OnStrokePropertyChanged;
+
+                stroke.Dispose();
+            }
+
+            _strokeBindings.Clear();
+
+            foreach (var (_, fill) in _fills.AsTuples()) fill?.Dispose();
+            _fills.Clear();
+
+            foreach (var (_, stroke) in _strokes.AsTuples()) stroke?.Dispose();
+            _strokes.Clear();
 
             foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
             _geometries.Clear();

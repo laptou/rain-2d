@@ -41,9 +41,19 @@ namespace Ibinimator.Core
 
         event ArtContextInputEventHandler<TextEvent> Text;
 
+        event EventHandler ManagerAttached;
+
+        event EventHandler ManagerDetached;
+
         event EventHandler StatusChanged;
 
+        void RaiseAttached(IArtContextManager mgr);
+
+        void RaiseDetached(IArtContextManager mgr);
+
         void InvalidateRender();
+
+        void SetManager<T>(T manager) where T : IArtContextManager;
 
         T Create<T>(params object[] parameters) where T : class;
     }

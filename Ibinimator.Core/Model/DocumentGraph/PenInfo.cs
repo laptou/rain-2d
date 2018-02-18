@@ -8,9 +8,13 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public class PenInfo : Core.Model.Model, IPenInfo
+    public class PenInfo : Model, IPenInfo
     {
-        public PenInfo() { Dashes = new ObservableList<float>(); }
+        public PenInfo()
+        {
+            Dashes = new ObservableList<float>();
+            MiterLimit = 4f;
+        }
 
         #region IPenInfo Members
 

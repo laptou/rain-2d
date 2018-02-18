@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Ibinimator.Core.Model;
 using Ibinimator.Svg.Paint;
 using Ibinimator.Svg.Shapes;
+using Ibinimator.Svg.Structure;
 
 using Group = Ibinimator.Svg.Structure.Group;
 
@@ -69,15 +70,15 @@ namespace Ibinimator.Svg.Utilities
 
                     break;
                 case "solidColor":
-                    ielement = new SolidColor();
+                    ielement = new SolidColorPaint();
 
                     break;
                 case "linearGradient":
-                    ielement = new LinearGradient();
+                    ielement = new LinearGradientPaint();
 
                     break;
                 case "radialGradient":
-                    ielement = new RadialGradient();
+                    ielement = new RadialGradientPaint();
 
                     break;
                 default:

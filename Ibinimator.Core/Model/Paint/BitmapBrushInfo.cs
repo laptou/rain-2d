@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model.Paint;
-
-namespace Ibinimator.Core.Model.DocumentGraph
+namespace Ibinimator.Core.Model.Paint
 {
     public class BitmapBrushInfo : BrushInfo
     {

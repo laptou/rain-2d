@@ -7,10 +7,14 @@ using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public interface IFilledLayer : ILayer
+    public interface IFilled
     {
         IBrushInfo Fill { get; set; }
 
+    }
+
+    public interface IFilledLayer : ILayer, IFilled
+    {
         event EventHandler FillChanged;
     }
 }

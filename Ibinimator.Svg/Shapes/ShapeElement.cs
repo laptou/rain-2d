@@ -8,6 +8,7 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Svg.Enums;
+using Ibinimator.Svg.Paint;
 
 namespace Ibinimator.Svg.Shapes
 {
@@ -20,13 +21,13 @@ namespace Ibinimator.Svg.Shapes
             base.FromXml(element, context);
 
             if (Paint.Paint.TryParse(LazyGet(element, "fill", true), out var fill))
-                Fill = fill.Resolve(context);
+                Fill = fill;
 
             if (float.TryParse(LazyGet(element, "fill-opacity", true), out var fillOpacity))
                 FillOpacity = fillOpacity;
 
             if (Paint.Paint.TryParse(LazyGet(element, "stroke", true), out var stroke))
-                Stroke = stroke.Resolve(context);
+                Stroke = stroke;
 
             if (Length.TryParse(LazyGet(element, "stroke-width", true), out var strokeWidth))
                 StrokeWidth = strokeWidth;
@@ -48,20 +49,20 @@ namespace Ibinimator.Svg.Shapes
 
             if (Fill != null)
             {
-                LazySet(element, "fill", Fill);
-                LazySet(element, "fill-opacity", FillOpacity, 1);
+                LazySet(element, "fill", Fill.ToInline());
+                LazySet(element, "fill-opacity", FillOpacity * Fill.Opacity, 1);
                 LazySet(element, "fill-rule", FillRule);
             }
 
             if (Stroke != null)
             {
-                LazySet(element, "stroke", Stroke);
+                LazySet(element, "stroke", Stroke.ToInline());
                 LazySet(element, "stroke-dasharray", StrokeDashArray);
                 LazySet(element, "stroke-dash-offset", StrokeDashOffset);
-                LazySet(element, "stroke-opacity", StrokeOpacity, 1);
+                LazySet(element, "stroke-opacity", StrokeOpacity * Stroke.Opacity, 1);
                 LazySet(element, "stroke-linecap", StrokeLineCap);
                 LazySet(element, "stroke-linejoin", StrokeLineJoin);
-                LazySet(element, "stroke-miterlimit", StrokeMiterLimit);
+                LazySet(element, "stroke-miterlimit", StrokeMiterLimit, 4f);
                 LazySet(element, "stroke-width", StrokeWidth, new Length(1, LengthUnit.Pixels));
             }
 

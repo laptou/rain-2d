@@ -22,28 +22,19 @@ namespace Ibinimator.View.Control
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
 
-            var managerInterfaces = typeof(T)
-                                   .FindInterfaces((type, criteria) =>
-                                                       typeof(IArtContextManager).IsAssignableFrom(
-                                                           type),
-                                                   null)
-                                   .Concat(new[] {typeof(T)});
-
-            var interfaces = managerInterfaces.ToList();
-
-            if (interfaces.Contains(typeof(IBrushManager)))
+            if (manager is IBrushManager brushManager)
             {
                 BrushManager?.Detach(this);
-                BrushManager = (IBrushManager) manager;
+                BrushManager = brushManager;
                 BrushManager.Attach(this);
             }
 
-            if (interfaces.Contains(typeof(ICacheManager)))
+            if (manager is ICacheManager cacheManager)
             {
-                CacheManager?.ResetResources();
+                CacheManager?.ReleaseResources();
                 CacheManager?.Detach(this);
 
-                CacheManager = (ICacheManager) manager;
+                CacheManager = cacheManager;
                 CacheManager.Attach(this);
 
                 if (_artView.RenderContext != null)
@@ -56,31 +47,31 @@ namespace Ibinimator.View.Control
                 }
             }
 
-            if (interfaces.Contains(typeof(IHistoryManager)))
+            if (manager is IHistoryManager historyManager)
             {
                 HistoryManager?.Detach(this);
-                HistoryManager = (IHistoryManager) manager;
+                HistoryManager = historyManager;
                 HistoryManager.Attach(this);
             }
 
-            if (interfaces.Contains(typeof(ISelectionManager)))
+            if (manager is ISelectionManager selectionManager)
             {
                 SelectionManager?.Detach(this);
-                SelectionManager = (ISelectionManager) manager;
+                SelectionManager = selectionManager;
                 SelectionManager.Attach(this);
             }
 
-            if (interfaces.Contains(typeof(IToolManager)))
+            if (manager is IToolManager toolManager)
             {
                 ToolManager?.Detach(this);
-                ToolManager = (IToolManager) manager;
+                ToolManager = toolManager;
                 ToolManager.Attach(this);
             }
 
-            if (interfaces.Contains(typeof(IViewManager)))
+            if (manager is IViewManager viewManager)
             {
                 ViewManager?.Detach(this);
-                ViewManager = (IViewManager) manager;
+                ViewManager = viewManager;
                 ViewManager.Attach(this);
             }
 
@@ -131,6 +122,10 @@ namespace Ibinimator.View.Control
 
         #region Events
 
+        public void RaiseAttached(IArtContextManager mgr) { ManagerAttached?.Invoke(mgr, null); }
+
+        public void RaiseDetached(IArtContextManager mgr) { ManagerDetached?.Invoke(mgr, null); }
+
         public void RaiseMouseUp(ClickEvent evt) { MouseUp?.Invoke(this, evt); }
 
         public void RaiseMouseDown(ClickEvent evt) { MouseDown?.Invoke(this, evt); }
@@ -150,10 +145,16 @@ namespace Ibinimator.View.Control
         /// <inheritdoc />
         public event ArtContextInputEventHandler<ClickEvent> MouseUp;
 
+        /// <inheritdoc />
+        public event EventHandler ManagerDetached;
+
         public event EventHandler StatusChanged;
 
         /// <inheritdoc />
         public event ArtContextInputEventHandler<TextEvent> Text;
+
+        /// <inheritdoc />
+        public event EventHandler ManagerAttached;
 
         /// <inheritdoc />
         public event ArtContextInputEventHandler<FocusEvent> GainedFocus;

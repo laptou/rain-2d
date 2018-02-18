@@ -4,12 +4,10 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Utility;
 
-using GradientStop = Ibinimator.Core.Model.Paint.GradientStop;
-
-namespace Ibinimator.Core.Model.DocumentGraph
+namespace Ibinimator.Core.Model.Paint
 {
     public class GradientBrushInfo : BrushInfo
     {
@@ -33,9 +31,15 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
-        public GradientBrushType GradientType
+        public GradientBrushType Type
         {
             get => Get<GradientBrushType>();
+            set => Set(value);
+        }
+
+        public GradientSpace Space
+        {
+            get => Get<GradientSpace>();
             set => Set(value);
         }
 
@@ -57,7 +61,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
             IGradientBrush brush;
 
-            switch (GradientType)
+            switch (Type)
             {
                 case GradientBrushType.Linear:
                     brush = ctx.CreateBrush(

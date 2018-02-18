@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 
 using Ibinimator.Core;
+using Ibinimator.Renderer;
 using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Svg.IO;
@@ -27,7 +28,6 @@ namespace Ibinimator.View.Command
 
         private static async Task OpenAsync(IArtContext artCtx)
         {
-            var vm = artCtx.ViewManager;
             var ofd = new OpenFileDialog
             {
                 DefaultExt = ".svg",
@@ -43,9 +43,12 @@ namespace Ibinimator.View.Command
                     var xdoc = XDocument.Load(stream);
                     var doc = new Document();
                     doc.FromXml(xdoc.Root, new SvgContext {Root = xdoc.Root});
-                    vm.Document = SvgConverter.FromSvg(doc);
 
-                    artCtx.CacheManager.ResetResources();
+                    var vm = new ViewManager(artCtx);
+
+                    vm.Document = SvgReader.FromSvg(doc);
+
+                    artCtx.CacheManager.ReleaseResources();
                     artCtx.CacheManager.LoadBitmaps(artCtx.RenderContext);
                     artCtx.CacheManager.LoadBrushes(artCtx.RenderContext);
                     artCtx.CacheManager.BindLayer(vm.Document.Root);
@@ -55,6 +58,8 @@ namespace Ibinimator.View.Command
                     var viewDim = Math.Min(artCtx.RenderContext.Height, artCtx.RenderContext.Width);
 
                     vm.Zoom = viewDim / (artDim + 20);
+
+                    artCtx.SetManager<IViewManager>(vm);
                 }
         }
 
@@ -80,7 +85,7 @@ namespace Ibinimator.View.Command
 
             using (var stream = File.Open(doc.Path, FileMode.Create))
             {
-                var svgDoc = SvgConverter.ToSvg(doc);
+                var svgDoc = SvgWriter.ToSvg(doc);
                 var xdoc = new XDocument(svgDoc.ToXml(new SvgContext()));
                 xdoc.Save(stream);
             }

@@ -8,6 +8,7 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Svg.Enums;
+using Ibinimator.Svg.Structure;
 
 namespace Ibinimator.Svg
 {

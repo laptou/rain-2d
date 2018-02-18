@@ -17,7 +17,8 @@ namespace Ibinimator.Core.Model.Measurement
             [LengthUnit.Number] = 1f,
             [LengthUnit.Pixels] = 1f,
             [LengthUnit.Points] = 1.25f,
-            [LengthUnit.Inches] = 96f
+            [LengthUnit.Inches] = 96f,
+            [LengthUnit.Percent] = 100f
         };
 
         public static Length Zero = (0, LengthUnit.Number);

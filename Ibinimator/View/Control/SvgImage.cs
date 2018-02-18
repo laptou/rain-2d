@@ -17,7 +17,7 @@ using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Svg.IO;
 
-using Document = Ibinimator.Core.Document;
+using Document = Ibinimator.Core.Model.DocumentGraph.Document;
 using WPF = System.Windows;
 
 // ReSharper disable PossibleInvalidOperationException
@@ -159,7 +159,7 @@ namespace Ibinimator.View.Control
             var document = new Svg.Document();
             document.FromXml(xdoc.Root, new SvgContext());
 
-            _document = SvgConverter.FromSvg(document);
+            _document = SvgReader.FromSvg(document);
             _prepared = true;
         }
 
@@ -189,13 +189,22 @@ namespace Ibinimator.View.Control
         public new event ArtContextInputEventHandler<ClickEvent> MouseUp;
 
         /// <inheritdoc />
+        public event EventHandler ManagerDetached;
+
+        /// <inheritdoc />
         public event EventHandler StatusChanged;
 
         /// <inheritdoc />
         public event ArtContextInputEventHandler<TextEvent> Text;
 
+        /// <inheritdoc />
+        public event EventHandler ManagerAttached;
+
 #pragma warning restore CS0067
 
+
+        /// <inheritdoc />
+        public void SetManager<T>(T manager) where T : IArtContextManager { throw new InvalidOperationException(); }
 
         /// <inheritdoc />
         public T Create<T>(params object[] parameters) where T : class
@@ -203,6 +212,11 @@ namespace Ibinimator.View.Control
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
+        public void RaiseAttached(IArtContextManager mgr) { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
+        public void RaiseDetached(IArtContextManager mgr) { throw new NotImplementedException(); }
         public void InvalidateRender() { InvalidateVisual(); }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();

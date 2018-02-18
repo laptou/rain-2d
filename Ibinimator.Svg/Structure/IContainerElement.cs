@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Structure
 {
     public interface IContainerElement : IContainerElement<IElement> { }
 

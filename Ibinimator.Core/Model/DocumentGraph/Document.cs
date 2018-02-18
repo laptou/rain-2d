@@ -5,14 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model;
-using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Core
+namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public class Document : Model.Model
+    public class Document : Model
     {
         public RectangleF Bounds
         {
@@ -34,12 +32,18 @@ namespace Ibinimator.Core
             set
             {
                 if (Root != null)
+                {
+                    Root.PropertyChanging -= RootPropertyChanging;
                     Root.PropertyChanged -= RootPropertyChanged;
+                }
 
                 Set(value);
 
                 if (Root != null)
+                {
+                    Root.PropertyChanging += RootPropertyChanging;
                     Root.PropertyChanged += RootPropertyChanged;
+                }
             }
         }
 
@@ -55,6 +59,13 @@ namespace Ibinimator.Core
         private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             Updated?.Invoke(sender, e);
+        }
+
+        public event PropertyChangingEventHandler Updating;
+
+        private void RootPropertyChanging(object sender, PropertyChangingEventArgs e)
+        {
+            Updating?.Invoke(sender, e);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Svg.Structure;
 using Ibinimator.Svg.Utilities;
 
 namespace Ibinimator.Svg
@@ -104,6 +105,11 @@ namespace Ibinimator.Svg
                     element.SetAttributeValue(name, $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
 
                     break;
+                case Color color:
+                    element.SetAttributeValue(name, $"rgb({color.Red * 100}%," +
+                                                    $"{color.Green * 100}%," +
+                                                    $"{color.Blue * 100}%");
+                    break;
                 default:
                     element.SetAttributeValue(name, value);
 
@@ -113,9 +119,13 @@ namespace Ibinimator.Svg
 
         #region IElement Members
 
+        /// <inheritdoc />
+        public string Name { get; set; }
+
         public virtual void FromXml(XElement element, SvgContext context)
         {
             Id = (string) element.Attribute("id");
+            Name = LazyGet(element, SvgNames.Name);
 
             var style = (string) element.Attribute("style");
 
@@ -139,10 +149,13 @@ namespace Ibinimator.Svg
             var element = new XElement("error");
 
             LazySet(element, "id", Id);
+            LazySet(element, SvgNames.Name, Name);
 
             return element;
         }
 
+        /// <inheritdoc />
+        public IContainerElement Parent { get; set; }
         public string Id { get; set; }
 
         #endregion

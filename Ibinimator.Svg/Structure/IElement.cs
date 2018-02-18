@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Structure
 {
     public interface IElement
     {
-        string Id { get; set; }
-        void   FromXml(XElement element, SvgContext context);
+        IContainerElement Parent { get; set; }
 
+        string Id { get; set; }
+        string Name { get; set; }
+
+        void   FromXml(XElement element, SvgContext context);
         XElement ToXml(SvgContext context);
     }
 }

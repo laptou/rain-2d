@@ -4,11 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using Ibinimator.Core.Model.Paint;
-
-namespace Ibinimator.Core.Model.DocumentGraph
+namespace Ibinimator.Core.Model.Paint
 {
-    public abstract class BrushInfo : Core.Model.Model, IBrushInfo
+    public abstract class BrushInfo : Model, IBrushInfo
     {
         private static long _nextId = 1;
 
@@ -41,6 +39,18 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
+        public ResourceScope Scope
+        {
+            get => Get<ResourceScope>();
+            set => Set(value);
+        }
+
         #endregion
+    }
+
+    public enum ResourceScope
+    {
+        Layer,
+        Document
     }
 }

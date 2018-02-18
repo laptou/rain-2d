@@ -16,6 +16,7 @@ using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Geometry;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Renderer;
 using Ibinimator.Service;
 using Ibinimator.Tools;

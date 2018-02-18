@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.DocumentGraph;
+using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Renderer
@@ -21,9 +22,33 @@ namespace Ibinimator.Renderer
             Zoom = 1;
         }
 
+        public event PropertyChangingEventHandler DocumentUpdating;
+
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
             DocumentUpdated?.Invoke(sender, e);
+
+            if (sender is IFilledLayer filled &&
+                e.PropertyName == nameof(IFilledLayer.Fill))
+                if (filled.Fill?.Scope == ResourceScope.Document)
+                    Document.Swatches.Add(filled.Fill);
+
+            if (sender is IStrokedLayer stroked &&
+                e.PropertyName == nameof(IStrokedLayer.Stroke))
+                if (stroked.Stroke?.Brush?.Scope == ResourceScope.Document)
+                    Document.Swatches.Add(stroked.Stroke.Brush);
+        }
+
+        private void OnDocumentUpdating(object sender, PropertyChangingEventArgs e)
+        {
+            DocumentUpdating?.Invoke(sender, e);
+
+            if (sender is IFilledLayer filled &&
+                e.PropertyName == nameof(IFilledLayer.Fill)) Document.Swatches.Remove(filled.Fill);
+
+            if (sender is IStrokedLayer stroked &&
+                e.PropertyName == nameof(IStrokedLayer.Stroke))
+                Document.Swatches.Remove(stroked.Stroke?.Brush);
         }
 
         #region IViewManager Members
@@ -34,12 +59,22 @@ namespace Ibinimator.Renderer
         public void Attach(IArtContext context)
         {
             // ViewManager doesn't subscribe to events from any other managers.
+
+            if(context != Context)
+                throw new InvalidOperationException("A new ViewManager must be created for each ArtContext.");
+
+            Context.RaiseAttached(this);
         }
 
         /// <inheritdoc />
         public void Detach(IArtContext context)
         {
             // ViewManager doesn't subscribe to events from any other managers.
+
+            if (context != Context)
+                throw new InvalidOperationException("This ViewManager is not attached to that ArtContext.");
+
+            Context.RaiseDetached(this);
         }
 
         public Vector2 FromArtSpace(Vector2 v) { return Vector2.Transform(v, Transform); }
@@ -77,10 +112,20 @@ namespace Ibinimator.Renderer
             get => Get<Document>();
             set
             {
+                if (Document != null)
+                {
+                    Document.Updating -= OnDocumentUpdating;
+                    Document.Updated -= OnDocumentUpdated;
+                }
+
                 Set(value);
                 RaisePropertyChanged(nameof(Root));
-                value.Updated -= OnDocumentUpdated;
-                value.Updated += OnDocumentUpdated;
+
+                if (Document != null)
+                {
+                    Document.Updating += OnDocumentUpdating;
+                    Document.Updated += OnDocumentUpdated;
+                }
             }
         }
 

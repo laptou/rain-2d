@@ -7,51 +7,14 @@ using System.Xml.Linq;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Svg.Structure;
+using Ibinimator.Svg.Utilities;
 
 namespace Ibinimator.Svg
 {
-    public static class SvgNames
-    {
-        public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
-        public static readonly XNamespace XLink     = "http://www.w3.org/1999/xlink";
-
-        public static readonly XName SolidColor     = Namespace + "solidColor";
-        public static readonly XName LinearGradient = Namespace + "linearGradient";
-        public static readonly XName RadialGradient = Namespace + "radialGradient";
-        public static readonly XName Stop           = Namespace + "stop";
-
-        #region visuals
-
-        public static readonly XName Svg      = Namespace + "svg";
-        public static readonly XName Defs     = Namespace + "defs";
-        public static readonly XName Rect     = Namespace + "rect";
-        public static readonly XName Ellipse  = Namespace + "ellipse";
-        public static readonly XName Circle   = Namespace + "circle";
-        public static readonly XName Path     = Namespace + "path";
-        public static readonly XName Polygon  = Namespace + "polygon";
-        public static readonly XName Polyline = Namespace + "polyline";
-        public static readonly XName Group    = Namespace + "g";
-        public static readonly XName Line     = Namespace + "line";
-        public static readonly XName Text     = Namespace + "text";
-        public static readonly XName Tspan    = Namespace + "tspan";
-
-        #endregion
-    }
-
-    public class Defs : ContainerElement
-    {
-        public override XElement ToXml(SvgContext context)
-        {
-            var element = base.ToXml(context);
-
-            element.Name = SvgNames.Defs;
-
-            return element;
-        }
-    }
-
     public class Document : GraphicalContainerElement
     {
+        public Defs Defs => (Defs) this.FirstOrDefault(c => c is Defs);
+
         public Length Height { get; set; } = (100, LengthUnit.Percent);
 
         public float Version { get; set; } = 1.1f;

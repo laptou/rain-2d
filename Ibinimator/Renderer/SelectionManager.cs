@@ -84,9 +84,30 @@ namespace Ibinimator.Renderer
         /// <inheritdoc />
         public void Attach(IArtContext context)
         {
+            context.ManagerAttached += OnManagerAttached;
+            context.ManagerDetached += OnManagerDetached;
             context.ViewManager.DocumentUpdated += OnDocumentUpdated;
             context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
             context.HistoryManager.Traversed += OnHistoryTraversed;
+
+            context.RaiseAttached(this);
+        }
+
+        private void OnManagerDetached(object sender, EventArgs e)
+        {
+            if (sender is IViewManager view)
+            {
+                Selection.Clear();
+
+                view.Document.Root.BoundsChanged -= OnBoundsChanged;
+                view.DocumentUpdated -= OnDocumentUpdated;
+            }
+        }
+
+        private void OnManagerAttached(object sender, EventArgs e)
+        {
+            Context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
+            Context.ViewManager.DocumentUpdated += OnDocumentUpdated;
         }
 
         public void ClearSelection()
@@ -97,8 +118,13 @@ namespace Ibinimator.Renderer
         /// <inheritdoc />
         public void Detach(IArtContext context)
         {
+            context.ManagerAttached -= OnManagerAttached;
+            context.ManagerDetached -= OnManagerDetached;
+            context.ViewManager.Document.Root.BoundsChanged -= OnBoundsChanged;
             context.ViewManager.DocumentUpdated -= OnDocumentUpdated;
             context.HistoryManager.Traversed -= OnHistoryTraversed;
+
+            context.RaiseDetached(this);
         }
 
         public Vector2 FromSelectionSpace(Vector2 v)

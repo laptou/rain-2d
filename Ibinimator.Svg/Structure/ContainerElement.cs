@@ -7,9 +7,8 @@ using System.Xml.Linq;
 
 using Ibinimator.Svg.Utilities;
 
-namespace Ibinimator.Svg.Structure
-{
-    public abstract class GraphicalContainerElement : GraphicalElement, IContainerElement
+namespace Ibinimator.Svg.Structure {
+    public abstract class ContainerElement : Element, IContainerElement
     {
         private readonly List<IElement> _list = new List<IElement>();
 
@@ -73,11 +72,11 @@ namespace Ibinimator.Svg.Structure
             return element;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable)_list).GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _list).GetEnumerator(); }
 
         public int Count => _list.Count;
 
-        public bool IsReadOnly => ((IList<IElement>)_list).IsReadOnly;
+        public bool IsReadOnly => ((IList<IElement>) _list).IsReadOnly;
 
         #endregion
     }

@@ -162,34 +162,4 @@ namespace Ibinimator.Svg.Shapes
 
         #endregion
     }
-
-    public class Text : TextElement
-    {
-        public override XElement ToXml(SvgContext context)
-        {
-            var element = base.ToXml(context);
-
-            element.Name = SvgNames.Text;
-
-            return element;
-        }
-    }
-
-    public class Span : TextElement, IInlineTextElement
-    {
-        #region IInlineTextElement Members
-
-        public override XElement ToXml(SvgContext context)
-        {
-            var element = base.ToXml(context);
-
-            element.Name = SvgNames.Tspan;
-
-            return element;
-        }
-
-        public int Position { get; set; }
-
-        #endregion
-    }
 }
