@@ -11,7 +11,7 @@ using Ibinimator.Core.Model.Paint;
 using Ibinimator.Svg.Enums;
 using Ibinimator.Svg.Utilities;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Structure
 {
     public abstract class GraphicalElement : Element, IGraphicalElement
     {

@@ -156,7 +156,7 @@ namespace Ibinimator.View.Control
                 xdoc = XDocument.Load(stream);
             }
 
-            var document = new Svg.Document();
+            var document = new Svg.Structure.Document();
             document.FromXml(xdoc.Root, new SvgContext());
 
             _document = SvgReader.FromSvg(document);

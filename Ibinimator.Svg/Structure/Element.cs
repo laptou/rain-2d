@@ -8,10 +8,9 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
-using Ibinimator.Svg.Structure;
 using Ibinimator.Svg.Utilities;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Structure
 {
     public abstract class Element : IElement
     {

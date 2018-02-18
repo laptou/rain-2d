@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -7,7 +10,6 @@ using System.Threading.Tasks;
 using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Model.Text;
-using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {

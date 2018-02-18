@@ -158,8 +158,10 @@ namespace Ibinimator.Renderer
 
             if (transform.IsIdentity) return;
 
+            var targets = Selection.Where(l => !(l is Clone c && c.Target.Selected));
+
             var command = new TransformCommand(Context.HistoryManager.Position + 1,
-                                               Selection.ToArray(),
+                                               targets.ToArray(),
                                                global: transform);
 
             Context.HistoryManager.Merge(command, 500);

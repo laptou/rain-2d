@@ -160,6 +160,30 @@ namespace Ibinimator.ViewModel
             l.ApplyTransform(Matrix3x2.CreateTranslation(100, 100));
 
             ViewManager.Root.Add(t);
+
+            var reference1 = new Clone
+            {
+                Target = t
+            };
+
+            var reference2 = new Clone
+            {
+                Target = t
+            };
+
+            var reference3 = new Clone
+            {
+                Target = reference1
+            };
+
+            reference1.ApplyTransform(Matrix3x2.CreateTranslation(100, 100));
+            reference2.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
+            reference3.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
+            reference2.Fill = new SolidColorBrushInfo(new Color(1, 0, 0));
+
+            ViewManager.Root.Add(reference1);
+            ViewManager.Root.Add(reference2);
+            ViewManager.Root.Add(reference3);
             ViewManager.Root.Add(l);
 
             l.Add(e);

@@ -26,14 +26,14 @@ namespace Ibinimator.Svg.IO
         {
             var svgDoc = new Document();
 
-            var nodes = Crawl(doc).ToArray();
+            var nodes = DG.GraphUtility.Crawl(doc).ToArray();
             var defs = new Defs();
             svgDoc.Add(defs);
 
             IElement previous = svgDoc;
-            Node previousNode = nodes.First();
+            DG.Node previousNode = nodes.First();
 
-            IDictionary<Node, IElement> table = new Dictionary<Node, IElement>
+            IDictionary<DG.Node, IElement> table = new Dictionary<DG.Node, IElement>
             {
                 {previousNode, previous}
             };
@@ -45,7 +45,7 @@ namespace Ibinimator.Svg.IO
                 // is the parent of the current node
                 if (node.Parent != null)
                 {
-                    IElement parent = node.Rank > previousNode.Rank ? previous : table[node.Parent];
+                    var parent = node.Rank > previousNode.Rank ? previous : table[node.Parent];
 
                     var element = ToSvg(node, parent);
 
@@ -66,85 +66,7 @@ namespace Ibinimator.Svg.IO
             return svgDoc;
         }
 
-        private static IEnumerable<Node> Crawl(DG.Document doc)
-        {
-            var root = new Node(null, doc, null);
-
-            yield return root;
-
-            foreach (var swatch in doc.Swatches)
-                yield return new Node(swatch.Name, swatch, root);
-
-            foreach (var layer in doc.Root.SubLayers.Reverse())
-                foreach (var node in Crawl(layer, root))
-                    yield return node;
-        }
-
-        private static IEnumerable<Node> Crawl(IBrushInfo brush, Node ancestor)
-        {
-            var node = new Node(brush.Name, brush, ancestor);
-
-            yield return node;
-
-            if (brush is GradientBrushInfo gradient)
-                foreach (var stop in gradient.Stops)
-                    yield return new Node(null, stop, node);
-        }
-
-        private static IEnumerable<Node> Crawl(IPenInfo pen, Node ancestor)
-        {
-            var node = new Node(null, pen, ancestor);
-
-            yield return node;
-
-            if (pen.Brush != null)
-                foreach (var n in Crawl(pen.Brush, node))
-                    yield return n;
-        }
-
-        private static IEnumerable<Node> Crawl(DG.ILayer layer, Node ancestor)
-        {
-            var root = new Node(layer.Name, layer, ancestor);
-
-            yield return root;
-
-            if (layer is DG.IFilledLayer filled &&
-                filled.Fill != null)
-            {
-                foreach (var node in Crawl(filled.Fill, root))
-                    yield return node;
-            }
-
-            if (layer is DG.IStrokedLayer stroked &&
-                stroked.Stroke != null)
-            {
-                foreach (var node in Crawl(stroked.Stroke, root))
-                        yield return node;
-            }
-
-            if (layer is DG.ITextLayer text &&
-                text.Value != null)
-            {
-                foreach (var node in Crawl(text, root))
-                    if (RequiresDef(node))
-                        yield return node;
-            }
-
-            if (layer is DG.IContainerLayer container)
-                foreach (var sublayer in container.SubLayers.Reverse())
-                    foreach (var node in Crawl(sublayer, root))
-                        yield return node;
-        }
-
-        private static IEnumerable<Node> Crawl(DG.ITextLayer layer, Node ancestor)
-        {
-            var node = new Node(layer.Name, layer, ancestor);
-
-            foreach (var format in layer.Formats)
-                yield return new Node(null, format, node);
-        }
-
-        private static bool RequiresDef(Node node)
+        private static bool RequiresDef(DG.Node node)
         {
             if (node.Target is GradientBrushInfo)
                 return true;
@@ -156,7 +78,7 @@ namespace Ibinimator.Svg.IO
             return false;
         }
 
-        private static IElement ToSvg(Node node, IElement parent)
+        private static IElement ToSvg(DG.Node node, IElement parent)
         {
             IElement element = null;
 
@@ -278,43 +200,5 @@ namespace Ibinimator.Svg.IO
 
             return element;
         }
-
-
-        #region Nested type: Node
-
-        [DebuggerDisplay("#{Rank}::{Id}::{Target.GetType()} < {Parent?.Target.GetType()}")]
-        private class Node
-        {
-            public Node(string name, object target, Node parent)
-            {
-                Target = target;
-
-                if (parent != null)
-                {
-                    Parent = parent;
-                    Rank = parent.Rank + 1;
-                }
-
-                Name = name;
-            }
-
-            public string Name { get; }
-
-            public string Id
-            {
-                get
-                {
-                    var prefix = (char)(97 + Rank % 26);
-                    var suffix = unchecked((uint)Target.GetHashCode()).ToString();
-                    return string.Join("_", prefix, Name, suffix);
-                }
-            }
-
-            public Node Parent { get; }
-            public int Rank { get; }
-            public object Target { get; }
-        }
-
-        #endregion
     }
 }

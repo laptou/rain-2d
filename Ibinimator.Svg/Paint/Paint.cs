@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
+using Ibinimator.Svg.Structure;
 
 namespace Ibinimator.Svg.Paint
 {

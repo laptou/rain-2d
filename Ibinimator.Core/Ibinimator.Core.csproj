@@ -14,6 +14,7 @@
     <AssemblyOriginatorKeyFile>ibinimator.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FastMember.Signed" Version="1.2.0" />
     <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>

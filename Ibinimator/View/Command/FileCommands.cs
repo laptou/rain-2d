@@ -12,9 +12,8 @@ using Ibinimator.Renderer;
 using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Svg.IO;
+using Ibinimator.Svg.Structure;
 using Ibinimator.ViewModel;
-
-using Document = Ibinimator.Svg.Document;
 
 namespace Ibinimator.View.Command
 {

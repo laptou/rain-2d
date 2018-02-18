@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Svg.Structure
 {
     public interface ITransformableElement
     {

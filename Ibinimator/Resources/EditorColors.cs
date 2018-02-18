@@ -14,6 +14,7 @@ namespace Ibinimator.Resources
 
         public static readonly Color
             SelectionOutline = new Color(0.345f, 0.831f, 0.196f); // #58D432
+        public static readonly Color SelectionReferenceOutline = new Color(0.565f, 0.816f, 0.988f); // #90d0fc
 
         public static readonly Color SelectionHandle = new Color(1f); // #FFFFFF
 

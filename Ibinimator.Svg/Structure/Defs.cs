@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Svg.Structure;
-
-namespace Ibinimator.Svg {
+namespace Ibinimator.Svg.Structure {
     public class Defs : ContainerElement
     {
         public override XElement ToXml(SvgContext context)

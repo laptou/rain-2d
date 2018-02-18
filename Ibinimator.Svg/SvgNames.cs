@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Ibinimator.Svg {
-    public static class SvgNames
+    internal static class SvgNames
     {
         public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
         public static readonly XNamespace XLink     = "http://www.w3.org/1999/xlink";

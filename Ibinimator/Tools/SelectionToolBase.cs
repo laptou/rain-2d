@@ -198,26 +198,29 @@ namespace Ibinimator.Tools
         protected void RenderBoundingBoxes(
             RenderContext target, ICacheManager cache, IViewManager view)
         {
+            var outline = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline)));
+            var outlineRef = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionReferenceOutline)));
+
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);
 
-            using (var pen =
-                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-            {
-                target.DrawRectangle(SelectionManager.SelectionBounds, pen);
-            }
+            target.DrawRectangle(SelectionManager.SelectionBounds, outline);
 
             target.Transform(MathUtils.Invert(SelectionManager.SelectionTransform));
 
             foreach (var layer in Selection)
             {
+                if (layer is Clone clone &&
+                    !clone.Target.Selected)
+                {
+                    target.Transform(clone.Target.AbsoluteTransform);
+                    target.DrawRectangle(cache.GetBounds(clone.Target), outlineRef);
+                    target.Transform(MathUtils.Invert(clone.Target.AbsoluteTransform));
+                }
+
                 target.Transform(layer.AbsoluteTransform);
 
-                using (var pen =
-                    target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
-                {
-                    target.DrawRectangle(cache.GetBounds(layer), pen);
-                }
+                target.DrawRectangle(cache.GetBounds(layer), outline);
 
                 target.Transform(MathUtils.Invert(layer.AbsoluteTransform));
             }

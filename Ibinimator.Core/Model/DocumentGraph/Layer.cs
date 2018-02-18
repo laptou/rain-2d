@@ -8,7 +8,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public abstract class Layer : Core.Model.Model, ILayer
+    public abstract class Layer : Model, ILayer
     {
         protected Layer()
         {
@@ -106,7 +106,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
-        public float Opacity
+        public virtual float Opacity
         {
             get => Get<float>();
             set => Set(value);
@@ -118,13 +118,13 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
-        public bool Selected
+        public virtual bool Selected
         {
             get => Get<bool>();
             set => Set(value);
         }
 
-        public Matrix3x2 Transform
+        public virtual Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
             protected set => Set(value);
