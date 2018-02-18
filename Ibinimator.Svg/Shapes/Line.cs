@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 
 namespace Ibinimator.Svg.Shapes

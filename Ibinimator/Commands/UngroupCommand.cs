@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using Ibinimator.Core.Utility;
+
 using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Model.DocumentGraph;
-using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Commands
 {

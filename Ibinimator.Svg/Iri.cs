@@ -40,7 +40,7 @@ namespace Ibinimator.Svg
             return false;
         }
 
-        public static Iri FromId(string id) { return new Iri { Id = id }; }
+        public static Iri FromId(string id) { return new Iri {Id = id}; }
 
         /// <inheritdoc />
         public override string ToString() { return $"url({'#' + Id})"; }

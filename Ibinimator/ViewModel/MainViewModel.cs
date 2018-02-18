@@ -17,6 +17,7 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Model.Paint;
+using Ibinimator.Core.Model.Text;
 using Ibinimator.Renderer;
 using Ibinimator.Service;
 using Ibinimator.Tools;
@@ -148,8 +149,11 @@ namespace Ibinimator.ViewModel
             {
                 Value = "hello world",
                 Fill = r2.Fill,
-                FontFamilyName = "Roboto1s",
-                FontSize = 32,
+                TextStyle = new TextInfo
+                {
+                    FontFamily = "Roboto",
+                    FontSize = 32
+                },
                 Width = 100,
                 Height = 100
             };

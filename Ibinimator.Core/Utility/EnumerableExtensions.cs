@@ -7,9 +7,7 @@ namespace Ibinimator.Core.Utility
 {
     public static class EnumerableExtensions
     {
-        public static IEnumerable<T> Cycle<T>(
-            this IEnumerable<T> enumerable,
-            int elements)
+        public static IEnumerable<T> Cycle<T>(this IEnumerable<T> enumerable, int elements)
         {
             var enumerable1 = enumerable as IList<T> ?? enumerable.ToList();
 
@@ -17,9 +15,7 @@ namespace Ibinimator.Core.Utility
         }
 
         public static IEnumerable<T> Replace<T>(
-            this IEnumerable<T> enumerable,
-            T oldItem,
-            T newItem)
+            this IEnumerable<T> enumerable, T oldItem, T newItem)
         {
             foreach (var item in enumerable)
                 if (item.Equals(oldItem))
@@ -28,7 +24,8 @@ namespace Ibinimator.Core.Utility
                     yield return item;
         }
 
-        public static IEnumerable<T> SkipUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        public static IEnumerable<T> SkipUntil<T>(
+            this IEnumerable<T> enumerable, Func<T, bool> predicate)
         {
             var yielding = false;
 
@@ -36,7 +33,8 @@ namespace Ibinimator.Core.Utility
             {
                 if (yielding) yield return element;
 
-                if (!yielding && !predicate(element)) yielding = true;
+                if (!yielding &&
+                    !predicate(element)) yielding = true;
             }
         }
 
@@ -50,7 +48,8 @@ namespace Ibinimator.Core.Utility
             {
                 while (enumerator.MoveNext())
                 {
-                    if (predicate(enumerator.Current, index) && set.Any())
+                    if (predicate(enumerator.Current, index) &&
+                        set.Any())
                     {
                         yield return set;
 
@@ -75,12 +74,14 @@ namespace Ibinimator.Core.Utility
             return enumerable.Split((t, i) => predicate(t));
         }
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, T element)
+        public static IEnumerable<IEnumerable<T>> Split<T>(
+            this IEnumerable<T> enumerable, T element)
         {
             return enumerable.Split((t, i) => t.Equals(element));
         }
 
-        public static IEnumerable<T> TakeUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        public static IEnumerable<T> TakeUntil<T>(
+            this IEnumerable<T> enumerable, Func<T, bool> predicate)
         {
             foreach (var element in enumerable)
             {

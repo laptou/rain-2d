@@ -18,6 +18,12 @@ namespace Ibinimator.Renderer
             _brushHistory = new Stack<IBrushInfo>();
         }
 
+        /// <inheritdoc />
+        public event EventHandler Attached;
+
+        /// <inheritdoc />
+        public event EventHandler Detached;
+
         #region IBrushManager Members
 
         public void Apply(IBrushInfo fill) { Context.ToolManager.Tool.ApplyFill(fill); }
@@ -29,12 +35,6 @@ namespace Ibinimator.Renderer
 
         /// <inheritdoc />
         public void Detach(IArtContext context) { }
-
-        /// <inheritdoc />
-        public event EventHandler Attached;
-
-        /// <inheritdoc />
-        public event EventHandler Detached;
 
         public (IBrushInfo Fill, IPenInfo Stroke) Query()
         {

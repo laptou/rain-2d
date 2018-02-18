@@ -13,6 +13,8 @@ namespace Ibinimator.Svg.Structure
     {
         private readonly List<IElement> _list = new List<IElement>();
 
+        public IElement this[string id] => _list.First(e => e.Id == id);
+
         #region IContainerElement Members
 
         IElement IList<IElement>.this[int index]
@@ -20,8 +22,6 @@ namespace Ibinimator.Svg.Structure
             get => _list[index];
             set => _list[index] = value;
         }
-
-        public IElement this[string id] => _list.First(e => e.Id == id);
 
         public void Add(IElement item)
         {
@@ -55,6 +55,7 @@ namespace Ibinimator.Svg.Structure
         public bool Remove(IElement item)
         {
             item.Parent = null;
+
             return _list.Remove(item);
         }
 
@@ -73,11 +74,11 @@ namespace Ibinimator.Svg.Structure
             return element;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable)_list).GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _list).GetEnumerator(); }
 
         public int Count => _list.Count;
 
-        public bool IsReadOnly => ((IList<IElement>)_list).IsReadOnly;
+        public bool IsReadOnly => ((IList<IElement>) _list).IsReadOnly;
 
         #endregion
     }

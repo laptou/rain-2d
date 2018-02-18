@@ -18,8 +18,8 @@ namespace Ibinimator.Core.Input
         }
 
         public float Delta { get; }
-        public Vector2 Position { get; }
         public ScrollDirection Direction { get; }
         public ModifierState ModifierState { get; }
+        public Vector2 Position { get; }
     }
 }

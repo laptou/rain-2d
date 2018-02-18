@@ -10,7 +10,8 @@ namespace Ibinimator.Renderer.Utility
 {
     public static class ColorUtils
     {
-        public static (double Hue, double Saturation, double Lightness, double Alpha) ColorToHsla(Color color)
+        public static (double Hue, double Saturation, double Lightness, double Alpha) ColorToHsla(
+            Color color)
         {
             var (r, g, b, a) = ColorToRgba(color);
 
@@ -96,7 +97,10 @@ namespace Ibinimator.Renderer.Utility
             return (h * 360f, s, l, a);
         }
 
-        public static Color RgbToColor(double r, double g, double b) { return RgbaToColor(r, g, b, 1); }
+        public static Color RgbToColor(double r, double g, double b)
+        {
+            return RgbaToColor(r, g, b, 1);
+        }
 
         public static (double h, double s, double l) RgbToHsl(double r, double g, double b)
         {

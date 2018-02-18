@@ -19,11 +19,9 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
             if (subLayer != null) return subLayer;
 
-            return
-                SubLayers
-                   .OfType<Group>()
-                   .Select(layer => layer.Find(id))
-                   .FirstOrDefault(l => l != null);
+            return SubLayers.OfType<Group>()
+                            .Select(layer => layer.Find(id))
+                            .FirstOrDefault(l => l != null);
         }
 
         private void OnBoundsChanged(object sender, EventArgs e) { RaiseBoundsChanged(); }
@@ -98,13 +96,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
             if (SubLayers.Count == 0) return RectangleF.Empty;
 
             if (cache != null)
-                return SubLayers
-                      .Select(cache.GetRelativeBounds)
-                      .Aggregate(RectangleF.Union);
+                return SubLayers.Select(cache.GetRelativeBounds).Aggregate(RectangleF.Union);
 
-            return SubLayers
-                  .Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
-                  .Aggregate((r1, r2) => RectangleF.Union(r1, r2));
+            return SubLayers.Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
+                            .Aggregate((r1, r2) => RectangleF.Union(r1, r2));
         }
 
         public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
@@ -122,7 +117,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 break;
             }
 
-            if (minimumDepth <= 0 && hit != null)
+            if (minimumDepth <= 0 &&
+                hit != null)
                 return this is T t ? t : hit;
 
             return hit;

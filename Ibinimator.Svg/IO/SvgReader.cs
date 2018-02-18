@@ -163,7 +163,7 @@ namespace Ibinimator.Svg.IO
                                          .ToArray();
 
                 shape.Fill = FromSvg(svgDocument, shapeElement.Fill, shapeElement.FillOpacity);
-                shape.Stroke = FromSvg(svgDocument, 
+                shape.Stroke = FromSvg(svgDocument,
                                        shapeElement.Stroke,
                                        shapeElement.StrokeOpacity,
                                        shapeElement.StrokeWidth.To(LengthUnit.Pixels),

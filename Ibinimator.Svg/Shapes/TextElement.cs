@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Text;
 using Ibinimator.Svg.Enums;
@@ -46,7 +45,10 @@ namespace Ibinimator.Svg.Shapes
 
             FontFamily = LazyGet(element, "font-family", true);
             FontSize = LazyGet(element, "font-size", new Length(12, LengthUnit.Pixels), true);
-            FontStretch = LazyGet(element, "font-stretch", Core.Model.Text.FontStretch.Normal, true);
+            FontStretch = LazyGet(element,
+                                  "font-stretch",
+                                  Core.Model.Text.FontStretch.Normal,
+                                  true);
             FontStyle = LazyGet(element, "font-style", Core.Model.Text.FontStyle.Normal, true);
             FontWeight = LazyGet(element, "font-weight", Core.Model.Text.FontWeight.Normal, true);
             AlignmentBaseline =
@@ -98,7 +100,10 @@ namespace Ibinimator.Svg.Shapes
             LazySet(element, "baseline-shift", BaselineShift);
             LazySet(element, "font-family", FontFamily);
             LazySet(element, "font-size", FontSize, (12, LengthUnit.Points));
-            LazySet(element, "font-stretch", FontStretch ?? default, Core.Model.Text.FontStretch.Normal);
+            LazySet(element,
+                    "font-stretch",
+                    FontStretch ?? default,
+                    Core.Model.Text.FontStretch.Normal);
             LazySet(element, "font-style", FontStyle ?? default, Core.Model.Text.FontStyle.Normal);
             LazySet(element, "font-weight", (int) (FontWeight ?? default), 400);
 

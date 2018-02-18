@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Renderer
@@ -11,13 +10,8 @@ namespace Ibinimator.Renderer
     internal class RectangleRenderCommand : GeometricRenderCommand
     {
         public RectangleRenderCommand(
-            float  left,
-            float  top,
-            float  width,
-            float  height,
-            bool   fill,
-            IBrush brush,
-            IPen   pen) : base(fill, brush, pen)
+            float left, float top, float width, float height, bool fill, IBrush brush, IPen pen) :
+            base(fill, brush, pen)
         {
             Top = top;
             Left = left;
@@ -26,8 +20,8 @@ namespace Ibinimator.Renderer
         }
 
         public float Height { get; }
-        public float Left   { get; }
-        public float Top    { get; }
+        public float Left { get; }
+        public float Top { get; }
 
         public float Width { get; }
     }

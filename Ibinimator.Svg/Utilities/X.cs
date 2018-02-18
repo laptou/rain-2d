@@ -100,37 +100,33 @@ namespace Ibinimator.Svg.Utilities
 
                 foreach (Match transformMatch in transformMatches)
                 {
-                    var groups = transformMatch.Groups
-                                               .OfType<System.Text.RegularExpressions.Group>()
-                                               .Skip(1)
-                                               .SelectMany(
-                                                    g => g.Captures.OfType<Capture>().Select(c => c.Value))
-                                               .Where(g => !string.IsNullOrWhiteSpace(g))
-                                               .ToArray();
+                    var groups = transformMatch
+                                .Groups.OfType<System.Text.RegularExpressions.Group>()
+                                .Skip(1)
+                                .SelectMany(g => g.Captures.OfType<Capture>().Select(c => c.Value))
+                                .Where(g => !string.IsNullOrWhiteSpace(g))
+                                .ToArray();
 
                     switch (groups[0])
                     {
                         case "matrix":
-                            transform = new Matrix3x2(
-                                            float.Parse(groups[1]),
-                                            float.Parse(groups[2]),
-                                            float.Parse(groups[3]),
-                                            float.Parse(groups[4]),
-                                            float.Parse(groups[5]),
-                                            float.Parse(groups[6])) * transform;
+                            transform = new Matrix3x2(float.Parse(groups[1]),
+                                                      float.Parse(groups[2]),
+                                                      float.Parse(groups[3]),
+                                                      float.Parse(groups[4]),
+                                                      float.Parse(groups[5]),
+                                                      float.Parse(groups[6])) * transform;
 
                             break;
                         case "scale":
                             if (groups.Length == 2)
-                                transform =
-                                    Matrix3x2.CreateScale(
-                                        float.Parse(groups[1])) * transform;
+                                transform = Matrix3x2.CreateScale(float.Parse(groups[1])) *
+                                            transform;
 
                             if (groups.Length == 3)
                                 transform =
-                                    Matrix3x2.CreateScale(
-                                        float.Parse(groups[1]),
-                                        float.Parse(groups[2])) * transform;
+                                    Matrix3x2.CreateScale(float.Parse(groups[1]),
+                                                          float.Parse(groups[2])) * transform;
 
                             break;
 
@@ -159,25 +155,23 @@ namespace Ibinimator.Svg.Utilities
                                 transform =
                                     Matrix3x2.CreateRotation(
                                         float.Parse(groups[1]) / 180 * (float) Math.PI,
-                                        new Vector2(
-                                            float.Parse(groups[2]),
-                                            float.Parse(groups[3]))) * transform;
+                                        new Vector2(float.Parse(groups[2]),
+                                                    float.Parse(groups[3]))) * transform;
 
                             break;
 
                         case "skewX":
                             transform =
-                                Matrix3x2.CreateSkew(
-                                    float.Parse(groups[1]) / 180 * (float) Math.PI,
-                                    0) * transform;
+                                Matrix3x2.CreateSkew(float.Parse(groups[1]) / 180 * (float) Math.PI,
+                                                     0) * transform;
 
                             break;
 
                         case "skewY":
                             transform =
-                                Matrix3x2.CreateSkew(
-                                    0,
-                                    float.Parse(groups[1]) / 180 * (float) Math.PI) * transform;
+                                Matrix3x2.CreateSkew(0,
+                                                     float.Parse(groups[1]) / 180 *
+                                                     (float) Math.PI) * transform;
 
                             break;
                     }
@@ -197,7 +191,8 @@ namespace Ibinimator.Svg.Utilities
 
             foreach (var character in name)
             {
-                if (char.IsUpper(character) && current != "")
+                if (char.IsUpper(character) &&
+                    current != "")
                 {
                     words.Add(current.ToLower());
                     current = "";

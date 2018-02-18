@@ -49,19 +49,18 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public long Size => Path == null ? 0 : new FileInfo(Path).Length;
 
-        public ObservableList<IBrushInfo> Swatches { get; set; }
-            = new ObservableList<IBrushInfo>();
+        public ObservableList<IBrushInfo> Swatches { get; set; } = new ObservableList<IBrushInfo>();
 
         public string Type => System.IO.Path.GetExtension(Path);
 
         public event PropertyChangedEventHandler Updated;
 
+        public event PropertyChangingEventHandler Updating;
+
         private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             Updated?.Invoke(sender, e);
         }
-
-        public event PropertyChangingEventHandler Updating;
 
         private void RootPropertyChanging(object sender, PropertyChangingEventArgs e)
         {

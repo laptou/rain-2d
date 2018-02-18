@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
@@ -17,27 +16,25 @@ namespace Ibinimator.Renderer.Direct2D
     {
         public SolidColorBrush(D2D1.RenderTarget target, Color color)
         {
-            NativeBrush =
-                new D2D1.SolidColorBrush(target,
-                                         new RawColor4(color.Red, color.Green, color.Blue, color.Alpha));
+            NativeBrush = new D2D1.SolidColorBrush(target,
+                                                   new RawColor4(
+                                                       color.Red,
+                                                       color.Green,
+                                                       color.Blue,
+                                                       color.Alpha));
         }
 
         #region ISolidColorBrush Members
 
         public Color Color
         {
-            get => new Color(
-                ((D2D1.SolidColorBrush) NativeBrush).Color.R,
-                ((D2D1.SolidColorBrush) NativeBrush).Color.G,
-                ((D2D1.SolidColorBrush) NativeBrush).Color.B,
-                ((D2D1.SolidColorBrush) NativeBrush).Color.A);
+            get => new Color(((D2D1.SolidColorBrush) NativeBrush).Color.R,
+                             ((D2D1.SolidColorBrush) NativeBrush).Color.G,
+                             ((D2D1.SolidColorBrush) NativeBrush).Color.B,
+                             ((D2D1.SolidColorBrush) NativeBrush).Color.A);
 
             set => ((D2D1.SolidColorBrush) NativeBrush).Color =
-                   new RawColor4(
-                       value.Red,
-                       value.Green,
-                       value.Blue,
-                       value.Alpha);
+                   new RawColor4(value.Red, value.Green, value.Blue, value.Alpha);
         }
 
         #endregion

@@ -19,27 +19,21 @@ namespace Ibinimator.Core.Model.Paint
             set => Set(value);
         }
 
-        public SpreadMethod SpreadMethod
-        {
-            get => Get<SpreadMethod>();
-            set => Set(value);
-        }
-
         public Vector2 Focus
         {
             get => Get<Vector2>();
             set => Set(value);
         }
 
-        public GradientBrushType Type
-        {
-            get => Get<GradientBrushType>();
-            set => Set(value);
-        }
-
         public GradientSpace Space
         {
             get => Get<GradientSpace>();
+            set => Set(value);
+        }
+
+        public SpreadMethod SpreadMethod
+        {
+            get => Get<SpreadMethod>();
             set => Set(value);
         }
 
@@ -55,6 +49,12 @@ namespace Ibinimator.Core.Model.Paint
             set => Set(value);
         }
 
+        public GradientBrushType Type
+        {
+            get => Get<GradientBrushType>();
+            set => Set(value);
+        }
+
         public override IBrush CreateBrush(RenderContext ctx)
         {
             if (Stops.Count == 0) return null;
@@ -64,23 +64,21 @@ namespace Ibinimator.Core.Model.Paint
             switch (Type)
             {
                 case GradientBrushType.Linear:
-                    brush = ctx.CreateBrush(
-                        Stops,
-                        StartPoint.X,
-                        StartPoint.Y,
-                        EndPoint.X,
-                        EndPoint.Y);
+                    brush = ctx.CreateBrush(Stops,
+                                            StartPoint.X,
+                                            StartPoint.Y,
+                                            EndPoint.X,
+                                            EndPoint.Y);
 
                     break;
                 case GradientBrushType.Radial:
-                    brush = ctx.CreateBrush(
-                        Stops,
-                        StartPoint.X,
-                        StartPoint.Y,
-                        EndPoint.X - StartPoint.X,
-                        EndPoint.Y - StartPoint.Y,
-                        Focus.X,
-                        Focus.Y);
+                    brush = ctx.CreateBrush(Stops,
+                                            StartPoint.X,
+                                            StartPoint.Y,
+                                            EndPoint.X - StartPoint.X,
+                                            EndPoint.Y - StartPoint.Y,
+                                            Focus.X,
+                                            Focus.Y);
 
                     break;
                 default:

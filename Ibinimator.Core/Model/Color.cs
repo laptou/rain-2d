@@ -15,7 +15,8 @@ namespace Ibinimator.Core.Model
         public static bool TryParse(string input, out Color color)
         {
             color = new Color();
-            if(string.IsNullOrWhiteSpace(input)) return false;
+
+            if (string.IsNullOrWhiteSpace(input)) return false;
 
             var hexMatch = Hex.Match(input);
 

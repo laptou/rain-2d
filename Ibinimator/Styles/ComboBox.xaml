@@ -29,12 +29,14 @@
                         </Border>
                         <Border x:Name="templateRoot"
                                 CornerRadius="2" SnapsToDevicePixels="True">
-                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="0" MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
+                                        <ColumnDefinition Width="0"
+                                                          MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
                                     </Grid.ColumnDefinitions>
                                     <Popup x:Name="PART_Popup"
                                            Grid.Column="0" Grid.ColumnSpan="2"
@@ -43,7 +45,8 @@
                                            IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                            Placement="Bottom" PopupAnimation="Fade">
                                         <themes:SystemDropShadowChrome x:Name="PopupShadow"
-                                                                       MinWidth="{Binding ActualWidth, ElementName=templateRoot}" MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                                       MinWidth="{Binding ActualWidth, ElementName=templateRoot}"
+                                                                       MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                                                        Color="Transparent">
                                             <Border x:Name="DropDownBorder"
                                                     Background="White" CornerRadius="2">
@@ -59,7 +62,8 @@
                                                         </Canvas>
                                                         <ItemsPresenter x:Name="ItemsPresenter"
                                                                         KeyboardNavigation.DirectionalNavigation="Contained"
-                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" TextBlock.Foreground="{utility:Theme text-1}" />
+                                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                        TextBlock.Foreground="{utility:Theme text-1}" />
                                                     </Grid>
                                                 </ScrollViewer>
                                             </Border>
@@ -81,7 +85,8 @@
                                                                 <Border x:Name="splitBorder"
                                                                         Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}"
                                                                         Margin="0" HorizontalAlignment="Right"
-                                                                        BorderBrush="Transparent" BorderThickness="1" SnapsToDevicePixels="True">
+                                                                        BorderBrush="Transparent" BorderThickness="1"
+                                                                        SnapsToDevicePixels="True">
                                                                     <control:Icon Width="8" IconName="icon-expander" />
                                                                 </Border>
                                                             </Border>
@@ -93,11 +98,13 @@
                                     </ToggleButton>
                                     <ContentPresenter x:Name="contentPresenter"
                                                       Grid.Column="0"
-                                                      Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                       Content="{TemplateBinding SelectionBoxItem}"
                                                       ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
-                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" IsHitTestVisible="False"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      IsHitTestVisible="False"
                                                       SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                       TextBlock.FontFamily="{TemplateBinding FontFamily}" />
                                     <TextBox x:Name="PART_EditableTextBox"
@@ -106,7 +113,8 @@
                                              Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                              VerticalContentAlignment="Center"
                                              Background="{utility:Theme textbox}" BorderThickness="0" Focusable="True"
-                                             FontFamily="{TemplateBinding FontFamily}" IsReadOnly="{TemplateBinding IsReadOnly}" Visibility="Hidden">
+                                             FontFamily="{TemplateBinding FontFamily}"
+                                             IsReadOnly="{TemplateBinding IsReadOnly}" Visibility="Hidden">
                                         <i:Interaction.Behaviors>
                                             <utility:TextBoxEnterBehavior />
                                         </i:Interaction.Behaviors>
@@ -114,10 +122,14 @@
                                             <ControlTemplate TargetType="{x:Type TextBoxBase}">
                                                 <Grid>
                                                     <Border x:Name="border"
-                                                            Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            SnapsToDevicePixels="True">
                                                         <ScrollViewer x:Name="PART_ContentHost"
-                                                                      Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                                                                      Focusable="False"
+                                                                      HorizontalScrollBarVisibility="Hidden"
+                                                                      VerticalScrollBarVisibility="Hidden" />
                                                     </Border>
                                                 </Grid>
                                                 <ControlTemplate.Triggers>
@@ -148,7 +160,8 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="shadow" Storyboard.TargetProperty="Radius" To="0"
+                                        <DoubleAnimation Storyboard.TargetName="shadow"
+                                                         Storyboard.TargetProperty="Radius" To="0"
                                                          Duration="0:0:0.125" />
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -156,7 +169,8 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="shadow" Storyboard.TargetProperty="Radius" To="6"
+                                        <DoubleAnimation Storyboard.TargetName="shadow"
+                                                         Storyboard.TargetProperty="Radius" To="6"
                                                          Duration="0:0:0.125" />
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -170,8 +184,10 @@
                             <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
                         </MultiTrigger>
                         <Trigger SourceName="DropDownScrollViewer" Property="CanContentScroll" Value="False">
-                            <Setter TargetName="OpaqueRect" Property="Canvas.Left" Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}" />
-                            <Setter TargetName="OpaqueRect" Property="Canvas.Top" Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}" />
+                            <Setter TargetName="OpaqueRect" Property="Canvas.Left"
+                                    Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}" />
+                            <Setter TargetName="OpaqueRect" Property="Canvas.Top"
+                                    Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

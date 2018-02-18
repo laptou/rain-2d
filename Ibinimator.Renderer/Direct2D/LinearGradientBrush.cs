@@ -4,8 +4,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
 using SharpDX.Direct2D1;
@@ -20,21 +18,25 @@ namespace Ibinimator.Renderer.Direct2D
         private SpreadMethod _spreadMethod;
 
         public LinearGradientBrush(
-            RenderTarget              target,
-            IEnumerable<GradientStop> stops,
-            RawVector2                start,
-            RawVector2                end) : base(target, stops)
+            RenderTarget target, IEnumerable<GradientStop> stops, RawVector2 start, RawVector2 end)
+            : base(target, stops)
         {
             using (var nativeStops = ConvertStops())
             {
-                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(
-                    Target,
-                    new LinearGradientBrushProperties
-                    {
-                        StartPoint = new RawVector2(start.X, start.Y),
-                        EndPoint = new RawVector2(end.X, end.Y)
-                    },
-                    nativeStops);
+                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
+                                                                        new
+                                                                            LinearGradientBrushProperties
+                                                                            {
+                                                                                StartPoint =
+                                                                                    new RawVector2(
+                                                                                        start.X,
+                                                                                        start.Y),
+                                                                                EndPoint =
+                                                                                    new RawVector2(
+                                                                                        end.X,
+                                                                                        end.Y)
+                                                                            },
+                                                                        nativeStops);
             }
         }
 
@@ -50,8 +52,7 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         protected override void OnStopsChanged(
-            object                           sender,
-            NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+            object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             if (Stops.Count > 0) // avoid access violation exceptions when the list is cleared
                 RecreateBrush();
@@ -65,14 +66,20 @@ namespace Ibinimator.Renderer.Direct2D
 
             using (var nativeStops = ConvertStops())
             {
-                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(
-                    Target,
-                    new LinearGradientBrushProperties
-                    {
-                        StartPoint = new RawVector2(StartX, StartY),
-                        EndPoint = new RawVector2(EndX, EndY)
-                    },
-                    nativeStops);
+                NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
+                                                                        new
+                                                                            LinearGradientBrushProperties
+                                                                            {
+                                                                                StartPoint =
+                                                                                    new RawVector2(
+                                                                                        StartX,
+                                                                                        StartY),
+                                                                                EndPoint =
+                                                                                    new RawVector2(
+                                                                                        EndX,
+                                                                                        EndY)
+                                                                            },
+                                                                        nativeStops);
             }
 
             old.Dispose();
@@ -88,7 +95,6 @@ namespace Ibinimator.Renderer.Direct2D
 
             if (!old.IsDisposed)
             {
-
                 // the gradient stop collection continues to exist until it is decoupled
                 // and then manually disposed of
                 var stops = old.GradientStopCollection;

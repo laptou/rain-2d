@@ -188,6 +188,12 @@ namespace Ibinimator.Renderer
             Context.InvalidateRender();
         }
 
+        private void OnManagerDetached(object sender, EventArgs e)
+        {
+            if (sender is IViewManager)
+                ReleaseSceneResources();
+        }
+
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var info = (IPenInfo) sender;
@@ -251,12 +257,6 @@ namespace Ibinimator.Renderer
         {
             context.ManagerDetached += OnManagerDetached;
             context.RaiseAttached(this);
-        }
-
-        private void OnManagerDetached(object sender, EventArgs e)
-        {
-            if (sender is IViewManager)
-                ReleaseSceneResources();
         }
 
         /// <inheritdoc />

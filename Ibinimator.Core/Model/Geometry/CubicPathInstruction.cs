@@ -20,8 +20,13 @@ namespace Ibinimator.Core.Model.Geometry
             Control2Y = control2Y;
         }
 
-        public CubicPathInstruction(Vector2 position, Vector2 control1, Vector2 control2) :
-            this(position.X, position.Y, control1.X, control1.Y, control2.X, control2.Y) { }
+        public CubicPathInstruction(Vector2 position, Vector2 control1, Vector2 control2) : this(
+            position.X,
+            position.Y,
+            control1.X,
+            control1.Y,
+            control2.X,
+            control2.Y) { }
 
         public Vector2 Control1 => new Vector2(Control1X, Control1Y);
 

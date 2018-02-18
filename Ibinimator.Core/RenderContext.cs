@@ -26,63 +26,33 @@ namespace Ibinimator.Core
         public abstract ISolidColorBrush CreateBrush(Color color);
 
         public abstract ILinearGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops,
-            float startX,
-            float startY,
-            float endX,
-            float endY);
+            IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY);
 
         public abstract IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops,
-            float centerX,
-            float centerY,
-            float radiusX,
-            float radiusY,
-            float focusX,
-            float focusY);
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
+            float radiusY, float focusX, float focusY);
 
         public abstract T CreateEffect<T>() where T : class, IEffect;
 
-        public abstract IGeometry CreateEllipseGeometry(
-            float cx,
-            float cy,
-            float rx,
-            float ry);
+        public abstract IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry);
 
         public abstract IGeometry CreateGeometry();
 
         public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
 
-        public abstract IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes);
+        public abstract IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes);
 
         public abstract IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit);
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit);
 
-        public abstract IGeometry CreateRectangleGeometry(
-            float x,
-            float y,
-            float w,
-            float h);
+        public abstract IGeometry CreateRectangleGeometry(float x, float y, float w, float h);
 
         public abstract ITextLayout CreateTextLayout();
 
         public abstract void DrawBitmap(IBitmap bitmap);
 
-        public abstract void DrawEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
-            IPen pen);
+        public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
 
         public abstract void DrawGeometry(IGeometry geometry, IPen pen);
 
@@ -91,29 +61,16 @@ namespace Ibinimator.Core
         public abstract void DrawLine(Vector2 v1, Vector2 v2, IPen pen);
 
         public abstract void DrawRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
-            IPen pen);
+            float left, float top, float width, float height, IPen pen);
 
         public abstract void End();
 
-        public abstract void FillEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
-            IBrush brush);
+        public abstract void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush);
 
         public abstract void FillGeometry(IGeometry geometry, IBrush brush);
 
         public abstract void FillRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
-            IBrush brush);
+            float left, float top, float width, float height, IBrush brush);
 
         public abstract float GetDpi();
 
@@ -144,7 +101,10 @@ namespace Ibinimator.Core
             DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height, pen);
         }
 
-        public virtual void FillCircle(Vector2 c, float r, IBrush brush) { FillEllipse(c, r, r, brush); }
+        public virtual void FillCircle(Vector2 c, float r, IBrush brush)
+        {
+            FillEllipse(c, r, r, brush);
+        }
 
         public virtual void FillCircle(float cx, float cy, float r, IBrush brush)
         {

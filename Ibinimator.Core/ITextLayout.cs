@@ -16,8 +16,8 @@ namespace Ibinimator.Core
         public float Top;
         public float Baseline;
         public float Height;
-        public int Position;
-        public int Line;
+        public int   Position;
+        public int   Line;
         public float Left;
 
         public TextPositionMetric(

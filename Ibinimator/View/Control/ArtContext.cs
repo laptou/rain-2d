@@ -18,6 +18,22 @@ namespace Ibinimator.View.Control
 
         public ArtContext(ArtView artView) { _artView = artView; }
 
+        #region IArtContext Members
+
+        /// <inheritdoc />
+        public T Create<T>(params object[] parameters) where T : class
+        {
+            if (typeof(T) == typeof(ICaret))
+                if (WindowHelper.GetFocus() == _artView.Handle)
+                    return new Caret(_artView.Handle,
+                                     (int) parameters[0],
+                                     (int) parameters[1]) as T;
+
+            return null;
+        }
+
+        public void InvalidateRender() { _artView.InvalidateSurface(); }
+
         public void SetManager<T>(T manager) where T : IArtContextManager
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
@@ -77,22 +93,6 @@ namespace Ibinimator.View.Control
 
             InvalidateRender();
         }
-
-        #region IArtContext Members
-
-        /// <inheritdoc />
-        public T Create<T>(params object[] parameters) where T : class
-        {
-            if (typeof(T) == typeof(ICaret))
-                if (WindowHelper.GetFocus() == _artView.Handle)
-                    return new Caret(_artView.Handle,
-                                     (int) parameters[0],
-                                     (int) parameters[1]) as T;
-
-            return null;
-        }
-
-        public void InvalidateRender() { _artView.InvalidateSurface(); }
 
         public RenderContext RenderContext => _artView.RenderContext;
 

@@ -18,7 +18,10 @@ namespace Ibinimator.Core.Model.Paint
         }
 
 
-        public override IBrush CreateBrush(RenderContext target) { return target.CreateBrush(Color); }
+        public override IBrush CreateBrush(RenderContext target)
+        {
+            return target.CreateBrush(Color);
+        }
 
         public override string ToString() { return $"Color: {Color}, Opacity: {Opacity}"; }
     }

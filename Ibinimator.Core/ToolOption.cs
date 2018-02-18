@@ -54,6 +54,7 @@ namespace Ibinimator.Core
             set => Set(value);
         }
     }
+
     public class ToolOption<T> : ToolOptionBase
     {
         /// <inheritdoc />

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Utility;
 
@@ -45,14 +44,12 @@ namespace Ibinimator.Svg.Shapes
 
                         break;
                     case QuadraticPathInstruction qn:
-                        pathData += $"Q{qn.Control.X},{qn.Control.Y} " +
-                                    $"{qn.X},{qn.Y} ";
+                        pathData += $"Q{qn.Control.X},{qn.Control.Y} " + $"{qn.X},{qn.Y} ";
 
                         break;
                     case CubicPathInstruction cn:
                         pathData += $"C{cn.Control1.X},{cn.Control1.Y} " +
-                                    $"{cn.Control2.X},{cn.Control2.Y} " +
-                                    $"{cn.X},{cn.Y} ";
+                                    $"{cn.Control2.X},{cn.Control2.Y} " + $"{cn.X},{cn.Y} ";
 
                         break;
                     case LinePathInstruction ln:

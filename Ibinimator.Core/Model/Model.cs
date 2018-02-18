@@ -84,8 +84,9 @@ namespace Ibinimator.Core.Model
             RaisePropertyChanging(propertyName);
         }
 
-        protected void Set<T>(T value, [CallerMemberName] string propertyName = "", 
-                              params string[] dependentProperties)
+        protected void Set<T>(
+            T value, [CallerMemberName] string propertyName = "",
+            params string[] dependentProperties)
         {
             if (value is INotifyCollectionChanged collection)
             {
@@ -115,18 +116,14 @@ namespace Ibinimator.Core.Model
         }
 
         protected void Set<T>(
-            T value, 
-            PropertyChangedEventHandler after,
-            [CallerMemberName] string propertyName = "")
+            T value, PropertyChangedEventHandler after, [CallerMemberName] string propertyName = "")
         {
             Set(value, propertyName);
             after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected void Set<T>(
-            T value,
-            out T variable,
-            PropertyChangedEventHandler after,
+            T value, out T variable, PropertyChangedEventHandler after,
             [CallerMemberName] string propertyName = "")
         {
             Set(value, out variable, propertyName);
@@ -134,9 +131,7 @@ namespace Ibinimator.Core.Model
         }
 
         protected void Set<T>(
-            T value, 
-            PropertyChangingEventHandler before,
-            PropertyChangedEventHandler after,
+            T value, PropertyChangingEventHandler before, PropertyChangedEventHandler after,
             [CallerMemberName] string propertyName = "")
         {
             before?.Invoke(this, new PropertyChangingEventArgs(propertyName));

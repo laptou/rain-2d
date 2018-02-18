@@ -12,13 +12,14 @@ namespace Ibinimator.Core
 {
     public class ToolOptions : INotifyCollectionChanged, IEnumerable<ToolOptionBase>
     {
-        private readonly Dictionary<string, ToolOptionBase> _options = new Dictionary<string, ToolOptionBase>();
+        private readonly Dictionary<string, ToolOptionBase> _options =
+            new Dictionary<string, ToolOptionBase>();
 
         public event PropertyChangedEventHandler OptionChanged;
 
         public ToolOption<T> Create<T>(string id, ToolOptionType type, string label = null)
         {
-            var op = new ToolOption<T>(id, type) { Name = label };
+            var op = new ToolOption<T>(id, type) {Name = label};
             op.PropertyChanged += OnOptionChanged;
             _options[id] = op;
 
@@ -33,8 +34,10 @@ namespace Ibinimator.Core
             switch (option.Value)
             {
                 case T t:
+
                     return t;
                 default:
+
                     return (T) Convert.ChangeType(option.Value, typeof(T));
             }
         }
@@ -43,8 +46,8 @@ namespace Ibinimator.Core
 
         public void Set<T>(string id, T value)
         {
-            if(_options[id] is ToolOption<T> option)
-            option.Value = value;
+            if (_options[id] is ToolOption<T> option)
+                option.Value = value;
         }
 
         private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
@@ -52,9 +55,12 @@ namespace Ibinimator.Core
             OptionChanged?.Invoke(sender, e);
         }
 
-        #region IEnumerable<ToolOption> Members
+        #region IEnumerable<ToolOptionBase> Members
 
-        public IEnumerator<ToolOptionBase> GetEnumerator() { return _options.Values.GetEnumerator(); }
+        public IEnumerator<ToolOptionBase> GetEnumerator()
+        {
+            return _options.Values.GetEnumerator();
+        }
 
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 

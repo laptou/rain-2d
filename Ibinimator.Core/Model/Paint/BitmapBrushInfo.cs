@@ -15,6 +15,9 @@ namespace Ibinimator.Core.Model.Paint
             set => Set(value);
         }
 
-        public override IBrush CreateBrush(RenderContext target) { throw new NotImplementedException(); }
+        public override IBrush CreateBrush(RenderContext target)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

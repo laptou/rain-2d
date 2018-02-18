@@ -58,7 +58,11 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public override IGeometry GetGeometry(ICacheManager cache)
         {
-            return cache.Context.RenderContext.CreateEllipseGeometry(CenterX, CenterY, RadiusX, RadiusY);
+            return cache.Context.RenderContext.CreateEllipseGeometry(
+                CenterX,
+                CenterY,
+                RadiusX,
+                RadiusY);
         }
     }
 }

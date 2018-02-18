@@ -10,7 +10,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
     public interface IFilled
     {
         IBrushInfo Fill { get; set; }
-
     }
 
     public interface IFilledLayer : ILayer, IFilled

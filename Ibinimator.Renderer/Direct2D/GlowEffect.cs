@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model.Effects;
 using Ibinimator.Core.Model.Paint;
 
-namespace Ibinimator.Renderer.Direct2D {
+using SharpDX.Direct2D1;
+
+namespace Ibinimator.Renderer.Direct2D
+{
     public class GlowEffect : Effect, IGlowEffect
     {
         private readonly SharpDX.Direct2D1.Effect blur;
         private readonly SharpDX.Direct2D1.Effect composite;
 
-        public GlowEffect(SharpDX.Direct2D1.DeviceContext dc)
+        public GlowEffect(DeviceContext dc)
         {
             blur = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.GaussianBlur);
 
@@ -21,7 +23,7 @@ namespace Ibinimator.Renderer.Direct2D {
             composite.SetInputEffect(0, blur, false);
         }
 
-        public override SharpDX.Direct2D1.Image GetOutput() { return composite.Output; }
+        public override Image GetOutput() { return composite.Output; }
 
         #region IGlowEffect Members
 
@@ -51,9 +53,8 @@ namespace Ibinimator.Renderer.Direct2D {
 
         public float Radius
         {
-            get => blur.GetFloatValue((int) SharpDX.Direct2D1.GaussianBlurProperties.StandardDeviation);
-            set => blur.SetValue((int) SharpDX.Direct2D1.GaussianBlurProperties.StandardDeviation,
-                                 value);
+            get => blur.GetFloatValue((int) GaussianBlurProperties.StandardDeviation);
+            set => blur.SetValue((int) GaussianBlurProperties.StandardDeviation, value);
         }
 
         #endregion

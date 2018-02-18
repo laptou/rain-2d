@@ -33,15 +33,15 @@ namespace Ibinimator.Core.Model.Paint
             set => Set(value);
         }
 
-        public Matrix3x2 Transform
-        {
-            get => Get<Matrix3x2>();
-            set => Set(value);
-        }
-
         public ResourceScope Scope
         {
             get => Get<ResourceScope>();
+            set => Set(value);
+        }
+
+        public Matrix3x2 Transform
+        {
+            get => Get<Matrix3x2>();
             set => Set(value);
         }
 

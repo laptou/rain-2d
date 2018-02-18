@@ -8,10 +8,11 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Svg.Structure;
 
-namespace Ibinimator.Svg.Paint {
+namespace Ibinimator.Svg.Paint
+{
     public class GradientStop : Element
     {
-        public Color  Color  { get; set; }
+        public Color Color { get; set; }
         public Length Offset { get; set; }
 
         public float Opacity { get; set; } = 1;

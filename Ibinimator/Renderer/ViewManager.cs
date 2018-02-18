@@ -60,8 +60,9 @@ namespace Ibinimator.Renderer
         {
             // ViewManager doesn't subscribe to events from any other managers.
 
-            if(context != Context)
-                throw new InvalidOperationException("A new ViewManager must be created for each ArtContext.");
+            if (context != Context)
+                throw new InvalidOperationException(
+                    "A new ViewManager must be created for each ArtContext.");
 
             Context.RaiseAttached(this);
         }
@@ -72,7 +73,8 @@ namespace Ibinimator.Renderer
             // ViewManager doesn't subscribe to events from any other managers.
 
             if (context != Context)
-                throw new InvalidOperationException("This ViewManager is not attached to that ArtContext.");
+                throw new InvalidOperationException(
+                    "This ViewManager is not attached to that ArtContext.");
 
             Context.RaiseDetached(this);
         }

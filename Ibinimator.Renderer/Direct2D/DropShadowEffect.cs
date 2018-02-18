@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Effects;
 using Ibinimator.Core.Model.Paint;
 
+using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
-namespace Ibinimator.Renderer.Direct2D {
+namespace Ibinimator.Renderer.Direct2D
+{
     public class DropShadowEffect : Effect, IDropShadowEffect
     {
         private readonly SharpDX.Direct2D1.Effect composite;
         private readonly SharpDX.Direct2D1.Effect shadow;
 
-        public DropShadowEffect(SharpDX.Direct2D1.DeviceContext dc)
+        public DropShadowEffect(DeviceContext dc)
         {
             shadow = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.Shadow);
 
@@ -24,7 +25,7 @@ namespace Ibinimator.Renderer.Direct2D {
             composite.SetInputEffect(0, shadow, false);
         }
 
-        public override SharpDX.Direct2D1.Image GetOutput() { return composite.Output; }
+        public override Image GetOutput() { return composite.Output; }
 
         #region IDropShadowEffect Members
 
@@ -54,16 +55,14 @@ namespace Ibinimator.Renderer.Direct2D {
 
         public Color Color
         {
-            get => shadow.GetColor4Value((int) SharpDX.Direct2D1.ShadowProperties.Color).Convert();
-            set => shadow.SetValue((int) SharpDX.Direct2D1.ShadowProperties.Color,
-                                   (RawColor4) value.Convert());
+            get => shadow.GetColor4Value((int) ShadowProperties.Color).Convert();
+            set => shadow.SetValue((int) ShadowProperties.Color, (RawColor4) value.Convert());
         }
 
         public float Radius
         {
-            get => shadow.GetFloatValue((int) SharpDX.Direct2D1.ShadowProperties.BlurStandardDeviation);
-            set => shadow.SetValue((int) SharpDX.Direct2D1.ShadowProperties.BlurStandardDeviation,
-                                   value);
+            get => shadow.GetFloatValue((int) ShadowProperties.BlurStandardDeviation);
+            set => shadow.SetValue((int) ShadowProperties.BlurStandardDeviation, value);
         }
 
         #endregion

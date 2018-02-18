@@ -14,13 +14,13 @@ using Ibinimator.Core;
 using Ibinimator.Core.Input;
 using Ibinimator.Native;
 using Ibinimator.Renderer.Direct2D;
-using Ibinimator.Service;
 using Ibinimator.Utility;
+
+using SharpDX.DXGI;
 
 using DX = SharpDX;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using Format = SharpDX.DXGI.Format;
 using MouseButton = Ibinimator.Core.Input.MouseButton;
 
 namespace Ibinimator.View.Control

@@ -17,16 +17,15 @@ namespace Ibinimator.Core.Model.DocumentGraph
     {
         public Text()
         {
-            FontWeight = FontWeight.Normal;
-            FontStretch = FontStretch.Normal;
-            FontStyle = FontStyle.Normal;
-            FontSize = 12;
-            FontFamilyName = "Arial";
             Value = "";
+            TextStyle = new TextInfo();
             Stroke = new PenInfo();
 
             Formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
         }
+
+
+        public float Baseline { get; private set; }
 
         public bool IsBlock
         {
@@ -74,9 +73,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
             if (format == null) return null;
 
-            return format.Range.Index + format.Range.Length > position && position >= format.Range.Index ?
-                       format :
-                       null;
+            return format.Range.Index + format.Range.Length > position &&
+                   position >= format.Range.Index
+                       ? format
+                       : null;
         }
 
         protected void RaiseFillChanged() { FillChanged?.Invoke(this, null); }
@@ -94,6 +94,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
         }
 
         protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
+        protected void RaiseTextStyleChanged() { TextStyleChanged?.Invoke(this, null); }
 
         #region ITextLayer Members
 
@@ -101,6 +102,9 @@ namespace Ibinimator.Core.Model.DocumentGraph
         public event EventHandler GeometryChanged;
         public event EventHandler LayoutChanged;
         public event EventHandler StrokeChanged;
+
+        /// <inheritdoc />
+        public event EventHandler TextStyleChanged;
 
         public void ClearFormat()
         {
@@ -141,11 +145,11 @@ namespace Ibinimator.Core.Model.DocumentGraph
         {
             var layout = ctx.RenderContext.CreateTextLayout();
 
-            layout.FontSize = FontSize;
-            layout.FontStyle = FontStyle;
-            layout.FontWeight = FontWeight;
-            layout.FontStretch = FontStretch;
-            layout.FontFamily = FontFamilyName;
+            layout.FontSize = TextStyle.FontSize;
+            layout.FontStyle = TextStyle.FontStyle;
+            layout.FontWeight = TextStyle.FontWeight;
+            layout.FontStretch = TextStyle.FontStretch;
+            layout.FontFamily = TextStyle.FontFamily;
             layout.InsertText(0, Value);
 
             foreach (var format in Formats)
@@ -179,9 +183,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 var format = GetFormat(position, out var index);
 
                 if (format != null)
-                    format.Range = (
-                        format.Range.Index,
-                        format.Range.Length + text.Length);
+                    format.Range = (format.Range.Index, format.Range.Length + text.Length);
 
                 index++;
 
@@ -189,9 +191,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 while (index < Formats.Count)
                 {
                     format = Formats[index];
-                    format.Range = (
-                        format.Range.Index + text.Length,
-                        format.Range.Length);
+                    format.Range = (format.Range.Index + text.Length, format.Range.Length);
                     index++;
                 }
             }
@@ -227,8 +227,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
                     var len = fstart - position;
                     var fend = fstart + format.Range.Length;
 
-                    if (len <= 0 && fend <= end) Formats.Remove(format);
-                    else if (len <= 0 && fend > end)
+                    if (len <= 0 &&
+                        fend <= end) Formats.Remove(format);
+                    else if (len <= 0 &&
+                             fend > end)
                         format.Range = (fstart, fend - fstart - range);
                     else
                         format.Range = (fstart, len);
@@ -277,21 +279,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public void SetFormat(Format format)
         {
-            // if the format covers everything, set the attributes of the layer itself
-            if (format.Range.Equals((0, Value.Length)))
-            {
-                FontSize = format.FontSize ?? FontSize;
-                FontFamilyName = format.FontFamilyName ?? FontFamilyName;
-                FontStyle = format.FontStyle ?? FontStyle;
-                FontStretch = format.FontStretch ?? FontStretch;
-                FontWeight = format.FontWeight ?? FontWeight;
-                Fill = format.Fill ?? Fill;
-                Stroke = format.Stroke ?? Stroke;
-
-                // no return -- we still want it to override any conflicting properties
-                // set by other formats
-            }
-
             var range = format.Range;
             var start = range.Index;
             var current = range.Index;
@@ -367,9 +354,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
             }
         }
 
-
-        public float Baseline { get; private set; }
-
         public override string DefaultName => $@"Text ""{Value.Truncate(30)}""";
 
         public IBrushInfo Fill
@@ -379,56 +363,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
             {
                 Set(value);
                 RaiseFillChanged();
-            }
-        }
-
-        public string FontFamilyName
-        {
-            get => Get<string>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
-            }
-        }
-
-        public float FontSize
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
-            }
-        }
-
-        public FontStretch FontStretch
-        {
-            get => Get<FontStretch>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
-            }
-        }
-
-        public FontStyle FontStyle
-        {
-            get => Get<FontStyle>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
-            }
-        }
-
-        public FontWeight FontWeight
-        {
-            get => Get<FontWeight>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
             }
         }
 
@@ -455,6 +389,9 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 RaiseStrokeChanged();
             }
         }
+
+        /// <inheritdoc />
+        public ITextInfo TextStyle { get; set; }
 
         public string Value
         {

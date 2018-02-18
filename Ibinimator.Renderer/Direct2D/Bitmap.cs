@@ -6,13 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
+using SharpDX.DXGI;
+
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
-using Format = SharpDX.DXGI.Format;
 
 namespace Ibinimator.Renderer.Direct2D
 {
@@ -27,9 +27,7 @@ namespace Ibinimator.Renderer.Direct2D
                 var sourceArea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 
                 var bitmapProperties = new D2D1.BitmapProperties(
-                    new D2D1.PixelFormat(
-                        Format.B8G8R8A8_UNorm,
-                        D2D1.AlphaMode.Premultiplied),
+                    new D2D1.PixelFormat(Format.B8G8R8A8_UNorm, D2D1.AlphaMode.Premultiplied),
                     bitmap.HorizontalResolution,
                     bitmap.VerticalResolution);
 
@@ -38,18 +36,13 @@ namespace Ibinimator.Renderer.Direct2D
                                            PixelFormat.Format32bppPArgb);
 
                 using (var temp =
-                    new DX.DataStream(
-                        data.Scan0,
-                        bitmap.Width * sizeof(int),
-                        true,
-                        true))
+                    new DX.DataStream(data.Scan0, bitmap.Width * sizeof(int), true, true))
                 {
-                    var bmp = new D2D1.Bitmap(
-                        ctx.Target,
-                        new DX.Size2(sourceArea.Width, sourceArea.Height),
-                        temp,
-                        data.Stride,
-                        bitmapProperties);
+                    var bmp = new D2D1.Bitmap(ctx.Target,
+                                              new DX.Size2(sourceArea.Width, sourceArea.Height),
+                                              temp,
+                                              data.Stride,
+                                              bitmapProperties);
 
                     bitmap.UnlockBits(data);
 
@@ -71,8 +64,8 @@ namespace Ibinimator.Renderer.Direct2D
             base.Dispose();
         }
 
-        public override void Optimize()                  { throw new NotImplementedException(); }
-        public          T    Unwrap<T>() where T : class { return _bmp as T; }
+        public override void Optimize() { throw new NotImplementedException(); }
+        public T Unwrap<T>() where T : class { return _bmp as T; }
 
         public float Dpi => _bmp.DotsPerInch.Width;
 

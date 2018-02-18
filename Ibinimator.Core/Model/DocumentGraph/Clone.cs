@@ -5,8 +5,6 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using FastMember;
-
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
@@ -19,7 +17,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
     public class Clone : Layer, ICloneLayer, IFilledLayer, IStrokedLayer
     {
-
         private void OnTargetBoundsChanged(object sender, EventArgs e) { RaiseBoundsChanged(); }
 
         private void OnTargetChanged(object sender, PropertyChangedEventArgs e)
@@ -119,16 +116,24 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         #endregion
 
-        /// <inheritdoc />
-        public IBrushInfo Fill { get; set; }
+        #region IFilledLayer Members
 
         /// <inheritdoc />
         public event EventHandler FillChanged;
 
         /// <inheritdoc />
-        public IPenInfo Stroke { get; set; }
+        public IBrushInfo Fill { get; set; }
+
+        #endregion
+
+        #region IStrokedLayer Members
 
         /// <inheritdoc />
         public event EventHandler StrokeChanged;
+
+        /// <inheritdoc />
+        public IPenInfo Stroke { get; set; }
+
+        #endregion
     }
 }

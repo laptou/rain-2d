@@ -68,9 +68,7 @@ namespace Ibinimator.Core.Utility
         public void NotifyChanges()
         {
             ResumeCollectionChangeNotification();
-            var arg
-                = new NotifyCollectionChangedEventArgs
-                    (NotifyCollectionChangedAction.Reset);
+            var arg = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
             OnCollectionChanged(arg);
         }
 
@@ -117,12 +115,18 @@ namespace Ibinimator.Core.Utility
         /// <summary>
         ///     Resumes collection changed notification.
         /// </summary>
-        public void ResumeCollectionChangeNotification() { _suspendCollectionChangeNotification = false; }
+        public void ResumeCollectionChangeNotification()
+        {
+            _suspendCollectionChangeNotification = false;
+        }
 
         /// <summary>
         ///     Suspends collection changed notification.
         /// </summary>
-        public void SuspendCollectionChangeNotification() { _suspendCollectionChangeNotification = true; }
+        public void SuspendCollectionChangeNotification()
+        {
+            _suspendCollectionChangeNotification = true;
+        }
 
         /// <inheritdoc />
         /// <summary>
@@ -152,10 +156,13 @@ namespace Ibinimator.Core.Utility
 
                     // If the subscriber is a DispatcherObject and different thread.
 
-                    if (handler.Target is DispatcherObject dispatcherObject
-                     && !dispatcherObject.CheckAccess())
+                    if (handler.Target is DispatcherObject dispatcherObject &&
+                        !dispatcherObject.CheckAccess())
                         dispatcherObject.Dispatcher.BeginInvoke(
-                            DispatcherPriority.DataBind, handler, this, e);
+                            DispatcherPriority.DataBind,
+                            handler,
+                            this,
+                            e);
                     else
                         handler(this, e);
                 }

@@ -14,24 +14,22 @@ namespace Ibinimator.Core.Model.Geometry
             Position = position;
         }
 
-        public PathNode(int index, Vector2 position, Vector2 incomingControl) : this(index, position)
+        public PathNode(int index, Vector2 position, Vector2 incomingControl) :
+            this(index, position)
         {
             IncomingControl = incomingControl;
         }
 
-        public PathNode(int index, Vector2 position, Vector2 incomingControl, Vector2 outgoingControl) :
+        public PathNode(
+            int index, Vector2 position, Vector2 incomingControl, Vector2 outgoingControl) :
             this(index, position, incomingControl)
         {
             OutgoingControl = outgoingControl;
         }
 
         public PathNode(
-            int index,
-            Vector2 position,
-            Vector2? incomingControl,
-            Vector2? outgoingControl,
-            PathFigureEnd? figureEnd) : this(
-            index, position)
+            int index, Vector2 position, Vector2? incomingControl, Vector2? outgoingControl,
+            PathFigureEnd? figureEnd) : this(index, position)
         {
             IncomingControl = incomingControl;
             OutgoingControl = outgoingControl;

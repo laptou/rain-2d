@@ -4,7 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer.Direct2D {
+namespace Ibinimator.Renderer.Direct2D
+{
     internal class NativeHelper
     {
         [DllImport("user32.dll")]

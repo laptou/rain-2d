@@ -7,12 +7,11 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 
-namespace Ibinimator.Svg.Paint {
+namespace Ibinimator.Svg.Paint
+{
     public class SolidColorPaint : Paint
     {
-        public SolidColorPaint()
-        {
-        }
+        public SolidColorPaint() { }
 
         public SolidColorPaint(string id, Color color)
         {
@@ -36,7 +35,7 @@ namespace Ibinimator.Svg.Paint {
 
         public override void FromXml(XElement element, SvgContext context)
         {
-            if(element.Name.ToString().ToLowerInvariant() != "solidcolor")
+            if (element.Name.ToString().ToLowerInvariant() != "solidcolor")
                 throw new InvalidDataException("This is not a valid solid colour element.");
 
             var color = LazyGet<Color>(element, "solid-color");
@@ -45,19 +44,16 @@ namespace Ibinimator.Svg.Paint {
         }
 
         /// <inheritdoc />
-        public override string ToInline() {
-            return $"rgb({Color.Red * 100}%," +
-                   $"{Color.Green * 100}%," +
-                   $"{Color.Blue * 100}%)";
+        public override string ToInline()
+        {
+            return $"rgb({Color.Red * 100}%," + $"{Color.Green * 100}%," + $"{Color.Blue * 100}%)";
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"rgba({Color.Red * 100}%," +
-                   $"{Color.Green * 100}%," +
-                   $"{Color.Blue * 100}%," +
-                   $"{Color.Alpha})";
+            return $"rgba({Color.Red * 100}%," + $"{Color.Green * 100}%," +
+                   $"{Color.Blue * 100}%," + $"{Color.Alpha})";
         }
 
         public override XElement ToXml(SvgContext svgContext)

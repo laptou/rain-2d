@@ -7,10 +7,13 @@ using System.Xml.Linq;
 
 using Ibinimator.Svg.Utilities;
 
-namespace Ibinimator.Svg.Structure {
+namespace Ibinimator.Svg.Structure
+{
     public abstract class ContainerElement : Element, IContainerElement
     {
         private readonly List<IElement> _list = new List<IElement>();
+
+        public IElement this[string id] => _list.First(e => e.Id == id);
 
         #region IContainerElement Members
 
@@ -19,8 +22,6 @@ namespace Ibinimator.Svg.Structure {
             get => _list[index];
             set => _list[index] = value;
         }
-
-        public IElement this[string id] => _list.First(e => e.Id == id);
 
         public void Add(IElement item)
         {
@@ -54,6 +55,7 @@ namespace Ibinimator.Svg.Structure {
         public bool Remove(IElement item)
         {
             item.Parent = null;
+
             return _list.Remove(item);
         }
 

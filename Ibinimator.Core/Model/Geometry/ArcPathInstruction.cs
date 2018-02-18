@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model.Geometry
 {
-    [DebuggerDisplay("A {RadiusX} {RadiusY} {Angle} {Clockwise} {LargeArc} {" + nameof(Position) + "}")]
+    [DebuggerDisplay("A {RadiusX} {RadiusY} {Angle} {Clockwise} {LargeArc} {" + nameof(Position) +
+                     "}")]
     public class ArcPathInstruction : CoordinatePathInstruction
     {
         public ArcPathInstruction(
@@ -22,8 +23,14 @@ namespace Ibinimator.Core.Model.Geometry
         }
 
         public ArcPathInstruction(
-            Vector2 position, Vector2 radii, float angle, bool clockwise, bool largeArc) :
-            this(position.X, position.Y, radii.X, radii.Y, angle, clockwise, largeArc) { }
+            Vector2 position, Vector2 radii, float angle, bool clockwise, bool largeArc) : this(
+            position.X,
+            position.Y,
+            radii.X,
+            radii.Y,
+            angle,
+            clockwise,
+            largeArc) { }
 
         public float Angle { get; }
         public bool Clockwise { get; }

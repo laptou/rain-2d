@@ -19,13 +19,13 @@ namespace Ibinimator.Svg.Paint
             set => throw new InvalidOperationException();
         }
 
+        public GradientSpace Space { get; set; }
+
         public SpreadMethod SpreadMethod { get; set; } = SpreadMethod.Pad;
 
         public GradientStop[] Stops { get; set; }
 
         public Matrix3x2 Transform { get; set; } = Matrix3x2.Identity;
-
-        public GradientSpace Space { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -73,6 +73,7 @@ namespace Ibinimator.Svg.Paint
             {
                 case GradientSpace.Absolute:
                     space = "userSpaceOnUse";
+
                     break;
             }
 

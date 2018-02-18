@@ -69,34 +69,23 @@ namespace Ibinimator.Renderer.Direct2D
         }
 
         public override ILinearGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops,
-            float startX,
-            float startY,
-            float endX,
-            float endY)
+            IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY)
         {
-            return new LinearGradientBrush(
-                Target,
-                stops,
-                new RawVector2(startX, startY),
-                new RawVector2(endX, endY));
+            return new LinearGradientBrush(Target,
+                                           stops,
+                                           new RawVector2(startX, startY),
+                                           new RawVector2(endX, endY));
         }
 
         public override IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops,
-            float centerX,
-            float centerY,
-            float radiusX,
-            float radiusY,
-            float focusX,
-            float focusY)
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
+            float radiusY, float focusX, float focusY)
         {
-            return new RadialGradientBrush(
-                Target,
-                stops,
-                new RawVector2(centerX, centerY),
-                new RawVector2(radiusX, radiusY),
-                new RawVector2(focusX, focusY));
+            return new RadialGradientBrush(Target,
+                                           stops,
+                                           new RawVector2(centerX, centerY),
+                                           new RawVector2(radiusX, radiusY),
+                                           new RawVector2(focusX, focusY));
         }
 
         public override T CreateEffect<T>()
@@ -109,23 +98,17 @@ namespace Ibinimator.Renderer.Direct2D
             return default;
         }
 
-        public override IGeometry CreateEllipseGeometry(
-            float cx,
-            float cy,
-            float rx,
-            float ry)
+        public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
-            return new Geometry(
-                Target,
-                new D2D.EllipseGeometry(
-                        Factory2D,
-                        new D2D.Ellipse(
-                            new RawVector2(cx, cy),
-                            rx,
-                            ry))
-                    {
-                        FlatteningTolerance = 0.01f
-                    });
+            return new Geometry(Target,
+                                new D2D.EllipseGeometry(Factory2D,
+                                                        new D2D.Ellipse(
+                                                            new RawVector2(cx, cy),
+                                                            rx,
+                                                            ry))
+                                {
+                                    FlatteningTolerance = 0.01f
+                                });
         }
 
         public override IGeometry CreateGeometry() { return new Geometry(Target); }
@@ -138,40 +121,30 @@ namespace Ibinimator.Renderer.Direct2D
             return new Geometry(Target, geometries);
         }
 
-        public override IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes)
+        public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
         {
             return CreatePen(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4);
         }
 
         public override IPen CreatePen(
-            float width,
-            IBrush brush,
-            IEnumerable<float> dashes,
-            float dashOffset,
-            LineCap lineCap,
-            LineJoin lineJoin,
-            float miterLimit)
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit)
         {
-            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, Target);
+            return new Pen(width,
+                           brush as Brush,
+                           dashes,
+                           dashOffset,
+                           lineCap,
+                           lineJoin,
+                           miterLimit,
+                           Target);
         }
 
-        public override IGeometry CreateRectangleGeometry(
-            float x,
-            float y,
-            float w,
-            float h)
+        public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
         {
             return new Geometry(Target,
-                                new D2D.RectangleGeometry(
-                                    Factory2D,
-                                    new RawRectangleF(
-                                        x,
-                                        y,
-                                        x + w,
-                                        y + h)));
+                                new D2D.RectangleGeometry(Factory2D,
+                                                          new RawRectangleF(x, y, x + w, y + h)));
         }
 
         public override ITextLayout CreateTextLayout() { return new DirectWriteTextLayout(this); }
@@ -186,34 +159,22 @@ namespace Ibinimator.Renderer.Direct2D
         {
             if (!(iBitmap is Bitmap bitmap)) return;
 
-            Target.DrawBitmap(
-                bitmap,
-                new RawRectangleF(0, 0, bitmap.Width, bitmap.Height),
-                1,
-                D2D.BitmapInterpolationMode.Linear);
+            Target.DrawBitmap(bitmap,
+                              new RawRectangleF(0, 0, bitmap.Width, bitmap.Height),
+                              1,
+                              D2D.BitmapInterpolationMode.Linear);
         }
 
-        public override void DrawEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
-            IPen iPen)
+        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
         {
             var pen = iPen as Pen;
 
             if (iPen == null) return;
 
-            Target.DrawEllipse(
-                new D2D.Ellipse(
-                    new RawVector2(
-                        cx,
-                        cy),
-                    rx,
-                    ry),
-                pen.Brush,
-                pen.Width,
-                pen.Style);
+            Target.DrawEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry),
+                               pen.Brush,
+                               pen.Width,
+                               pen.Style);
         }
 
         public override void DrawGeometry(IGeometry geometry, IPen iPen)
@@ -225,13 +186,10 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var pen = iPen as Pen;
 
-            if (geometry == null || iPen == null) return;
+            if (geometry == null ||
+                iPen == null) return;
 
-            Target.DrawGeometry(
-                geometry as Geometry,
-                pen.Brush,
-                width,
-                pen.Style);
+            Target.DrawGeometry(geometry as Geometry, pen.Brush, width, pen.Style);
         }
 
         public override void DrawLine(Vector2 v1, Vector2 v2, IPen iPen)
@@ -240,31 +198,17 @@ namespace Ibinimator.Renderer.Direct2D
 
             if (iPen == null) return;
 
-            Target.DrawLine(
-                v1.Convert(),
-                v2.Convert(),
-                pen.Brush,
-                pen.Width,
-                pen.Style);
+            Target.DrawLine(v1.Convert(), v2.Convert(), pen.Brush, pen.Width, pen.Style);
         }
 
         public override void DrawRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
-            IPen iPen)
+            float left, float top, float width, float height, IPen iPen)
         {
             var pen = iPen as Pen;
-            Target.DrawRectangle(
-                new RectangleF(
-                    left,
-                    top,
-                    width,
-                    height),
-                pen.Brush,
-                pen.Width,
-                pen.Style);
+            Target.DrawRectangle(new RectangleF(left, top, width, height),
+                                 pen.Brush,
+                                 pen.Width,
+                                 pen.Style);
         }
 
         public override void End()
@@ -273,46 +217,23 @@ namespace Ibinimator.Renderer.Direct2D
             _target.EndDraw();
         }
 
-        public override void FillEllipse(
-            float cx,
-            float cy,
-            float rx,
-            float ry,
-            IBrush brush)
+        public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
         {
-            Target.FillEllipse(
-                new D2D.Ellipse(
-                    new RawVector2(
-                        cx,
-                        cy),
-                    rx,
-                    ry),
-                brush as Brush);
+            Target.FillEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry), brush as Brush);
         }
 
         public override void FillGeometry(IGeometry geometry, IBrush brush)
         {
-            if (geometry == null || brush == null) return;
+            if (geometry == null ||
+                brush == null) return;
 
-            Target.FillGeometry(
-                geometry as Geometry,
-                brush as Brush);
+            Target.FillGeometry(geometry as Geometry, brush as Brush);
         }
 
         public override void FillRectangle(
-            float left,
-            float top,
-            float width,
-            float height,
-            IBrush brush)
+            float left, float top, float width, float height, IBrush brush)
         {
-            Target.FillRectangle(
-                new RectangleF(
-                    left,
-                    top,
-                    width,
-                    height),
-                brush as Brush);
+            Target.FillRectangle(new RectangleF(left, top, width, height), brush as Brush);
         }
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }
@@ -331,8 +252,7 @@ namespace Ibinimator.Renderer.Direct2D
 
                 using (var output = d2dEffect.GetOutput())
                 {
-                    _target.QueryInterface<D2D.DeviceContext>()
-                           .DrawImage(output);
+                    _target.QueryInterface<D2D.DeviceContext>().DrawImage(output);
                 }
 
                 _target.Transform = t;
@@ -359,7 +279,8 @@ namespace Ibinimator.Renderer.Direct2D
             if (absolute)
                 _virtualTarget.Transform = _target.Transform = transform.Convert();
             else
-                _virtualTarget.Transform = _target.Transform = transform.Convert() * _target.Transform;
+                _virtualTarget.Transform =
+                    _target.Transform = transform.Convert() * _target.Transform;
         }
     }
 }

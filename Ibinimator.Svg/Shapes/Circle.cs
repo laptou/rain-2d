@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 
 namespace Ibinimator.Svg.Shapes
@@ -13,7 +12,7 @@ namespace Ibinimator.Svg.Shapes
     {
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }
-        public Length Radius  { get; set; }
+        public Length Radius { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {

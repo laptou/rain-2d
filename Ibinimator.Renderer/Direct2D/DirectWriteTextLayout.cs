@@ -51,21 +51,19 @@ namespace Ibinimator.Renderer.Direct2D
 
             var end = format.Range.Index + format.Range.Length;
 
-            return end > position &&
-                   position >= format.Range.Index ? format : null;
+            return end > position && position >= format.Range.Index ? format : null;
         }
 
         private void Update()
         {
             _dwLayout?.Dispose();
 
-            var dwFormat = new DW.TextFormat(
-                _ctx.FactoryDW,
-                FontFamily,
-                (DW.FontWeight) FontWeight,
-                (DW.FontStyle) FontStyle,
-                (DW.FontStretch) FontStretch,
-                FontSize * 96 / 72);
+            var dwFormat = new DW.TextFormat(_ctx.FactoryDW,
+                                             FontFamily,
+                                             (DW.FontWeight) FontWeight,
+                                             (DW.FontStyle) FontStyle,
+                                             (DW.FontStretch) FontStretch,
+                                             FontSize * 96 / 72);
 
             // calculate line height to use for offset
             var families = dwFormat.FontCollection;
@@ -77,20 +75,20 @@ namespace Ibinimator.Renderer.Direct2D
                                                    (DW.FontStretch) FontStretch,
                                                    (DW.FontStyle) FontStyle);
             FontHeight = (float) (font.Metrics.Ascent + font.Metrics.LineGap) /
-                         font.Metrics.DesignUnitsPerEm *
-                         dwFormat.FontSize;
+                         font.Metrics.DesignUnitsPerEm * dwFormat.FontSize;
 
-            _dwLayout = new DW.TextLayout1((IntPtr) new DW.TextLayout(
-                                               _ctx.FactoryDW,
-                                               Text ?? "",
-                                               dwFormat,
-                                               Width,
-                                               Height))
-            {
-                //TextAlignment = TextAlignment,
-                //ParagraphAlignment = ParagraphAlignment
-                WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
-            };
+            _dwLayout =
+                new DW.TextLayout1(
+                        (IntPtr) new DW.TextLayout(_ctx.FactoryDW,
+                                                   Text ?? "",
+                                                   dwFormat,
+                                                   Width,
+                                                   Height))
+                    {
+                        //TextAlignment = TextAlignment,
+                        //ParagraphAlignment = ParagraphAlignment
+                        WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
+                    };
 
             lock (_formats)
             {
@@ -99,10 +97,12 @@ namespace Ibinimator.Renderer.Direct2D
                     var typography = _dwLayout.GetTypography(format.Range.Index);
 
                     if (format.Superscript)
-                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
+                        typography.AddFontFeature(
+                            new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
 
                     if (format.Subscript)
-                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
+                        typography.AddFontFeature(
+                            new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
 
                     var range = new DW.TextRange(format.Range.Index, format.Range.Length);
 
@@ -140,8 +140,10 @@ namespace Ibinimator.Renderer.Direct2D
 
             using (var renderer = new TextRenderer())
             {
-                _dwLayout.Draw(_textContext = new TextRenderer.Context(_ctx), renderer,
-                               0, -FontHeight);
+                _dwLayout.Draw(_textContext = new TextRenderer.Context(_ctx),
+                               renderer,
+                               0,
+                               -FontHeight);
             }
         }
 
@@ -221,7 +223,8 @@ namespace Ibinimator.Renderer.Direct2D
 
         public int GetPosition(Vector2 point, out bool trailing)
         {
-            var metrics = _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
+            var metrics =
+                _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
             trailing = isTrailingHit;
 
             return metrics.TextPosition;
@@ -242,9 +245,7 @@ namespace Ibinimator.Renderer.Direct2D
                 var format = GetFormat(position, out var index);
 
                 if (format != null)
-                    format.Range = (
-                        format.Range.Index,
-                        format.Range.Length + text.Length);
+                    format.Range = (format.Range.Index, format.Range.Length + text.Length);
 
                 index++;
 
@@ -252,9 +253,7 @@ namespace Ibinimator.Renderer.Direct2D
                 while (index < _formats.Count)
                 {
                     format = _formats[index];
-                    format.Range = (
-                        format.Range.Index + text.Length,
-                        format.Range.Length);
+                    format.Range = (format.Range.Index + text.Length, format.Range.Length);
                     index++;
                 }
 
@@ -288,15 +287,22 @@ namespace Ibinimator.Renderer.Direct2D
         {
             var m = _dwLayout.HitTestTextPosition(index, false, out var _, out var _);
 
-            return new TextPositionMetric(m.Top - FontHeight, m.Left, FontHeight, m.Height, index, 0);
+            return new TextPositionMetric(m.Top - FontHeight,
+                                          m.Left,
+                                          FontHeight,
+                                          m.Height,
+                                          index,
+                                          0);
         }
 
         public RectangleF[] MeasureRange(int index, int length)
         {
-            return _dwLayout
-                  .HitTestTextRange(index, length, 0, 0)
-                  .Select(m => new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height))
-                  .ToArray();
+            return _dwLayout.HitTestTextRange(index, length, 0, 0)
+                            .Select(m => new RectangleF(m.Left,
+                                                        m.Top - FontHeight,
+                                                        m.Width,
+                                                        m.Height))
+                            .ToArray();
         }
 
         public override void Optimize() { throw new NotImplementedException(); }
@@ -327,8 +333,10 @@ namespace Ibinimator.Renderer.Direct2D
                     var len = fstart - position;
                     var fend = fstart + format.Range.Length;
 
-                    if (len <= 0 && fend <= end) _formats.Remove(format);
-                    else if (len <= 0 && fend > end)
+                    if (len <= 0 &&
+                        fend <= end) _formats.Remove(format);
+                    else if (len <= 0 &&
+                             fend > end)
                         format.Range = (fstart, fend - fstart - range);
                     else
                         format.Range = (fstart, len);
@@ -431,11 +439,11 @@ namespace Ibinimator.Renderer.Direct2D
             Update();
         }
 
-        public string      FontFamily  { get; set; } = "Arial";
-        public float       FontSize    { get; set; }
+        public string FontFamily { get; set; } = "Arial";
+        public float FontSize { get; set; }
         public FontStretch FontStretch { get; set; }
-        public FontStyle   FontStyle   { get; set; }
-        public FontWeight  FontWeight  { get; set; }
+        public FontStyle FontStyle { get; set; }
+        public FontWeight FontWeight { get; set; }
 
         public string Text { get; private set; } = "";
 

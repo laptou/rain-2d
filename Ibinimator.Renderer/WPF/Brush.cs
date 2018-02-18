@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
@@ -15,7 +14,10 @@ namespace Ibinimator.Renderer.WPF
     {
         protected System.Windows.Media.Brush WpfBrush { get; set; }
 
-        public static implicit operator System.Windows.Media.Brush(Brush brush) { return brush?.WpfBrush; }
+        public static implicit operator System.Windows.Media.Brush(Brush brush)
+        {
+            return brush?.WpfBrush;
+        }
 
         #region IBrush Members
 

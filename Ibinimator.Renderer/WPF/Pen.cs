@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
@@ -23,21 +22,20 @@ namespace Ibinimator.Renderer.WPF
 
         public Pen(Brush brush) : this(1, brush) { }
 
-        public Pen(float width, Brush brush) : this(width,
-                                                    brush,
-                                                    Enumerable.Empty<float>()) { }
+        public Pen(float width, Brush brush) : this(width, brush, Enumerable.Empty<float>()) { }
 
-        public Pen(float width, Brush brush, IEnumerable<float> dashes)
-            : this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4) { }
+        public Pen(float width, Brush brush, IEnumerable<float> dashes) : this(
+            width,
+            brush,
+            dashes,
+            0,
+            LineCap.Butt,
+            LineJoin.Miter,
+            4) { }
 
         public Pen(
-            float              width,
-            Brush              brush,
-            IEnumerable<float> dashes,
-            float              dashOffset,
-            LineCap            lineCap,
-            LineJoin           lineJoin,
-            float              miterLimit)
+            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit)
         {
             Width = width;
             Brush = brush;
@@ -70,8 +68,7 @@ namespace Ibinimator.Renderer.WPF
                 StartLineCap = (WPF.PenLineCap) pen.LineCap,
                 EndLineCap = (WPF.PenLineCap) pen.LineCap,
                 LineJoin = (WPF.PenLineJoin) pen.LineJoin,
-                DashStyle =
-                    new WPF.DashStyle(pen.Dashes.Select(f => (double) f), pen.DashOffset),
+                DashStyle = new WPF.DashStyle(pen.Dashes.Select(f => (double) f), pen.DashOffset),
                 MiterLimit = pen.MiterLimit
             };
         }

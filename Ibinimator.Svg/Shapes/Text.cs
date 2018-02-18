@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg.Shapes {
+namespace Ibinimator.Svg.Shapes
+{
     public class Text : TextElement
     {
         public override XElement ToXml(SvgContext context)

@@ -33,29 +33,29 @@ namespace Ibinimator.Core
 
         event ArtContextInputEventHandler<FocusEvent> LostFocus;
 
+        event EventHandler ManagerAttached;
+
+        event EventHandler ManagerDetached;
+
         event ArtContextInputEventHandler<ClickEvent> MouseDown;
 
         event ArtContextInputEventHandler<PointerEvent> MouseMove;
 
         event ArtContextInputEventHandler<ClickEvent> MouseUp;
 
+        event EventHandler StatusChanged;
+
         event ArtContextInputEventHandler<TextEvent> Text;
 
-        event EventHandler ManagerAttached;
+        T Create<T>(params object[] parameters) where T : class;
 
-        event EventHandler ManagerDetached;
-
-        event EventHandler StatusChanged;
+        void InvalidateRender();
 
         void RaiseAttached(IArtContextManager mgr);
 
         void RaiseDetached(IArtContextManager mgr);
 
-        void InvalidateRender();
-
         void SetManager<T>(T manager) where T : IArtContextManager;
-
-        T Create<T>(params object[] parameters) where T : class;
     }
 
     public delegate void ArtContextInputEventHandler<in T>(IArtContext sender, T evt)

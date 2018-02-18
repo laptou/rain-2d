@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
@@ -27,17 +26,25 @@ namespace Ibinimator.Renderer.Direct2D
 
         public Pen(Brush brush, RenderTarget target) : this(1, brush, target) { }
 
-        public Pen(float width, Brush brush, RenderTarget target) : this(width,
-                                                                         brush,
-                                                                         Enumerable.Empty<float>(),
-                                                                         target) { }
+        public Pen(float width, Brush brush, RenderTarget target) : this(
+            width,
+            brush,
+            Enumerable.Empty<float>(),
+            target) { }
 
-        public Pen(float width, Brush brush, IEnumerable<float> dashes, RenderTarget target) :
-            this(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4, target) { }
+        public Pen(float width, Brush brush, IEnumerable<float> dashes, RenderTarget target) : this(
+            width,
+            brush,
+            dashes,
+            0,
+            LineCap.Butt,
+            LineJoin.Miter,
+            4,
+            target) { }
 
         public Pen(
-            float    width, Brush    brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit, RenderTarget  target)
+            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit, RenderTarget target)
         {
             Width = width;
             Brush = brush;

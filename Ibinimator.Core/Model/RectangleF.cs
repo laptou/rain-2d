@@ -52,8 +52,7 @@ namespace Ibinimator.Core.Model
         public static RectangleF Empty => (0, 0, 0, 0);
 
         public bool IsEmpty =>
-            Math.Abs(Left - Right) < float.Epsilon &&
-            Math.Abs(Top - Bottom) < float.Epsilon;
+            Math.Abs(Left - Right) < float.Epsilon && Math.Abs(Top - Bottom) < float.Epsilon;
 
         public float Right
         {
@@ -69,18 +68,12 @@ namespace Ibinimator.Core.Model
 
         public bool Contains(Vector2 v)
         {
-            return Left <= v.X &&
-                   v.X <= Right &&
-                   Top <= v.Y &&
-                   v.Y <= Bottom;
+            return Left <= v.X && v.X <= Right && Top <= v.Y && v.Y <= Bottom;
         }
 
         public bool Contains(RectangleF r)
         {
-            return Left <= r.Left &&
-                   r.Right <= Right &&
-                   r.Bottom <= Bottom &&
-                   Top <= r.Top;
+            return Left <= r.Left && r.Right <= Right && r.Bottom <= Bottom && Top <= r.Top;
         }
 
         public static bool Intersects(RectangleF r1, RectangleF r2)
@@ -103,18 +96,23 @@ namespace Ibinimator.Core.Model
 
         public static RectangleF Union(RectangleF r1, RectangleF r2)
         {
-            return ( Math.Min(r1.Left, r2.Left), Math.Min(r1.Top, r2.Top),
-                Math.Max(r1.Right, r2.Right), Math.Max(r1.Bottom, r2.Bottom));
+            return (Math.Min(r1.Left, r2.Left), Math.Min(r1.Top, r2.Top),
+                       Math.Max(r1.Right, r2.Right), Math.Max(r1.Bottom, r2.Bottom));
         }
 
-        public static implicit operator (float Left, float Top, float Right, float Bottom)(RectangleF rect)
+        public static implicit operator (float Left, float Top, float Right, float Bottom)(
+            RectangleF rect)
         {
             return (rect.Left, rect.Top, rect.Right, rect.Bottom);
         }
 
-        public static implicit operator RectangleF((float Left, float Top, float Right, float Bottom) rect)
+        public static implicit operator RectangleF(
+            (float Left, float Top, float Right, float Bottom) rect)
         {
-            return new RectangleF(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+            return new RectangleF(rect.Left,
+                                  rect.Top,
+                                  rect.Right - rect.Left,
+                                  rect.Bottom - rect.Top);
         }
     }
 }

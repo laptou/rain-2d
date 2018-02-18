@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg {
+namespace Ibinimator.Svg
+{
     internal static class SvgNames
     {
-        public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
-        public static readonly XNamespace XLink     = "http://www.w3.org/1999/xlink";
-        public static readonly XNamespace Ibinimator     = "http://ibiyemi.intulon.com/schema/rain2d";
+        public static readonly XNamespace Namespace  = "http://www.w3.org/2000/svg";
+        public static readonly XNamespace XLink      = "http://www.w3.org/1999/xlink";
+        public static readonly XNamespace Ibinimator = "http://ibiyemi.intulon.com/schema/rain2d";
 
         #region metadata
 

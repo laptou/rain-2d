@@ -198,8 +198,11 @@ namespace Ibinimator.Tools
         protected void RenderBoundingBoxes(
             RenderContext target, ICacheManager cache, IViewManager view)
         {
-            var outline = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline)));
-            var outlineRef = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionReferenceOutline)));
+            var outline =
+                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline)));
+            var outlineRef = target.CreatePen(1,
+                                              cache.GetBrush(
+                                                  nameof(EditorColors.SelectionReferenceOutline)));
 
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);

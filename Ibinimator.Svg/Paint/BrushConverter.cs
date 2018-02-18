@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -45,22 +44,20 @@ namespace Ibinimator.Svg.Paint
             GradientPaint paint = null;
 
             if (brush.Type == GradientBrushType.Linear)
-            {
-                    paint = new LinearGradientPaint(brush.Name,
-                                                    brush.Stops.Select(s => new GradientStop
-                                                    {
-                                                        Color = s.Color,
-                                                        Offset = (s.Offset * 100, LengthUnit.Percent)
-                                                    }))
-                    {
-                        X1 = (brush.StartPoint.X, LengthUnit.Pixels),
-                        Y1 = (brush.StartPoint.Y, LengthUnit.Pixels),
-                        X2 = (brush.EndPoint.X, LengthUnit.Pixels),
-                        Y2 = (brush.EndPoint.X, LengthUnit.Pixels)
-                    };
-            }
+                paint = new LinearGradientPaint(brush.Name,
+                                                brush.Stops.Select(s => new GradientStop
+                                                {
+                                                    Color = s.Color,
+                                                    Offset = (s.Offset * 100, LengthUnit.Percent)
+                                                }))
+                {
+                    X1 = (brush.StartPoint.X, LengthUnit.Pixels),
+                    Y1 = (brush.StartPoint.Y, LengthUnit.Pixels),
+                    X2 = (brush.EndPoint.X, LengthUnit.Pixels),
+                    Y2 = (brush.EndPoint.X, LengthUnit.Pixels)
+                };
 
-            if(paint != null)
+            if (paint != null)
             {
                 paint.Space = brush.Space;
                 paint.Opacity = brush.Opacity;

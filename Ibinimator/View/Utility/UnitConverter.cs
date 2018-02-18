@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model.Measurement;
 
 namespace Ibinimator.View.Utility

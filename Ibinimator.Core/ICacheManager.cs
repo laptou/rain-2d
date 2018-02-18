@@ -22,9 +22,9 @@ namespace Ibinimator.Core
 
         void LoadBitmaps(RenderContext target);
         void LoadBrushes(RenderContext target);
+        void ReleaseDeviceResources();
 
         void ReleaseResources();
-        void ReleaseDeviceResources();
         void ReleaseSceneResources();
 
         #region Layer Lifecycle
@@ -74,6 +74,5 @@ namespace Ibinimator.Core
         RectangleF GetRelativeBounds(ILayer layer);
 
         #endregion
-
     }
 }

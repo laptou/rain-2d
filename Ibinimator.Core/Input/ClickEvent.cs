@@ -14,7 +14,8 @@ namespace Ibinimator.Core.Input
 
     public class ClickEvent : InputEventBase
     {
-        public ClickEvent(Vector2 position, MouseButton mouseButton, ClickType type, ModifierState modifiers)
+        public ClickEvent(
+            Vector2 position, MouseButton mouseButton, ClickType type, ModifierState modifiers)
         {
             MouseButton = mouseButton;
             Type = type;

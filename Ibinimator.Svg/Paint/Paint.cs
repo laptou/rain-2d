@@ -10,12 +10,19 @@ namespace Ibinimator.Svg.Paint
 {
     public abstract class Paint : Element
     {
+        public virtual float Opacity { get; set; }
+
+        public abstract string ToInline();
+
         public static Paint Parse(string input)
         {
             if (TryParse(input, out var paint)) return paint;
 
             throw new FormatException();
         }
+
+        /// <inheritdoc />
+        public override string ToString() { return ToInline(); }
 
         public static bool TryParse(string input, out Paint paint)
         {
@@ -28,7 +35,7 @@ namespace Ibinimator.Svg.Paint
 
             if (Iri.TryParse(input, out var iri))
             {
-                paint = new ReferencePaint() { Reference = iri };
+                paint = new ReferencePaint {Reference = iri};
 
                 return true;
             }
@@ -37,12 +44,5 @@ namespace Ibinimator.Svg.Paint
 
             return false;
         }
-
-        public virtual float Opacity { get; set; }
-
-        public abstract string ToInline();
-
-        /// <inheritdoc />
-        public override string ToString() => ToInline();
     }
 }

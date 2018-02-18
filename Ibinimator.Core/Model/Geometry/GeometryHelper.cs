@@ -7,7 +7,8 @@ namespace Ibinimator.Core.Model.Geometry
 {
     public static class GeometryHelper
     {
-        public static IEnumerable<PathInstruction> InstructionsFromNodes(IEnumerable<PathNode> nodes)
+        public static IEnumerable<PathInstruction> InstructionsFromNodes(
+            IEnumerable<PathNode> nodes)
         {
             var first = true;
             PathNode? previous = null;
@@ -45,7 +46,8 @@ namespace Ibinimator.Core.Model.Geometry
             }
         }
 
-        public static IEnumerable<PathNode> NodesFromInstructions(IEnumerable<PathInstruction> instructions)
+        public static IEnumerable<PathNode> NodesFromInstructions(
+            IEnumerable<PathInstruction> instructions)
         {
             // NOTE: this method WILL break if you pass anything other than cubics and line segments
 
@@ -64,22 +66,22 @@ namespace Ibinimator.Core.Model.Geometry
                     switch (instruction)
                     {
                         case CubicPathInstruction cubic:
-                            previousNode = new PathNode(
-                                previousNode.Index,
-                                previousNode.Position,
-                                previousNode.IncomingControl,
-                                cubic.Control1,
-                                previousNode.FigureEnd);
+                            previousNode = new PathNode(previousNode.Index,
+                                                        previousNode.Position,
+                                                        previousNode.IncomingControl,
+                                                        cubic.Control1,
+                                                        previousNode.FigureEnd);
 
                             break;
 
                         case ClosePathInstruction close:
-                            previousNode = new PathNode(
-                                previousNode.Index,
-                                previousNode.Position,
-                                previousNode.IncomingControl,
-                                previousNode.OutgoingControl,
-                                close.Open ? PathFigureEnd.Open : PathFigureEnd.Closed);
+                            previousNode = new PathNode(previousNode.Index,
+                                                        previousNode.Position,
+                                                        previousNode.IncomingControl,
+                                                        previousNode.OutgoingControl,
+                                                        close.Open
+                                                            ? PathFigureEnd.Open
+                                                            : PathFigureEnd.Closed);
 
                             break;
                     }
@@ -92,10 +94,7 @@ namespace Ibinimator.Core.Model.Geometry
                 switch (instruction)
                 {
                     case CubicPathInstruction cubic:
-                        previousNode = new PathNode(
-                            index++,
-                            cubic.Position,
-                            cubic.Control2);
+                        previousNode = new PathNode(index++, cubic.Position, cubic.Control2);
 
                         break;
 

@@ -14,7 +14,6 @@ using Ibinimator.Core.Model.Effects;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 using Ibinimator.Resources;
-using Ibinimator.Service;
 using Ibinimator.Utility;
 
 using GradientOp = Ibinimator.Commands.ModifyGradientCommand.GradientOperation;
@@ -154,7 +153,8 @@ namespace Ibinimator.Tools
 
             if (!_mouse.down) return;
 
-            if (SelectedBrush != null&& _selection.Any())
+            if (SelectedBrush != null &&
+                _selection.Any())
             {
                 var stop = SelectedBrush.Stops[_selection.First()];
                 var localStopPos =

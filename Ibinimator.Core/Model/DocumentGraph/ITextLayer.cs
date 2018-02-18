@@ -8,14 +8,8 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public interface ITextLayer : IGeometricLayer
+    public interface ITextLayer : ITextContainerLayer, IGeometricLayer
     {
-        float Baseline { get; }
-        string FontFamilyName { get; set; }
-        float FontSize { get; set; }
-        FontStretch FontStretch { get; set; }
-        FontStyle FontStyle { get; set; }
-        FontWeight FontWeight { get; set; }
         ObservableList<Format> Formats { get; }
         ObservableList<float> Offsets { get; }
 

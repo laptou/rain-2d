@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 using Ibinimator.Svg.Paint;
 
@@ -16,7 +15,6 @@ using Ibinimator.Svg.Structure;
 using Core = Ibinimator.Core.Model;
 using DG = Ibinimator.Core.Model.DocumentGraph;
 using SVG = Ibinimator.Svg;
-using Structure = Ibinimator.Svg.Structure;
 
 namespace Ibinimator.Svg.IO
 {
@@ -31,7 +29,7 @@ namespace Ibinimator.Svg.IO
             svgDoc.Add(defs);
 
             IElement previous = svgDoc;
-            DG.Node previousNode = nodes.First();
+            var previousNode = nodes.First();
 
             IDictionary<DG.Node, IElement> table = new Dictionary<DG.Node, IElement>
             {
@@ -39,7 +37,7 @@ namespace Ibinimator.Svg.IO
             };
 
             foreach (var node in nodes)
-            {
+
                 // nodes will always be listed after their parent,
                 // which means you can trust that the last parent posted
                 // is the parent of the current node
@@ -49,7 +47,7 @@ namespace Ibinimator.Svg.IO
 
                     var element = ToSvg(node, parent);
 
-                    if(RequiresDef(node))
+                    if (RequiresDef(node))
                         svgDoc.Defs.Add(element);
 
                     if (element != null)
@@ -59,7 +57,6 @@ namespace Ibinimator.Svg.IO
                         previousNode = node;
                     }
                 }
-            }
 
             svgDoc.Viewbox = doc.Bounds;
 
@@ -100,7 +97,7 @@ namespace Ibinimator.Svg.IO
 
                 if (parent is IShapeElement shape)
                 {
-                    shape.Stroke = (Paint.Paint)element;
+                    shape.Stroke = (Paint.Paint) element;
                     shape.StrokeOpacity = pen.Brush?.Opacity ?? 1;
 
                     shape.StrokeDashArray = pen.Dashes.Select(f => f * pen.Width).ToArray();
@@ -132,7 +129,6 @@ namespace Ibinimator.Svg.IO
             }
 
             if (node.Target is DG.ITextLayer textLayer)
-            {
                 element = new Text
                 {
                     FontFamily = textLayer.FontFamilyName,
@@ -143,14 +139,12 @@ namespace Ibinimator.Svg.IO
                     Text = textLayer.Value,
                     Y = textLayer.Baseline
                 };
-            }
 
             if (node.Target is DG.IGeometricLayer geomLayer)
-            {
                 switch (geomLayer)
                 {
                     case DG.Ellipse ellipse:
-                        element = new Shapes.Ellipse
+                        element = new Ellipse
                         {
                             CenterX = new Length(ellipse.CenterX, LengthUnit.Pixels),
                             CenterY = new Length(ellipse.CenterY, LengthUnit.Pixels),
@@ -160,14 +154,14 @@ namespace Ibinimator.Svg.IO
 
                         break;
                     case DG.Path path:
-                        element = new Shapes.Path
+                        element = new Path
                         {
                             Data = path.Instructions.ToArray()
                         };
 
                         break;
                     case DG.Rectangle rectangle:
-                        element = new Shapes.Rectangle
+                        element = new Rectangle
                         {
                             X = new Length(rectangle.X, LengthUnit.Pixels),
                             Y = new Length(rectangle.Y, LengthUnit.Pixels),
@@ -177,17 +171,12 @@ namespace Ibinimator.Svg.IO
 
                         break;
                 }
-            }
 
-            if (node.Target is DG.IContainerLayer containerLayer)
-            {
-                element = new Group();
-            }
+            if (node.Target is DG.IContainerLayer containerLayer) element = new Group();
 
-            if (node.Target is DG.ILayer layer && element is IGraphicalElement graphicalElement)
-            {
+            if (node.Target is DG.ILayer layer &&
+                element is IGraphicalElement graphicalElement)
                 graphicalElement.Transform = layer.Transform;
-            }
 
             if (element != null)
             {

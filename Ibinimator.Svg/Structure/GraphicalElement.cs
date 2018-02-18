@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using Ibinimator.Svg.Utilities;
+
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -9,7 +12,6 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Svg.Enums;
-using Ibinimator.Svg.Utilities;
 
 namespace Ibinimator.Svg.Structure
 {
@@ -25,7 +27,8 @@ namespace Ibinimator.Svg.Structure
             //LazyGet(element, "clip-path", ClipPath);
             //LazyGet(element, "clip-rule", ClipRule);
             ColorInterpolation = LazyGet<ColorInterpolation>(element, "color-interpolation");
-            ColorFilterInterpolation = LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
+            ColorFilterInterpolation =
+                LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
 
             //LazyGet(element, "color", Color);
             //Cursor = LazyGet<Cursor>(element, "cursor", Cursor);
@@ -60,13 +63,10 @@ namespace Ibinimator.Svg.Structure
             LazySet(element, "opacity", Opacity, 1);
 
             if (!Transform.IsIdentity)
-                LazySet(
-                    element,
-                    "transform",
-                    @"matrix(" +
-                    $"{Transform.M11},{Transform.M12}," +
-                    $"{Transform.M21},{Transform.M22}," +
-                    $"{Transform.M31},{Transform.M32})");
+                LazySet(element,
+                        "transform",
+                        @"matrix(" + $"{Transform.M11},{Transform.M12}," +
+                        $"{Transform.M21},{Transform.M22}," + $"{Transform.M31},{Transform.M32})");
 
             return element;
         }

@@ -56,10 +56,12 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
             var geometry = cache.GetGeometry(this);
 
-            if (Fill != null && geometry.FillContains(pt.X, pt.Y))
+            if (Fill != null &&
+                geometry.FillContains(pt.X, pt.Y))
                 return t;
 
-            if (Stroke != null && geometry.StrokeContains(pt.X, pt.Y, Stroke.Width))
+            if (Stroke != null &&
+                geometry.StrokeContains(pt.X, pt.Y, Stroke.Width))
                 return t;
 
             return default;

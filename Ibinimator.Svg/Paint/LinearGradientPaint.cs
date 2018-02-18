@@ -10,9 +10,7 @@ namespace Ibinimator.Svg.Paint
 {
     public class LinearGradientPaint : GradientPaint
     {
-        public LinearGradientPaint()
-        {
-        }
+        public LinearGradientPaint() { }
 
         public LinearGradientPaint(string id, IEnumerable<GradientStop> stops)
         {

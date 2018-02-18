@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Model.Paint;
@@ -17,13 +16,9 @@ namespace Ibinimator.Renderer.Direct2D
     internal class TextRenderer : TextRendererBase
     {
         public override Result DrawGlyphRun(
-            object              clientDrawingContext,
-            float               baselineOriginX,
-            float               baselineOriginY,
-            MeasuringMode       measuringMode,
-            GlyphRun            glyphRun,
-            GlyphRunDescription glyphRunDescription,
-            ComObject           clientDrawingEffect)
+            object clientDrawingContext, float baselineOriginX, float baselineOriginY,
+            MeasuringMode measuringMode, GlyphRun glyphRun, GlyphRunDescription glyphRunDescription,
+            ComObject clientDrawingEffect)
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
@@ -31,28 +26,29 @@ namespace Ibinimator.Renderer.Direct2D
             var path = new PathGeometry(context.RenderContext.Factory2D);
             var sink = path.Open();
 
-            glyphRun.FontFace.GetGlyphRunOutline(
-                glyphRun.FontSize,
-                glyphRun.Indices,
-                glyphRun.Advances,
-                glyphRun.Offsets,
-                glyphRun.IsSideways,
-                glyphRun.BidiLevel % 2 != 0,
-                sink);
+            glyphRun.FontFace.GetGlyphRunOutline(glyphRun.FontSize,
+                                                 glyphRun.Indices,
+                                                 glyphRun.Advances,
+                                                 glyphRun.Offsets,
+                                                 glyphRun.IsSideways,
+                                                 glyphRun.BidiLevel % 2 != 0,
+                                                 sink);
 
             sink.Close();
 
-            var geometry = new TransformedGeometry(
-                context.RenderContext.Factory2D,
-                path,
-                Matrix3x2.Translation(baselineOriginX, baselineOriginY));
+            var geometry = new TransformedGeometry(context.RenderContext.Factory2D,
+                                                   path,
+                                                   Matrix3x2.Translation(
+                                                       baselineOriginX,
+                                                       baselineOriginY));
 
             context.Geometries.Add(new Geometry(context.RenderContext.Target, geometry));
             context.Brushes.Add(format?.Fill?.CreateBrush(context.RenderContext));
             context.Pens.Add(format?.Stroke?.CreatePen(context.RenderContext));
 
             context.GlyphCount += glyphRun.Indices.Length;
-            context.CharactersForGeometry.Add(context.GeometryCount, glyphRunDescription.Text.Length);
+            context.CharactersForGeometry.Add(context.GeometryCount,
+                                              glyphRunDescription.Text.Length);
             context.GeometryCount++;
 
             return Result.Ok;
@@ -64,12 +60,12 @@ namespace Ibinimator.Renderer.Direct2D
         {
             public Context(Direct2DRenderContext ctx) { RenderContext = ctx; }
 
-            public List<IBrush>         Brushes               { get; } = new List<IBrush>();
+            public List<IBrush> Brushes { get; } = new List<IBrush>();
             public Dictionary<int, int> CharactersForGeometry { get; } = new Dictionary<int, int>();
-            public List<IGeometry>      Geometries            { get; } = new List<IGeometry>();
-            public int                  GeometryCount         { get; set; }
-            public int                  GlyphCount            { get; set; }
-            public List<IPen>           Pens                  { get; } = new List<IPen>();
+            public List<IGeometry> Geometries { get; } = new List<IGeometry>();
+            public int GeometryCount { get; set; }
+            public int GlyphCount { get; set; }
+            public List<IPen> Pens { get; } = new List<IPen>();
 
             public Direct2DRenderContext RenderContext { get; }
         }
@@ -80,10 +76,10 @@ namespace Ibinimator.Renderer.Direct2D
 
         public class Format : ComObject
         {
-            public BrushInfo Fill               { get; set; }
-            public int       StrikethroughCount { get; set; }
-            public PenInfo   Stroke             { get; set; }
-            public int       UnderlineCount     { get; set; }
+            public BrushInfo Fill { get; set; }
+            public int StrikethroughCount { get; set; }
+            public PenInfo Stroke { get; set; }
+            public int UnderlineCount { get; set; }
 
             public Format Clone()
             {

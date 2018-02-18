@@ -8,12 +8,11 @@ namespace Ibinimator.Svg.Structure
 {
     public interface IElement
     {
-        IContainerElement Parent { get; set; }
-
         string Id { get; set; }
         string Name { get; set; }
+        IContainerElement Parent { get; set; }
 
-        void   FromXml(XElement element, SvgContext context);
+        void FromXml(XElement element, SvgContext context);
         XElement ToXml(SvgContext context);
     }
 }

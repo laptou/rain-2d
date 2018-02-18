@@ -11,13 +11,12 @@ using System.Xml.Linq;
 
 using Ibinimator.Core;
 using Ibinimator.Core.Input;
+using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.WPF;
-using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Svg.IO;
 
-using Document = Ibinimator.Core.Model.DocumentGraph.Document;
 using WPF = System.Windows;
 
 // ReSharper disable PossibleInvalidOperationException
@@ -165,6 +164,52 @@ namespace Ibinimator.View.Control
 
         #region IArtContext Members
 
+        /// <inheritdoc />
+        public T Create<T>(params object[] parameters) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InvalidateRender() { InvalidateVisual(); }
+
+        /// <inheritdoc />
+        public void RaiseAttached(IArtContextManager mgr) { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
+        public void RaiseDetached(IArtContextManager mgr) { throw new NotImplementedException(); }
+
+
+        /// <inheritdoc />
+        public void SetManager<T>(T manager) where T : IArtContextManager
+        {
+            throw new InvalidOperationException();
+        }
+
+        public RenderContext RenderContext { get; } = new WpfRenderContext();
+
+        /// <inheritdoc />
+        IBrushManager IArtContext.BrushManager { get; }
+
+        /// <inheritdoc />
+        ICacheManager IArtContext.CacheManager => _cache;
+
+        /// <inheritdoc />
+        IHistoryManager IArtContext.HistoryManager { get; }
+
+        /// <inheritdoc />
+        ISelectionManager IArtContext.SelectionManager { get; }
+
+        /// <inheritdoc />
+        Status IArtContext.Status { get; set; }
+
+        /// <inheritdoc />
+        IToolManager IArtContext.ToolManager { get; }
+
+        /// <inheritdoc />
+        IViewManager IArtContext.ViewManager => _view;
+
+        #endregion
+
 #pragma warning disable CS0067
 
         /// <inheritdoc />
@@ -201,47 +246,5 @@ namespace Ibinimator.View.Control
         public event EventHandler ManagerAttached;
 
 #pragma warning restore CS0067
-
-
-        /// <inheritdoc />
-        public void SetManager<T>(T manager) where T : IArtContextManager { throw new InvalidOperationException(); }
-
-        /// <inheritdoc />
-        public T Create<T>(params object[] parameters) where T : class
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public void RaiseAttached(IArtContextManager mgr) { throw new NotImplementedException(); }
-
-        /// <inheritdoc />
-        public void RaiseDetached(IArtContextManager mgr) { throw new NotImplementedException(); }
-        public void InvalidateRender() { InvalidateVisual(); }
-
-        public RenderContext RenderContext { get; } = new WpfRenderContext();
-
-        /// <inheritdoc />
-        IBrushManager IArtContext.BrushManager { get; }
-
-        /// <inheritdoc />
-        ICacheManager IArtContext.CacheManager => _cache;
-
-        /// <inheritdoc />
-        IHistoryManager IArtContext.HistoryManager { get; }
-
-        /// <inheritdoc />
-        ISelectionManager IArtContext.SelectionManager { get; }
-
-        /// <inheritdoc />
-        Status IArtContext.Status { get; set; }
-
-        /// <inheritdoc />
-        IToolManager IArtContext.ToolManager { get; }
-
-        /// <inheritdoc />
-        IViewManager IArtContext.ViewManager => _view;
-
-        #endregion
     }
 }

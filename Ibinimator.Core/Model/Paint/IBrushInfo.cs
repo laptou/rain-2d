@@ -10,8 +10,8 @@ namespace Ibinimator.Core.Model.Paint
     {
         string Name { get; set; }
         float Opacity { get; set; }
-        Matrix3x2 Transform { get; set; }
         ResourceScope Scope { get; set; }
+        Matrix3x2 Transform { get; set; }
 
         IBrush CreateBrush(RenderContext target);
     }

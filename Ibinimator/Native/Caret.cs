@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model.Text;
 
 using static Ibinimator.Native.NativeHelper;
@@ -18,8 +17,8 @@ namespace Ibinimator.Native
         private readonly int    _width;
         private          bool   _disposed;
         private          bool   _visible;
-        private          float    _x;
-        private          float    _y;
+        private          float  _x;
+        private          float  _y;
 
         public Caret(IntPtr hWnd, int width, int height)
         {

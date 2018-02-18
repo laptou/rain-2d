@@ -27,15 +27,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public event EventHandler BoundsChanged;
 
-        public virtual void ApplyTransform(
-            Matrix3x2? local  = null,
-            Matrix3x2? global = null)
+        public virtual void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null)
         {
-            Transform = (local ?? Matrix3x2.Identity) *
-                        Transform *
-                        WorldTransform *
-                        (global ?? Matrix3x2.Identity) *
-                        MathUtils.Invert(WorldTransform);
+            Transform = (local ?? Matrix3x2.Identity) * Transform * WorldTransform *
+                        (global ?? Matrix3x2.Identity) * MathUtils.Invert(WorldTransform);
         }
 
         public virtual IEnumerable<ILayer> Flatten(int depth)
@@ -73,10 +68,28 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
+        public virtual float Opacity
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
         public virtual int Order => Parent?.Order + Parent?.SubLayers.IndexOf(this) + 1 ?? 0;
+
+        public virtual bool Selected
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
 
         /// <inheritdoc />
         public virtual int Size => 1;
+
+        public virtual Matrix3x2 Transform
+        {
+            get => Get<Matrix3x2>();
+            protected set => Set(value);
+        }
 
         public virtual float Width
         {
@@ -106,28 +119,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
-        public virtual float Opacity
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
-
         public IContainerLayer Parent
         {
             get => Get<Group>();
             set => Set(value);
-        }
-
-        public virtual bool Selected
-        {
-            get => Get<bool>();
-            set => Set(value);
-        }
-
-        public virtual Matrix3x2 Transform
-        {
-            get => Get<Matrix3x2>();
-            protected set => Set(value);
         }
 
         public bool Visible

@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg.Shapes {
+namespace Ibinimator.Svg.Shapes
+{
     public class Span : TextElement, IInlineTextElement
     {
         #region IInlineTextElement Members

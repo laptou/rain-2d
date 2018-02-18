@@ -10,16 +10,15 @@ namespace Ibinimator.Renderer.Direct2D
     internal static class TextLayoutExtensions
     {
         public static void SetFormat(
-            this TextLayout             layout,
-            TextRange                   range,
-            Action<TextRenderer.Format> callback)
+            this TextLayout layout, TextRange range, Action<TextRenderer.Format> callback)
         {
             var current = range.StartPosition;
             var end = range.StartPosition + range.Length;
 
             while (current < end)
             {
-                var specifier = layout.GetDrawingEffect(current, out var currentRange) as TextRenderer.Format;
+                var specifier =
+                    layout.GetDrawingEffect(current, out var currentRange) as TextRenderer.Format;
 
                 specifier = specifier == null ? new TextRenderer.Format() : specifier.Clone();
 

@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
@@ -13,12 +12,13 @@ namespace Ibinimator.Renderer.Direct2D
 {
     internal abstract class Brush : ResourceBase, IBrush
     {
-        protected SharpDX.Direct2D1.Brush NativeBrush     { get; set; }
-        protected ReaderWriterLockSlim    NativeBrushLock { get; } = new ReaderWriterLockSlim();
+        protected SharpDX.Direct2D1.Brush NativeBrush { get; set; }
+        protected ReaderWriterLockSlim NativeBrushLock { get; } = new ReaderWriterLockSlim();
 
         public static bool operator ==(Brush brush, object o)
         {
-            if (o == null && brush?.NativeBrush == null) return true;
+            if (o == null &&
+                brush?.NativeBrush == null) return true;
 
             return Equals(brush, o);
         }

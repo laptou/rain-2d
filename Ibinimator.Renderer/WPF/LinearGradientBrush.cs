@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 
 using GradientStop = Ibinimator.Core.Model.Paint.GradientStop;
@@ -16,29 +14,27 @@ namespace Ibinimator.Renderer.WPF
 {
     internal class LinearGradientBrush : GradientBrush, ILinearGradientBrush
     {
-        public LinearGradientBrush(
-            IEnumerable<GradientStop> stops,
-            Point                     start,
-            Point                     end) : base(stops)
+        public LinearGradientBrush(IEnumerable<GradientStop> stops, Point start, Point end) :
+            base(stops)
         {
             WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end)
             {
-                MappingMode = Space == GradientSpace.Absolute ?
-                                  BrushMappingMode.Absolute :
-                                  BrushMappingMode.RelativeToBoundingBox
+                MappingMode = Space == GradientSpace.Absolute
+                                  ? BrushMappingMode.Absolute
+                                  : BrushMappingMode.RelativeToBoundingBox
             };
         }
 
         public override SpreadMethod SpreadMethod
         {
-            get => (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
+            get =>
+                (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
             set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
                    (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(
-            object                           sender,
-            NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+            object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             ((System.Windows.Media.LinearGradientBrush) WpfBrush).GradientStops = ConvertStops();
         }
@@ -50,7 +46,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint.X;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint = new Point(value, EndY);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint =
+                    new Point(value, EndY);
                 RaisePropertyChanged();
             }
         }
@@ -60,7 +57,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint.Y;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint = new Point(EndX, value);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint =
+                    new Point(EndX, value);
                 RaisePropertyChanged();
             }
         }
@@ -70,7 +68,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint.X;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint = new Point(value, StartY);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint =
+                    new Point(value, StartY);
                 RaisePropertyChanged();
             }
         }
@@ -80,7 +79,8 @@ namespace Ibinimator.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint.Y;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint = new Point(StartX, value);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint =
+                    new Point(StartX, value);
                 RaisePropertyChanged();
             }
         }

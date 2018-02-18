@@ -9,7 +9,6 @@ using System.Xml.Linq;
 
 using Ibinimator.Core;
 using Ibinimator.Renderer;
-using Ibinimator.Service;
 using Ibinimator.Svg;
 using Ibinimator.Svg.IO;
 using Ibinimator.Svg.Structure;

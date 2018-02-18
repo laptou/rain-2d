@@ -23,14 +23,20 @@ namespace Ibinimator.Renderer.Direct2D
             return new Color(color.R, color.G, color.B, color.A);
         }
 
-        public static Vector2 Convert(this System.Numerics.Vector2 vec) { return new Vector2(vec.X, vec.Y); }
+        public static Vector2 Convert(this System.Numerics.Vector2 vec)
+        {
+            return new Vector2(vec.X, vec.Y);
+        }
 
         public static System.Numerics.Vector2 Convert(this Vector2 vec)
         {
             return new System.Numerics.Vector2(vec.X, vec.Y);
         }
 
-        public static Matrix3x2 Convert(this RawMatrix3x2 mat) { return Convert((SharpDX.Matrix3x2) mat); }
+        public static Matrix3x2 Convert(this RawMatrix3x2 mat)
+        {
+            return Convert((SharpDX.Matrix3x2) mat);
+        }
 
         public static SharpDX.Matrix3x2 Convert(this Matrix3x2 mat)
         {

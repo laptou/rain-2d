@@ -15,9 +15,13 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public override string DefaultName => "Path";
 
-        public ObservableList<PathInstruction> Instructions { get; } = new ObservableList<PathInstruction>();
+        public ObservableList<PathInstruction> Instructions { get; } =
+            new ObservableList<PathInstruction>();
 
-        public override RectangleF GetBounds(ICacheManager cache) { return cache.GetGeometry(this).Bounds(); }
+        public override RectangleF GetBounds(ICacheManager cache)
+        {
+            return cache.GetGeometry(this).Bounds();
+        }
 
         public override IGeometry GetGeometry(ICacheManager cache)
         {

@@ -4,8 +4,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
@@ -32,8 +30,7 @@ namespace Ibinimator.Renderer.Direct2D
         public abstract SpreadMethod SpreadMethod { get; set; }
 
         protected abstract void OnStopsChanged(
-            object                           sender,
-            NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
+            object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
 
         protected GradientStopCollection ConvertStops()
         {

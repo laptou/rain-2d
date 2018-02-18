@@ -8,18 +8,20 @@ namespace Ibinimator.Core.Model.Measurement
 {
     public struct Length
     {
-        private static readonly Regex Pattern = new Regex(
-            @"((?:[+-]?[0-9]*\.[0-9]+(?:[Ee][+-]?[0-9]+)?)|(?:(?:[+-]?[0-9]+)(?:[Ee][+-]?[0-9]+)?))(em|ex|px|in|cm|mm|pt|pc|%)?",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex Pattern =
+            new Regex(
+                @"((?:[+-]?[0-9]*\.[0-9]+(?:[Ee][+-]?[0-9]+)?)|(?:(?:[+-]?[0-9]+)(?:[Ee][+-]?[0-9]+)?))(em|ex|px|in|cm|mm|pt|pc|%)?",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Dictionary<LengthUnit, float> Factors = new Dictionary<LengthUnit, float>
-        {
-            [LengthUnit.Number] = 1f,
-            [LengthUnit.Pixels] = 1f,
-            [LengthUnit.Points] = 1.25f,
-            [LengthUnit.Inches] = 96f,
-            [LengthUnit.Percent] = 100f
-        };
+        private static readonly Dictionary<LengthUnit, float> Factors =
+            new Dictionary<LengthUnit, float>
+            {
+                [LengthUnit.Number] = 1f,
+                [LengthUnit.Pixels] = 1f,
+                [LengthUnit.Points] = 1.25f,
+                [LengthUnit.Inches] = 96f,
+                [LengthUnit.Percent] = 100f
+            };
 
         public static Length Zero = (0, LengthUnit.Number);
 
@@ -40,7 +42,10 @@ namespace Ibinimator.Core.Model.Measurement
             return new Length(length.Magnitude * Factors[target] / Factors[length.Unit], target);
         }
 
-        public bool Equals(Length other) { return Magnitude.Equals(other.Magnitude) && Unit == other.Unit; }
+        public bool Equals(Length other)
+        {
+            return Magnitude.Equals(other.Magnitude) && Unit == other.Unit;
+        }
 
         public override bool Equals(object obj)
         {

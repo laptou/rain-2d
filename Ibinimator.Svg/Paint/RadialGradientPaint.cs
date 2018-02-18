@@ -6,14 +6,15 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model.Measurement;
 
-namespace Ibinimator.Svg.Paint {
+namespace Ibinimator.Svg.Paint
+{
     public class RadialGradientPaint : GradientPaint
     {
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }
-        public Length FocusX  { get; set; }
-        public Length FocusY  { get; set; }
-        public Length Radius  { get; set; }
+        public Length FocusX { get; set; }
+        public Length FocusY { get; set; }
+        public Length Radius { get; set; }
 
         public override void FromXml(XElement element, SvgContext context)
         {

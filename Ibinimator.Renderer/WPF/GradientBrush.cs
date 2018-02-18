@@ -5,12 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-using Ibinimator.Core;
-using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Utility;
 
-using Color = System.Windows.Media.Color;
 using GradientStop = Ibinimator.Core.Model.Paint.GradientStop;
 
 namespace Ibinimator.Renderer.WPF
@@ -29,20 +26,20 @@ namespace Ibinimator.Renderer.WPF
         public abstract SpreadMethod SpreadMethod { get; set; }
 
         protected abstract void OnStopsChanged(
-            object                           sender,
-            NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
+            object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
 
         protected GradientStopCollection ConvertStops()
         {
-            return new GradientStopCollection(Stops.Select(s => new System.Windows.Media.GradientStop
-            {
-                Color = Color.FromArgb(
-                    (byte) (s.Color.Alpha * 255),
-                    (byte) (s.Color.Red * 255),
-                    (byte) (s.Color.Green * 255),
-                    (byte) (s.Color.Blue * 255)),
-                Offset = s.Offset
-            }));
+            return new GradientStopCollection(Stops.Select(
+                                                  s => new System.Windows.Media.GradientStop
+                                                  {
+                                                      Color = Color.FromArgb(
+                                                          (byte) (s.Color.Alpha * 255),
+                                                          (byte) (s.Color.Red * 255),
+                                                          (byte) (s.Color.Green * 255),
+                                                          (byte) (s.Color.Blue * 255)),
+                                                      Offset = s.Offset
+                                                  }));
         }
 
         #region IGradientBrush Members

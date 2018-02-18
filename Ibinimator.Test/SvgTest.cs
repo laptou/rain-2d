@@ -11,8 +11,6 @@ namespace Ibinimator.Test
     public class SvgTest
     {
         [TestMethod]
-        public void TestMethod1()
-        {
-        }
+        public void TestMethod1() { }
     }
 }

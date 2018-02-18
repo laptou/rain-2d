@@ -11,8 +11,9 @@ namespace Ibinimator.Svg.Shapes
     public class Polygon : ShapeElement
     {
         private static readonly Regex PointsSyntax =
-            new Regex(@"\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))",
-                      RegexOptions.Compiled);
+            new Regex(
+                @"\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))",
+                RegexOptions.Compiled);
 
         public Vector2[] Points { get; set; }
 
@@ -22,11 +23,10 @@ namespace Ibinimator.Svg.Shapes
 
             var strPoints = (string) element.Attribute("points") ?? "";
 
-            var coords =
-                PointsSyntax.Matches(strPoints)
-                            .OfType<Match>()
-                            .Select(m => float.Parse(m.Groups[1].Value))
-                            .ToArray();
+            var coords = PointsSyntax.Matches(strPoints)
+                                     .OfType<Match>()
+                                     .Select(m => float.Parse(m.Groups[1].Value))
+                                     .ToArray();
 
             Points = new Vector2[coords.Length / 2];
 

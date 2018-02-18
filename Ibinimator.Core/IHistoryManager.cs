@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 namespace Ibinimator.Core
 {
     public interface IHistoryManager
-        : IArtContextManager,
-          INotifyCollectionChanged,
-          IEnumerable<IOperationCommand>
+        : IArtContextManager, INotifyCollectionChanged, IEnumerable<IOperationCommand>
     {
         /// <summary>
         ///     Returns the last operation that was performed.

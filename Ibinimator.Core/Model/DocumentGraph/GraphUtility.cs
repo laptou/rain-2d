@@ -54,24 +54,18 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
             if (layer is IFilledLayer filled &&
                 filled.Fill != null)
-            {
                 foreach (var node in Crawl(filled.Fill, root))
                     yield return node;
-            }
 
             if (layer is IStrokedLayer stroked &&
                 stroked.Stroke != null)
-            {
                 foreach (var node in Crawl(stroked.Stroke, root))
                     yield return node;
-            }
 
             if (layer is ITextLayer text &&
                 text.Value != null)
-            {
                 foreach (var node in Crawl(text, root))
-                        yield return node;
-            }
+                    yield return node;
 
             if (layer is IContainerLayer container)
                 foreach (var sublayer in container.SubLayers.Reverse())
@@ -104,17 +98,18 @@ namespace Ibinimator.Core.Model.DocumentGraph
             Name = name;
         }
 
-        public string Name { get; }
-
         public string Id
         {
             get
             {
-                var prefix = (char)(97 + Rank % 26);
-                var suffix = unchecked((uint)Target.GetHashCode()).ToString();
+                var prefix = (char) (97 + Rank % 26);
+                var suffix = unchecked((uint) Target.GetHashCode()).ToString();
+
                 return string.Join("_", prefix, Name, suffix);
             }
         }
+
+        public string Name { get; }
 
         public Node Parent { get; }
         public int Rank { get; }
