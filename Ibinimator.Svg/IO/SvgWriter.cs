@@ -270,6 +270,7 @@ namespace Ibinimator.Svg.IO
             if (element != null)
             {
                 element.Id = node.Id;
+                element.Name = node.Name;
 
                 if (parent is IContainerElement containerElement)
                     containerElement.Add(element);
@@ -284,7 +285,7 @@ namespace Ibinimator.Svg.IO
         [DebuggerDisplay("#{Rank}::{Id}::{Target.GetType()} < {Parent?.Target.GetType()}")]
         private class Node
         {
-            public Node(string id, object target, Node parent)
+            public Node(string name, object target, Node parent)
             {
                 Target = target;
 
@@ -294,15 +295,21 @@ namespace Ibinimator.Svg.IO
                     Rank = parent.Rank + 1;
                 }
 
-                if (id != null)
+                Name = name;
+            }
+
+            public string Name { get; }
+
+            public string Id
+            {
+                get
                 {
-                    var prefix = (char) (97 + Rank % 26);
-                    var suffix = unchecked ((uint) target.GetHashCode()).ToString();
-                    Id = string.Join("_", prefix, id, suffix);
+                    var prefix = (char)(97 + Rank % 26);
+                    var suffix = unchecked((uint)Target.GetHashCode()).ToString();
+                    return string.Join("_", prefix, Name, suffix);
                 }
             }
 
-            public string Id { get; }
             public Node Parent { get; }
             public int Rank { get; }
             public object Target { get; }

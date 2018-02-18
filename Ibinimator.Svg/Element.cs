@@ -108,7 +108,7 @@ namespace Ibinimator.Svg
                 case Color color:
                     element.SetAttributeValue(name, $"rgb({color.Red * 100}%," +
                                                     $"{color.Green * 100}%," +
-                                                    $"{color.Blue * 100}%");
+                                                    $"{color.Blue * 100}%)");
                     break;
                 default:
                     element.SetAttributeValue(name, value);

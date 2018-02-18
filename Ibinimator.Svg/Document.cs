@@ -54,6 +54,7 @@ namespace Ibinimator.Svg
             var element = base.ToXml(context);
 
             element.Name = SvgNames.Svg;
+            element.Add(new XAttribute(XNamespace.Xmlns + "rain", SvgNames.Ibinimator.NamespaceName));
 
             LazySet(element, "viewBox", Viewbox);
             LazySet(element, "version", Version);
