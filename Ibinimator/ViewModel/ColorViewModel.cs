@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 
 using Ibinimator.Utility;
@@ -80,14 +79,12 @@ namespace Ibinimator.ViewModel
                 Context.BrushManager.Apply(pen);
             }
 
+            Context.InvalidateRender();
+
             _changing = false;
         }
 
-        private void HistoryManagerOnCollectionChanged(
-            object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
-        {
-            Update();
-        }
+        private void HistoryManagerOnTraversed(object sender, long l) { Update(); }
 
         private void OnContextChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -96,8 +93,7 @@ namespace Ibinimator.ViewModel
 
             Context.ToolManager.FillUpdated += ToolManagerOnFillUpdated;
             Context.ToolManager.StrokeUpdated += ToolManagerOnStrokeUpdated;
-            Context.HistoryManager.CollectionChanged += HistoryManagerOnCollectionChanged;
-            Context.SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
+            Context.HistoryManager.Traversed += HistoryManagerOnTraversed;
         }
 
         private void OnContextChanging(object sender, PropertyChangingEventArgs e)
@@ -105,23 +101,31 @@ namespace Ibinimator.ViewModel
             if (Context == null)
                 return;
 
-            Context.HistoryManager.CollectionChanged -= HistoryManagerOnCollectionChanged;
-            Context.SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
+            Context.ToolManager.FillUpdated -= ToolManagerOnFillUpdated;
+            Context.ToolManager.StrokeUpdated -= ToolManagerOnStrokeUpdated;
+            Context.HistoryManager.Traversed -= HistoryManagerOnTraversed;
         }
 
-        private void SelectionManagerOnSelectionChanged(object sender, EventArgs eventArgs)
+        private void ToolManagerOnFillUpdated(object sender, IBrushInfo brushInfo)
         {
-            Update();
+            Ui(() =>
+               {
+                   Fill = brushInfo?.CreateWpfBrush();
+                   Update();
+               });
         }
 
-        private void ToolManagerOnFillUpdated(object sender, IBrushInfo brushInfo) { Update(); }
-
-        private void ToolManagerOnStrokeUpdated(object sender, IPenInfo e) { Update(); }
+        private void ToolManagerOnStrokeUpdated(object sender, IPenInfo penInfo)
+        {
+            Ui(() =>
+               {
+                   Stroke = penInfo?.Brush?.CreateWpfBrush();
+                   Update();
+               });
+        }
 
         private void Update()
         {
-            RaisePropertyChanged(nameof(Fill), nameof(Stroke));
-
             if (!_changing &&
                 Current != null)
             {
@@ -138,9 +142,17 @@ namespace Ibinimator.ViewModel
 
         #region Brush Properties
 
-        public WPF.Brush Fill => Context?.BrushManager.Query().Fill?.CreateWpfBrush();
+        public WPF.Brush Fill
+        {
+            get => Get<WPF.Brush>();
+            set => Set(value);
+        }
 
-        public WPF.Brush Stroke => Context?.BrushManager.Query().Stroke?.Brush?.CreateWpfBrush();
+        public WPF.Brush Stroke
+        {
+            get => Get<WPF.Brush>();
+            set => Set(value);
+        }
 
         #endregion
 

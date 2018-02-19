@@ -40,8 +40,8 @@ namespace Ibinimator.Renderer
             Selection = new ObservableList<ILayer>();
             Selection.CollectionChanged += (sender, args) =>
                                            {
-                                               UpdateBounds();
                                                SelectionChanged?.Invoke(this, null);
+                                               UpdateBounds();
                                            };
         }
 
@@ -97,6 +97,9 @@ namespace Ibinimator.Renderer
         #region ISelectionManager Members
 
         public event EventHandler SelectionChanged;
+
+        /// <inheritdoc />
+        public event EventHandler SelectionBoundsChanged;
 
         /// <inheritdoc />
         public void Attach(IArtContext context)
@@ -168,7 +171,7 @@ namespace Ibinimator.Renderer
 
             Context.InvalidateRender();
 
-            SelectionChanged?.Invoke(this, null);
+            SelectionBoundsChanged?.Invoke(this, null);
         }
 
         public void UpdateBounds()
@@ -196,7 +199,7 @@ namespace Ibinimator.Renderer
 
             Context.InvalidateRender();
 
-            SelectionChanged?.Invoke(this, null);
+            SelectionBoundsChanged?.Invoke(this, null);
         }
 
         public IArtContext Context { get; }

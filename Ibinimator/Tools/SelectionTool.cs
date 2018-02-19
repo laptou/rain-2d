@@ -123,7 +123,7 @@ namespace Ibinimator.Tools
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
 
-            foreach (var handle in GetHandles(Context.ViewManager.Zoom))
+            foreach (var handle in GetHandles(SelectionManager.SelectionBounds, Context.ViewManager.Zoom))
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
                     _handle = handle.handle;
@@ -133,7 +133,7 @@ namespace Ibinimator.Tools
 
             base.MouseDown(context, evt);
 
-            if (Context.SelectionManager.Selection.Any())
+            if (SelectionManager.Selection.Any())
                 _handle = SelectionHandle.Translation;
 
             UpdateStatus();
@@ -153,7 +153,7 @@ namespace Ibinimator.Tools
             {
                 Cursor = null;
 
-                foreach (var handle in GetHandles(Context.ViewManager.Zoom))
+                foreach (var handle in GetHandles(SelectionManager.SelectionBounds, Context.ViewManager.Zoom))
                 {
                     if (Vector2.Distance(handle.position, pos) > 7.5f) continue;
 
@@ -399,6 +399,8 @@ namespace Ibinimator.Tools
 
         public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
+            if (!SelectionManager.Selection.Any()) return;
+
             var rect = SelectionManager.SelectionBounds;
 
             if (rect.IsEmpty) return;
@@ -410,7 +412,7 @@ namespace Ibinimator.Tools
             GuideManager.Render(target, cache, view);
 
             // handles
-            var handles = GetHandles(view.Zoom).ToDictionary();
+            var handles = GetHandles(rect, view.Zoom).ToDictionary();
 
             using (var pen =
                 target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
@@ -436,10 +438,9 @@ namespace Ibinimator.Tools
             UpdateStatus();
         }
 
-        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(float zoom)
+        private IEnumerable<(SelectionHandle handle, Vector2 position)> 
+            GetHandles(RectangleF rect, float zoom)
         {
-            var rect = SelectionManager.SelectionBounds;
-
             if (rect.IsEmpty) yield break;
 
             float x1 = rect.Left, y1 = rect.Top, x2 = rect.Right, y2 = rect.Bottom;

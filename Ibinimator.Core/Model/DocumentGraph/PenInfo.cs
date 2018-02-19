@@ -8,7 +8,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public class PenInfo : Model, IPenInfo
+    public class PenInfo : ResourceBase, IPenInfo
     {
         public PenInfo()
         {
@@ -78,5 +78,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public override void Optimize() { throw new NotImplementedException(); }
     }
 }

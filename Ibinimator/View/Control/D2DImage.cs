@@ -78,7 +78,7 @@ namespace Ibinimator.View.Control
         public virtual void InvalidateSurface()
         {
             _invalidated = true;
-            WindowHelper.InvalidateRect(_host, IntPtr.Zero, false);
+            WindowHelper.RedrawWindow(_host, IntPtr.Zero, IntPtr.Zero, 0b0001);
         }
 
         protected virtual IntPtr OnMessage(
@@ -106,12 +106,11 @@ namespace Ibinimator.View.Control
                                                          D2D.ResultCode.RecreateTarget)
                     {
                         Initialize();
-                        RenderContext.Begin(null);
-                        OnRender(RenderContext);
-                        RenderContext.End();
                     }
 
                     WindowHelper.EndPaint(hWnd, ref paintStruct);
+
+                    _invalidated = false;
 
                     break;
                 case WindowMessage.MouseWheelHorizontal:
@@ -416,6 +415,7 @@ namespace Ibinimator.View.Control
                 if (_evtThread == null)
                 {
                     _evtThread = new Thread(EventLoop);
+                    _evtThread.Priority = ThreadPriority.AboveNormal;
                     _evtThread.Start();
                 }
             }

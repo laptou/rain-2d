@@ -48,6 +48,8 @@ namespace Ibinimator.Renderer
         private readonly Dictionary<ITextLayer, ITextLayout> _texts =
             new Dictionary<ITextLayer, ITextLayout>();
 
+        private bool _suppressed;
+
         public CacheManager(IArtContext context) { Context = context; }
 
         public IBrush BindBrush(ILayer shape, IBrushInfo brush)
@@ -185,6 +187,8 @@ namespace Ibinimator.Renderer
                     break;
             }
 
+            if (_suppressed) return;
+
             Context.InvalidateRender();
         }
 
@@ -247,6 +251,8 @@ namespace Ibinimator.Renderer
                     break;
             }
 
+            if (_suppressed) return;
+
             Context.InvalidateRender();
         }
 
@@ -281,6 +287,8 @@ namespace Ibinimator.Renderer
 
                                           ExitWriteLock();
 
+                                          if (_suppressed) return;
+
                                           Context.InvalidateRender();
                                       };
             }
@@ -302,6 +310,8 @@ namespace Ibinimator.Renderer
 
                                              ExitWriteLock();
 
+                                             if (_suppressed) return;
+
                                              Context.InvalidateRender();
                                          };
             }
@@ -316,6 +326,8 @@ namespace Ibinimator.Renderer
 
                                           ExitWriteLock();
 
+                                          if (_suppressed) return;
+
                                           Context.InvalidateRender();
                                       };
 
@@ -329,6 +341,8 @@ namespace Ibinimator.Renderer
 
                                                  ExitWriteLock();
 
+                                                 if (_suppressed) return;
+
                                                  Context.InvalidateRender();
                                              };
 
@@ -340,6 +354,8 @@ namespace Ibinimator.Renderer
                                            _bounds[l] = l.GetBounds(this);
                                            ExitWriteLock();
                                        }
+
+                                       if (_suppressed) return;
 
                                        Context.InvalidateRender();
                                    };
@@ -517,6 +533,12 @@ namespace Ibinimator.Renderer
 
             ExitWriteLock();
         }
+
+        /// <inheritdoc />
+        public void RestoreInvalidation() { _suppressed = true; }
+
+        /// <inheritdoc />
+        public void SuppressInvalidation() { _suppressed = true; }
 
         /// <inheritdoc />
         public void UnbindLayer(ILayer layer)

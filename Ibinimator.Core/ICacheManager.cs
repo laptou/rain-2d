@@ -12,20 +12,30 @@ namespace Ibinimator.Core
 {
     public interface ICacheManager : IArtContextManager
     {
+        #region Retrieval
+
         IBitmap GetBitmap(string key);
         IBrush GetBrush(string key);
         IBrush GetFill(IFilledLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);
-
         IPen GetStroke(IStrokedLayer layer);
         ITextLayout GetTextLayout(ITextLayer text);
 
+        #endregion
+
         void LoadBitmaps(RenderContext target);
         void LoadBrushes(RenderContext target);
-        void ReleaseDeviceResources();
 
+        void SuppressInvalidation();
+        void RestoreInvalidation();
+
+        #region Resource Management
+
+        void ReleaseDeviceResources();
         void ReleaseResources();
         void ReleaseSceneResources();
+
+        #endregion
 
         #region Layer Lifecycle
 
@@ -43,7 +53,6 @@ namespace Ibinimator.Core
         void UnbindLayer(ILayer layer);
 
         #endregion
-
 
         #region Hitboxes
 

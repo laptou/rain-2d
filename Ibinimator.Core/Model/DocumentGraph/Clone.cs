@@ -70,6 +70,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
         {
             target.Transform(Transform);
 
+            cache.SuppressInvalidation();
+
             IBrushInfo fill = null;
             IPenInfo stroke = null;
 
@@ -92,7 +94,11 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 }
             }
 
+            cache.RestoreInvalidation();
+
             Target.Render(target, cache, view);
+
+            cache.SuppressInvalidation();
 
             {
                 if (Target is IFilled filled)
@@ -101,6 +107,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 if (Target is IStroked stroked)
                     stroked.Stroke = stroke;
             }
+
+            cache.RestoreInvalidation();
 
             target.Transform(MathUtils.Invert(Transform));
         }

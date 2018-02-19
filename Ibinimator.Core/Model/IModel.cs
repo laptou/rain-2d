@@ -10,5 +10,7 @@ namespace Ibinimator.Core.Model
     {
         object Clone(Type type);
         T Clone<T>() where T : IModel;
+        void SuppressNotifications();
+        void RestoreNotifications();
     }
 }

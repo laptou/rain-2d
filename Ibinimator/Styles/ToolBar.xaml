@@ -25,10 +25,13 @@
                                 BorderThickness="{TemplateBinding BorderThickness}">
                             <DockPanel KeyboardNavigation.TabIndex="1" KeyboardNavigation.TabNavigation="Local">
                                 <ContentPresenter x:Name="ToolBarHeader"
-                                                  Margin="4,0,4,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                  ContentSource="Header" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                  Margin="4,0,4,0" HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  ContentSource="Header"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                 <ToolBarPanel x:Name="PART_ToolBarPanel"
-                                              IsItemsHost="true" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                              IsItemsHost="true"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </DockPanel>
                         </Border>
                         <Grid x:Name="OverflowGrid"
@@ -42,15 +45,20 @@
                             </ToggleButton>
                             <Popup x:Name="OverflowPopup"
                                    AllowsTransparency="true" Focusable="false"
-                                   IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Bottom"
-                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" StaysOpen="false">
+                                   IsOpen="{Binding IsOverflowOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Placement="Bottom"
+                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
+                                   StaysOpen="false">
                                 <themes:SystemDropShadowChrome x:Name="Shdw" Color="Transparent">
                                     <Border x:Name="ToolBarSubMenuBorder"
-                                            Background="{utility:Theme background-2}" RenderOptions.ClearTypeHint="Enabled">
+                                            Background="{utility:Theme background-2}"
+                                            RenderOptions.ClearTypeHint="Enabled">
                                         <ToolBarOverflowPanel x:Name="PART_ToolBarOverflowPanel"
                                                               Margin="2"
-                                                              FocusVisualStyle="{x:Null}" Focusable="true" KeyboardNavigation.DirectionalNavigation="Cycle"
-                                                              KeyboardNavigation.TabNavigation="Cycle" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                              FocusVisualStyle="{x:Null}" Focusable="true"
+                                                              KeyboardNavigation.DirectionalNavigation="Cycle"
+                                                              KeyboardNavigation.TabNavigation="Cycle"
+                                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                                                               WrapWidth="200" />
                                     </Border>
                                 </themes:SystemDropShadowChrome>

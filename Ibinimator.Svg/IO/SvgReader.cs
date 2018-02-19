@@ -141,10 +141,13 @@ namespace Ibinimator.Svg.IO
                     case SVG.Text text:
                         shape = new DG.Text
                         {
-                            FontFamilyName = text.FontFamily ?? "Arial",
-                            FontStretch = text.FontStretch ?? FontStretch.Normal,
-                            FontWeight = text.FontWeight ?? FontWeight.Normal,
-                            FontSize = text.FontSize?.To(LengthUnit.Points) ?? 12,
+                            TextStyle = new TextInfo
+                            {
+                                FontFamily = text.FontFamily ?? "Arial",
+                                FontStretch = text.FontStretch ?? FontStretch.Normal,
+                                FontWeight = text.FontWeight ?? FontWeight.Normal,
+                                FontSize = text.FontSize?.To(LengthUnit.Points) ?? 12
+                            },
                             Value = text.Text
                         };
 

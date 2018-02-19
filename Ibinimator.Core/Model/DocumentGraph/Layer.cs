@@ -10,6 +10,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
 {
     public abstract class Layer : Model, ILayer
     {
+        private bool _suppressed;
+
         protected Layer()
         {
             Opacity = 1;
@@ -21,7 +23,28 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         public override int GetHashCode() { return Id.GetHashCode(); }
 
-        protected void RaiseBoundsChanged() { BoundsChanged?.Invoke(this, null); }
+        protected void RaiseBoundsChanged()
+        {
+            if (_suppressed) return;
+
+            BoundsChanged?.Invoke(this, null);
+        }
+
+        /// <inheritdoc />
+        public override void SuppressNotifications()
+        {
+            _suppressed = true;
+
+            base.SuppressNotifications();
+        }
+
+        /// <inheritdoc />
+        public override void RestoreNotifications()
+        {
+            _suppressed = false;
+
+            base.RestoreNotifications();
+        }
 
         #region ILayer Members
 
@@ -68,7 +91,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
             set => Set(value);
         }
 
-        public virtual float Opacity
+        public float Opacity
         {
             get => Get<float>();
             set => Set(value);
@@ -85,7 +108,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
         /// <inheritdoc />
         public virtual int Size => 1;
 
-        public virtual Matrix3x2 Transform
+        public Matrix3x2 Transform
         {
             get => Get<Matrix3x2>();
             protected set => Set(value);

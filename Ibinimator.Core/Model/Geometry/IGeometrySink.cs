@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model.Geometry
 {
-    public interface IGeometrySink : IResource
+    public interface IGeometrySink : IDisposable
     {
         void Arc(
             float x, float y, float radiusX, float radiusY, float angle, bool clockwise,

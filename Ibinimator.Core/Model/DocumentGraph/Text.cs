@@ -15,6 +15,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
 {
     public class Text : Layer, ITextLayer
     {
+        private bool _suppressed;
+
         public Text()
         {
             Value = "";
@@ -79,22 +81,59 @@ namespace Ibinimator.Core.Model.DocumentGraph
                        : null;
         }
 
-        protected void RaiseFillChanged() { FillChanged?.Invoke(this, null); }
+        /// <inheritdoc />
+        public override void RestoreNotifications()
+        {
+            _suppressed = false;
+
+            base.RestoreNotifications();
+        }
+
+        /// <inheritdoc />
+        public override void SuppressNotifications()
+        {
+            _suppressed = true;
+
+            base.SuppressNotifications();
+        }
+
+        protected void RaiseFillChanged()
+        {
+            if (_suppressed) return;
+
+            FillChanged?.Invoke(this, null);
+        }
 
         protected void RaiseGeometryChanged()
         {
+            if (_suppressed) return;
+
             GeometryChanged?.Invoke(this, null);
             RaiseBoundsChanged();
         }
 
+
         protected void RaiseLayoutChanged()
         {
+            if (_suppressed) return;
+
             LayoutChanged?.Invoke(this, null);
             RaiseGeometryChanged();
         }
 
-        protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
-        protected void RaiseTextStyleChanged() { TextStyleChanged?.Invoke(this, null); }
+        protected void RaiseStrokeChanged()
+        {
+            if (_suppressed) return;
+
+            StrokeChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseTextStyleChanged()
+        {
+            if (_suppressed) return;
+
+            TextStyleChanged?.Invoke(this, null);
+        }
 
         #region ITextLayer Members
 

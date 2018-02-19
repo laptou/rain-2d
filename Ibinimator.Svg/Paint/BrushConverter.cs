@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;

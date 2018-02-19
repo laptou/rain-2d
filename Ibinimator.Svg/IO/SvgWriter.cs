@@ -6,6 +6,7 @@ using Ibinimator.Svg.Paint;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Model.Text;
@@ -131,13 +132,13 @@ namespace Ibinimator.Svg.IO
             if (node.Target is DG.ITextLayer textLayer)
                 element = new Text
                 {
-                    FontFamily = textLayer.FontFamilyName,
-                    FontStretch = textLayer.FontStretch,
-                    FontWeight = textLayer.FontWeight,
-                    FontStyle = textLayer.FontStyle,
-                    FontSize = new Length(textLayer.FontSize, LengthUnit.Points),
+                    FontFamily = textLayer.TextStyle.FontFamily,
+                    FontStretch = textLayer.TextStyle.FontStretch,
+                    FontWeight = textLayer.TextStyle.FontWeight,
+                    FontStyle = textLayer.TextStyle.FontStyle,
+                    FontSize = new Length(textLayer.TextStyle.FontSize, LengthUnit.Points),
                     Text = textLayer.Value,
-                    Y = textLayer.Baseline
+                    Y = textLayer.TextStyle.Baseline
                 };
 
             if (node.Target is DG.IGeometricLayer geomLayer)

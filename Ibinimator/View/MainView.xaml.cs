@@ -20,15 +20,18 @@ namespace Ibinimator.View
             InitializeComponent();
 
             CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand,
-                                                   (s, e) => SystemCommands.CloseWindow(this)));
+                                                   (s, e) => SystemCommands.CloseWindow(this),
+                                                   (s, e) => e.CanExecute = true));
             CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand,
-                                                   (s, e) => SystemCommands.MinimizeWindow(this)));
+                                                   (s, e) => SystemCommands.MinimizeWindow(this),
+                                                   (s, e) => e.CanExecute = true));
             CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
                                                    (s, e) => WindowState =
                                                                  WindowState ==
                                                                  WindowState.Maximized
                                                                      ? WindowState.Normal
-                                                                     : WindowState.Maximized));
+                                                                     : WindowState.Maximized,
+                                                   (s, e) => e.CanExecute = true));
 
             DataContext = new MainViewModel(ArtView);
         }

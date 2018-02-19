@@ -7,6 +7,15 @@ namespace Ibinimator.Core.Model.Text
 {
     public class TextInfo : Model, ITextInfo
     {
+        public TextInfo()
+        {
+            FontFamily = "Arial";
+            FontSize = 12;
+            FontStretch = FontStretch.Normal;
+            FontStyle = FontStyle.Normal;
+            FontWeight = FontWeight.Normal;
+        }
+
         #region ITextInfo Members
 
         /// <inheritdoc />

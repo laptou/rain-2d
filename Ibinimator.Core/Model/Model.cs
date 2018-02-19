@@ -17,6 +17,7 @@ namespace Ibinimator.Core.Model
             _handlers = new Dictionary<string, Delegate>();
 
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
+        private bool _suppressed;
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
@@ -26,9 +27,7 @@ namespace Ibinimator.Core.Model
         protected PropertyInfo GetPropertyInfo<TProperty>(
             Expression<Func<TProperty>> propertyLambda)
         {
-            var member = propertyLambda.Body as MemberExpression;
-
-            if (member == null)
+            if (!(propertyLambda.Body is MemberExpression member))
                 throw new ArgumentException(
                     $"Expression '{propertyLambda}' refers to a method, not a property.");
 
@@ -46,7 +45,7 @@ namespace Ibinimator.Core.Model
             try
             {
                 foreach (var propertyName in propertyNames)
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                    RaisePropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
             catch (Exception ex)
             {
@@ -64,17 +63,19 @@ namespace Ibinimator.Core.Model
 
         protected void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
+            if (_suppressed) return;
             PropertyChanged?.Invoke(sender, args);
         }
 
         protected void RaisePropertyChanging(object sender, PropertyChangingEventArgs args)
         {
+            if (_suppressed) return;
             PropertyChanging?.Invoke(sender, args);
         }
 
         protected void RaisePropertyChanging(string propertyName)
         {
-            PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+            RaisePropertyChanging(this, new PropertyChangingEventArgs(propertyName));
         }
 
         protected void RaisePropertyChanging<T>(Expression<Func<T>> propertyLambda)
@@ -111,8 +112,7 @@ namespace Ibinimator.Core.Model
             _properties[propertyName] = value;
             RaisePropertyChanged(propertyName);
 
-            foreach (var property in dependentProperties)
-                RaisePropertyChanged(property);
+            RaisePropertyChanged(dependentProperties);
         }
 
         protected void Set<T>(
@@ -172,6 +172,12 @@ namespace Ibinimator.Core.Model
         public event PropertyChangingEventHandler PropertyChanging;
 
         public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
+
+        /// <inheritdoc />
+        public virtual void SuppressNotifications() { _suppressed = true; }
+
+        /// <inheritdoc />
+        public virtual void RestoreNotifications() { _suppressed = false; }
 
         public object Clone(Type type)
         {

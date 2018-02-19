@@ -85,11 +85,15 @@ namespace Ibinimator.Renderer
 
         public void Render(RenderContext target, ICacheManager cache, IViewManager view)
         {
+            var guides = GetGuides(GuideType.All).ToArray();
+
+            if (!guides.Any()) return;
+
             var fx = target.CreateEffect<IGlowEffect>();
 
             target.PushEffect(fx);
 
-            foreach (var guide in GetGuides(GuideType.All))
+            foreach (var guide in guides)
             {
                 var brush = cache.GetBrush(nameof(EditorColors.Guide));
 

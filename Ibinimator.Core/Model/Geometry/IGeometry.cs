@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model.Geometry
 {
-    public interface IGeometry : IResource
+    public interface IGeometry : IDisposable
     {
         RectangleF Bounds();
         IGeometry Copy();

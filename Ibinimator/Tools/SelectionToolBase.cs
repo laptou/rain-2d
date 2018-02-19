@@ -32,6 +32,8 @@ namespace Ibinimator.Tools
         protected virtual void OnSelectionChanged(object sender, EventArgs args)
         {
             _depth = Selection.Any() ? Selection.Select(l => l.Depth).Min() : 1;
+            Manager.RaiseFillUpdate();
+            Manager.RaiseStrokeUpdate();
         }
 
         #region ITool Members
@@ -92,7 +94,7 @@ namespace Ibinimator.Tools
         {
             var layer = Selection.LastOrDefault();
 
-            if (layer is IFilledLayer filled)
+            if (layer is IFilled filled)
                 return filled.Fill;
 
             return null;
@@ -102,7 +104,7 @@ namespace Ibinimator.Tools
         {
             var layer = Selection.LastOrDefault();
 
-            if (layer is IStrokedLayer stroked)
+            if (layer is IStroked stroked)
                 return stroked.Stroke;
 
             return null;

@@ -16,6 +16,7 @@ namespace Ibinimator.Core
         Matrix3x2 SelectionTransform { get; }
 
         event EventHandler SelectionChanged;
+        event EventHandler SelectionBoundsChanged;
         void ClearSelection();
 
         Vector2 FromSelectionSpace(Vector2 v);

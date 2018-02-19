@@ -71,6 +71,12 @@ namespace Ibinimator.Native
         public static extern IntPtr UpdateWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr RedrawWindow(IntPtr hWnd, [In] ref NativeRect lpRect, IntPtr hRgn, uint flags);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr RedrawWindow(IntPtr hWnd, IntPtr lpRect, IntPtr hRgn, uint flags);
+
+        [DllImport("user32.dll")]
         public static extern bool ValidateRect([In] IntPtr hWnd, [In] ref NativeRect lpRect);
     }
 }

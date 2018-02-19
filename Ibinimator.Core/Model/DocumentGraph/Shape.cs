@@ -12,6 +12,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
 {
     public abstract class Shape : Layer, IGeometricLayer
     {
+        private bool _suppressed;
         protected Shape() { Stroke = new PenInfo(); }
 
         public FillRule FillMode
@@ -25,15 +26,43 @@ namespace Ibinimator.Core.Model.DocumentGraph
             }
         }
 
-        protected void RaiseFillBrushChanged() { FillChanged?.Invoke(this, null); }
+        /// <inheritdoc />
+        public override void RestoreNotifications()
+        {
+            _suppressed = false;
+
+            base.RestoreNotifications();
+        }
+
+        /// <inheritdoc />
+        public override void SuppressNotifications()
+        {
+            _suppressed = true;
+
+            base.SuppressNotifications();
+        }
+
+        protected void RaiseFillChanged()
+        {
+            if (_suppressed) return;
+
+            FillChanged?.Invoke(this, null);
+        }
 
         protected void RaiseGeometryChanged()
         {
+            if (_suppressed) return;
+
             GeometryChanged?.Invoke(this, null);
             RaiseBoundsChanged();
         }
 
-        protected void RaiseStrokeChanged() { StrokeChanged?.Invoke(this, null); }
+        protected void RaiseStrokeChanged()
+        {
+            if (_suppressed) return;
+
+            StrokeChanged?.Invoke(this, null);
+        }
 
         #region IGeometricLayer Members
 
@@ -98,8 +127,10 @@ namespace Ibinimator.Core.Model.DocumentGraph
             get => Get<IBrushInfo>();
             set
             {
+                Fill?.RemoveReference();
                 Set(value);
-                RaiseFillBrushChanged();
+                Fill?.AddReference();
+                RaiseFillChanged();
             }
         }
 
@@ -108,7 +139,9 @@ namespace Ibinimator.Core.Model.DocumentGraph
             get => Get<IPenInfo>();
             set
             {
+                Stroke?.RemoveReference();
                 Set(value);
+                Stroke?.AddReference();
                 RaiseStrokeChanged();
             }
         }

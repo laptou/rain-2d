@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ibinimator.Core.Model.Paint
 {
-    public abstract class BrushInfo : Model, IBrushInfo
+    public abstract class BrushInfo : ResourceBase, IBrushInfo
     {
         private static long _nextId = 1;
 
@@ -16,6 +16,9 @@ namespace Ibinimator.Core.Model.Paint
             Transform = Matrix3x2.Identity;
             Name = _nextId++.ToString();
         }
+
+        /// <inheritdoc />
+        public override void Optimize() { throw new NotImplementedException(); }
 
         #region IBrushInfo Members
 
@@ -46,11 +49,5 @@ namespace Ibinimator.Core.Model.Paint
         }
 
         #endregion
-    }
-
-    public enum ResourceScope
-    {
-        Layer,
-        Document
     }
 }

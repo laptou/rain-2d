@@ -7,7 +7,7 @@ using Ibinimator.Core.Utility;
 
 namespace Ibinimator.Core.Model.Paint
 {
-    public interface IPenInfo : IModel
+    public interface IPenInfo : IModel, IResource
     {
         IBrushInfo Brush { get; set; }
         ObservableList<float> Dashes { get; set; }
