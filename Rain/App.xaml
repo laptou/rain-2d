@@ -1,0 +1,54 @@
+﻿<Application x:Class="Rain.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:control="clr-namespace:Rain.View.Control" xmlns:control1="clr-namespace:Rain.View.Control"
+             xmlns:utility="clr-namespace:Rain.View.Utility"
+             ShutdownMode="OnMainWindowClose" StartupUri="View/MainView.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Buttons.xaml" />
+                <ResourceDictionary Source="Styles/ComboBox.xaml" />
+                <ResourceDictionary Source="Styles/ScrollBar.xaml" />
+                <ResourceDictionary Source="Styles/Tabs.xaml" />
+                <ResourceDictionary Source="Styles/Text.xaml" />
+                <ResourceDictionary Source="Styles/ToolBar.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <utility:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
+            <utility:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
+            <utility:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <utility:PercentageConverter x:Key="PercentageConverter" />
+            <utility:InversionConverter x:Key="Inverter" />
+
+            <FontFamily x:Key="UIFont">/Ibinimator;component/Resources/Font/#Roboto</FontFamily>
+
+            <Style TargetType="{x:Type control1:Icon}">
+                <Setter Property="Height" Value="20" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Width" Value="20" />
+            </Style>
+
+            <Style BasedOn="{StaticResource {x:Type ToolTip}}" TargetType="ToolTip">
+                <Setter Property="Foreground" Value="Black" />
+            </Style>
+
+            <Style TargetType="{x:Type Separator}">
+                <Setter Property="BorderBrush" Value="{utility:Theme divider}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Opacity" Value="0.5" />
+                <Setter Property="Panel.ZIndex" Value="9999" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
+
+            <Style TargetType="{x:Type StatusBar}">
+                <Setter Property="Background" Value="{DynamicResource L1Brush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource T2Brush}" />
+                <Setter Property="BorderThickness" Value="0,1,0,0" />
+                <Setter Property="Padding" Value="5,0" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
