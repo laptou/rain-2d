@@ -55,7 +55,7 @@ namespace Rain
         private static async Task LogError(object o, int level)
         {
             // log that bitch
-            using (var writer = new StreamWriter(File.Open("ibinimator.log", FileMode.Append)))
+            using (var writer = new StreamWriter(File.Open("rain.log", FileMode.Append)))
             {
                 await LogError(o, level, writer);
             }

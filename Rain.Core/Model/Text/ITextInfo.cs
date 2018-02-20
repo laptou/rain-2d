@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Rain.Core.Model.Text
 {
-    public interface ITextInfo
+    public interface ITextInfo : IModel
     {
         float Baseline { get; set; }
         string FontFamily { get; set; }

@@ -20,7 +20,7 @@
             <utility:PercentageConverter x:Key="PercentageConverter" />
             <utility:InversionConverter x:Key="Inverter" />
 
-            <FontFamily x:Key="UIFont">/Ibinimator;component/Resources/Font/#Roboto</FontFamily>
+            <FontFamily x:Key="UIFont">/Rain;component/Resources/Font/#Roboto</FontFamily>
 
             <Style TargetType="{x:Type control1:Icon}">
                 <Setter Property="Height" Value="20" />

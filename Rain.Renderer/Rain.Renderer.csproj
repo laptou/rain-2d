@@ -7,8 +7,8 @@
     <ProjectGuid>{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ibinimator.Renderer</RootNamespace>
-    <AssemblyName>Ibinimator.Renderer</AssemblyName>
+    <RootNamespace>Rain.Renderer</RootNamespace>
+    <AssemblyName>Rain.Renderer</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>

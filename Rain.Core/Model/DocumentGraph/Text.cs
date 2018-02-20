@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+
+using Rain.Core.Utility;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
-using Rain.Core.Utility;
 
 namespace Rain.Core.Model.DocumentGraph
 {
@@ -106,17 +109,18 @@ namespace Rain.Core.Model.DocumentGraph
         {
             if (_suppressed) return;
 
-            GeometryChanged?.Invoke(this, null);
             RaiseBoundsChanged();
-        }
 
+            GeometryChanged?.Invoke(this, null);
+        }
 
         protected void RaiseLayoutChanged()
         {
             if (_suppressed) return;
 
-            LayoutChanged?.Invoke(this, null);
             RaiseGeometryChanged();
+
+            LayoutChanged?.Invoke(this, null);
         }
 
         protected void RaiseStrokeChanged()
@@ -130,7 +134,14 @@ namespace Rain.Core.Model.DocumentGraph
         {
             if (_suppressed) return;
 
+            RaiseLayoutChanged();
+
             TextStyleChanged?.Invoke(this, null);
+        }
+
+        private void OnTextStylePropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            RaiseTextStyleChanged();
         }
 
         #region ITextLayer Members
@@ -398,7 +409,9 @@ namespace Rain.Core.Model.DocumentGraph
             get => Get<IBrushInfo>();
             set
             {
+                Fill?.RemoveReference();
                 Set(value);
+                Fill?.AddReference();
                 RaiseFillChanged();
             }
         }
@@ -422,13 +435,25 @@ namespace Rain.Core.Model.DocumentGraph
             get => Get<IPenInfo>();
             set
             {
+                Stroke?.RemoveReference();
                 Set(value);
+                Stroke?.AddReference();
                 RaiseStrokeChanged();
             }
         }
 
         /// <inheritdoc />
-        public ITextInfo TextStyle { get; set; }
+        public ITextInfo TextStyle
+        {
+            get => Get<ITextInfo>();
+            set
+            {
+                if (TextStyle != null) TextStyle.PropertyChanged -= OnTextStylePropertyChanged;
+                Set(value);
+                if (TextStyle != null) TextStyle.PropertyChanged += OnTextStylePropertyChanged;
+                RaiseTextStyleChanged();
+            }
+        }
 
         public string Value
         {

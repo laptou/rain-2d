@@ -67,7 +67,7 @@ namespace Rain.View.Control
                     }
 
                 icon.Source =
-                    new Uri($"/Ibinimator;component/Resources/Icon/{icon.IconName}-{theme}.svg",
+                    new Uri($"/Rain;component/Resources/Icon/{icon.IconName}-{theme}.svg",
                             UriKind.Relative);
             }
         }

@@ -135,7 +135,7 @@ namespace Rain.Renderer
             get => Get<Vector2>();
             set
             {
-                Set(Vector2.Clamp(value, -Document.Bounds.Size, Document.Bounds.Size));
+                Set(Vector2.Clamp(value, -Document.Bounds.Size * Zoom, Document.Bounds.Size * Zoom));
                 RaisePropertyChanged(nameof(Transform));
             }
         }

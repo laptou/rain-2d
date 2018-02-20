@@ -22,7 +22,7 @@ namespace Rain.Service
         /// <inheritdoc />
         protected override Stream GetReadStream()
         {
-            var defaultUri = new Uri($"/Ibinimator;component/theme/{_name}.json", UriKind.Relative);
+            var defaultUri = new Uri($"/Rain;component/theme/{_name}.json", UriKind.Relative);
 
             if (App.IsDesigner)
                 return Application.GetResourceStream(defaultUri)?.Stream;

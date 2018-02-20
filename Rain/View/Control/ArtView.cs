@@ -20,6 +20,7 @@ namespace Rain.View.Control
     public class ArtView : D2DImage
     {
         private readonly Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
+        private bool _middle = false;
 
         public ArtView()
         {
@@ -51,6 +52,15 @@ namespace Rain.View.Control
 
                     break;
                 case PointerEvent pointerEvent:
+
+                    if (pointerEvent.ModifierState.MiddleMouse)
+                    {
+                        ac.ViewManager.Pan -= pointerEvent.Delta;
+                        ac.InvalidateRender();
+
+                        return;
+                    }
+
                     ac.RaiseMouseMove(pointerEvent);
 
                     break;

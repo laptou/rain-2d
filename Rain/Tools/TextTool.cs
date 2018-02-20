@@ -595,7 +595,7 @@ namespace Rain.Tools
             else history.Do(cmd);
         }
 
-        private void Format(ITextInfo format, bool merge = false)
+        private void Format(TextInfoChange format, bool merge = false)
         {
             var history = Context.HistoryManager;
             var cmd = new ModifyTextCommand(Context.HistoryManager.Position + 1,
@@ -666,7 +666,7 @@ namespace Rain.Tools
             {
                 case ToolOption<string> fontFamily when fontFamily.Id == "font-family":
                     if (_selection.length == 0)
-                        Format(new TextInfo
+                        Format(new TextInfoChange
                         {
                             FontFamily = fontFamily.Value
                         });
@@ -681,7 +681,7 @@ namespace Rain.Tools
 
                 case ToolOption<FontStretch> fontStretch when fontStretch.Id == "font-stretch":
                     if (_selection.length == 0)
-                        Format(new TextInfo
+                        Format(new TextInfoChange
                         {
                             FontStretch = fontStretch.Value
                         });
@@ -696,7 +696,7 @@ namespace Rain.Tools
 
                 case ToolOption<FontWeight> fontWeight when fontWeight.Id == "font-weight":
                     if (_selection.length == 0)
-                        Format(new TextInfo
+                        Format(new TextInfoChange
                         {
                             FontWeight = fontWeight.Value
                         });
@@ -712,7 +712,7 @@ namespace Rain.Tools
 
                 case ToolOption<FontStyle> fontStyle when fontStyle.Id == "font-style":
                     if (_selection.length == 0)
-                        Format(new TextInfo
+                        Format(new TextInfoChange
                         {
                             FontStyle = fontStyle.Value
                         });
@@ -727,7 +727,7 @@ namespace Rain.Tools
 
                 case ToolOption<float> fontSize when fontSize.Id == "font-size":
                     if (_selection.length == 0)
-                        Format(new TextInfo
+                        Format(new TextInfoChange
                         {
                             FontSize = fontSize.Value
                         });
@@ -800,7 +800,7 @@ namespace Rain.Tools
             else
             {
                 var weight = SelectedLayer.TextStyle.FontWeight;
-                Format(new TextInfo
+                Format(new TextInfoChange
                 {
                     FontWeight = weight == FontWeight.Normal
                                      ? FontWeight.Bold
@@ -829,7 +829,7 @@ namespace Rain.Tools
             else
             {
                 var style = SelectedLayer.TextStyle.FontStyle;
-                Format(new TextInfo
+                Format(new TextInfoChange
                 {
                     FontStyle = style == FontStyle.Normal
                                     ? FontStyle.Italic
