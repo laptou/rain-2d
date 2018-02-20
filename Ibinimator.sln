@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Core", "Ibinimat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Renderer", "Ibinimator.Renderer\Ibinimator.Renderer.csproj", "{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Formatter.Xml", "Ibinimator.Formatter.Xml\Ibinimator.Formatter.Xml.csproj", "{86485E8E-F76C-40BA-807B-D6C9D1C104E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,14 @@ Global
 		{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}.Release|x64.ActiveCfg = Release|x64
 		{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}.Release|x64.Build.0 = Release|x64
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Debug|x64.Build.0 = Debug|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Release|x64.ActiveCfg = Release|Any CPU
+		{86485E8E-F76C-40BA-807B-D6C9D1C104E5}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
