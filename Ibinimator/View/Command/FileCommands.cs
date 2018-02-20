@@ -9,9 +9,9 @@ using System.Xml.Linq;
 
 using Ibinimator.Core;
 using Ibinimator.Renderer;
-using Ibinimator.Svg;
-using Ibinimator.Svg.IO;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg;
+using Ibinimator.Formatter.Svg.IO;
+using Ibinimator.Formatter.Svg.Structure;
 using Ibinimator.ViewModel;
 
 namespace Ibinimator.View.Command

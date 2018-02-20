@@ -102,7 +102,7 @@
       <Project>{1102b4fb-42f9-4cc2-912e-ffc1a8309bb1}</Project>
       <Name>Ibinimator.Renderer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ibinimator.Svg\Ibinimator.Formatter.Svg.csproj">
+    <ProjectReference Include="..\Ibinimator.Formatter.Svg\Ibinimator.Formatter.Svg.csproj">
       <Project>{86f9ccb8-de12-45b8-ba94-3024c9f36040}</Project>
       <Name>Ibinimator.Formatter.Svg</Name>
     </ProjectReference>

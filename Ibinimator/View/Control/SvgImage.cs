@@ -14,8 +14,8 @@ using Ibinimator.Core.Input;
 using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Renderer;
 using Ibinimator.Renderer.WPF;
-using Ibinimator.Svg;
-using Ibinimator.Svg.IO;
+using Ibinimator.Formatter.Svg;
+using Ibinimator.Formatter.Svg.IO;
 
 using WPF = System.Windows;
 
@@ -155,7 +155,7 @@ namespace Ibinimator.View.Control
                 xdoc = XDocument.Load(stream);
             }
 
-            var document = new Svg.Structure.Document();
+            var document = new Formatter.Svg.Structure.Document();
             document.FromXml(xdoc.Root, new SvgContext());
 
             _document = SvgReader.FromSvg(document);

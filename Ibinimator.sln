@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator", "Ibinimator\Ib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ibinimator.Test", "Ibinimator.Test\Ibinimator.Test.csproj", "{7314B044-4843-4F01-9CBF-31E6F84CF7B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Formatter.Svg", "Ibinimator.Svg\Ibinimator.Formatter.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Formatter.Svg", "Ibinimator.Formatter.Svg\Ibinimator.Formatter.Svg.csproj", "{86F9CCB8-DE12-45B8-BA94-3024C9F36040}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ibinimator.Core", "Ibinimator.Core\Ibinimator.Core.csproj", "{4524A7AF-6968-45DC-88EC-F50634E84FF0}"
 EndProject
