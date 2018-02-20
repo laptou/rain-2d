@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public class Document : GraphicalContainerElement
     {

@@ -6,9 +6,9 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Structure;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public class GradientStop : Element
     {

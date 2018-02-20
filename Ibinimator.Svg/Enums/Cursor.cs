@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg.Enums
+namespace Ibinimator.Formatter.Svg.Enums
 {
     public struct Cursor
     {

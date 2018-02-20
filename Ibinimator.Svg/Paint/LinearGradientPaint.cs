@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model.Measurement;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public class LinearGradientPaint : GradientPaint
     {

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Svg.Paint;
-
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,14 +7,19 @@ using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 using Ibinimator.Core.Model.Text;
-using Ibinimator.Svg.Shapes;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Paint;
+using Ibinimator.Formatter.Svg.Shapes;
+using Ibinimator.Formatter.Svg.Structure;
 
-using Core = Ibinimator.Core.Model;
 using DG = Ibinimator.Core.Model.DocumentGraph;
-using SVG = Ibinimator.Svg;
+using Document = Ibinimator.Formatter.Svg.Structure.Document;
+using Ellipse = Ibinimator.Formatter.Svg.Shapes.Ellipse;
+using Group = Ibinimator.Formatter.Svg.Structure.Group;
+using Path = Ibinimator.Formatter.Svg.Shapes.Path;
+using Rectangle = Ibinimator.Formatter.Svg.Shapes.Rectangle;
+using Text = Ibinimator.Formatter.Svg.Shapes.Text;
 
-namespace Ibinimator.Svg.IO
+namespace Ibinimator.Formatter.Svg.IO
 {
     public static class SvgWriter
     {
@@ -25,7 +27,8 @@ namespace Ibinimator.Svg.IO
         {
             var svgDoc = new Document();
 
-            var nodes = DG.GraphUtility.Crawl(doc).ToArray();
+            var nodes = DG.Utility.Crawl(doc).ToArray();
+            var lookup = nodes.ToLookup(n => n.Target);
             var defs = new Defs();
             svgDoc.Add(defs);
 
@@ -38,7 +41,7 @@ namespace Ibinimator.Svg.IO
             };
 
             foreach (var node in nodes)
-
+            {
                 // nodes will always be listed after their parent,
                 // which means you can trust that the last parent posted
                 // is the parent of the current node
@@ -46,7 +49,7 @@ namespace Ibinimator.Svg.IO
                 {
                     var parent = node.Rank > previousNode.Rank ? previous : table[node.Parent];
 
-                    var element = ToSvg(node, parent);
+                    var element = ToSvg(node, parent, lookup);
 
                     if (RequiresDef(node))
                         svgDoc.Defs.Add(element);
@@ -58,12 +61,13 @@ namespace Ibinimator.Svg.IO
                         previousNode = node;
                     }
                 }
+            }
 
             svgDoc.Viewbox = doc.Bounds;
 
             return svgDoc;
         }
-
+        
         private static bool RequiresDef(DG.Node node)
         {
             if (node.Target is GradientBrushInfo)
@@ -76,7 +80,7 @@ namespace Ibinimator.Svg.IO
             return false;
         }
 
-        private static IElement ToSvg(DG.Node node, IElement parent)
+        private static IElement ToSvg(DG.Node node, IElement parent, ILookup<object, DG.Node> lookup)
         {
             IElement element = null;
 
@@ -173,7 +177,18 @@ namespace Ibinimator.Svg.IO
                         break;
                 }
 
-            if (node.Target is DG.IContainerLayer containerLayer) element = new Group();
+            if (node.Target is DG.IContainerLayer)
+                element = new Group();
+
+            if (node.Target is DG.ICloneLayer cloneLayer)
+            {
+                var target = lookup[cloneLayer.Target].First();
+
+                element = new Use
+                {
+                    Target = Iri.FromId(target.Id)
+                };
+            }
 
             if (node.Target is DG.ILayer layer &&
                 element is IGraphicalElement graphicalElement)

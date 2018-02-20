@@ -9,14 +9,20 @@ using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Text;
 using Ibinimator.Core.Utility;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Paint;
+using Ibinimator.Formatter.Svg.Shapes;
+using Ibinimator.Formatter.Svg.Structure;
 
 using DG = Ibinimator.Core.Model.DocumentGraph;
 using DGPaint = Ibinimator.Core.Model.Paint;
-using SVG = Ibinimator.Svg.Shapes;
-using SVGPaint = Ibinimator.Svg.Paint;
+using Document = Ibinimator.Formatter.Svg.Structure.Document;
+using Ellipse = Ibinimator.Formatter.Svg.Shapes.Ellipse;
+using Group = Ibinimator.Formatter.Svg.Structure.Group;
+using Path = Ibinimator.Formatter.Svg.Shapes.Path;
+using Rectangle = Ibinimator.Formatter.Svg.Shapes.Rectangle;
+using Text = Ibinimator.Formatter.Svg.Shapes.Text;
 
-namespace Ibinimator.Svg.IO
+namespace Ibinimator.Formatter.Svg.IO
 {
     public static class SvgReader
     {
@@ -55,14 +61,14 @@ namespace Ibinimator.Svg.IO
                 layer = group;
             }
 
-            if (element is SVG.IShapeElement shapeElement)
+            if (element is IShapeElement shapeElement)
             {
                 DG.IGeometricLayer shape;
 
                 // ReSharper disable RedundantNameQualifier
                 switch (shapeElement)
                 {
-                    case SVG.Ellipse ellipse:
+                    case Ellipse ellipse:
                         shape = new DG.Ellipse
                         {
                             CenterX = ellipse.CenterX.To(LengthUnit.Pixels),
@@ -72,7 +78,7 @@ namespace Ibinimator.Svg.IO
                         };
 
                         break;
-                    case SVG.Line line:
+                    case Line line:
                         var linePath = new DG.Path();
 
                         linePath.Instructions.Add(
@@ -88,7 +94,7 @@ namespace Ibinimator.Svg.IO
                         shape = linePath;
 
                         break;
-                    case SVG.Path path:
+                    case Path path:
                         var pathPath = new DG.Path();
 
                         pathPath.Instructions.AddItems(path.Data);
@@ -96,7 +102,7 @@ namespace Ibinimator.Svg.IO
                         shape = pathPath;
 
                         break;
-                    case SVG.Polygon polygon:
+                    case Polygon polygon:
                         var polygonPath = new DG.Path();
 
                         polygonPath.Instructions.AddItems(
@@ -107,7 +113,7 @@ namespace Ibinimator.Svg.IO
                         shape = polygonPath;
 
                         break;
-                    case SVG.Polyline polyline:
+                    case Polyline polyline:
                         var polylinePath = new DG.Path();
 
                         polylinePath.Instructions.AddItems(
@@ -118,7 +124,7 @@ namespace Ibinimator.Svg.IO
                         shape = polylinePath;
 
                         break;
-                    case SVG.Rectangle rectangle:
+                    case Rectangle rectangle:
                         shape = new DG.Rectangle
                         {
                             X = rectangle.X.To(LengthUnit.Pixels),
@@ -128,7 +134,7 @@ namespace Ibinimator.Svg.IO
                         };
 
                         break;
-                    case SVG.Circle circle:
+                    case Circle circle:
                         shape = new DG.Ellipse
                         {
                             CenterX = circle.CenterX.To(LengthUnit.Pixels),
@@ -138,7 +144,7 @@ namespace Ibinimator.Svg.IO
                         };
 
                         break;
-                    case SVG.Text text:
+                    case Text text:
                         shape = new DG.Text
                         {
                             TextStyle = new TextInfo
@@ -190,17 +196,17 @@ namespace Ibinimator.Svg.IO
         }
 
         private static DGPaint.IBrushInfo FromSvg(
-            Document svgDocument, SVGPaint.Paint paint, float opacity)
+            Document svgDocument, Paint.Paint paint, float opacity)
         {
             switch (paint)
             {
-                case SVGPaint.SolidColorPaint solidColor:
+                case SolidColorPaint solidColor:
                     var color = solidColor.Color;
 
                     return new DGPaint.SolidColorBrushInfo(
                         new Color(color.Red, color.Green, color.Blue, color.Alpha * opacity));
 
-                case SVGPaint.LinearGradientPaint linearGradient:
+                case LinearGradientPaint linearGradient:
 
                     return new DGPaint.GradientBrushInfo
                     {
@@ -226,7 +232,7 @@ namespace Ibinimator.Svg.IO
                         Type = DG.GradientBrushType.Linear
                     };
 
-                case SVGPaint.RadialGradientPaint radialGradient:
+                case RadialGradientPaint radialGradient:
 
                     return new DGPaint.GradientBrushInfo
                     {
@@ -258,10 +264,10 @@ namespace Ibinimator.Svg.IO
                         Type = DG.GradientBrushType.Radial
                     };
 
-                case SVGPaint.ReferencePaint reference:
+                case ReferencePaint reference:
 
                     return FromSvg(svgDocument,
-                                   svgDocument.Defs[reference.Reference.Id] as SVGPaint.Paint,
+                                   svgDocument.Defs[reference.Reference.Id] as Paint.Paint,
                                    1);
             }
 
@@ -269,7 +275,7 @@ namespace Ibinimator.Svg.IO
         }
 
         private static DGPaint.IPenInfo FromSvg(
-            Document svgDocument, SVGPaint.Paint paint, float opacity, float width,
+            Document svgDocument, Paint.Paint paint, float opacity, float width,
             IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
             float miterLimit)
         {

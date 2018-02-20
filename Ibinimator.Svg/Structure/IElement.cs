@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public interface IElement
     {

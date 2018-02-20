@@ -283,7 +283,11 @@ namespace Ibinimator.Renderer
                                           EnterWriteLock();
 
                                           if (s is IFilledLayer shape)
-                                              _fills.TryGet(shape)?.Dispose();
+                                          {
+                                              var fill = _fills.TryGet(shape);
+                                              if (fill != null)
+                                                  fill.Dispose();
+                                          }
 
                                           ExitWriteLock();
 
@@ -306,7 +310,11 @@ namespace Ibinimator.Renderer
                                              EnterWriteLock();
 
                                              if (s is IStrokedLayer shape)
-                                                 _strokes.TryGet(shape)?.Dispose();
+                                             {
+                                                 var stroke = _strokes.TryGet(shape);
+                                                 if (stroke != null)
+                                                     stroke.Dispose();
+                                             }
 
                                              ExitWriteLock();
 

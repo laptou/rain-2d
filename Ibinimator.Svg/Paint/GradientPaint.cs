@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Ibinimator.Core.Model.Paint;
-using Ibinimator.Svg.Utilities;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public abstract class GradientPaint : ReferencePaint
     {

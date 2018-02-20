@@ -8,9 +8,9 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Text;
-using Ibinimator.Svg.Enums;
+using Ibinimator.Formatter.Svg.Enums;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public abstract class TextElement : ShapeElement, ITextElement
     {

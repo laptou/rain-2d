@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Svg.Structure;
-using Ibinimator.Svg.Utilities;
+using Ibinimator.Formatter.Svg.Structure;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Formatter.Svg
 {
     public sealed class SvgContext
     {

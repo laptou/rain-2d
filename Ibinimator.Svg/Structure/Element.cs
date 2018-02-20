@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Svg.Utilities;
-
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -11,8 +8,9 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public abstract class Element : IElement
     {

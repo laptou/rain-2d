@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public class SolidColorPaint : Paint
     {

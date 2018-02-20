@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 using Ibinimator.Core.Model.Measurement;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public class Line : ShapeElement
     {

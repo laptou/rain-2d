@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Ibinimator.Core.Model;
-using Ibinimator.Svg.Paint;
-using Ibinimator.Svg.Shapes;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Paint;
+using Ibinimator.Formatter.Svg.Shapes;
+using Ibinimator.Formatter.Svg.Structure;
 
-using Group = Ibinimator.Svg.Structure.Group;
+using Group = Ibinimator.Formatter.Svg.Structure.Group;
 
-namespace Ibinimator.Svg.Utilities
+namespace Ibinimator.Formatter.Svg.Utilities
 {
     internal static class X
     {
@@ -29,6 +29,11 @@ namespace Ibinimator.Svg.Utilities
 
             switch (element.Name.LocalName)
             {
+                case "use":
+                    ielement = new Use();
+
+                    break;
+
                 case "circle":
                     ielement = new Circle();
 

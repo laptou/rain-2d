@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
-using Ibinimator.Svg.Enums;
+using Ibinimator.Formatter.Svg.Enums;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public interface IGraphicalElement : IElement
     {

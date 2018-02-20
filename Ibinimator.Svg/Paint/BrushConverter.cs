@@ -8,7 +8,7 @@ using Ibinimator.Core.Model.DocumentGraph;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public static class BrushConverter
     {

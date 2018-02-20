@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public interface IInlineTextElement : ITextElement
     {

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Svg.Utilities;
-
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -11,9 +8,10 @@ using System.Xml.Linq;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
-using Ibinimator.Svg.Enums;
+using Ibinimator.Formatter.Svg.Enums;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public abstract class GraphicalElement : Element, IGraphicalElement
     {

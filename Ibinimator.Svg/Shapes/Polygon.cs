@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public class Polygon : ShapeElement
     {

@@ -167,17 +167,20 @@ namespace Ibinimator.ViewModel
 
             var reference1 = new Clone
             {
-                Target = t
+                Target = t,
+                Override = true
             };
 
             var reference2 = new Clone
             {
-                Target = t
+                Target = t,
+                Override = true
             };
 
             var reference3 = new Clone
             {
-                Target = reference1
+                Target = reference1,
+                Override = true
             };
 
             reference1.ApplyTransform(Matrix3x2.CreateTranslation(100, 100));

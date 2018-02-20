@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Formatter.Svg
 {
     internal static class SvgNames
     {
@@ -15,6 +15,7 @@ namespace Ibinimator.Svg
         #region metadata
 
         public static readonly XName Name = Ibinimator + "name";
+        public static readonly XName HRef = XLink + "href";
 
         #endregion
 
@@ -41,7 +42,9 @@ namespace Ibinimator.Svg
         public static readonly XName Line     = Namespace + "line";
         public static readonly XName Text     = Namespace + "text";
         public static readonly XName Tspan    = Namespace + "tspan";
+        public static readonly XName Use = Namespace + "use";
 
         #endregion
+
     }
 }

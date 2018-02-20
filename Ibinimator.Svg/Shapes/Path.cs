@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using Ibinimator.Core.Model.Geometry;
 using Ibinimator.Core.Utility;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public class Path : ShapeElement
     {

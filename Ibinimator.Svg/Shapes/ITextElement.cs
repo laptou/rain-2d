@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Text;
-using Ibinimator.Svg.Enums;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Enums;
+using Ibinimator.Formatter.Svg.Structure;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public interface ITextElement : IShapeElement, IContainerElement<IInlineTextElement>
     {

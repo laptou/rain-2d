@@ -13,6 +13,8 @@ namespace Ibinimator.Core.Model.DocumentGraph
     public interface ICloneLayer : ILayer
     {
         ILayer Target { get; set; }
+
+        bool Override { get; set; }
     }
 
     public class Clone : Layer, ICloneLayer, IFilledLayer, IStrokedLayer
@@ -81,7 +83,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 {
                     fill = filled.Fill;
 
-                    if (Fill != null)
+                    if (Fill != null && (Override || fill == null))
                         filled.Fill = Fill;
                 }
 
@@ -89,7 +91,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
                 {
                     stroke = stroked.Stroke;
 
-                    if (Stroke != null)
+                    if (Stroke != null && (Override || stroke == null))
                         stroked.Stroke = Stroke;
                 }
             }
@@ -128,9 +130,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
 
         /// <inheritdoc />
         public event EventHandler FillChanged;
-
-        /// <inheritdoc />
-        public IBrushInfo Fill { get; set; }
+        
 
         #endregion
 
@@ -139,9 +139,67 @@ namespace Ibinimator.Core.Model.DocumentGraph
         /// <inheritdoc />
         public event EventHandler StrokeChanged;
 
-        /// <inheritdoc />
-        public IPenInfo Stroke { get; set; }
+        public IBrushInfo Fill
+        {
+            get => Get<IBrushInfo>();
+            set
+            {
+                Fill?.RemoveReference();
+                Set(value);
+                Fill?.AddReference();
+                RaiseFillChanged();
+            }
+        }
 
+        public bool Override
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
+        public IPenInfo Stroke
+        {
+            get => Get<IPenInfo>();
+            set
+            {
+                Stroke?.RemoveReference();
+                Set(value);
+                Stroke?.AddReference();
+                RaiseStrokeChanged();
+            }
+        }
         #endregion
+
+        private bool _suppressed;
+
+        /// <inheritdoc />
+        public override void RestoreNotifications()
+        {
+            _suppressed = false;
+
+            base.RestoreNotifications();
+        }
+
+        /// <inheritdoc />
+        public override void SuppressNotifications()
+        {
+            _suppressed = true;
+
+            base.SuppressNotifications();
+        }
+
+        protected void RaiseFillChanged()
+        {
+            if (_suppressed) return;
+
+            FillChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeChanged()
+        {
+            if (_suppressed) return;
+
+            StrokeChanged?.Invoke(this, null);
+        }
     }
 }

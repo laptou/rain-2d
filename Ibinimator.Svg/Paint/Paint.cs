@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Structure;
 
-namespace Ibinimator.Svg.Paint
+namespace Ibinimator.Formatter.Svg.Paint
 {
     public abstract class Paint : Element
     {

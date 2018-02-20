@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-using Ibinimator.Svg.Utilities;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg.Structure
+namespace Ibinimator.Formatter.Svg.Structure
 {
     public abstract class ContainerElement : Element, IContainerElement
     {

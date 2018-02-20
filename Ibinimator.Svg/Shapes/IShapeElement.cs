@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Ibinimator.Core.Model;
 using Ibinimator.Core.Model.Measurement;
 using Ibinimator.Core.Model.Paint;
-using Ibinimator.Svg.Structure;
+using Ibinimator.Formatter.Svg.Structure;
 
-namespace Ibinimator.Svg.Shapes
+namespace Ibinimator.Formatter.Svg.Shapes
 {
     public interface IShapeElement : IGraphicalElement
     {

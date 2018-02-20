@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Svg
+namespace Ibinimator.Formatter.Svg
 {
     public struct Iri
     {
@@ -43,6 +43,6 @@ namespace Ibinimator.Svg
         public static Iri FromId(string id) { return new Iri {Id = id}; }
 
         /// <inheritdoc />
-        public override string ToString() { return $"url({'#' + Id})"; }
+        public override string ToString() { return $"{'#' + Id}"; }
     }
 }

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Ibinimator.Svg.Utilities;
-
 using System.Linq;
 using System.Threading.Tasks;
 
 using Ibinimator.Core.Model.Measurement;
+using Ibinimator.Formatter.Svg.Utilities;
 
-namespace Ibinimator.Svg.Enums
+namespace Ibinimator.Formatter.Svg.Enums
 {
     public struct BaselineShift
     {

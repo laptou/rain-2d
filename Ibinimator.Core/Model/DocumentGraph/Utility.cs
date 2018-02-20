@@ -8,7 +8,7 @@ using Ibinimator.Core.Model.Paint;
 
 namespace Ibinimator.Core.Model.DocumentGraph
 {
-    public class GraphUtility
+    public class Utility
     {
         public static IEnumerable<Node> Crawl(Document doc)
         {
@@ -102,7 +102,7 @@ namespace Ibinimator.Core.Model.DocumentGraph
         {
             get
             {
-                var prefix = (char) (97 + Rank % 26);
+                var prefix = (char) (97 + Math.Abs(Name?.GetHashCode() ?? 0) % 26);
                 var suffix = unchecked((uint) Target.GetHashCode()).ToString();
 
                 return string.Join("_", prefix, Name, suffix);
@@ -110,7 +110,6 @@ namespace Ibinimator.Core.Model.DocumentGraph
         }
 
         public string Name { get; }
-
         public Node Parent { get; }
         public int Rank { get; }
         public object Target { get; }
