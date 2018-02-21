@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model.Paint;
 
-namespace Ibinimator.Renderer
+namespace Rain.Renderer
 {
     internal class EllipseRenderCommand : GeometricRenderCommand
     {

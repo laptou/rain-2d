@@ -11,7 +11,7 @@ using SharpDX.Mathematics.Interop;
 
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal class RadialGradientBrush : GradientBrush, IRadialGradientBrush
     {

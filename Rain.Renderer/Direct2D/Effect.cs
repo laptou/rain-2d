@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Paint;
 
-using SharpDX.Direct2D1;
-
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public abstract class Effect : IEffect
     {
-        public abstract Image GetOutput();
+        public abstract SharpDX.Direct2D1.Image GetOutput();
 
         #region IEffect Members
 

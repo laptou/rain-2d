@@ -11,7 +11,7 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal class TextRenderer : TextRendererBase
     {

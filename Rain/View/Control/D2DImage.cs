@@ -10,11 +10,10 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
-using Ibinimator.Renderer.Direct2D;
-
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Native;
+using Rain.Renderer.Direct2D;
 using Rain.Utility;
 
 using SharpDX.DXGI;

@@ -13,8 +13,11 @@ using Rain.Core.Model.Text;
 using Rain.Core.Utility;
 
 using DW = SharpDX.DirectWrite;
+using FontStretch = Rain.Core.Model.Text.FontStretch;
+using FontStyle = Rain.Core.Model.Text.FontStyle;
+using FontWeight = Rain.Core.Model.Text.FontWeight;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal sealed class DirectWriteTextLayout : ResourceBase, ITextLayout
     {

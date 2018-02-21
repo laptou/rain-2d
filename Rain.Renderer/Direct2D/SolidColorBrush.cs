@@ -10,7 +10,7 @@ using SharpDX.Mathematics.Interop;
 
 using D2D1 = SharpDX.Direct2D1;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal sealed class SolidColorBrush : Brush, ISolidColorBrush
     {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -13,8 +12,10 @@ using SharpDX.DXGI;
 
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Rectangle = System.Drawing.Rectangle;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal class Bitmap : ResourceBase, IBitmap
     {
@@ -22,7 +23,7 @@ namespace Ibinimator.Renderer.Direct2D
 
         public Bitmap(Direct2DRenderContext ctx, Stream stream)
         {
-            using (var bitmap = (System.Drawing.Bitmap) Image.FromStream(stream))
+            using (var bitmap = (System.Drawing.Bitmap) System.Drawing.Image.FromStream(stream))
             {
                 var sourceArea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 

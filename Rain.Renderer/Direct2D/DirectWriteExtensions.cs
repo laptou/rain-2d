@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using SharpDX.DirectWrite;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public static class DirectWriteExtensions
     {

@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Xml.Linq;
 
-using Ibinimator.Renderer.WPF;
-
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Core.Model.DocumentGraph;
 using Rain.Formatter.Svg;
 using Rain.Formatter.Svg.IO;
 using Rain.Renderer;
+using Rain.Renderer.WPF;
 
 using WPF = System.Windows;
 

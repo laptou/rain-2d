@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-using Ibinimator.Renderer.WPF;
-
+using Rain.Renderer.WPF;
 using Rain.Service;
 
 using Color = Rain.Core.Model.Color;

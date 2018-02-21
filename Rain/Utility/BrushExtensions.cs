@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Ibinimator.Renderer.WPF;
-
 using Rain.Core.Model.Paint;
+using Rain.Renderer.WPF;
 
 using WPF = System.Windows.Media;
 

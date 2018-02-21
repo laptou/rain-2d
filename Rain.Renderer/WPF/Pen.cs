@@ -7,7 +7,7 @@ using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     using WPF = System.Windows.Media;
 

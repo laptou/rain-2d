@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public class NullGeometry : IGeometry
     {

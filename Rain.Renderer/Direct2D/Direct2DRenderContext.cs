@@ -15,11 +15,13 @@ using SharpDX.Mathematics.Interop;
 
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
+using GradientStop = Rain.Core.Model.Paint.GradientStop;
+using LineJoin = Rain.Core.Model.LineJoin;
 using RectangleF = SharpDX.RectangleF;
 
 // ReSharper disable InconsistentNaming
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public class Direct2DRenderContext : RenderContext
     {

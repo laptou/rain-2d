@@ -11,7 +11,7 @@ using SharpDX.Direct2D1;
 
 using LineJoin = Rain.Core.Model.LineJoin;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal class Pen : ResourceBase, IPen
     {

@@ -9,7 +9,7 @@ using SharpDX.Mathematics.Interop;
 using Color = Rain.Core.Model.Color;
 using Matrix3x2 = System.Numerics.Matrix3x2;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public static class Direct2DConverter
     {

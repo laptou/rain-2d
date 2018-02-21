@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model;
 
-namespace Ibinimator.Renderer
+namespace Rain.Renderer
 {
     internal class ClearRenderCommand : RenderCommand
     {

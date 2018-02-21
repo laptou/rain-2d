@@ -10,7 +10,7 @@ using Rain.Core.Utility;
 
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     internal abstract class GradientBrush : Brush, IGradientBrush
     {

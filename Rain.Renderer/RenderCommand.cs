@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Ibinimator.Renderer
+namespace Rain.Renderer
 {
     public abstract class RenderCommand { }
 }

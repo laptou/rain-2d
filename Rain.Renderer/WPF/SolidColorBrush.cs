@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     internal class SolidColorBrush : Brush, ISolidColorBrush
     {

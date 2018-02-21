@@ -8,7 +8,7 @@ using System.Windows.Media;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     internal class Brush : ResourceBase, IBrush
     {

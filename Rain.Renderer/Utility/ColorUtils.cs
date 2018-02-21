@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Utility;
 
-namespace Ibinimator.Renderer.Utility
+namespace Rain.Renderer.Utility
 {
     public static class ColorUtils
     {

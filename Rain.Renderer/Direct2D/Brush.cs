@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal abstract class Brush : ResourceBase, IBrush
     {

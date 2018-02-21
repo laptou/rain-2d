@@ -8,7 +8,7 @@ using Rain.Core.Model.Paint;
 
 using SharpDX.Direct2D1;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public class GlowEffect : Effect, IGlowEffect
     {
@@ -23,7 +23,7 @@ namespace Ibinimator.Renderer.Direct2D
             composite.SetInputEffect(0, blur, false);
         }
 
-        public override Image GetOutput() { return composite.Output; }
+        public override SharpDX.Direct2D1.Image GetOutput() { return composite.Output; }
 
         #region IGlowEffect Members
 

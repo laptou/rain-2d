@@ -16,7 +16,7 @@ using Rain.Core.Model.Paint;
 using Color = Rain.Core.Model.Color;
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     public class WpfRenderContext : RenderContext
     {

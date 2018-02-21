@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
-using Ibinimator.Renderer.WPF;
-
 using System.Linq;
 
 using Rain.Utility;
@@ -17,9 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-using Ibinimator.Renderer.Utility;
-
 using Rain.Core.Utility;
+using Rain.Renderer.Utility;
+using Rain.Renderer.WPF;
 
 using Color = Rain.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;

@@ -7,10 +7,9 @@ using Rain.Utility;
 
 using System.Threading.Tasks;
 
-using Ibinimator.Renderer.Utility;
-
 using Rain.Core;
 using Rain.Core.Model.Paint;
+using Rain.Renderer.Utility;
 
 using WPF = System.Windows.Media;
 

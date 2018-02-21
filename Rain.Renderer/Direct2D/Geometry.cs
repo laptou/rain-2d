@@ -14,7 +14,7 @@ using Matrix3x2 = System.Numerics.Matrix3x2;
 using RectangleF = Rain.Core.Model.RectangleF;
 using Vector2 = System.Numerics.Vector2;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     internal class Geometry : ResourceBase, IGeometry, IEquatable<Geometry>
     {

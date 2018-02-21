@@ -10,7 +10,7 @@ using Rain.Core.Model;
 
 using Color = Rain.Core.Model.Color;
 
-namespace Ibinimator.Renderer.WPF
+namespace Rain.Renderer.WPF
 {
     public static class WpfConverter
     {

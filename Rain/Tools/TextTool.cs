@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
-using Ibinimator.Renderer.Direct2D;
-
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -19,6 +16,7 @@ using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
+using Rain.Renderer.Direct2D;
 using Rain.Resources;
 using Rain.Utility;
 

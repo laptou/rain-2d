@@ -101,6 +101,7 @@
     <Compile Include="Direct2D\Geometry.cs" />
     <Compile Include="Direct2D\GlowEffect.cs" />
     <Compile Include="Direct2D\GradientBrush.cs" />
+    <Compile Include="Direct2D\Image.cs" />
     <Compile Include="Direct2D\LinearGradientBrush.cs" />
     <Compile Include="Direct2D\NativeHelper.cs" />
     <Compile Include="Direct2D\NullGeometry.cs" />

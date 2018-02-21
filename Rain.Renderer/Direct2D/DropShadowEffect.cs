@@ -10,7 +10,7 @@ using Rain.Core.Model.Paint;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
-namespace Ibinimator.Renderer.Direct2D
+namespace Rain.Renderer.Direct2D
 {
     public class DropShadowEffect : Effect, IDropShadowEffect
     {
@@ -25,7 +25,7 @@ namespace Ibinimator.Renderer.Direct2D
             composite.SetInputEffect(0, shadow, false);
         }
 
-        public override Image GetOutput() { return composite.Output; }
+        public override SharpDX.Direct2D1.Image GetOutput() { return composite.Output; }
 
         #region IDropShadowEffect Members
 
