@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 namespace Rain.Core
@@ -14,7 +15,7 @@ namespace Rain.Core
     {
         #region Retrieval
 
-        IBitmap GetBitmap(string key);
+        IRenderImage GetBitmap(string key);
         IBrush GetBrush(string key);
         IBrush GetFill(IFilledLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);

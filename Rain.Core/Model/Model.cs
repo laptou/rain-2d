@@ -17,7 +17,7 @@ namespace Rain.Core.Model
             _handlers = new Dictionary<string, Delegate>();
 
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
-        private bool _suppressed;
+        private bool                       _suppressed;
 
         protected T Get<T>([CallerMemberName] string propertyName = "")
         {
@@ -64,12 +64,14 @@ namespace Rain.Core.Model
         protected void RaisePropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             if (_suppressed) return;
+
             PropertyChanged?.Invoke(sender, args);
         }
 
         protected void RaisePropertyChanging(object sender, PropertyChangingEventArgs args)
         {
             if (_suppressed) return;
+
             PropertyChanging?.Invoke(sender, args);
         }
 
@@ -119,7 +121,8 @@ namespace Rain.Core.Model
             T value, PropertyChangedEventHandler after, [CallerMemberName] string propertyName = "")
         {
             Set(value, propertyName);
-            after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (!_suppressed)
+                after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected void Set<T>(
@@ -127,14 +130,16 @@ namespace Rain.Core.Model
             [CallerMemberName] string propertyName = "")
         {
             Set(value, out variable, propertyName);
-            after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (!_suppressed)
+                after?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected void Set<T>(
             T value, PropertyChangingEventHandler before, PropertyChangedEventHandler after,
             [CallerMemberName] string propertyName = "")
         {
-            before?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+            if (!_suppressed)
+                before?.Invoke(this, new PropertyChangingEventArgs(propertyName));
             Set(value, after, propertyName);
         }
 
@@ -171,13 +176,13 @@ namespace Rain.Core.Model
 
         public event PropertyChangingEventHandler PropertyChanging;
 
-        public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
+        /// <inheritdoc />
+        public virtual void RestoreNotifications() { _suppressed = false; }
 
         /// <inheritdoc />
         public virtual void SuppressNotifications() { _suppressed = true; }
 
-        /// <inheritdoc />
-        public virtual void RestoreNotifications() { _suppressed = false; }
+        public T Clone<T>() where T : IModel { return (T) Clone(GetType()); }
 
         public object Clone(Type type)
         {

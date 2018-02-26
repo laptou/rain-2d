@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Effects;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 using SharpDX.Direct2D1;
@@ -35,7 +36,7 @@ namespace Rain.Renderer.Direct2D
             composite.Dispose();
         }
 
-        public override void SetInput(int index, IBitmap bitmap)
+        public override void SetInput(int index, IRenderImage bitmap)
         {
             if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
 

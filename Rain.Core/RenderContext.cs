@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Rain.Core.Model;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 namespace Rain.Core
@@ -21,7 +22,7 @@ namespace Rain.Core
 
         public abstract void Clear(Color color);
 
-        public abstract IBitmap CreateBitmap(Stream stream);
+        public abstract IRenderImage CreateBitmap(Stream stream);
 
         public abstract ISolidColorBrush CreateBrush(Color color);
 
@@ -50,7 +51,7 @@ namespace Rain.Core
 
         public abstract ITextLayout CreateTextLayout();
 
-        public abstract void DrawBitmap(IBitmap bitmap);
+        public abstract void DrawBitmap(IRenderImage bitmap);
 
         public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
 

@@ -79,6 +79,20 @@ namespace Rain.ViewModel
                 Context.BrushManager.Apply(pen);
             }
 
+            RaisePropertyChanged(nameof(Hue),
+                                 nameof(Saturation),
+                                 nameof(Lightness),
+                                 nameof(Red),
+                                 nameof(Green),
+                                 nameof(Blue),
+                                 nameof(Alpha),
+                                 nameof(Stroke));
+
+            if(Mode == ColorPickerTarget.Fill)
+                RaisePropertyChanged(nameof(Fill));
+            else if (Mode == ColorPickerTarget.Stroke)
+                RaisePropertyChanged(nameof(Stroke));
+
             Context.InvalidateRender();
 
             _changing = false;

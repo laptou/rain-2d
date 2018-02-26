@@ -11,6 +11,7 @@ using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 using Color = Rain.Core.Model.Color;
@@ -37,7 +38,7 @@ namespace Rain.Renderer.WPF
             _commandQueue.Enqueue(new ClearRenderCommand(color));
         }
 
-        public override IBitmap CreateBitmap(Stream stream) { throw new NotImplementedException(); }
+        public override IRenderImage CreateBitmap(Stream stream) { throw new NotImplementedException(); }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -106,7 +107,7 @@ namespace Rain.Renderer.WPF
 
         public override void Dispose() { _ctx = null; }
 
-        public override void DrawBitmap(IBitmap bitmap) { throw new NotImplementedException(); }
+        public override void DrawBitmap(IRenderImage bitmap) { throw new NotImplementedException(); }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {

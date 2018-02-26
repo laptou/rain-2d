@@ -13,6 +13,7 @@ using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 using Rain.Resources;
 
@@ -20,7 +21,7 @@ namespace Rain.Renderer
 {
     public class CacheManager : Core.Model.Model, ICacheManager
     {
-        private readonly Dictionary<string, IBitmap> _bitmaps = new Dictionary<string, IBitmap>();
+        private readonly Dictionary<string, IRenderImage> _bitmaps = new Dictionary<string, IRenderImage>();
 
         private readonly Dictionary<ILayer, RectangleF> _bounds =
             new Dictionary<ILayer, RectangleF>();
@@ -113,7 +114,7 @@ namespace Rain.Renderer
             return newVal;
         }
 
-        private IBitmap LoadBitmap(RenderContext target, string name)
+        private IRenderImage LoadBitmap(RenderContext target, string name)
         {
             var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
 
@@ -393,7 +394,7 @@ namespace Rain.Renderer
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
         }
 
-        public IBitmap GetBitmap(string key) { return _bitmaps[key]; }
+        public IRenderImage GetBitmap(string key) { return _bitmaps[key]; }
 
         /// <inheritdoc />
         public RectangleF GetBounds(ILayer layer)

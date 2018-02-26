@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 namespace Rain.Core.Model.Effects
 {
     public interface IEffect : IDisposable
     {
-        void SetInput(int index, IBitmap bitmap);
+        void SetInput(int index, IRenderImage bitmap);
         void SetInput(int index, IEffect effect);
 
         /// <summary>

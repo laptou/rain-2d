@@ -9,6 +9,7 @@ using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 
 using SharpDX.Mathematics.Interop;
@@ -63,7 +64,12 @@ namespace Rain.Renderer.Direct2D
             _virtualTarget.Clear(null);
         }
 
-        public override IBitmap CreateBitmap(Stream stream) { return new Bitmap(this, stream); }
+        public override IRenderImage CreateBitmap(Stream stream)
+        {
+            var img = new Image(this);
+            img.Load(stream);
+            return new Bitmap(_target, (ImageFrame)img.Frames[0]);
+        }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -157,9 +163,9 @@ namespace Rain.Renderer.Direct2D
             FactoryDW.Dispose();
         }
 
-        public override void DrawBitmap(IBitmap iBitmap)
+        public override void DrawBitmap(IRenderImage img)
         {
-            if (!(iBitmap is Bitmap bitmap)) return;
+            if (!(img is Bitmap bitmap)) return;
 
             Target.DrawBitmap(bitmap,
                               new RawRectangleF(0, 0, bitmap.Width, bitmap.Height),
