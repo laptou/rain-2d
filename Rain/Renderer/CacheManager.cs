@@ -21,7 +21,8 @@ namespace Rain.Renderer
 {
     public class CacheManager : Core.Model.Model, ICacheManager
     {
-        private readonly Dictionary<string, IRenderImage> _bitmaps = new Dictionary<string, IRenderImage>();
+        private readonly Dictionary<string, IRenderImage> _bitmaps =
+            new Dictionary<string, IRenderImage>();
 
         private readonly Dictionary<ILayer, RectangleF> _bounds =
             new Dictionary<ILayer, RectangleF>();
@@ -36,6 +37,9 @@ namespace Rain.Renderer
 
         private readonly Dictionary<IGeometricLayer, IGeometry> _geometries =
             new Dictionary<IGeometricLayer, IGeometry>();
+
+        private readonly Dictionary<IImageLayer, IRenderImage> _images =
+            new Dictionary<IImageLayer, IRenderImage>();
 
         private readonly ReaderWriterLockSlim _renderLock =
             new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -360,7 +364,7 @@ namespace Rain.Renderer
                                        if (s is ILayer l)
                                        {
                                            EnterWriteLock();
-                                           _bounds[l] = l.GetBounds(this);
+                                           _bounds[l] = l.GetBounds(Context);
                                            ExitWriteLock();
                                        }
 
@@ -399,7 +403,7 @@ namespace Rain.Renderer
         /// <inheritdoc />
         public RectangleF GetBounds(ILayer layer)
         {
-            return Get(_bounds, layer, l => l.GetBounds(this));
+            return Get(_bounds, layer, l => l.GetBounds(Context));
         }
 
         public IBrush GetBrush(string key) { return _brushes[key]; }
@@ -411,7 +415,12 @@ namespace Rain.Renderer
 
         public IGeometry GetGeometry(IGeometricLayer layer)
         {
-            return Get(_geometries, layer, l => l.GetGeometry(this));
+            return Get(_geometries, layer, l => l.GetGeometry(Context));
+        }
+
+        public IRenderImage GetImage(IImageLayer layer)
+        {
+            return Get(_images, layer, t => t.GetImage(Context));
         }
 
         /// <inheritdoc />
@@ -425,9 +434,9 @@ namespace Rain.Renderer
             return Get(_strokes, layer, l => BindStroke(l, l.Stroke));
         }
 
-        public ITextLayout GetTextLayout(ITextLayer text)
+        public ITextLayout GetTextLayout(ITextLayer layer)
         {
-            return Get(_texts, text, t => t.GetLayout(Context));
+            return Get(_texts, layer, t => t.GetLayout(Context));
         }
 
         public void LoadBitmaps(RenderContext target)
@@ -482,6 +491,9 @@ namespace Rain.Renderer
             foreach (var (_, stroke) in _strokes.AsTuples()) stroke?.Dispose();
             _strokes.Clear();
 
+            foreach (var (_, image) in _images.AsTuples()) image?.Dispose();
+            _images.Clear();
+
             ExitWriteLock();
         }
 
@@ -511,6 +523,7 @@ namespace Rain.Renderer
             {
                 if (brushInfo != null)
                     brushInfo.PropertyChanged -= OnBrushPropertyChanged;
+
                 brush?.Dispose();
             }
 
@@ -535,10 +548,11 @@ namespace Rain.Renderer
             foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
             _geometries.Clear();
 
-            foreach (var (_, layout) in _texts.AsTuples())
-                layout.Dispose();
-
+            foreach (var (_, layout) in _texts.AsTuples()) layout?.Dispose();
             _texts.Clear();
+
+            foreach (var (_, image) in _images.AsTuples()) image?.Dispose();
+            _images.Clear();
 
             ExitWriteLock();
         }

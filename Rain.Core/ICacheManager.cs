@@ -18,9 +18,10 @@ namespace Rain.Core
         IRenderImage GetBitmap(string key);
         IBrush GetBrush(string key);
         IBrush GetFill(IFilledLayer layer);
+        IRenderImage GetImage(IImageLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);
         IPen GetStroke(IStrokedLayer layer);
-        ITextLayout GetTextLayout(ITextLayer text);
+        ITextLayout GetTextLayout(ITextLayer layer);
 
         #endregion
 

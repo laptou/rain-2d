@@ -8,6 +8,6 @@ namespace Rain.Core.Model.DocumentGraph
     public interface IImageLayer : ILayer
     {
         event EventHandler ImageChanged;
-        Imaging.IRenderImage GetImage(ICacheManager cache);
+        Imaging.IRenderImage GetImage(IArtContext ctx);
     }
 }
