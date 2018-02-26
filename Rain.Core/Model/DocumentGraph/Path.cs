@@ -18,14 +18,14 @@ namespace Rain.Core.Model.DocumentGraph
         public ObservableList<PathInstruction> Instructions { get; } =
             new ObservableList<PathInstruction>();
 
-        public override RectangleF GetBounds(ICacheManager cache)
+        public override RectangleF GetBounds(IArtContext ctx)
         {
-            return cache.GetGeometry(this).Bounds();
+            return ctx.CacheManager.GetGeometry(this).Bounds();
         }
 
-        public override IGeometry GetGeometry(ICacheManager cache)
+        public override IGeometry GetGeometry(IArtContext ctx)
         {
-            var pg = cache.Context.RenderContext.CreateGeometry();
+            var pg = ctx.RenderContext.CreateGeometry();
 
             // ToArray to avoid modification-during-iteration errors
             pg.Load(Instructions.ToArray());

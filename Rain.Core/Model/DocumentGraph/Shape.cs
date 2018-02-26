@@ -70,7 +70,7 @@ namespace Rain.Core.Model.DocumentGraph
         public event EventHandler GeometryChanged;
         public event EventHandler StrokeChanged;
 
-        public abstract IGeometry GetGeometry(ICacheManager factory);
+        public abstract IGeometry GetGeometry(IArtContext factory);
 
         public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
         {

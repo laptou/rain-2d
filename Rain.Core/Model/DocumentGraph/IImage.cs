@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Rain.Core.Model.DocumentGraph
 {
-    public enum GradientBrushType
+    public interface IImageLayer : ILayer
     {
-        Linear,
-        Radial
+        event EventHandler ImageChanged;
+        Imaging.IRenderImage GetImage(ICacheManager cache);
     }
 }

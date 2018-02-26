@@ -73,7 +73,7 @@ namespace Rain.Core.Model.DocumentGraph
 
         IEnumerable<ILayer> Flatten();
         IEnumerable<ILayer> Flatten(int depth);
-        RectangleF GetBounds(ICacheManager cache);
+        RectangleF GetBounds(IArtContext ctx);
 
         T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth) where T : ILayer;
     }

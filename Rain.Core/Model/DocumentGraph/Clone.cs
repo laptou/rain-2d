@@ -48,9 +48,9 @@ namespace Rain.Core.Model.DocumentGraph
         #region ICloneLayer Members
 
         /// <inheritdoc />
-        public override RectangleF GetBounds(ICacheManager cache)
+        public override RectangleF GetBounds(IArtContext ctx)
         {
-            return cache.GetRelativeBounds(Target);
+            return ctx.CacheManager.GetRelativeBounds(Target);
         }
 
         /// <inheritdoc />

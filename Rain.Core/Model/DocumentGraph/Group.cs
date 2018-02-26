@@ -45,6 +45,12 @@ namespace Rain.Core.Model.DocumentGraph
 
         public event EventHandler<ILayer> LayerRemoved;
 
+        /// <inheritdoc />
+        public ILayer this[Guid id] => Find(id);
+
+        /// <inheritdoc />
+        public ILayer this[int index] => SubLayers[index];
+
         public void Add(ILayer child, int index = -1)
         {
             if (child.Parent != null)
@@ -91,12 +97,12 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public override RectangleF GetBounds(ICacheManager cache)
+        public override RectangleF GetBounds(IArtContext ctx)
         {
             if (SubLayers.Count == 0) return RectangleF.Empty;
 
-            if (cache != null)
-                return SubLayers.Select(cache.GetRelativeBounds).Aggregate(RectangleF.Union);
+            if (ctx != null)
+                return SubLayers.Select(ctx.CacheManager.GetRelativeBounds).Aggregate(RectangleF.Union);
 
             return SubLayers.Select(l => MathUtils.Bounds(l.GetBounds(null), l.Transform))
                             .Aggregate((r1, r2) => RectangleF.Union(r1, r2));

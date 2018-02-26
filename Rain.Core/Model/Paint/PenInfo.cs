@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
 
-namespace Rain.Core.Model.DocumentGraph
+namespace Rain.Core.Model.Paint
 {
     public class PenInfo : ResourceBase, IPenInfo
     {

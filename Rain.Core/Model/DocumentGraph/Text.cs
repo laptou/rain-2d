@@ -164,19 +164,19 @@ namespace Rain.Core.Model.DocumentGraph
             RaiseLayoutChanged();
         }
 
-        public override RectangleF GetBounds(ICacheManager cache)
+        public override RectangleF GetBounds(IArtContext ctx)
         {
             if (IsBlock)
                 return new RectangleF(0, 0, Width, Height);
 
-            return cache.GetTextLayout(this).Measure();
+            return ctx.CacheManager.GetTextLayout(this).Measure();
         }
 
         public Format GetFormat(int position) { return GetFormat(position, out var _); }
 
-        public IGeometry GetGeometry(ICacheManager cache)
+        public IGeometry GetGeometry(IArtContext ctx)
         {
-            var layout = cache.GetTextLayout(this);
+            var layout = ctx.CacheManager.GetTextLayout(this);
 
             if (layout.Text.Length == 0) return null;
 
@@ -186,7 +186,7 @@ namespace Rain.Core.Model.DocumentGraph
             for (var i = 0; i < layout.GetGlyphCount(); i += layout.GetGlyphCountForGeometry(i))
                 geometries.Add(layout.GetGeometryForGlyphRun(i));
 
-            return cache.Context.RenderContext.CreateGeometryGroup(geometries.ToArray());
+            return ctx.RenderContext.CreateGeometryGroup(geometries.ToArray());
         }
 
         public ITextLayout GetLayout(IArtContext ctx)

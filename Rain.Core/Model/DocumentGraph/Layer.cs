@@ -71,7 +71,7 @@ namespace Rain.Core.Model.DocumentGraph
         /// </returns>
         public virtual IEnumerable<ILayer> Flatten() { yield return this; }
 
-        public virtual RectangleF GetBounds(ICacheManager cache)
+        public virtual RectangleF GetBounds(IArtContext ctx)
         {
             return new RectangleF(0, 0, Width, Height);
         }

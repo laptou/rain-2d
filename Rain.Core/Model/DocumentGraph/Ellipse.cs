@@ -51,14 +51,14 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public override RectangleF GetBounds(ICacheManager cache)
+        public override RectangleF GetBounds(IArtContext ctx)
         {
             return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, Width, Height);
         }
 
-        public override IGeometry GetGeometry(ICacheManager cache)
+        public override IGeometry GetGeometry(IArtContext ctx)
         {
-            return cache.Context.RenderContext.CreateEllipseGeometry(
+            return ctx.RenderContext.CreateEllipseGeometry(
                 CenterX,
                 CenterY,
                 RadiusX,

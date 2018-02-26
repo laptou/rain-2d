@@ -10,6 +10,6 @@ namespace Rain.Core.Model.DocumentGraph
     public interface IGeometricLayer : IFilledLayer, IStrokedLayer
     {
         event EventHandler GeometryChanged;
-        IGeometry GetGeometry(ICacheManager cache);
+        IGeometry GetGeometry(IArtContext ctx);
     }
 }
