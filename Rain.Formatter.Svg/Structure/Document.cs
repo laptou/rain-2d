@@ -9,7 +9,7 @@ using Rain.Core.Model.Measurement;
 
 namespace Rain.Formatter.Svg.Structure
 {
-    public class Document : GraphicalContainerElement
+    public class Document : GraphicalContainerElementBase
     {
         public Defs Defs => (Defs) this.FirstOrDefault(c => c is Defs);
 
@@ -53,7 +53,7 @@ namespace Rain.Formatter.Svg.Structure
 
             element.Name = SvgNames.Svg;
             element.Add(
-                new XAttribute(XNamespace.Xmlns + "rain", SvgNames.Ibinimator.NamespaceName));
+                new XAttribute(XNamespace.Xmlns + "rain", SvgNames.Rain2D.NamespaceName));
 
             LazySet(element, "viewBox", Viewbox);
             LazySet(element, "version", Version);

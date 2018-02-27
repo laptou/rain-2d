@@ -12,7 +12,7 @@ using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
-    public abstract class Element : IElement
+    public abstract class ElementBase : IElement
     {
         protected string LazyGet(XElement element, XName name, bool inherit = false)
         {

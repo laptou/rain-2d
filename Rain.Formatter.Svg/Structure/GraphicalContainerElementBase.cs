@@ -9,7 +9,7 @@ using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
-    public abstract class GraphicalContainerElement : GraphicalElement, IContainerElement
+    public abstract class GraphicalContainerElementBase : GraphicalElementBase, IContainerElement
     {
         private readonly List<IElement> _list = new List<IElement>();
 

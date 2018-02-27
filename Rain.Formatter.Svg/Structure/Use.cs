@@ -5,19 +5,20 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Rain.Formatter.Svg.Shapes;
+using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
-    public class Use : ShapeElement
+    public class Use : ShapeElementBase
     {
-        public Iri Target { get; set; }
+        public Uri Target { get; set; }
 
         /// <inheritdoc />
         public override void FromXml(XElement element, SvgContext context)
         {
             base.FromXml(element, context);
 
-            if (Iri.TryParse(LazyGet(element, SvgNames.HRef), out var target))
+            if (UriHelper.TryParse(LazyGet(element, SvgNames.HRef), out var target))
                 Target = target;
         }
 

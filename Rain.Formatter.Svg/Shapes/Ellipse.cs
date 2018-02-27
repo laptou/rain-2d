@@ -8,7 +8,7 @@ using Rain.Core.Model.Measurement;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Ellipse : ShapeElement
+    public class Ellipse : ShapeElementBase
     {
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }

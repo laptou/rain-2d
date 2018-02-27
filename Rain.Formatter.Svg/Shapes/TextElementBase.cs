@@ -12,7 +12,7 @@ using Rain.Formatter.Svg.Enums;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public abstract class TextElement : ShapeElement, ITextElement
+    public abstract class TextElementBase : ShapeElementBase, ITextElement
     {
         private readonly List<IInlineTextElement> _spans = new List<IInlineTextElement>();
 

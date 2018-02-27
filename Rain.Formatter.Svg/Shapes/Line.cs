@@ -8,7 +8,7 @@ using Rain.Core.Model.Measurement;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Line : ShapeElement
+    public class Line : ShapeElementBase
     {
         public Length X1 { get; set; }
         public Length X2 { get; set; }

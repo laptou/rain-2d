@@ -11,7 +11,7 @@ using Rain.Formatter.Svg.Structure;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public abstract class ShapeElement : GraphicalElement, IShapeElement
+    public abstract class ShapeElementBase : GraphicalElementBase, IShapeElement
     {
         #region IShapeElement Members
 

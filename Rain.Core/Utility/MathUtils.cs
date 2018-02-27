@@ -24,8 +24,8 @@ namespace Rain.Core.Utility
         public static readonly float InverseSqrt3 = 1 / (float) Math.Sqrt(3);
         public static readonly float InverseSqrt2 = 1 / (float) Math.Sqrt(2);
 
-        public static Vector2 Abs(Vector2 v) { return new Vector2(Math.Abs(v.X), Math.Abs(v.Y)); }
-
+        public static Vector2 Abs(Vector2 v) => Vector2.Abs(v);
+        
         public static double AbsMax(double min, double x)
         {
             return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);

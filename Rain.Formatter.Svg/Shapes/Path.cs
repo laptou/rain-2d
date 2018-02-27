@@ -9,7 +9,7 @@ using Rain.Core.Utility;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Path : ShapeElement
+    public class Path : ShapeElementBase
     {
         public PathInstruction[] Data { get; set; }
 

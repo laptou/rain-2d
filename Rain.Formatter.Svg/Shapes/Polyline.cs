@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Polyline : ShapeElement
+    public class Polyline : ShapeElementBase
     {
         private static readonly Regex PointsSyntax =
             new Regex(

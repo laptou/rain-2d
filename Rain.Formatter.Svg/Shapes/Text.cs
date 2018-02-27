@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Text : TextElement
+    public class Text : TextElementBase
     {
         public override XElement ToXml(SvgContext context)
         {

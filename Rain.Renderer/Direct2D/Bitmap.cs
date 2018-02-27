@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
+using Rain.Core.Model;
+using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
 using Rain.Renderer.WIC;
 
@@ -14,7 +17,7 @@ using DX = SharpDX;
 
 namespace Rain.Renderer.Direct2D
 {
-    internal class Bitmap : IRenderImage
+    internal class Bitmap : ResourceBase, IRenderImage
     {
         private readonly D2D1.Bitmap _bmp;
 
@@ -44,9 +47,18 @@ namespace Rain.Renderer.Direct2D
 
         #region IRenderImage Members
 
-        public void Dispose() { _bmp.Dispose(); }
+        public override void Dispose()
+        {
+            _bmp.Dispose();
+            base.Dispose();
+        }
 
         public T Unwrap<T>() where T : class { return _bmp as T; }
+
+        public override void Optimize()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <inheritdoc />
         public bool Alpha { get; }

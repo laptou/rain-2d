@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Span : TextElement, IInlineTextElement
+    public class Span : TextElementBase, IInlineTextElement
     {
         #region IInlineTextElement Members
 

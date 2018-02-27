@@ -10,7 +10,7 @@ using Rain.Formatter.Svg.Structure;
 
 namespace Rain.Formatter.Svg.Paint
 {
-    public class GradientStop : Element
+    public class GradientStop : ElementBase
     {
         public Color Color { get; set; }
         public Length Offset { get; set; }

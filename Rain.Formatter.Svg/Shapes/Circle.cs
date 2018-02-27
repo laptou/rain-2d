@@ -8,7 +8,7 @@ using Rain.Core.Model.Measurement;
 
 namespace Rain.Formatter.Svg.Shapes
 {
-    public class Circle : ShapeElement
+    public class Circle : ShapeElementBase
     {
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }

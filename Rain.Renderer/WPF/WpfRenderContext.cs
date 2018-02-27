@@ -111,6 +111,9 @@ namespace Rain.Renderer.WPF
         /// <inheritdoc />
         public override void DrawBitmap(IRenderImage bitmap, RectangleF dstRect) { throw new NotImplementedException(); }
 
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode) { throw new NotImplementedException(); }
+
         public override void DrawBitmap(IRenderImage bitmap) { throw new NotImplementedException(); }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)

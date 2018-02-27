@@ -8,13 +8,13 @@ namespace Rain.Formatter.Svg
 {
     internal static class SvgNames
     {
-        public static readonly XNamespace Namespace  = "http://www.w3.org/2000/svg";
-        public static readonly XNamespace XLink      = "http://www.w3.org/1999/xlink";
-        public static readonly XNamespace Ibinimator = "http://ibiyemi.intulon.com/schema/rain2d";
+        public static readonly XNamespace Namespace = "http://www.w3.org/2000/svg";
+        public static readonly XNamespace XLink     = "http://www.w3.org/1999/xlink";
+        public static readonly XNamespace Rain2D    = "http://ibiyemi.intulon.com/schema/rain2d";
 
         #region metadata
 
-        public static readonly XName Name = Ibinimator + "name";
+        public static readonly XName Name = Rain2D + "name";
         public static readonly XName HRef = XLink + "href";
 
         #endregion
@@ -42,9 +42,9 @@ namespace Rain.Formatter.Svg
         public static readonly XName Line     = Namespace + "line";
         public static readonly XName Text     = Namespace + "text";
         public static readonly XName Tspan    = Namespace + "tspan";
-        public static readonly XName Use = Namespace + "use";
+        public static readonly XName Image    = Namespace + "image";
+        public static readonly XName Use      = Namespace + "use";
 
         #endregion
-
     }
 }

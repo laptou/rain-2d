@@ -280,6 +280,24 @@ namespace Rain.Renderer
         {
             EnterWriteLock();
 
+            void BindProperty<K, V>(Action<EventHandler> adder, Dictionary<K, V> d)
+                where K : ILayer where V : IDisposable
+            {
+                adder((s, e) =>
+                      {
+                          EnterWriteLock();
+
+                          if (s is K t)
+                              d.TryGet(t)?.Dispose();
+
+                          ExitWriteLock();
+
+                          if (_suppressed) return;
+
+                          Context.InvalidateRender();
+                      });
+            }
+
             if (layer is IFilledLayer filled)
             {
                 lock (_fills)
@@ -287,24 +305,8 @@ namespace Rain.Renderer
                     _fills.TryGet(filled)?.Dispose();
                     _fills[filled] = BindBrush(filled, filled.Fill);
                 }
-
-                filled.FillChanged += (s, e) =>
-                                      {
-                                          EnterWriteLock();
-
-                                          if (s is IFilledLayer shape)
-                                          {
-                                              var fill = _fills.TryGet(shape);
-                                              if (fill != null)
-                                                  fill.Dispose();
-                                          }
-
-                                          ExitWriteLock();
-
-                                          if (_suppressed) return;
-
-                                          Context.InvalidateRender();
-                                      };
+                
+                BindProperty(h => filled.FillChanged += h, _fills);
             }
 
             if (layer is IStrokedLayer stroked)
@@ -315,54 +317,18 @@ namespace Rain.Renderer
                     _strokes[stroked] = BindStroke(stroked, stroked.Stroke);
                 }
 
-                stroked.StrokeChanged += (s, e) =>
-                                         {
-                                             EnterWriteLock();
+                BindProperty(h => stroked.StrokeChanged += h, _strokes);
 
-                                             if (s is IStrokedLayer shape)
-                                             {
-                                                 var stroke = _strokes.TryGet(shape);
-                                                 if (stroke != null)
-                                                     stroke.Dispose();
-                                             }
-
-                                             ExitWriteLock();
-
-                                             if (_suppressed) return;
-
-                                             Context.InvalidateRender();
-                                         };
             }
 
             if (layer is ITextLayer text)
-                text.LayoutChanged += (s, e) =>
-                                      {
-                                          EnterWriteLock();
+                BindProperty(h => text.LayoutChanged += h, _texts);
 
-                                          if (s is ITextLayer t)
-                                              _texts.TryGet(t)?.Dispose();
-
-                                          ExitWriteLock();
-
-                                          if (_suppressed) return;
-
-                                          Context.InvalidateRender();
-                                      };
+            if (layer is IImageLayer image)
+                BindProperty(h => image.ImageChanged += h, _images);
 
             if (layer is IGeometricLayer geometric)
-                geometric.GeometryChanged += (s, e) =>
-                                             {
-                                                 EnterWriteLock();
-
-                                                 if (s is IGeometricLayer g)
-                                                     _geometries.TryGet(g)?.Dispose();
-
-                                                 ExitWriteLock();
-
-                                                 if (_suppressed) return;
-
-                                                 Context.InvalidateRender();
-                                             };
+                BindProperty(h => geometric.GeometryChanged += h, _geometries);
 
             layer.BoundsChanged += (s, e) =>
                                    {
@@ -378,8 +344,6 @@ namespace Rain.Renderer
                                        Context.InvalidateRender();
                                    };
 
-            ExitWriteLock();
-
             if (layer is IContainerLayer group)
             {
                 foreach (var subLayer in group.SubLayers)
@@ -387,6 +351,8 @@ namespace Rain.Renderer
 
                 group.LayerAdded += (sender, layer1) => BindLayer(layer1);
             }
+
+            ExitWriteLock();
         }
 
         /// <inheritdoc />

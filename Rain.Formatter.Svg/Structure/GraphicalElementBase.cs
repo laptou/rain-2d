@@ -13,7 +13,7 @@ using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
-    public abstract class GraphicalElement : Element, IGraphicalElement
+    public abstract class GraphicalElementBase : ElementBase, IGraphicalElement
     {
         #region IGraphicalElement Members
 
@@ -71,7 +71,7 @@ namespace Rain.Formatter.Svg.Structure
 
         public RectangleF? Clip { get; set; }
 
-        public Iri? ClipPath { get; set; }
+        public Uri ClipPath { get; set; }
 
         public FillRule ClipRule { get; set; }
 
@@ -85,13 +85,13 @@ namespace Rain.Formatter.Svg.Structure
 
         public Direction Direction { get; set; }
 
-        public Iri? Filter { get; set; }
+        public Uri Filter { get; set; }
 
         public Length? Kerning { get; set; }
 
         public Length? LetterSpacing { get; set; }
 
-        public Iri? Mask { get; set; }
+        public Uri Mask { get; set; }
 
         public float Opacity { get; set; } = 1;
 
