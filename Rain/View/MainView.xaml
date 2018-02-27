@@ -122,38 +122,36 @@
         <Border Grid.Row="0" Grid.Column="1"
                 Background="{utility:Theme background-2}">
             <Grid UseLayoutRounding="True">
-                <StackPanel Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Menu Margin="18,0,0,0" VerticalAlignment="Center"
-                          Background="Transparent" ItemsSource="{Binding MenuItems}">
-                        <Menu.ItemContainerStyle>
-                            <Style TargetType="{x:Type MenuItem}">
-                                <Setter Property="Command" Value="{Binding Command}" />
-                                <Setter Property="CommandParameter" Value="{Binding ArtContext}" />
-                                <Setter Property="FontSize" Value="12" />
-                                <Setter Property="InputGestureText" Value="{Binding Shortcut}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static viewmodel:MenuItemType.Separator}">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate>
-                                                    <Separator Margin="0,4"
-                                                               BorderBrush="{utility:Theme divider}" BorderThickness="1" Opacity="0.25" />
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Menu.ItemContainerStyle>
-                        <Menu.ItemTemplate>
-                            <HierarchicalDataTemplate DataType="{x:Type viewmodel:MenuItem}" ItemsSource="{Binding Path=SubMenus}">
-                                <Grid>
-                                    <TextBlock Text="{Binding Name}" />
-                                </Grid>
-                            </HierarchicalDataTemplate>
-                        </Menu.ItemTemplate>
-                    </Menu>
-                </StackPanel>
+                <Menu Margin="18,0,0,0" VerticalAlignment="Center"
+                      Background="Transparent" ItemsSource="{Binding MenuItems}" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Menu.ItemContainerStyle>
+                        <Style TargetType="{x:Type MenuItem}">
+                            <Setter Property="Command" Value="{Binding Command}" />
+                            <Setter Property="CommandParameter" Value="{Binding ArtContext}" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="InputGestureText" Value="{Binding Shortcut}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static viewmodel:MenuItemType.Separator}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Separator Margin="0,4"
+                                                           BorderBrush="{utility:Theme divider}" BorderThickness="1" Opacity="0.25" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Menu.ItemContainerStyle>
+                    <Menu.ItemTemplate>
+                        <HierarchicalDataTemplate DataType="{x:Type viewmodel:MenuItem}" ItemsSource="{Binding Path=SubMenus}">
+                            <Grid>
+                                <TextBlock Text="{Binding Name}" />
+                            </Grid>
+                        </HierarchicalDataTemplate>
+                    </Menu.ItemTemplate>
+                </Menu>
                 <StackPanel HorizontalAlignment="Right"
                             Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Height="30"

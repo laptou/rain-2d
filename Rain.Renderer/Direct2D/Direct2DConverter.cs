@@ -28,7 +28,17 @@ namespace Rain.Renderer.Direct2D
             return new Vector2(vec.X, vec.Y);
         }
 
+        public static RawVector2 ConvertRaw(this System.Numerics.Vector2 vec)
+        {
+            return new RawVector2(vec.X, vec.Y);
+        }
+
         public static System.Numerics.Vector2 Convert(this Vector2 vec)
+        {
+            return new System.Numerics.Vector2(vec.X, vec.Y);
+        }
+
+        public static System.Numerics.Vector2 Convert(this RawVector2 vec)
         {
             return new System.Numerics.Vector2(vec.X, vec.Y);
         }

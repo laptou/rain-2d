@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Reactive;
 
 using Rain.Core.Utility;
 
@@ -14,20 +17,22 @@ namespace Rain.ViewModel
 {
     public class TransformViewModel : ViewModel
     {
+        private IObservable<EventPattern<object>> _attachObservable;
+        private IObservable<EventPattern<object>> _detachObservable;
+
         public TransformViewModel(IArtContext artContext)
         {
             ArtContext = artContext;
-            artContext.SelectionManager.SelectionChanged += (s, e) =>
-                                                            {
-                                                                RaisePropertyChanged(nameof(X));
-                                                                RaisePropertyChanged(nameof(Y));
-                                                                RaisePropertyChanged(nameof(Width));
-                                                                RaisePropertyChanged(
-                                                                    nameof(Height));
-                                                                RaisePropertyChanged(
-                                                                    nameof(Rotation));
-                                                                RaisePropertyChanged(nameof(Shear));
-                                                            };
+
+            _attachObservable = Observable.FromEventPattern(h => ArtContext.ManagerAttached += h,
+                                                            h => ArtContext.ManagerAttached -= h);
+            _detachObservable = Observable.FromEventPattern(h => ArtContext.ManagerDetached += h,
+                                                            h => ArtContext.ManagerDetached -= h);
+
+            _attachObservable.Subscribe(ArtContextOnManagerAttached);
+
+            if (artContext.SelectionManager != null)
+                ArtContextOnManagerAttached(new EventPattern<object>(artContext.SelectionManager, null));
         }
 
         public IArtContext ArtContext { get; }
@@ -84,6 +89,27 @@ namespace Rain.ViewModel
             set => SetPosition(new Vector2(X, value));
         }
 
+        private void ArtContextOnManagerAttached(EventPattern<object> evt)
+        {
+            if (evt.Sender is ISelectionManager sm)
+            {
+                Observable.FromEventPattern(h =>
+                                            {
+                                                sm.SelectionChanged += h;
+                                                sm.SelectionBoundsChanged += h;
+                                            },
+                                            h =>
+                                            {
+                                                sm.SelectionChanged -= h;
+                                                sm.SelectionBoundsChanged -= h;
+                                            })
+                          .Sample(TimeSpan.FromMilliseconds(250))
+                          .TakeUntil(_detachObservable.Where(e => e.Sender == sm))
+                          .SubscribeOn(App.Dispatcher)
+                          .Subscribe(SelectionManagerSelectionChanged);
+            }
+        }
+
         private Vector2 GetPosition()
         {
             return Vector2.Transform(ArtContext.SelectionManager.SelectionBounds.TopLeft,
@@ -97,6 +123,17 @@ namespace Rain.ViewModel
 
             return ArtContext.SelectionManager.SelectionBounds.Size *
                    ArtContext.SelectionManager.SelectionTransform.GetScale();
+        }
+
+        private void SelectionManagerSelectionChanged(EventPattern<object> evt)
+        {
+            Trace.WriteLine($"{DateTime.Now} - Selection bounds changed!");
+            RaisePropertyChanged(nameof(X),
+                                 nameof(Y),
+                                 nameof(Width),
+                                 nameof(Height),
+                                 nameof(Rotation),
+                                 nameof(Shear));
         }
 
         private void SetPosition(Vector2 position)

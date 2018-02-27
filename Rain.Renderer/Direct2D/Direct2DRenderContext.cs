@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 
 using Rain.Core;
@@ -13,10 +11,15 @@ using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
 using Rain.Renderer.WIC;
 
+using SharpDX;
 using SharpDX.Mathematics.Interop;
 
+using Color = Rain.Core.Model.Color;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
+using Matrix3x2 = System.Numerics.Matrix3x2;
+using RectangleF = Rain.Core.Model.RectangleF;
+using Vector2 = System.Numerics.Vector2;
 
 // ReSharper disable InconsistentNaming
 
@@ -62,15 +65,6 @@ namespace Rain.Renderer.Direct2D
             _virtualTarget.Clear(null);
         }
 
-        /// <inheritdoc />
-        public override IRenderImage GetRenderImage(IImageFrame image)
-        {
-            if(image is ImageFrame wicImageFrame)
-            return new Bitmap(_target, wicImageFrame);
-
-            throw new ArgumentException("This render context can only process WIC images.");
-        }
-
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -103,6 +97,8 @@ namespace Rain.Renderer.Direct2D
                 return new GlowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
             if (typeof(T) == typeof(IDropShadowEffect))
                 return new DropShadowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
+            if (typeof(T) == typeof(IScaleEffect))
+                return new ScaleEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
 
             return default;
         }
@@ -130,7 +126,6 @@ namespace Rain.Renderer.Direct2D
             return new Geometry(Target, geometries);
         }
 
-        
 
         public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
         {
@@ -246,6 +241,46 @@ namespace Rain.Renderer.Direct2D
         }
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }
+
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image)
+        {
+            if (image is ImageFrame wicImageFrame)
+                return new Bitmap(_target, wicImageFrame);
+
+            throw new ArgumentException("This render context can only process WIC images.");
+        }
+
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(
+            IImageFrame image, Vector2 scale, ScaleMode mode)
+        {
+            var size = new Size2F((int) (image.Width * scale.X), (int) (image.Height * scale.Y));
+
+            using (var bmp = GetRenderImage(image))
+            {
+                using (var target =
+                    new D2D.BitmapRenderTarget(_target,
+                                               D2D.CompatibleRenderTargetOptions.None,
+                                               size))
+                {
+                    using (var effect =
+                        new ScaleEffect(_target.QueryInterface<D2D.DeviceContext>()))
+                    {
+                        var dpi = new Vector2(target.DotsPerInch.Width, target.DotsPerInch.Height);
+                        effect.ScaleMode = mode;
+                        effect.Factor = scale * dpi / 96f;
+                        effect.SetInput(0, bmp);
+                        var img = effect.GetOutput();
+                        target.BeginDraw();
+                        target.QueryInterface<D2D.DeviceContext>().DrawImage(img);
+                        target.EndDraw();
+                    }
+
+                    return new Bitmap(target.Bitmap);
+                }
+            }
+        }
 
         public override void PopEffect()
         {

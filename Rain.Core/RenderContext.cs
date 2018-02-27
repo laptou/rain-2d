@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -21,8 +20,6 @@ namespace Rain.Core
         public abstract void Begin(object ctx);
 
         public abstract void Clear(Color color);
-
-        public abstract IRenderImage GetRenderImage(IImageFrame image);
 
         public abstract ISolidColorBrush CreateBrush(Color color);
 
@@ -51,10 +48,7 @@ namespace Rain.Core
 
         public abstract ITextLayout CreateTextLayout();
 
-        public virtual void DrawBitmap(IRenderImage bitmap)
-        {
-            DrawBitmap(bitmap, new RectangleF(0, 0, bitmap.Width, bitmap.Height));
-        }
+        public abstract void DrawBitmap(IRenderImage bitmap, RectangleF dstRect);
 
         public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
 
@@ -78,7 +72,13 @@ namespace Rain.Core
 
         public abstract float GetDpi();
 
+        public abstract IRenderImage GetRenderImage(IImageFrame image);
+
+        public abstract IRenderImage GetRenderImage(
+            IImageFrame image, Vector2 scale, ScaleMode mode);
+
         public abstract void PopEffect();
+
         public abstract void PushEffect(IEffect effect);
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
@@ -86,6 +86,11 @@ namespace Rain.Core
         public virtual IPen CreatePen(float width, IBrush brush)
         {
             return CreatePen(width, brush, Enumerable.Empty<float>());
+        }
+
+        public virtual void DrawBitmap(IRenderImage bitmap)
+        {
+            DrawBitmap(bitmap, new RectangleF(0, 0, bitmap.Width, bitmap.Height));
         }
 
         public virtual void DrawCircle(Vector2 c, float r, IPen pen) { DrawEllipse(c, r, r, pen); }
@@ -130,7 +135,5 @@ namespace Rain.Core
         public abstract void Dispose();
 
         #endregion
-
-        public abstract void DrawBitmap(IRenderImage bitmap, RectangleF dstRect);
     }
 }

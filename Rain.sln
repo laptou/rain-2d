@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rain", "Rain\Rain.csproj", "{60561D00-30FE-4CE1-B598-D7CAEA9DC388}"
 EndProject
@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rain.Core", "Rain.Core\Rain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rain.Renderer", "Rain.Renderer\Rain.Renderer.csproj", "{1102B4FB-42F9-4CC2-912E-FFC1A8309BB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rain.Formatter.Xml", "Rain.Formatter.Xml\Rain.Formatter.Xml.csproj", "{86485E8E-F76C-40BA-807B-D6C9D1C104E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rain.Formatter.Xml", "Rain.Formatter.Xml\Rain.Formatter.Xml.csproj", "{86485E8E-F76C-40BA-807B-D6C9D1C104E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

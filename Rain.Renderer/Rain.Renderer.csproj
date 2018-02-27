@@ -101,7 +101,8 @@
     <Compile Include="Direct2D\Geometry.cs" />
     <Compile Include="Direct2D\GlowEffect.cs" />
     <Compile Include="Direct2D\GradientBrush.cs" />
-    <Compile Include="Direct2D\Image.cs" />
+    <Compile Include="Direct2D\ScaleEffect.cs" />
+    <Compile Include="WIC\Image.cs" />
     <Compile Include="Direct2D\LinearGradientBrush.cs" />
     <Compile Include="Direct2D\NativeHelper.cs" />
     <Compile Include="Direct2D\NullGeometry.cs" />
@@ -119,6 +120,9 @@
     <Compile Include="RenderCommand.cs" />
     <Compile Include="TransformRenderCommand.cs" />
     <Compile Include="Utility\ColorUtils.cs" />
+    <Compile Include="WIC\ImageFrame.cs" />
+    <Compile Include="WIC\ImageFrameLock.cs" />
+    <Compile Include="WIC\WICResourceContext.cs" />
     <Compile Include="WPF\Brush.cs" />
     <Compile Include="WPF\Geometry.cs" />
     <Compile Include="WPF\GradientBrush.cs" />
