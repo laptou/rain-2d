@@ -37,8 +37,6 @@ namespace Rain.ViewModel
             ToolManager = new ToolManager(artView.ArtContext);
             BrushManager = new BrushManager(artView.ArtContext);
 
-            Load();
-
             ArtContext = artView.ArtContext;
             artView.ArtContext.SetManager(cache);
             artView.ArtContext.SetManager(ViewManager);
@@ -46,6 +44,8 @@ namespace Rain.ViewModel
             artView.ArtContext.SetManager(SelectionManager);
             artView.ArtContext.SetManager(ToolManager);
             artView.ArtContext.SetManager(BrushManager);
+
+            Load();
 
             ColorViewModel = new ColorViewModel(ArtContext);
             TransformViewModel = new TransformViewModel(ArtContext);
@@ -188,10 +188,16 @@ namespace Rain.ViewModel
             reference3.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
             reference2.Fill = new SolidColorBrushInfo(new Color(1, 0, 0));
 
+            var pic = new Picture();
+            pic.Width = 400;
+            pic.Height = 300;
+            pic.Image = ArtContext.ResourceContext.LoadImageFromFilename(@"C:\Users\ibiyemi.CENTRAL\Pictures\anders-jilden-307322-unsplash.jpg");
+
             ViewManager.Root.Add(reference1);
             ViewManager.Root.Add(reference2);
             ViewManager.Root.Add(reference3);
             ViewManager.Root.Add(l);
+            ViewManager.Root.Add(pic);
 
             l.Add(e);
             l.Add(r);

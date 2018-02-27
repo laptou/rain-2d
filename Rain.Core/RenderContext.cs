@@ -22,7 +22,7 @@ namespace Rain.Core
 
         public abstract void Clear(Color color);
 
-        public abstract IRenderImage CreateBitmap(Stream stream);
+        public abstract IRenderImage GetRenderImage(IImageFrame image);
 
         public abstract ISolidColorBrush CreateBrush(Color color);
 
@@ -51,7 +51,10 @@ namespace Rain.Core
 
         public abstract ITextLayout CreateTextLayout();
 
-        public abstract void DrawBitmap(IRenderImage bitmap);
+        public virtual void DrawBitmap(IRenderImage bitmap)
+        {
+            DrawBitmap(bitmap, new RectangleF(0, 0, bitmap.Width, bitmap.Height));
+        }
 
         public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
 
@@ -127,5 +130,7 @@ namespace Rain.Core
         public abstract void Dispose();
 
         #endregion
+
+        public abstract void DrawBitmap(IRenderImage bitmap, RectangleF dstRect);
     }
 }

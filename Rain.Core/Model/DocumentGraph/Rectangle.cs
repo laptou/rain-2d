@@ -11,22 +11,22 @@ namespace Rain.Core.Model.DocumentGraph
     {
         public override string DefaultName => "Rectangle";
 
-        public override float Height
+        public float Height
         {
-            get => base.Height;
+            get => Get<float>();
             set
             {
-                base.Height = value;
+                Set(value);
                 RaiseGeometryChanged();
             }
         }
 
-        public override float Width
+        public float Width
         {
-            get => base.Width;
+            get => Get<float>();
             set
             {
-                base.Width = value;
+                Set(value);
                 RaiseGeometryChanged();
             }
         }

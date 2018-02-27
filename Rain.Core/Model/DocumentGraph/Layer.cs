@@ -71,10 +71,7 @@ namespace Rain.Core.Model.DocumentGraph
         /// </returns>
         public virtual IEnumerable<ILayer> Flatten() { yield return this; }
 
-        public virtual RectangleF GetBounds(IArtContext ctx)
-        {
-            return new RectangleF(0, 0, Width, Height);
-        }
+        public abstract RectangleF GetBounds(IArtContext ctx);
 
         public abstract T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
             where T : ILayer;
@@ -85,11 +82,7 @@ namespace Rain.Core.Model.DocumentGraph
 
         public virtual int Depth => Parent?.Depth + 1 ?? 0;
 
-        public virtual float Height
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
+        
 
         public float Opacity
         {
@@ -114,11 +107,7 @@ namespace Rain.Core.Model.DocumentGraph
             protected set => Set(value);
         }
 
-        public virtual float Width
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
+        
 
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 

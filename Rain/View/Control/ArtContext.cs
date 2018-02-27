@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Core.Model;
+using Rain.Core.Model.Effects;
+using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Text;
 using Rain.Native;
+using Rain.Renderer.Direct2D;
+using Rain.Renderer.WIC;
 
 namespace Rain.View.Control
 {
@@ -21,16 +26,16 @@ namespace Rain.View.Control
         #region IArtContext Members
 
         /// <inheritdoc />
-        public T Create<T>(params object[] parameters) where T : class
+        public ICaret CreateCaret(int width, int height)
         {
-            if (typeof(T) == typeof(ICaret))
-                if (WindowHelper.GetFocus() == _artView.Handle)
-                    return new Caret(_artView.Handle,
-                                     (int) parameters[0],
-                                     (int) parameters[1]) as T;
+            if (WindowHelper.GetFocus() == _artView.Handle)
+                return new Caret(_artView.Handle,
+                                 width, height);
 
             return null;
         }
+
+        
 
         public void InvalidateRender() { _artView.InvalidateSurface(); }
 
@@ -95,6 +100,9 @@ namespace Rain.View.Control
         }
 
         public RenderContext RenderContext => _artView.RenderContext;
+
+        /// <inheritdoc />
+        public ResourceContext ResourceContext { get; } = new WICResourceContext();
 
         public Status Status
         {

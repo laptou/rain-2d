@@ -418,12 +418,12 @@ namespace Rain.Core.Model.DocumentGraph
 
         public ObservableList<Format> Formats { get; } = new ObservableList<Format>();
 
-        public override float Height
+        public float Height
         {
-            get => base.Height;
+            get => Get<float>();
             set
             {
-                base.Height = value;
+                Set(value);
                 RaiseLayoutChanged();
             }
         }
@@ -466,12 +466,12 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public override float Width
+        public float Width
         {
-            get => base.Width;
+            get => Get<float>();
             set
             {
-                base.Width = value;
+                Set(value);
                 RaiseLayoutChanged();
             }
         }

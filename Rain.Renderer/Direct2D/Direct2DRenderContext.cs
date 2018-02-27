@@ -11,14 +11,12 @@ using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
+using Rain.Renderer.WIC;
 
 using SharpDX.Mathematics.Interop;
 
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
-using GradientStop = Rain.Core.Model.Paint.GradientStop;
-using LineJoin = Rain.Core.Model.LineJoin;
-using RectangleF = SharpDX.RectangleF;
 
 // ReSharper disable InconsistentNaming
 
@@ -64,12 +62,15 @@ namespace Rain.Renderer.Direct2D
             _virtualTarget.Clear(null);
         }
 
-        public override IRenderImage CreateBitmap(Stream stream)
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image)
         {
-            var img = new Image(this);
-            img.Load(stream);
-            return new Bitmap(_target, (ImageFrame)img.Frames[0]);
+            if(image is ImageFrame wicImageFrame)
+            return new Bitmap(_target, wicImageFrame);
+
+            throw new ArgumentException("This render context can only process WIC images.");
         }
+
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -129,6 +130,8 @@ namespace Rain.Renderer.Direct2D
             return new Geometry(Target, geometries);
         }
 
+        
+
         public override IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes)
         {
             return CreatePen(width, brush, dashes, 0, LineCap.Butt, LineJoin.Miter, 4);
@@ -163,14 +166,12 @@ namespace Rain.Renderer.Direct2D
             FactoryDW.Dispose();
         }
 
-        public override void DrawBitmap(IRenderImage img)
+        /// <inheritdoc />
+        public override void DrawBitmap(IRenderImage img, RectangleF dstRect)
         {
             if (!(img is Bitmap bitmap)) return;
 
-            Target.DrawBitmap(bitmap,
-                              new RawRectangleF(0, 0, bitmap.Width, bitmap.Height),
-                              1,
-                              D2D.BitmapInterpolationMode.Linear);
+            Target.DrawBitmap(bitmap, dstRect.Convert(), 1, D2D.BitmapInterpolationMode.Linear);
         }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
@@ -213,7 +214,7 @@ namespace Rain.Renderer.Direct2D
             float left, float top, float width, float height, IPen iPen)
         {
             var pen = iPen as Pen;
-            Target.DrawRectangle(new RectangleF(left, top, width, height),
+            Target.DrawRectangle(new SharpDX.RectangleF(left, top, width, height),
                                  pen.Brush,
                                  pen.Width,
                                  pen.Style);
@@ -241,7 +242,7 @@ namespace Rain.Renderer.Direct2D
         public override void FillRectangle(
             float left, float top, float width, float height, IBrush brush)
         {
-            Target.FillRectangle(new RectangleF(left, top, width, height), brush as Brush);
+            Target.FillRectangle(new SharpDX.RectangleF(left, top, width, height), brush as Brush);
         }
 
         public override float GetDpi() { return Target.DotsPerInch.Width; }

@@ -38,7 +38,8 @@ namespace Rain.Renderer.WPF
             _commandQueue.Enqueue(new ClearRenderCommand(color));
         }
 
-        public override IRenderImage CreateBitmap(Stream stream) { throw new NotImplementedException(); }
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image) { throw new NotImplementedException(); }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -106,6 +107,9 @@ namespace Rain.Renderer.WPF
         public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
         public override void Dispose() { _ctx = null; }
+
+        /// <inheritdoc />
+        public override void DrawBitmap(IRenderImage bitmap, RectangleF dstRect) { throw new NotImplementedException(); }
 
         public override void DrawBitmap(IRenderImage bitmap) { throw new NotImplementedException(); }
 

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core.Input;
+using Rain.Core.Model.Effects;
+using Rain.Core.Model.Imaging;
+using Rain.Core.Model.Text;
 
 namespace Rain.Core
 {
@@ -16,6 +20,8 @@ namespace Rain.Core
         IHistoryManager HistoryManager { get; }
 
         RenderContext RenderContext { get; }
+
+        ResourceContext ResourceContext { get; }
 
         ISelectionManager SelectionManager { get; }
 
@@ -46,8 +52,8 @@ namespace Rain.Core
         event EventHandler StatusChanged;
 
         event ArtContextInputEventHandler<TextEvent> Text;
-
-        T Create<T>(params object[] parameters) where T : class;
+         
+        ICaret CreateCaret(int width, int height);
 
         void InvalidateRender();
 
@@ -56,6 +62,12 @@ namespace Rain.Core
         void RaiseDetached(IArtContextManager mgr);
 
         void SetManager<T>(T manager) where T : IArtContextManager;
+    }
+
+    public abstract class ResourceContext
+    {
+        public abstract IImage LoadImageFromFilename(string filename);
+        public abstract IImage LoadImageFromStream(Stream stream);
     }
 
     public delegate void ArtContextInputEventHandler<in T>(IArtContext sender, T evt)

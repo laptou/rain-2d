@@ -12,6 +12,5 @@ namespace Rain.Core.Model.Imaging {
 
         IImageLock GetReadLock();
         IImageLock GetWriteLock();
-        IRenderImage GetRenderImage();
     }
 }

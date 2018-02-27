@@ -89,8 +89,11 @@ namespace Rain.Renderer
 
         private void OnManagerAttached(object sender, EventArgs e)
         {
-            Context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
-            Context.ViewManager.DocumentUpdated += OnDocumentUpdated;
+            if (sender is IViewManager view)
+            {
+                view.Document.Root.BoundsChanged += OnBoundsChanged;
+                view.DocumentUpdated += OnDocumentUpdated;
+            }
         }
 
         private void OnManagerDetached(object sender, EventArgs e)
@@ -116,8 +119,15 @@ namespace Rain.Renderer
         {
             context.ManagerAttached += OnManagerAttached;
             context.ManagerDetached += OnManagerDetached;
-            context.ViewManager.DocumentUpdated += OnDocumentUpdated;
-            context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
+
+            if (context.ViewManager != null)
+            {
+                context.ViewManager.DocumentUpdated += OnDocumentUpdated;
+
+                if(context.ViewManager.Document?.Root != null)
+                context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
+            }
+
             context.HistoryManager.Traversed += OnHistoryTraversed;
 
             context.RaiseAttached(this);

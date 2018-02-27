@@ -128,7 +128,12 @@ namespace Rain.Renderer
 
             using (var stream = Application.GetResourceStream(uri)?.Stream)
             {
-                return target.CreateBitmap(stream);
+                using (var img = Context.ResourceContext.LoadImageFromStream(stream))
+                {
+                    var bmp = Context.RenderContext.GetRenderImage(img.Frames[0]);
+
+                    return bmp;
+                }
             }
         }
 

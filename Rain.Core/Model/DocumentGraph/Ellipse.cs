@@ -33,27 +33,27 @@ namespace Rain.Core.Model.DocumentGraph
 
         public float RadiusX
         {
-            get => Width / 2;
+            get => Get<float>();
             set
             {
-                Width = value * 2;
+                Set(value);
                 RaiseGeometryChanged();
             }
         }
 
         public float RadiusY
         {
-            get => Height / 2;
+            get => Get<float>();
             set
             {
-                Height = value * 2;
+                Set(value);
                 RaiseGeometryChanged();
             }
         }
 
         public override RectangleF GetBounds(IArtContext ctx)
         {
-            return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, Width, Height);
+            return new RectangleF(CenterX - RadiusX, CenterY - RadiusY, RadiusX * 2, RadiusY * 2);
         }
 
         public override IGeometry GetGeometry(IArtContext ctx)

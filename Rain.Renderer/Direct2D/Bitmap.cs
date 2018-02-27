@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Imaging;
+using Rain.Renderer.WIC;
 
 using SharpDX.DXGI;
 using SharpDX.WIC;

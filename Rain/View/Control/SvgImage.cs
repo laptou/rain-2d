@@ -12,6 +12,9 @@ using System.Xml.Linq;
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Core.Model.DocumentGraph;
+using Rain.Core.Model.Effects;
+using Rain.Core.Model.Imaging;
+using Rain.Core.Model.Text;
 using Rain.Formatter.Svg;
 using Rain.Formatter.Svg.IO;
 using Rain.Renderer;
@@ -163,12 +166,8 @@ namespace Rain.View.Control
         }
 
         #region IArtContext Members
-
         /// <inheritdoc />
-        public T Create<T>(params object[] parameters) where T : class
-        {
-            throw new NotImplementedException();
-        }
+        public ICaret CreateCaret(int width, int height) { throw new NotImplementedException(); }
 
         public void InvalidateRender() { InvalidateVisual(); }
 
@@ -186,6 +185,9 @@ namespace Rain.View.Control
         }
 
         public RenderContext RenderContext { get; } = new WpfRenderContext();
+
+        /// <inheritdoc />
+        public ResourceContext ResourceContext { get; }
 
         /// <inheritdoc />
         IBrushManager IArtContext.BrushManager { get; }

@@ -902,7 +902,7 @@ namespace Rain.Tools
             {
                 try
                 {
-                    _caret = Context.Create<ICaret>(0, (int) metrics.Height);
+                    _caret = Context.CreateCaret(0, (int) metrics.Height);
                 }
                 catch
                 {
