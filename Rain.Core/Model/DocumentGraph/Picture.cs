@@ -14,6 +14,9 @@ namespace Rain.Core.Model.DocumentGraph
 {
     public class Picture : Layer, IImageLayer
     {
+        /// <inheritdoc />
+        public override string DefaultName => $"Image ({Width}×{Height})";
+
         public int Frame
         {
             get => Get<int>();
@@ -23,7 +26,7 @@ namespace Rain.Core.Model.DocumentGraph
         public virtual float Height
         {
             get => Get<float>();
-            set => Set(value);
+            set => Set(value, nameof(Height), nameof(DefaultName));
         }
 
         public IImage Image
@@ -35,7 +38,7 @@ namespace Rain.Core.Model.DocumentGraph
         public virtual float Width
         {
             get => Get<float>();
-            set => Set(value);
+            set => Set(value, nameof(Width), nameof(DefaultName));
         }
 
         private void RaiseImageChanged(object sender, PropertyChangedEventArgs e)

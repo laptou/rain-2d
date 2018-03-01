@@ -41,6 +41,9 @@ namespace Rain.Core.Model.DocumentGraph
 
         private void OnTargetPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(Name))
+                RaisePropertyChanged(nameof(DefaultName));
+
             if (e.PropertyName == nameof(Transform))
                 RaiseBoundsChanged();
         }
