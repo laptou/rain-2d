@@ -7,7 +7,7 @@ namespace Rain.Formatter.Svg.Paint
 {
     public class ReferencePaint : Paint
     {
-        public virtual Iri Reference { get; set; }
+        public virtual Uri Reference { get; set; }
 
         /// <inheritdoc />
         public override string ToInline() { return $"url({Reference})"; }

@@ -13,9 +13,9 @@ namespace Rain.Formatter.Svg.Paint
     public abstract class GradientPaint : ReferencePaint
     {
         /// <inheritdoc />
-        public override Iri Reference
+        public override Uri Reference
         {
-            get => Iri.FromId(Id);
+            get => UriHelper.FromId(Id);
             set => throw new InvalidOperationException();
         }
 
@@ -31,8 +31,8 @@ namespace Rain.Formatter.Svg.Paint
         {
             base.FromXml(element, context);
 
-            if (Iri.TryParse(LazyGet(element, SvgNames.XLink + "href"), out var href))
-                FromXml(context.GetXmlElementByIri(href), context);
+            if (UriHelper.TryParse(LazyGet(element, SvgNames.XLink + "href"), out var href))
+                FromXml(context.GetXmlElementByUri(href), context);
 
             if (Stops == null)
                 Stops = element.Elements(SvgNames.Stop)

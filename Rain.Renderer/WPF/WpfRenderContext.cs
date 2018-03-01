@@ -109,7 +109,8 @@ namespace Rain.Renderer.WPF
         public override void Dispose() { _ctx = null; }
 
         /// <inheritdoc />
-        public override void DrawBitmap(IRenderImage bitmap, RectangleF dstRect) { throw new NotImplementedException(); }
+        public override void DrawBitmap(
+            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode) { throw new NotImplementedException(); }
 
         /// <inheritdoc />
         public override IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode) { throw new NotImplementedException(); }

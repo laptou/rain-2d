@@ -14,6 +14,7 @@ using Rain.Core.Utility;
 using Rain.Formatter.Svg.Paint;
 using Rain.Formatter.Svg.Shapes;
 using Rain.Formatter.Svg.Structure;
+using Rain.Formatter.Svg.Utilities;
 
 using Document = Rain.Formatter.Svg.Structure.Document;
 using Ellipse = Rain.Formatter.Svg.Shapes.Ellipse;
@@ -268,7 +269,7 @@ namespace Rain.Formatter.Svg.IO
                 case ReferencePaint reference:
 
                     return FromSvg(svgDocument,
-                                   svgDocument.Defs[reference.Reference.Id] as Paint.Paint,
+                                   svgDocument.Defs[reference.Reference.GetFragment()] as Paint.Paint,
                                    1);
             }
 

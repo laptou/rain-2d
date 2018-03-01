@@ -11,6 +11,7 @@ using Rain.Core.Model.Text;
 using Rain.Formatter.Svg.Paint;
 using Rain.Formatter.Svg.Shapes;
 using Rain.Formatter.Svg.Structure;
+using Rain.Formatter.Svg.Utilities;
 
 using Document = Rain.Formatter.Svg.Structure.Document;
 using Ellipse = Rain.Formatter.Svg.Shapes.Ellipse;
@@ -186,7 +187,7 @@ namespace Rain.Formatter.Svg.IO
 
                 element = new Use
                 {
-                    Target = Iri.FromId(target.Id)
+                    Target = UriHelper.FromId(target.Id)
                 };
             }
 

@@ -28,13 +28,25 @@ namespace Rain.Formatter.Svg
 
         public IElement GetElementById(string id) { return X.FromXml(GetXmlElementById(id), this); }
 
-        public IElement GetElementByIri(Iri iri) { return GetElementById(iri.Id); }
+        public IElement GetElementByUri(Uri uri)
+        {
+            if(uri.IsAbsoluteUri)
+                throw new NotImplementedException();
+
+            return GetElementById(uri.GetFragment());
+        }
 
         public XElement GetXmlElementById(string id)
         {
             return Root.DescendantsAndSelf().FirstOrDefault(x => (string) x.Attribute("id") == id);
         }
 
-        public XElement GetXmlElementByIri(Iri iri) { return GetXmlElementById(iri.Id); }
+        public XElement GetXmlElementByUri(Uri uri)
+        {
+            if (uri.IsAbsoluteUri)
+                throw new NotImplementedException();
+
+            return GetXmlElementById(uri.GetFragment());
+        }
     }
 }

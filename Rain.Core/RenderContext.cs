@@ -48,7 +48,8 @@ namespace Rain.Core
 
         public abstract ITextLayout CreateTextLayout();
 
-        public abstract void DrawBitmap(IRenderImage bitmap, RectangleF dstRect);
+        public abstract void DrawBitmap(
+            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode);
 
         public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
 
@@ -90,7 +91,7 @@ namespace Rain.Core
 
         public virtual void DrawBitmap(IRenderImage bitmap)
         {
-            DrawBitmap(bitmap, new RectangleF(0, 0, bitmap.Width, bitmap.Height));
+            DrawBitmap(bitmap, new RectangleF(0, 0, bitmap.Width, bitmap.Height), ScaleMode.Linear);
         }
 
         public virtual void DrawCircle(Vector2 c, float r, IPen pen) { DrawEllipse(c, r, r, pen); }

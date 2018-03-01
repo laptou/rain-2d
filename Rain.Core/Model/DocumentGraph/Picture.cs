@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Numerics;
 using System.Reactive.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
@@ -13,19 +14,16 @@ namespace Rain.Core.Model.DocumentGraph
 {
     public class Picture : Layer, IImageLayer
     {
-        private Vector2 _resolution;
-
-        public Picture()
+        public int Frame
         {
-            // adjust image sampling every 1000ms
-            var transformObservable = Observable
-                                     .FromEventPattern<PropertyChangedEventHandler,
-                                          PropertyChangedEventArgs>(
-                                          h => PropertyChanged += h,
-                                          h => PropertyChanged -= h)
-                                     .Where(evt => evt.EventArgs.PropertyName == nameof(Transform))
-                                     .Throttle(TimeSpan.FromMilliseconds(250));
-            transformObservable.Subscribe(evt => UpdateResolution());
+            get => Get<int>();
+            set => Set(value, RaiseImageChanged);
+        }
+
+        public virtual float Height
+        {
+            get => Get<float>();
+            set => Set(value);
         }
 
         public IImage Image
@@ -34,10 +32,10 @@ namespace Rain.Core.Model.DocumentGraph
             set => Set(value, RaiseImageChanged);
         }
 
-        public int Frame
+        public virtual float Width
         {
-            get => Get<int>();
-            set => Set(value, RaiseImageChanged);
+            get => Get<float>();
+            set => Set(value);
         }
 
         private void RaiseImageChanged(object sender, PropertyChangedEventArgs e)
@@ -47,10 +45,21 @@ namespace Rain.Core.Model.DocumentGraph
 
         private void RaiseImageChanged() { ImageChanged?.Invoke(this, null); }
 
+        #region IImageLayer Members
+
+        /// <inheritdoc />
+        public event EventHandler ImageChanged;
+
         /// <inheritdoc />
         public override RectangleF GetBounds(IArtContext ctx)
         {
             return new RectangleF(0, 0, Width, Height);
+        }
+
+        /// <inheritdoc />
+        public IRenderImage GetImage(IArtContext ctx)
+        {
+            return ctx.RenderContext.GetRenderImage(Image.Frames[Frame]);
         }
 
         /// <inheritdoc />
@@ -78,57 +87,17 @@ namespace Rain.Core.Model.DocumentGraph
 
             target.Transform(transform);
 
-            target.DrawBitmap(image, new RectangleF(0, 0, Width, Height));
+            var factor = new Vector2(Width / image.Width, Height / image.Height) * transform.GetScale();
+            var mode = factor.Length() < MathUtils.Sqrt2
+                           ? ScaleMode.HighQualityCubic
+                           : ScaleMode.MultiSampleLinear;
+
+
+            target.DrawBitmap(image, new RectangleF(0, 0, Width, Height), mode);
 
             target.Transform(MathUtils.Invert(transform));
         }
 
-        public virtual float Width
-        {
-            get => Get<float>();
-            set => Set(value, SizeChanged);
-        }
-
-        private void SizeChanged(object sender, PropertyChangedEventArgs e)
-        {
-            UpdateResolution();
-            RaiseBoundsChanged();
-        }
-
-        private void UpdateResolution()
-        {
-            var d = AbsoluteTransform.Decompose();
-            var dim = new Vector2(Width, Height);
-            var res = MathUtils.Abs(Vector2.Transform(dim, d.scale));
-            var diff = res / _resolution;
-
-            if (_resolution == Vector2.Zero || Vector2.Distance(diff, Vector2.One) >= 0.1f)
-            {
-                _resolution = res;
-                // if there is more than a 10% difference in size, regenerate the image
-                RaiseImageChanged();
-            }
-        }
-
-        public virtual float Height
-        {
-            get => Get<float>();
-            set => Set(value, SizeChanged);
-        }
-
-        /// <inheritdoc />
-        public event EventHandler ImageChanged;
-
-        /// <inheritdoc />
-        public IRenderImage GetImage(IArtContext ctx)
-        {
-            var image = Image.Frames[Frame];
-            var factor = new Vector2(_resolution.X / image.Width, _resolution.Y / image.Height);
-            var mode = factor.Length() < 1
-                           ? ScaleMode.HighQualityCubic
-                           : ScaleMode.MultiSampleLinear;
-
-            return ctx.RenderContext.GetRenderImage(image, factor, mode);
-        }
+        #endregion
     }
 }

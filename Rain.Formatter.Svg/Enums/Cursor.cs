@@ -33,6 +33,6 @@ namespace Rain.Formatter.Svg.Enums
 
         public Value EnumValue { get; set; }
 
-        public Iri IriValue { get; set; }
+        public Uri UriValue { get; set; }
     }
 }

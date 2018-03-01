@@ -162,11 +162,17 @@ namespace Rain.Renderer.Direct2D
         }
 
         /// <inheritdoc />
-        public override void DrawBitmap(IRenderImage img, RectangleF dstRect)
+        public override void DrawBitmap(IRenderImage img, RectangleF dstRect, ScaleMode scaleMode)
         {
             if (!(img is Bitmap bitmap)) return;
 
-            Target.DrawBitmap(bitmap, dstRect.Convert(), 1, D2D.BitmapInterpolationMode.Linear);
+            Target.QueryInterface<D2D.DeviceContext>()
+                  .DrawBitmap(bitmap,
+                              dstRect.Convert(),
+                              1,
+                              (D2D.InterpolationMode) scaleMode,
+                              null,
+                              null);
         }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
