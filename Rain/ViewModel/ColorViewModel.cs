@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Rain.Core;
 using Rain.Core.Model.Paint;
 using Rain.Renderer.Utility;
+using Rain.Renderer.WPF;
 
 using WPF = System.Windows.Media;
 
@@ -70,6 +71,13 @@ namespace Rain.ViewModel
             if (Mode == ColorPickerTarget.Fill)
             {
                 Context.BrushManager.Apply(brush);
+
+                if (Fill is WPF.SolidColorBrush scb)
+                    scb.Color = Current.Color.Convert();
+                else
+                    Fill = brush.CreateWpfBrush();
+
+                RaisePropertyChanged(nameof(Fill));
             }
             else
             {
@@ -77,6 +85,13 @@ namespace Rain.ViewModel
                 var pen = res.Stroke.Clone<IPenInfo>();
                 pen.Brush = brush;
                 Context.BrushManager.Apply(pen);
+
+                if (Stroke is WPF.SolidColorBrush scb)
+                    scb.Color = Current.Color.Convert();
+                else
+                    Stroke = brush.CreateWpfBrush();
+
+                RaisePropertyChanged(nameof(Stroke));
             }
 
             RaisePropertyChanged(nameof(Hue),
@@ -85,13 +100,7 @@ namespace Rain.ViewModel
                                  nameof(Red),
                                  nameof(Green),
                                  nameof(Blue),
-                                 nameof(Alpha),
-                                 nameof(Stroke));
-
-            if(Mode == ColorPickerTarget.Fill)
-                RaisePropertyChanged(nameof(Fill));
-            else if (Mode == ColorPickerTarget.Stroke)
-                RaisePropertyChanged(nameof(Stroke));
+                                 nameof(Alpha));
 
             Context.InvalidateRender();
 

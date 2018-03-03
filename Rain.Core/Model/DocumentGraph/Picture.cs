@@ -15,7 +15,7 @@ namespace Rain.Core.Model.DocumentGraph
     public class Picture : Layer, IImageLayer
     {
         /// <inheritdoc />
-        public override string DefaultName => $"Image ({Width}×{Height})";
+        public override string DefaultName => $"Image, {Width}×{Height}";
 
         public int Frame
         {

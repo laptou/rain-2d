@@ -127,7 +127,6 @@ namespace Rain.ViewModel
 
         private void SelectionManagerSelectionChanged(EventPattern<object> evt)
         {
-            Trace.WriteLine($"{DateTime.Now} - Selection bounds changed!");
             RaisePropertyChanged(nameof(X),
                                  nameof(Y),
                                  nameof(Width),
