@@ -11,6 +11,8 @@ namespace Rain.Commands
 {
     public sealed class ModifyGradientCommand : IOperationCommand<GradientBrushInfo>
     {
+        public GradientStop Stop { get; }
+
         #region GradientOperation enum
 
         public enum GradientOperation
@@ -52,21 +54,64 @@ namespace Rain.Commands
             Operation = GradientOperation.ChangeColor;
         }
 
+        /// <summary>
+        /// Creates a gradient modifier command with the <see cref="GradientOperation.ChangeStart"/>,
+        /// <see cref="GradientOperation.ChangeFocus"/>, or <see cref="GradientOperation.ChangeEnd"/>
+        /// operation, adjusting the property indicated by the operation.
+        /// </summary>
+        /// <param name="id">The id of the command.</param>
+        /// <param name="delta">The amount to change the start position, focus, or end position by.</param>
+        /// <param name="operation">The operation to apply.</param>
+        /// <param name="target">The gradient to be modified.</param>
         public ModifyGradientCommand(
-            long id, Vector2 delta, IReadOnlyList<int> indices, GradientOperation operation,
+            long id, Vector2 delta, GradientOperation operation,
             GradientBrushInfo target) : this(id, target)
         {
+            if (operation != GradientOperation.ChangeStart &&
+                operation != GradientOperation.ChangeFocus &&
+                operation != GradientOperation.ChangeEnd)
+            {
+                throw new ArgumentException(
+                    $"{nameof(operation)} must be " + 
+                    $"{nameof(GradientOperation.ChangeStart)}, " +
+                    $"{nameof(GradientOperation.ChangeFocus)}, or " +
+                    $"{nameof(GradientOperation.ChangeEnd)}.");
+            }
+
             VectorDelta = delta;
-            StopIndices = indices;
             Operation = operation;
         }
 
+        /// <summary>
+        /// Creates a gradient modifier command with the <see cref="GradientOperation.RemoveStop"/>
+        /// operation, removing the stops with the given indices.
+        /// </summary>
+        /// <param name="id">The id of the command.</param>
+        /// <param name="indices">The indices of the stops to be removed.</param>
+        /// <param name="target">The gradient to be modified.</param>
         public ModifyGradientCommand(
-            long id, IReadOnlyList<int> indices, GradientOperation operation,
+            long id, IReadOnlyList<int> indices,
             GradientBrushInfo target) : this(id, target)
         {
             StopIndices = indices;
-            Operation = operation;
+            Operation = GradientOperation.RemoveStop;
+        }
+
+        /// <summary>
+        /// Creates a gradient modifier command with the <see cref="GradientOperation.AddStop"/>
+        /// operation, inserting a new gradient stop at the given index.
+        /// </summary>
+        /// <param name="id">The id of the command.</param>
+        /// <param name="index">The index at which to insert the stop.</param>
+        /// <param name="stop">The stop to insert.</param>
+        /// <param name="target">The gradient to be modified.</param>
+        public ModifyGradientCommand(
+            long id, int index, GradientStop stop,
+            GradientBrushInfo target) : this(id, target)
+        {
+            Stop = stop;
+            StopIndices = new[] { index };
+            Operation = GradientOperation.AddStop;
         }
 
         public Vector4 ColorDelta { get; }
@@ -119,8 +164,9 @@ namespace Rain.Commands
 
                     break;
                 case GradientOperation.AddStop:
+                    Target.Stops.Insert(StopIndices[0], Stop);
 
-                    throw new NotImplementedException();
+                    break;
                 default:
 
                     throw new ArgumentOutOfRangeException();
@@ -151,14 +197,11 @@ namespace Rain.Commands
 
                         return new ModifyGradientCommand(Id,
                                                          VectorDelta + mgc.VectorDelta,
-                                                         StopIndices,
                                                          Operation,
                                                          Target);
-                    case GradientOperation.RemoveStop:
-                    case GradientOperation.AddStop:
                     default:
 
-                        throw new ArgumentOutOfRangeException();
+                        return null;
                 }
 
             return null;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
 using static System.Math;
 
 using Rain.Core.Model;
@@ -25,7 +26,7 @@ namespace Rain.Core.Utility
         public static readonly float InverseSqrt2 = 1 / (float) Math.Sqrt(2);
 
         public static Vector2 Abs(Vector2 v) => Vector2.Abs(v);
-        
+
         public static double AbsMax(double min, double x)
         {
             return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
@@ -258,13 +259,18 @@ namespace Rain.Core.Utility
             return new Vector2((float) Cos(angle), (float) Sin(angle));
         }
 
-        public static float Wrap(float f, float r) { return Wrap(f, 0, r); }
+        public static float Wrap(float f, float r) => Wrap(f, 0, r);
 
         public static float Wrap(float f, float min, float max)
         {
             return Math.Abs(f - min) % (max - min) + min;
         }
 
-        public static int Wrap(int f, int r) { return (f % r + r) % r; }
+        public static int Wrap(int f, int r) => (f % r + r) % r;
+
+        public static float Average(params float[] f) => f.Average();
+
+        public static Color Average(params Color[] f) =>
+            new Color(f.Aggregate((a, b) => a + b).AsVector() / f.Length);
     }
 }

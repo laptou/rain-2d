@@ -56,6 +56,7 @@ namespace Rain.Renderer
             {
                 command.Do(Context);
                 Push(command);
+                Context.InvalidateRender();
             }
             catch (Exception e)
             {
@@ -86,6 +87,8 @@ namespace Rain.Renderer
                         old.Merge(command) is IOperationCommand newCmd)
                         Replace(newCmd);
                     else Push(command);
+
+                    Context.InvalidateRender();
                 }
                 else
                 {

@@ -278,6 +278,16 @@
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}">
+                            <StackPanel Margin="8,0" Orientation="Horizontal">
+                                <Button Margin="0,4" Padding="8,0">
+                                    <Button.Command>
+                                        <viewmodel:BindableDelegateCommand Action="{Binding Value, Mode=OneWay}" />
+                                    </Button.Command>
+                                    <control:Icon IconName="{Binding Icon}" />
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
                     </ItemsControl.Resources>
                 </ItemsControl>
             </DockPanel>

@@ -3,10 +3,36 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Rain.ViewModel
 {
+    public class BindableDelegateCommand : DependencyObject, ICommand
+    {
+        public static readonly DependencyProperty ActionProperty =
+            DependencyProperty.Register("Action",
+                                        typeof(Action),
+                                        typeof(BindableDelegateCommand),
+                                        new PropertyMetadata(default(Action)));
+
+        public Action Action
+        {
+            get => (Action) GetValue(ActionProperty);
+            set => SetValue(ActionProperty, value);
+        }
+
+        #region ICommand Members
+
+        public event EventHandler CanExecuteChanged;
+
+        public bool CanExecute(object parameter) { return true; }
+
+        public void Execute(object parameter) { Action?.Invoke(); }
+
+        #endregion
+    }
+
     public class DelegateCommand<T> : Core.Model.Model, ICommand
     {
         private Action<T>    _action;

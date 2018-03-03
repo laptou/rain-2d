@@ -334,6 +334,14 @@ namespace Rain.Core.Model
             return c1.AsVector() - c2.AsVector();
         }
 
+        public static Color operator +(Color c1, Color c2)
+        {
+            return new Color(c1.Red + c2.Red,
+                             c1.Green + c2.Green,
+                             c1.Blue + c2.Blue,
+                             c1.Alpha + c2.Alpha);
+        }
+
         public static Color operator -(Color c, Vector4 v) { return new Color(c.AsVector() - v); }
     }
 }

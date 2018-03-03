@@ -13,6 +13,7 @@ namespace Rain.Core.Model
         Dropdown,
         Length,
         Switch,
-        Segment
+        Segment,
+        Button
     }
 }

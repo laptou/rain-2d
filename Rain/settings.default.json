@@ -215,7 +215,7 @@
         {
             "name": "Pathify",
             "command": "object.pathify",
-            "icon": "icon-close",
+            "icon": "icon-pathify",
             "type": "button"
         }
     ],

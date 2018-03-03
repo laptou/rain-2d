@@ -31,6 +31,14 @@ namespace Rain.Tools
         public GradientTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Gradient;
+
+            Options.Create<Action>("add-stop", ToolOptionType.Button, "Add Stop")
+                   .SetIcon("icon-add")
+                   .Set(Add);
+
+            Options.Create<Action>("remove-stop", ToolOptionType.Button, "Remove Stop")
+                   .SetIcon("icon-remove")
+                   .Set(Remove);
         }
 
         public GradientBrushInfo SelectedBrush =>
@@ -72,7 +80,11 @@ namespace Rain.Tools
 
                 case Key.Delete:
                     Remove(_selection.ToArray());
-                    Context.InvalidateRender();
+
+                    break;
+
+                case Key.OemPlus when _selection.Any() && evt.ModifierState.Shift:
+                    Add();
 
                     break;
             }
@@ -105,7 +117,7 @@ namespace Rain.Tools
 
                 foreach (var stop in SelectedBrush.Stops)
                 {
-                    if (Vector2.DistanceSquared(t(stop.Offset), pos) < 6 / zoom / zoom)
+                    if (Vector2.DistanceSquared(t(stop.Offset), pos) < 8 / zoom / zoom)
                     {
                         target = (stop, index);
 
@@ -164,8 +176,7 @@ namespace Rain.Tools
                 if (IsEndpoint(stop) &&
                     _selection.Count == 1)
                 {
-                    Move(_selection.ToArray(),
-                         localDelta,
+                    Move(localDelta,
                          Equals(stop, SelectedBrush.Stops[0])
                              ? GradientOp.ChangeStart
                              : GradientOp.ChangeEnd);
@@ -269,7 +280,7 @@ namespace Rain.Tools
             var radius = 6 / zoom;
 
             var p = target.CreatePen(1, outline);
-            var p2 = target.CreatePen(1, outlineAlt);
+            var p2 = target.CreatePen(2, outlineAlt);
 
             Vector2 start = t(SelectedBrush.StartPoint), end = t(SelectedBrush.EndPoint);
 
@@ -309,6 +320,40 @@ namespace Rain.Tools
             p2?.Dispose();
         }
 
+        private void Add(Color color, int index)
+        {
+            var prev = SelectedBrush.Stops[index - 1];
+            var next = SelectedBrush.Stops[index];
+            var stop = new GradientStop(color, MathUtils.Average(prev.Offset, next.Offset));
+
+            var gt = _selection.Where(s => s >= index).ToArray();
+            foreach (var i in gt)
+                _selection.Remove(i);
+
+            Context.HistoryManager.Merge(
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
+                                          index,
+                                          stop,
+                                          SelectedBrush),
+                Time.DoubleClick);
+
+            foreach (var i in gt)
+                _selection.Add(i + 1);
+        }
+
+        private void Add(int index)
+        {
+            var prev = SelectedBrush.Stops[index - 1];
+            var next = SelectedBrush.Stops[index];
+            var color = MathUtils.Average(prev.Color, next.Color);
+            Add(color, index);
+        }
+
+        private void Add()
+        {
+            Add(Math.Max(1, _selection.First()));
+        }
+
         private bool IsEndpoint(GradientStop stop)
         {
             if (SelectedBrush == null) return false;
@@ -319,12 +364,11 @@ namespace Rain.Tools
             return false;
         }
 
-        private void Move(IReadOnlyList<int> indices, Vector2 delta, GradientOp operation)
+        private void Move(Vector2 delta, GradientOp operation)
         {
             Context.HistoryManager.Merge(
                 new ModifyGradientCommand(Context.HistoryManager.Position + 1,
                                           delta,
-                                          indices,
                                           operation,
                                           SelectedBrush),
                 Time.DoubleClick);
@@ -340,14 +384,18 @@ namespace Rain.Tools
                 Time.DoubleClick);
         }
 
-        private void Remove(params int[] indices)
+        private void Remove(IReadOnlyList<int> indices)
         {
             Context.HistoryManager.Merge(
                 new ModifyGradientCommand(Context.HistoryManager.Position + 1,
                                           indices,
-                                          GradientOp.RemoveStop,
                                           SelectedBrush),
                 Time.DoubleClick);
+        }
+
+        private void Remove()
+        {
+            Remove(_selection.ToArray());
         }
     }
 }

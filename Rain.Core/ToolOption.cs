@@ -83,6 +83,13 @@ namespace Rain.Core
             return this;
         }
 
+        public ToolOption<T> SetIcon(string icon)
+        {
+            Icon = icon;
+
+            return this;
+        }
+
         public ToolOption<T> SetMaximum(float maximum)
         {
             Maximum = maximum;
