@@ -19,7 +19,7 @@ namespace Rain.Core.Model.Text
         IFontFace GetFontFace(FontWeight weight, FontStyle style, FontStretch stretch);
     }
 
-    public interface IFontFace
+    public interface IFontFace : IDisposable
     {
         /// <summary>
         ///     The distance from the top of the font character alignment box to the English baseline

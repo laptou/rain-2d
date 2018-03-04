@@ -9,13 +9,17 @@ using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
+using Rain.Core.Model.Text;
 
 namespace Rain.Core
 {
     public abstract class RenderContext : IDisposable
     {
         public abstract float Height { get; }
+
         public abstract float Width { get; }
+
+        public abstract IFontSource CreateFontSource();
 
         public abstract void Begin(object ctx);
 

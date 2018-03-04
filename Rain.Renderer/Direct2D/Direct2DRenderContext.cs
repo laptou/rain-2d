@@ -9,6 +9,8 @@ using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
+using Rain.Core.Model.Text;
+using Rain.Renderer.DirectWrite;
 using Rain.Renderer.WIC;
 
 using SharpDX;
@@ -50,6 +52,12 @@ namespace Rain.Renderer.Direct2D
 
         public D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
         public override float Width => Target.Size.Width;
+
+        /// <inheritdoc />
+        public override IFontSource CreateFontSource()
+        {
+            return new DirectWriteFontSource(FactoryDW);
+        }
 
         public override void Begin(object ctx)
         {

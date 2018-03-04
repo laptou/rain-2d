@@ -29,8 +29,7 @@ namespace Rain.Tools
 {
     public sealed class TextTool : SelectionToolBase<ITextContainerLayer>
     {
-        private readonly DW.Factory        _dwFactory;
-        private readonly DW.FontCollection _dwFontCollection;
+        private readonly IFontSource _fontSource;
 
         private ICaret                                  _caret;
         private (Vector2 start, Vector2 end, long time) _drag;
@@ -48,30 +47,13 @@ namespace Rain.Tools
             Status = "<b>Double Click</b> on canvas to create new text object. " +
                      "<b>Single Click</b> to select.";
 
-            _dwFactory = new DW.Factory(DW.FactoryType.Shared);
-            _dwFontCollection = _dwFactory.GetSystemFontCollection(true);
+            _fontSource = manager.Context.RenderContext.CreateFontSource();
 
-            var familyNames = Enumerable.Range(0, _dwFontCollection.FontFamilyCount)
-                                        .Select(i =>
-                                                {
-                                                    using (var dwFontFamily =
-                                                        _dwFontCollection.GetFontFamily(i))
-                                                    {
-                                                        return dwFontFamily
-                                                              .FamilyNames.ToCurrentCulture();
-                                                    }
-                                                })
-                                        .OrderBy(n => n);
-            string defaultFamily;
-
-            using (var defaultFont = _dwFontCollection.GetFontFamily(0))
-            {
-                defaultFamily = defaultFont.FamilyNames.ToCurrentCulture();
-            }
+            var familyNames = _fontSource.Select(n => n.Name).OrderBy(n => n).ToList();
 
             Options.Create<string>("font-family", ToolOptionType.Font, "Font Family")
-                   .SetValues(familyNames.ToList())
-                   .Set(defaultFamily);
+                   .SetValues(familyNames)
+                   .Set(familyNames.FirstOrDefault());
 
             Options.Create<float>("font-size", ToolOptionType.Length, "Font Size")
                    .SetValues(new[]
@@ -166,8 +148,7 @@ namespace Rain.Tools
         public void Dispose()
         {
             _caret?.Dispose();
-            _dwFontCollection?.Dispose();
-            _dwFactory?.Dispose();
+            _fontSource?.Dispose();
         }
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
@@ -606,19 +587,15 @@ namespace Rain.Tools
 
         private IEnumerable<FontFace> GetFontFaces()
         {
-            if (!_dwFontCollection.FindFamilyName(Options.Get<string>("font-family"), out var index)
-                )
-                yield break;
+            var familyName = Options.Get<string>("font-family");
+            var family = _fontSource.GetFamilyByName(familyName);
 
-            using (var dwFamily = _dwFontCollection.GetFontFamily(index))
+            if (family == null) yield break;
+
+            foreach (var fontFace in family)
             {
-                for (var i = 0; i < dwFamily.FontCount; i++)
-                    using (var dwFont = dwFamily.GetFont(i))
-                    {
-                        yield return new FontFace((FontStretch) dwFont.Stretch,
-                                                  (FontStyle) dwFont.Style,
-                                                  (FontWeight) dwFont.Weight);
-                    }
+                using (fontFace)
+                    yield return new FontFace(fontFace.Stretch, fontFace.Style, fontFace.Weight);
             }
         }
 
@@ -788,10 +765,7 @@ namespace Rain.Tools
 
                 Format(new Format
                 {
-                    FontWeight =
-                        weight == FontWeight.Normal
-                            ? FontWeight.Bold
-                            : FontWeight.Normal,
+                    FontWeight = weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal,
                     Range = (_selection.index, _selection.length)
                 });
             }
@@ -800,9 +774,7 @@ namespace Rain.Tools
                 var weight = SelectedLayer.TextStyle.FontWeight;
                 Format(new TextInfoChange
                 {
-                    FontWeight = weight == FontWeight.Normal
-                                     ? FontWeight.Bold
-                                     : FontWeight.Normal
+                    FontWeight = weight == FontWeight.Normal ? FontWeight.Bold : FontWeight.Normal
                 });
             }
         }
@@ -817,10 +789,7 @@ namespace Rain.Tools
 
                 Format(new Format
                 {
-                    FontStyle =
-                        style == FontStyle.Normal
-                            ? FontStyle.Italic
-                            : FontStyle.Normal,
+                    FontStyle = style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal,
                     Range = (_selection.index, _selection.length)
                 });
             }
@@ -829,9 +798,7 @@ namespace Rain.Tools
                 var style = SelectedLayer.TextStyle.FontStyle;
                 Format(new TextInfoChange
                 {
-                    FontStyle = style == FontStyle.Normal
-                                    ? FontStyle.Italic
-                                    : FontStyle.Normal
+                    FontStyle = style == FontStyle.Normal ? FontStyle.Italic : FontStyle.Normal
                 });
             }
         }
@@ -988,8 +955,7 @@ namespace Rain.Tools
 
             public override string ToString()
             {
-                if (this == (FontStretch.Normal, FontStyle.Normal,
-                                FontWeight.Normal))
+                if (this == (FontStretch.Normal, FontStyle.Normal, FontWeight.Normal))
                     return "Regular";
 
                 IEnumerable<string> G(FontFace f)

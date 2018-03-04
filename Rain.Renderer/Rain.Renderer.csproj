@@ -94,8 +94,9 @@
     <Compile Include="Direct2D\Brush.cs" />
     <Compile Include="Direct2D\Direct2DConverter.cs" />
     <Compile Include="Direct2D\Direct2DRenderContext.cs" />
-    <Compile Include="Direct2D\DirectWriteExtensions.cs" />
-    <Compile Include="Direct2D\DirectWriteTextLayout.cs" />
+    <Compile Include="DirectWrite\DirectWriteExtensions.cs" />
+    <Compile Include="DirectWrite\DirectWriteFontSource.cs" />
+    <Compile Include="DirectWrite\DirectWriteTextLayout.cs" />
     <Compile Include="Direct2D\DropShadowEffect.cs" />
     <Compile Include="Direct2D\Effect.cs" />
     <Compile Include="Direct2D\Geometry.cs" />

@@ -13,6 +13,7 @@ using Rain.Core.Model.Effects;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
+using Rain.Core.Model.Text;
 
 using Color = Rain.Core.Model.Color;
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
@@ -26,6 +27,9 @@ namespace Rain.Renderer.WPF
 
         public override float Height { get; }
         public override float Width { get; }
+
+        /// <inheritdoc />
+        public override IFontSource CreateFontSource() { throw new NotImplementedException(); }
 
         public override void Begin(object ctx)
         {
