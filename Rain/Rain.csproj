@@ -281,7 +281,7 @@
     <Compile Include="Renderer\SelectionManager.cs" />
     <Compile Include="Renderer\ViewManager.cs" />
     <Compile Include="View\Utility\DataBinder.cs" />
-    <Compile Include="View\Utility\EnumTemplateSelector.cs" />
+    <Compile Include="View\Utility\EnumDataTemplateSelector.cs" />
     <Compile Include="View\Utility\EnumToBooleanConverter.cs" />
     <Compile Include="View\Utility\Helper.cs" />
     <Compile Include="View\LicenseView.xaml.cs">
@@ -325,6 +325,14 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Bold.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-BoldItalic.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Italic.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Light.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Medium.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-MediumItalic.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Regular.ttf" />
+    <Resource Include="Resources\Font\Clear Sans\ClearSans-Thin.ttf" />
     <Resource Include="Resources\Icon\cursor-resize-ew%402x.png" />
     <Resource Include="Resources\Icon\cursor-resize-ew.png" />
     <Resource Include="Resources\Icon\cursor-resize-nesw%402x.png" />
@@ -406,24 +414,6 @@
     <Resource Include="settings.default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Resources\Font\ROBOTO-BLACK.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-BLACKITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-BOLD.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-BOLDITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-ITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-LIGHT.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-LIGHTITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-MEDIUM.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-MEDIUMITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-REGULAR.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-THIN.TTF" />
-    <Resource Include="Resources\Font\ROBOTO-THINITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-BOLD.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-BOLDITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-ITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-LIGHT.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-LIGHTITALIC.TTF" />
-    <Resource Include="Resources\Font\ROBOTOCONDENSED-REGULAR.TTF" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

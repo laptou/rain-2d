@@ -38,6 +38,9 @@ namespace Rain.ViewModel
             BrushManager = new BrushManager(artView.ArtContext);
 
             ArtContext = artView.ArtContext;
+
+            ViewManager.Root = Load();
+
             artView.ArtContext.SetManager(cache);
             artView.ArtContext.SetManager(ViewManager);
             artView.ArtContext.SetManager(HistoryManager);
@@ -45,7 +48,6 @@ namespace Rain.ViewModel
             artView.ArtContext.SetManager(ToolManager);
             artView.ArtContext.SetManager(BrushManager);
 
-            Load();
 
             ColorViewModel = new ColorViewModel(ArtContext);
             TransformViewModel = new TransformViewModel(ArtContext);
@@ -81,9 +83,9 @@ namespace Rain.ViewModel
 
         public event EventHandler SelectionUpdated;
 
-        public void Load()
+        public IContainerLayer Load()
         {
-            ViewManager.Root = new Group();
+            var root = new Group();
 
             var l = new Group();
 
@@ -163,7 +165,7 @@ namespace Rain.ViewModel
 
             l.ApplyTransform(Matrix3x2.CreateTranslation(100, 100));
 
-            ViewManager.Root.Add(t);
+            root.Add(t);
 
             var reference1 = new Clone
             {
@@ -189,20 +191,21 @@ namespace Rain.ViewModel
             reference2.Fill = new SolidColorBrushInfo(new Color(1, 0, 0));
 
             var pic = new Picture();
-            pic.Width = 400;
-            pic.Height = 300;
+            pic.ApplyTransform(Matrix3x2.CreateScale(0.25f) * Matrix3x2.CreateTranslation(300, 200));
             pic.Image = ArtContext.ResourceContext.LoadImageFromFilename(@"C:\Users\ibiyemi.CENTRAL\Pictures\anders-jilden-307322-unsplash.jpg");
 
-            ViewManager.Root.Add(reference1);
-            ViewManager.Root.Add(reference2);
-            ViewManager.Root.Add(reference3);
-            ViewManager.Root.Add(l);
-            ViewManager.Root.Add(pic);
+            root.Add(reference1);
+            root.Add(reference2);
+            root.Add(reference3);
+            root.Add(l);
+            root.Add(pic);
 
             l.Add(e);
             l.Add(r);
             l.Add(r2);
             l.Add(p);
+
+            return root;
         }
 
         private IEnumerable<MenuItem> LoadMenus(string path)

@@ -181,7 +181,7 @@
                     </ItemsPanelTemplate>
                 </ToolBar.ItemsPanel>
                 <ToolBar.ItemTemplateSelector>
-                    <utility:EnumTemplateSelector PropertyName="Type" />
+                    <utility:EnumDataTemplateSelector PropertyName="Type" />
                 </ToolBar.ItemTemplateSelector>
                 <ToolBar.Resources>
                     <DataTemplate x:Key="{x:Static viewmodel:ToolbarItemType.Button}">
@@ -202,7 +202,7 @@
                    BorderBrush="{utility:Theme divider}" BorderThickness="1" />
         <Border Grid.Row="2" Grid.Column="1">
             <DockPanel>
-                <TextBlock Margin="24,0,0,0" VerticalAlignment="Center"
+                <TextBlock Margin="24,0" VerticalAlignment="Center"
                            DockPanel.Dock="Left" FontWeight="Bold" Text="{Binding ToolManager.Tool.Type}" />
                 <ItemsControl utility:Helper.Accent="{utility:Theme color(accent-4-inverse)}" ItemsSource="{Binding ToolManager.Tool.Options}">
                     <ItemsControl.ItemsPanel>
@@ -211,84 +211,83 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplateSelector>
-                        <utility:EnumTemplateSelector PropertyName="Type" />
+                        <utility:EnumDataTemplateSelector PropertyName="Type">
+                            <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}" DataType="{x:Type core:ToolOption`1}">
+                                <StackPanel Margin="8,0" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                    </TextBlock>
+                                    <ComboBox Margin="8,0"
+                                              utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
+                                              SelectedValue="{Binding Value}">
+                                        <ComboBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ComboBox.ItemsPanel>
+                                    </ComboBox>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}" DataType="{x:Type core:ToolOption`1}">
+                                <StackPanel Margin="16,0" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                    </TextBlock>
+                                    <control:SegmentButton Margin="8,0"
+                                                           utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
+                                                           SelectedValue="{Binding Value}" />
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}" DataType="{x:Type core:ToolOption`1}">
+                                <StackPanel Margin="8,0" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                    </TextBlock>
+                                    <ComboBox Margin="8,0"
+                                              utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
+                                              SelectedValue="{Binding Value}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock FontFamily="{Binding}" Text="{Binding}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                        <ComboBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ComboBox.ItemsPanel>
+                                    </ComboBox>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}" DataType="{x:Type core:ToolOption`1}">
+                                <StackPanel Margin="16,0" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                    </TextBlock>
+                                    <ComboBox x:Name="Dropdown"
+                                              Margin="8,0"
+                                              IsEditable="True" ItemsSource="{Binding Values}">
+                                        <ComboBox.Text>
+                                            <MultiBinding Converter="{StaticResource PointConverter}" UpdateSourceTrigger="LostFocus">
+                                                <Binding Path="Value" />
+                                                <Binding Mode="OneWay" Path="Unit" />
+                                            </MultiBinding>
+                                        </ComboBox.Text>
+                                    </ComboBox>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}" DataType="{x:Type core:ToolOption`1}">
+                                <StackPanel Margin="8,0" Orientation="Horizontal">
+                                    <Button Margin="0,4" Padding="8,0">
+                                        <Button.Command>
+                                            <viewmodel:BindableDelegateCommand Action="{Binding Value, Mode=OneWay}" />
+                                        </Button.Command>
+                                        <control:Icon IconName="{Binding Icon}" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </utility:EnumDataTemplateSelector>
                     </ItemsControl.ItemTemplateSelector>
-                    <ItemsControl.Resources>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}">
-                            <StackPanel Margin="16,0" Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" /><Run Text=":" />
-                                </TextBlock>
-                                <ComboBox Margin="8,0"
-                                          utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
-                                          SelectedValue="{Binding Value}">
-                                    <ComboBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <VirtualizingStackPanel />
-                                        </ItemsPanelTemplate>
-                                    </ComboBox.ItemsPanel>
-                                </ComboBox>
-                            </StackPanel>
-                        </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}">
-                            <StackPanel Margin="16,0" Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" /><Run Text=":" />
-                                </TextBlock>
-                                <control:SegmentButton Margin="8,0"
-                                                       utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
-                                                       SelectedValue="{Binding Value}" />
-                            </StackPanel>
-                        </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}">
-                            <StackPanel Margin="16,0" Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" /><Run Text=":" />
-                                </TextBlock>
-                                <ComboBox Margin="8,0"
-                                          utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
-                                          SelectedValue="{Binding Value}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock FontFamily="{Binding}" Text="{Binding}" />
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                    <ComboBox.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <VirtualizingStackPanel />
-                                        </ItemsPanelTemplate>
-                                    </ComboBox.ItemsPanel>
-                                </ComboBox>
-                            </StackPanel>
-                        </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}">
-                            <StackPanel Margin="16,0" Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">
-                                    <Run Text="{Binding Name}" /><Run Text=":" />
-                                </TextBlock>
-                                <ComboBox x:Name="Dropdown"
-                                          Margin="8,0"
-                                          IsEditable="True" ItemsSource="{Binding Values}">
-                                    <ComboBox.Text>
-                                        <MultiBinding Converter="{StaticResource PointConverter}" UpdateSourceTrigger="LostFocus">
-                                            <Binding Path="Value" />
-                                            <Binding Mode="OneWay" Path="Unit" />
-                                        </MultiBinding>
-                                    </ComboBox.Text>
-                                </ComboBox>
-                            </StackPanel>
-                        </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}">
-                            <StackPanel Margin="8,0" Orientation="Horizontal">
-                                <Button Margin="0,4" Padding="8,0">
-                                    <Button.Command>
-                                        <viewmodel:BindableDelegateCommand Action="{Binding Value, Mode=OneWay}" />
-                                    </Button.Command>
-                                    <control:Icon IconName="{Binding Icon}" />
-                                </Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.Resources>
                 </ItemsControl>
             </DockPanel>
         </Border>

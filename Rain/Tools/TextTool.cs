@@ -919,7 +919,7 @@ namespace Rain.Tools
 
             _caret.Position =
                 ToWorldSpace(new Vector2(metrics.Left,
-                                         (metrics.Top + metrics.Height - metrics.Baseline) * 1.5f));
+                                         (metrics.Top - metrics.Baseline + metrics.Height)));
         }
 
         private void UpdateOptions(

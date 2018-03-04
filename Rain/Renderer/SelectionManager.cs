@@ -61,27 +61,29 @@ namespace Rain.Renderer
 
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
-            switch (e.PropertyName)
+            if (sender is ILayer layer)
             {
-                case nameof(ILayer.Selected):
-                    var layer = (ILayer) sender;
+                switch (e.PropertyName)
+                {
+                    case nameof(ILayer.Selected):
 
-                    var contains = Selection.Contains(layer);
+                        var contains = Selection.Contains(layer);
 
-                    if (layer.Selected &&
-                        !contains)
-                    {
-                        Selection.Add(layer);
+                        if (layer.Selected &&
+                            !contains)
+                        {
+                            Selection.Add(layer);
 
-                        foreach (var child in layer.Flatten().Skip(1))
-                            child.Selected = false;
-                    }
-                    else if (!layer.Selected && contains)
-                    {
-                        Selection.Remove(layer);
-                    }
+                            foreach (var child in layer.Flatten().Skip(1))
+                                child.Selected = false;
+                        }
+                        else if (!layer.Selected && contains)
+                        {
+                            Selection.Remove(layer);
+                        }
 
-                    break;
+                        break;
+                }
             }
         }
 
@@ -124,8 +126,8 @@ namespace Rain.Renderer
             {
                 context.ViewManager.DocumentUpdated += OnDocumentUpdated;
 
-                if(context.ViewManager.Document?.Root != null)
-                context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
+                if (context.ViewManager.Document?.Root != null)
+                    context.ViewManager.Document.Root.BoundsChanged += OnBoundsChanged;
             }
 
             context.HistoryManager.Traversed += OnHistoryTraversed;
@@ -143,7 +145,10 @@ namespace Rain.Renderer
         {
             context.ManagerAttached -= OnManagerAttached;
             context.ManagerDetached -= OnManagerDetached;
-            context.ViewManager.Document.Root.BoundsChanged -= OnBoundsChanged;
+
+            if (context.ViewManager.Document?.Root != null)
+                context.ViewManager.Document.Root.BoundsChanged -= OnBoundsChanged;
+
             context.ViewManager.DocumentUpdated -= OnDocumentUpdated;
             context.HistoryManager.Traversed -= OnHistoryTraversed;
 

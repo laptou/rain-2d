@@ -20,9 +20,9 @@
             <utility:PercentageConverter x:Key="PercentageConverter" />
             <utility:InversionConverter x:Key="Inverter" />
 
-            <FontFamily x:Key="UIFont">/Rain;component/Resources/Font/#Roboto</FontFamily>
+            <FontFamily x:Key="BaseFont">/Rain;component/Resources/Font/Clear Sans/#Clear Sans</FontFamily>
 
-            <Style TargetType="{x:Type control1:Icon}">
+            <Style TargetType="{x:Type control:Icon}">
                 <Setter Property="Height" Value="20" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />

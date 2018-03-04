@@ -15,7 +15,7 @@ namespace Rain.Core.Model.DocumentGraph
     public class Picture : Layer, IImageLayer
     {
         /// <inheritdoc />
-        public override string DefaultName => $"Image, {Width}×{Height}";
+        public override string DefaultName => $"Image, {Image.Frames[0].Width}×{Image.Frames[0].Height}";
 
         public int Frame
         {
@@ -23,22 +23,10 @@ namespace Rain.Core.Model.DocumentGraph
             set => Set(value, RaiseImageChanged);
         }
 
-        public virtual float Height
-        {
-            get => Get<float>();
-            set => Set(value, nameof(Height), nameof(DefaultName));
-        }
-
         public IImage Image
         {
             get => Get<IImage>();
             set => Set(value, RaiseImageChanged);
-        }
-
-        public virtual float Width
-        {
-            get => Get<float>();
-            set => Set(value, nameof(Width), nameof(DefaultName));
         }
 
         private void RaiseImageChanged(object sender, PropertyChangedEventArgs e)
@@ -56,7 +44,7 @@ namespace Rain.Core.Model.DocumentGraph
         /// <inheritdoc />
         public override RectangleF GetBounds(IArtContext ctx)
         {
-            return new RectangleF(0, 0, Width, Height);
+            return new RectangleF(0, 0, Image.Frames[0].Width, Image.Frames[0].Height);
         }
 
         /// <inheritdoc />
@@ -90,13 +78,13 @@ namespace Rain.Core.Model.DocumentGraph
 
             target.Transform(transform);
 
-            var factor = new Vector2(Width / image.Width, Height / image.Height) * transform.GetScale();
+            var factor = transform.GetScale();
             var mode = factor.Length() < MathUtils.Sqrt2
                            ? ScaleMode.HighQualityCubic
                            : ScaleMode.MultiSampleLinear;
 
 
-            target.DrawBitmap(image, new RectangleF(0, 0, Width, Height), mode);
+            target.DrawBitmap(image, new RectangleF(0, 0, Image.Frames[0].Width, Image.Frames[0].Height), mode);
 
             target.Transform(MathUtils.Invert(transform));
         }

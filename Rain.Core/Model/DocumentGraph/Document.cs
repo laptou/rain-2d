@@ -37,7 +37,7 @@ namespace Rain.Core.Model.DocumentGraph
                     Root.PropertyChanged -= RootPropertyChanged;
                 }
 
-                Set(value);
+                Set(value, Updated);
 
                 if (Root != null)
                 {
