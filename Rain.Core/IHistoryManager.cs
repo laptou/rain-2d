@@ -42,7 +42,7 @@ namespace Rain.Core
         /// </summary>
         /// <param name="newCommand">The command containing the new data.</param>
         /// <param name="timeLimit">The maximum amount of time that can have elapsed for merging to occur.</param>
-        void Merge(IOperationCommand newCommand, long timeLimit);
+        void Merge(IMergeableOperationCommand newCommand, long timeLimit);
 
         /// <summary>
         ///     Removes the current operation from the top of the stack.

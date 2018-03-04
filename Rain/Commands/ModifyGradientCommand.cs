@@ -9,7 +9,7 @@ using Rain.Core.Model.Paint;
 
 namespace Rain.Commands
 {
-    public sealed class ModifyGradientCommand : IOperationCommand<GradientBrushInfo>
+    public sealed class ModifyGradientCommand : IOperationCommand<GradientBrushInfo>, IMergeableOperationCommand
     {
         public GradientStop Stop { get; }
 
@@ -255,9 +255,9 @@ namespace Rain.Commands
 
         public long Time { get; } = Utility.Time.Now;
 
-        GradientBrushInfo[] IOperationCommand<GradientBrushInfo>.Targets => new[] {Target};
+        IReadOnlyList<GradientBrushInfo> IOperationCommand<GradientBrushInfo>.Targets => new[] {Target};
 
-        object[] IOperationCommand.Targets => new object[] {Target};
+        IReadOnlyList<object> IOperationCommand.Targets => new object[] {Target};
 
         #endregion
     }

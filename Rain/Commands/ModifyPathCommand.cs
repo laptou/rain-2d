@@ -139,11 +139,6 @@ namespace Rain.Commands
             Apply(context, Operation, Indices, Nodes, Delta);
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
-
         public override void Undo(IArtContext context)
         {
             switch (Operation)

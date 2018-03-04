@@ -36,7 +36,7 @@ namespace Rain.Core
             set => Set(value);
         }
 
-        public string Name
+        public string Label
         {
             get => Get<string>();
             set => Set(value);

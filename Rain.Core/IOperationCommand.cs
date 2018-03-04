@@ -16,19 +16,28 @@ namespace Rain.Core
 
         long Id { get; }
 
-        object[] Targets { get; }
+        IReadOnlyList<object> Targets { get; }
 
         long Time { get; }
 
         void Do(IArtContext artContext);
 
-        IOperationCommand Merge(IOperationCommand newCommand);
-
         void Undo(IArtContext artContext);
+    }
+
+    public interface IMergeableOperationCommand : IOperationCommand
+    {
+        IOperationCommand Merge(IOperationCommand newCommand);
+    }
+
+    public interface IMergeableOperationCommand<T>
+        : IOperationCommand<T>, IMergeableOperationCommand
+    {
+        IOperationCommand<T> Merge(IOperationCommand<T> newCommand);
     }
 
     public interface IOperationCommand<out T> : IOperationCommand
     {
-        new T[] Targets { get; }
+        new IReadOnlyList<T> Targets { get; }
     }
 }

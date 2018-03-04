@@ -43,11 +43,7 @@ namespace Rain.Commands
             parents[0].Add(_group);
             _group.Selected = true;
         }
-
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
+        
 
         public override void Undo(IArtContext artView)
         {

@@ -24,7 +24,7 @@ namespace Rain.Commands
         public FontWeight? FontWeight { get; set; }
     }
 
-    public sealed class ModifyTextCommand : IOperationCommand<ITextContainer>
+    public sealed class ModifyTextCommand : IOperationCommand<ITextContainer>, IMergeableOperationCommand
     {
         private ITextInfo _oldStyle;
 
@@ -93,13 +93,13 @@ namespace Rain.Commands
         public long Id { get; }
 
         /// <inheritdoc />
-        public ITextContainer[] Targets { get; }
+        public IReadOnlyList<ITextContainer> Targets { get; }
 
         /// <inheritdoc />
         public long Time { get; }
 
         /// <inheritdoc />
-        object[] IOperationCommand.Targets => Targets.ToArray<object>();
+        IReadOnlyList<object> IOperationCommand.Targets => Targets.ToArray<object>();
 
         #endregion
     }

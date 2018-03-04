@@ -10,10 +10,10 @@ using Rain.Core.Utility;
 
 namespace Rain.Commands
 {
-    public sealed class TransformCommand : LayerCommandBase<ILayer>
+    public sealed class TransformCommand : LayerCommandBase<ILayer>, IMergeableOperationCommand
     {
         public TransformCommand(
-            long id, ILayer[] targets, Matrix3x2? local = null, Matrix3x2? global = null) : base(
+            long id, IReadOnlyList<ILayer> targets, Matrix3x2? local = null, Matrix3x2? global = null) : base(
             id,
             targets)
         {
@@ -21,7 +21,7 @@ namespace Rain.Commands
             Global = global ?? Matrix3x2.Identity;
         }
 
-        public override string Description => $"Transformed {Targets.Length} layer(s)";
+        public override string Description => $"Transformed {Targets.Count} layer(s)";
         public Matrix3x2 Global { get; }
 
         public Matrix3x2 Local { get; }
@@ -35,7 +35,7 @@ namespace Rain.Commands
                 }
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
+        public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (!Targets.SequenceEqual(newCommand.Targets)) return null;
 

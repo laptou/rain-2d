@@ -72,20 +72,23 @@ namespace Rain.Renderer
             }
         }
 
-        public void Merge(IOperationCommand command, long timeLimit)
+        public void Merge(IMergeableOperationCommand command, long timeLimit)
         {
             lock (this)
             {
                 _redo.Clear();
-                var old = _undo.Count > 0 ? _undo.Peek() : null;
 
-                if (old?.GetType() == command.GetType())
+                if ((_undo.Count > 0 ? _undo.Peek() : null) is IMergeableOperationCommand old)
                 {
                     command.Do(Context);
 
-                    if (command.Time - old.Time < timeLimit &&
-                        old.Merge(command) is IOperationCommand newCmd)
-                        Replace(newCmd);
+                    if (command.Time - old.Time < timeLimit)
+                    {
+                        var newCmd = old.Merge(command);
+
+                        if (newCmd != null)
+                            Replace(newCmd);
+                    }
                     else Push(command);
 
                     Context.InvalidateRender();

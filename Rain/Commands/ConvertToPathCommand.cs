@@ -25,35 +25,30 @@ namespace Rain.Commands
 
         public override void Do(IArtContext artContext)
         {
-            _targetParents = Targets.Select(t => t.Parent).ToArray();
+            var parents = new List<IContainerLayer>();
+            var products = new List<Path>();
 
-            if (_products == null)
-                _products = Targets.Select(t =>
-                                           {
-                                               var path = new Path();
-                                               var geometry =
-                                                   artContext.CacheManager.GetGeometry(t);
-                                               path.Instructions.AddItems(geometry.Read());
-                                               path.Fill = t.Fill;
-                                               path.Stroke = t.Stroke;
-                                               path.ApplyTransform(t.Transform);
-
-                                               return path;
-                                           })
-                                   .ToArray();
-
-            for (var i = 0; i < _products.Length; i++)
+            foreach (var target in Targets)
             {
-                var index = _targetParents[i].SubLayers.IndexOf(Targets[i]);
+                parents.Add(target.Parent);
 
-                _targetParents[i].Remove(Targets[i]);
-                _targetParents[i].Add(_products[i], index);
+                var path = new Path();
+                var geometry = artContext.CacheManager.GetGeometry(target);
+                path.Instructions.AddItems(geometry.Read());
+                path.Fill = target.Fill;
+                path.Stroke = target.Stroke;
+                path.ApplyTransform(target.Transform);
+
+                products.Add(path);
+
+                var index = target.Parent.SubLayers.IndexOf(target);
+
+                target.Parent.Add(path, index);
+                target.Parent.Remove(target);
             }
-        }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
+            _targetParents = parents.ToArray();
+            _products = products.ToArray();
         }
 
         public override void Undo(IArtContext artContext)

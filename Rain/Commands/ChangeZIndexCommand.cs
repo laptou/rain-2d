@@ -9,15 +9,15 @@ using Rain.Core.Utility;
 
 namespace Rain.Commands
 {
-    public sealed class ChangeZIndexCommand : LayerCommandBase<ILayer>
+    public sealed class ChangeZIndexCommand : LayerCommandBase<ILayer>, IMergeableOperationCommand
     {
-        public ChangeZIndexCommand(long id, ILayer[] targets, int delta) : base(id, targets)
+        public ChangeZIndexCommand(long id, IReadOnlyList<ILayer> targets, int delta) : base(id, targets)
         {
             Delta = delta;
         }
 
         public int Delta { get; }
-        public override string Description => $"Changed z-index of {Targets.Length} layer(s)";
+        public override string Description => $"Changed z-index of {Targets.Count} layer(s)";
 
         public override void Do(IArtContext artContext)
         {
@@ -31,7 +31,7 @@ namespace Rain.Commands
             artContext.SelectionManager.UpdateBounds();
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
+        public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (!Targets.SequenceEqual(newCommand.Targets)) return null;
 

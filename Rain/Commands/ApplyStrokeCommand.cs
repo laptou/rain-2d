@@ -9,10 +9,10 @@ using Rain.Core.Model.Paint;
 
 namespace Rain.Commands
 {
-    public sealed class ApplyStrokeCommand : LayerCommandBase<IStrokedLayer>
+    public sealed class ApplyStrokeCommand : LayerCommandBase<IStrokedLayer>, IMergeableOperationCommand
     {
         public ApplyStrokeCommand(
-            long id, IStrokedLayer[] targets, IPenInfo newPenInfo,
+            long id, IReadOnlyList<IStrokedLayer> targets, IPenInfo newPenInfo,
             IEnumerable<IPenInfo> oldPenInfos) : base(id, targets)
         {
             OldStrokes = oldPenInfos.Select(i => i?.Clone<IPenInfo>()).ToArray();
@@ -20,7 +20,7 @@ namespace Rain.Commands
             NewStroke = newPenInfo?.Clone<IPenInfo>();
         }
 
-        public override string Description => $"Stroked {Targets.Length} layer(s)";
+        public override string Description => $"Stroked {Targets.Count} layer(s)";
 
         public IPenInfo NewStroke { get; }
         public IPenInfo[] OldStrokes { get; }
@@ -34,7 +34,7 @@ namespace Rain.Commands
                 }
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
+        public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (!Targets.SequenceEqual(newCommand.Targets)) return null;
 
@@ -45,7 +45,7 @@ namespace Rain.Commands
 
         public override void Undo(IArtContext artView)
         {
-            for (var i = 0; i < Targets.Length; i++)
+            for (var i = 0; i < Targets.Count; i++)
                 lock (Targets[i])
                 {
                     Targets[i].Stroke = OldStrokes[i];

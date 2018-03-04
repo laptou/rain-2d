@@ -9,7 +9,7 @@ using Rain.Core.Model.Text;
 
 namespace Rain.Commands
 {
-    public sealed class ApplyFormatCommand : LayerCommandBase<ITextLayer>
+    public sealed class ApplyFormatCommand : LayerCommandBase<ITextLayer>, IMergeableOperationCommand
     {
         private Format[] _oldFormats;
 
@@ -32,7 +32,7 @@ namespace Rain.Commands
             }
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
+        public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (newCommand is ApplyFormatCommand cmd)
                 return new ApplyFormatCommand(newCommand.Id,

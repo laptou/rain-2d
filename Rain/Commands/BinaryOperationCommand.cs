@@ -37,7 +37,7 @@ namespace Rain.Commands
 
             _parents[operand1] = (operand1.Parent, operand1.Parent.SubLayers.IndexOf(operand1));
 
-            for (var i = 1; i < Targets.Length; i++)
+            for (var i = 1; i < Targets.Count; i++)
             {
                 var operand2 = Targets[i];
 
@@ -97,11 +97,6 @@ namespace Rain.Commands
             var parent = _parents[Targets[0]].parent;
             Product.ApplyTransform(global: MathUtils.Invert(parent.AbsoluteTransform));
             parent.Add(Product);
-        }
-
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
         }
 
         public override void Undo(IArtContext artView)

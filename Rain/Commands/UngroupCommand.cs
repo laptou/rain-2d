@@ -46,12 +46,6 @@ namespace Rain.Commands
                 target.Parent.Remove(target as Layer);
             }
         }
-
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
-
         public override void Undo(IArtContext artView)
         {
             foreach (var (layer, target) in _layers.AsTuples())

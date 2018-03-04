@@ -77,11 +77,6 @@ namespace Rain.Commands
             artContext.InvalidateRender();
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation cannot be merged.");
-        }
-
         public override void Undo(IArtContext artContext)
         {
             foreach (var target in Targets)

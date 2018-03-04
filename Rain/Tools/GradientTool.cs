@@ -351,6 +351,8 @@ namespace Rain.Tools
 
         private void Add()
         {
+            if (_selection.Count == 0) return;
+
             Add(Math.Max(1, _selection.First()));
         }
 

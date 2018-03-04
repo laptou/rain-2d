@@ -30,11 +30,6 @@ namespace Rain.Commands
                 target.RemoveText(Index, Text.Length);
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            throw new InvalidOperationException("This operation is cannot be merged.");
-        }
-
         public override void Undo(IArtContext artView)
         {
             foreach (var target in Targets)

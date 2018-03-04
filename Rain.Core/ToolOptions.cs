@@ -19,7 +19,7 @@ namespace Rain.Core
 
         public ToolOption<T> Create<T>(string id, ToolOptionType type, string label = null)
         {
-            var op = new ToolOption<T>(id, type) {Name = label};
+            var op = new ToolOption<T>(id, type) {Label = label};
             op.PropertyChanged += OnOptionChanged;
             _options[id] = op;
 

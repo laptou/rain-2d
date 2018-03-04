@@ -215,7 +215,7 @@
                             <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}" DataType="{x:Type core:ToolOption`1}">
                                 <StackPanel Margin="8,0" Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center">
-                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                        <Run Text="{Binding Label}" /><Run Text=":" />
                                     </TextBlock>
                                     <ComboBox Margin="8,0"
                                               utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
@@ -231,7 +231,7 @@
                             <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}" DataType="{x:Type core:ToolOption`1}">
                                 <StackPanel Margin="16,0" Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center">
-                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                        <Run Text="{Binding Label}" /><Run Text=":" />
                                     </TextBlock>
                                     <control:SegmentButton Margin="8,0"
                                                            utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
@@ -241,7 +241,7 @@
                             <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}" DataType="{x:Type core:ToolOption`1}">
                                 <StackPanel Margin="8,0" Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center">
-                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                        <Run Text="{Binding Label}" /><Run Text=":" />
                                     </TextBlock>
                                     <ComboBox Margin="8,0"
                                               utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
@@ -262,7 +262,7 @@
                             <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}" DataType="{x:Type core:ToolOption`1}">
                                 <StackPanel Margin="16,0" Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center">
-                                        <Run Text="{Binding Name}" /><Run Text=":" />
+                                        <Run Text="{Binding Label}" /><Run Text=":" />
                                     </TextBlock>
                                     <ComboBox x:Name="Dropdown"
                                               Margin="8,0"
@@ -277,14 +277,21 @@
                                 </StackPanel>
                             </DataTemplate>
                             <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}" DataType="{x:Type core:ToolOption`1}">
-                                <StackPanel Margin="8,0" Orientation="Horizontal">
-                                    <Button Margin="0,4" Padding="8,0">
-                                        <Button.Command>
-                                            <viewmodel:BindableDelegateCommand Action="{Binding Value, Mode=OneWay}" />
-                                        </Button.Command>
-                                        <control:Icon IconName="{Binding Icon}" />
-                                    </Button>
-                                </StackPanel>
+                                <Button Margin="4" Padding="8,0"
+                                        DataContext="{Binding}">
+                                    <Button.Resources>
+                                        <utility:BindingProxy x:Key="hack" Data="{Binding}" />
+                                    </Button.Resources>
+                                    <Button.Command>
+                                        <viewmodel:BindableDelegateCommand Action="{Binding Data.Value, Mode=OneWay, Source={StaticResource hack}}" />
+                                    </Button.Command>
+                                    <StackPanel Orientation="Horizontal">
+                                        <control:Icon Width="12" Height="12"
+                                                      Margin="4,0"
+                                                      IconName="{Binding Icon}" />
+                                        <TextBlock Text="{Binding Label}" />
+                                    </StackPanel>
+                                </Button>
                             </DataTemplate>
                         </utility:EnumDataTemplateSelector>
                     </ItemsControl.ItemTemplateSelector>

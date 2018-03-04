@@ -60,7 +60,11 @@ namespace Rain.Renderer.DirectWrite
         public void Dispose() { _ff?.Dispose(); }
 
         /// <inheritdoc />
-        public IEnumerator<IFontFace> GetEnumerator() { throw new NotImplementedException(); }
+        public IEnumerator<IFontFace> GetEnumerator()
+        {
+            for (var i = 0; i < _ff.FontCount; i++)
+                yield return new DirectWriteFontFace(_ff.GetFont(i));
+        }
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

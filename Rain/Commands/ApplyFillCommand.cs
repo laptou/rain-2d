@@ -9,16 +9,16 @@ using Rain.Core.Model.Paint;
 
 namespace Rain.Commands
 {
-    public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>
+    public sealed class ApplyFillCommand : LayerCommandBase<IFilledLayer>, IMergeableOperationCommand
     {
         public ApplyFillCommand(
-            long id, IFilledLayer[] targets, IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
+            long id, IReadOnlyList<IFilledLayer> targets, IBrushInfo @new, IBrushInfo[] old) : base(id, targets)
         {
-            OldFills = old.Select(o => (IBrushInfo) o?.Clone()).ToArray();
-            NewFill = (IBrushInfo) @new?.Clone();
+            OldFills = old.Select(o => o?.Clone<IBrushInfo>()).ToArray();
+            NewFill = @new?.Clone<IBrushInfo>();
         }
 
-        public override string Description => $"Filled {Targets.Length} layer(s)";
+        public override string Description => $"Filled {Targets.Count} layer(s)";
 
         public IBrushInfo NewFill { get; }
         public IBrushInfo[] OldFills { get; }
@@ -32,7 +32,7 @@ namespace Rain.Commands
                 }
         }
 
-        public override IOperationCommand Merge(IOperationCommand newCommand)
+        public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (!Targets.SequenceEqual(newCommand.Targets)) return null;
 
@@ -43,7 +43,7 @@ namespace Rain.Commands
 
         public override void Undo(IArtContext artView)
         {
-            for (var i = 0; i < Targets.Length; i++)
+            for (var i = 0; i < Targets.Count; i++)
                 lock (Targets[i])
                 {
                     Targets[i].Fill = OldFills[i];

@@ -350,6 +350,7 @@ namespace Rain.Renderer
                     BindLayer(subLayer);
 
                 group.LayerAdded += (sender, layer1) => BindLayer(layer1);
+                group.LayerRemoved += (sender, layer1) => UnbindLayer(layer1);
             }
 
             ExitWriteLock();
