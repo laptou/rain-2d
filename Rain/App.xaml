@@ -6,22 +6,6 @@
              ShutdownMode="OnMainWindowClose" StartupUri="View/MainView.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styles/Buttons.xaml" />
-                <ResourceDictionary Source="Styles/ComboBox.xaml" />
-                <ResourceDictionary Source="Styles/ScrollBar.xaml" />
-                <ResourceDictionary Source="Styles/Tabs.xaml" />
-                <ResourceDictionary Source="Styles/Text.xaml" />
-                <ResourceDictionary Source="Styles/ToolBar.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            <utility:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
-            <utility:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
-            <utility:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-            <utility:PercentageConverter x:Key="PercentageConverter" />
-            <utility:InversionConverter x:Key="Inverter" />
-
-            <FontFamily x:Key="BaseFont">/Rain;component/Resources/Font/Clear Sans/#Clear Sans</FontFamily>
-
             <Style TargetType="{x:Type control:Icon}">
                 <Setter Property="Height" Value="20" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
@@ -49,6 +33,16 @@
                 <Setter Property="Padding" Value="5,0" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
             </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Converter.xaml" />
+                <ResourceDictionary Source="Styles/Buttons.xaml" />
+                <ResourceDictionary Source="Styles/ComboBox.xaml" />
+                <ResourceDictionary Source="Styles/ScrollBar.xaml" />
+                <ResourceDictionary Source="Styles/Tabs.xaml" />
+                <ResourceDictionary Source="Styles/Text.xaml" />
+                <ResourceDictionary Source="Styles/ToolBar.xaml" />
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

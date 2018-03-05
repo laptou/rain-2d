@@ -73,7 +73,7 @@ namespace Rain.ViewModel
             {
                 Context.BrushManager.Apply(brush);
 
-                if (Fill is WPF.SolidColorBrush scb)
+                if (Current != null && Fill is WPF.SolidColorBrush scb)
                     scb.Color = Current.Color.Convert();
                 else
                     Fill = brush.CreateWpfBrush();
@@ -87,7 +87,7 @@ namespace Rain.ViewModel
                 pen.Brush = brush;
                 Context.BrushManager.Apply(pen);
 
-                if (Stroke is WPF.SolidColorBrush scb)
+                if (Current != null && Stroke is WPF.SolidColorBrush scb)
                     scb.Color = Current.Color.Convert();
                 else
                     Stroke = brush.CreateWpfBrush();

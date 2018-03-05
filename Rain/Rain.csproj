@@ -270,6 +270,7 @@
       <DependentUpon>SplashScreen.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Utility\BindingProxy.cs" />
+    <Compile Include="View\Utility\ColorToBrushConverter.cs" />
     <Compile Include="View\Utility\DesignerResourceDictionary.cs" />
     <Compile Include="View\Control\Icon.cs" />
     <Compile Include="View\Utility\InversionConverter.cs" />
@@ -427,6 +428,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\ComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Converter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

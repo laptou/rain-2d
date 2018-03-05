@@ -378,7 +378,13 @@ namespace Rain.View.Control
             Disposer.SafeDispose(ref _dwFactory);
             Disposer.SafeDispose(ref _renderTarget);
 
-            _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
+            #if DEBUG
+            _d2dFactory =
+                new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
+            #else
+            _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
+            #endif
+
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
 
             var width = (int) Math.Max(1, ActualWidth * _d2dFactory.DesktopDpi.Width / 96.0);

@@ -1,0 +1,10 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Rain.Styles" xmlns:utility="clr-namespace:Rain.View.Utility">
+    <utility:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
+    <utility:UnitConverter x:Key="PointConverter" BaseUnit="Points" />
+    <utility:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+    <utility:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    <utility:PercentageConverter x:Key="PercentageConverter" />
+    <utility:InversionConverter x:Key="Inverter" />
+</ResourceDictionary>

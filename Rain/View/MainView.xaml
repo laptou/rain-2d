@@ -492,14 +492,20 @@
                                     </Setter>
                                     <Setter Property="Width" Value="12" />
                                 </Style>
+
+                                <DataTemplate DataType="{x:Type documentGraph:ILayer}">
+                                    <TextBlock x:Name="layerName"
+                                               FontWeight="Bold" Text="{Binding Name}" />
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
+                                            <Setter TargetName="layerName" Property="FontWeight" Value="Normal" />
+                                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat=(\{0\})}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
                             </TreeView.Resources>
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="SelectedItemChanged">
-                                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}" CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
                             <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate DataType="{x:Type documentGraph:ILayer}" ItemsSource="{Binding SubLayers}">
+                                <HierarchicalDataTemplate DataType="{x:Type documentGraph:IContainerLayer}" ItemsSource="{Binding SubLayers}">
                                     <TextBlock x:Name="layerName"
                                                FontWeight="Bold" Text="{Binding Name}" />
                                     <HierarchicalDataTemplate.Triggers>
@@ -510,6 +516,11 @@
                                     </HierarchicalDataTemplate.Triggers>
                                 </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectedItemChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}" CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="{x:Type TreeViewItem}">
                                     <Setter Property="Background" Value="{utility:Theme background-2}" />
@@ -545,7 +556,9 @@
                                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                                           ContentSource="Header" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
 
-                                                        <CheckBox Grid.Column="2" IsChecked="{Binding Visible}" />
+                                                        <CheckBox Grid.Column="2"
+                                                                  HorizontalAlignment="Right"
+                                                                  IsChecked="{Binding Visible}" />
 
                                                         <ItemsPresenter x:Name="ItemsHost"
                                                                         Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"

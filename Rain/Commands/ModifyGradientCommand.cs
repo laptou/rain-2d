@@ -11,6 +11,8 @@ namespace Rain.Commands
 {
     public sealed class ModifyGradientCommand : IOperationCommand<GradientBrushInfo>, IMergeableOperationCommand
     {
+        private (int, GradientStop)[] _removed;
+
         public GradientStop Stop { get; }
 
         #region GradientOperation enum
@@ -159,8 +161,15 @@ namespace Rain.Commands
 
                     break;
                 case GradientOperation.RemoveStop:
+                    var removed = new List<(int, GradientStop)>();
                     for (var i = 0; i < StopIndices.Count; i++)
-                        Target.Stops.RemoveAt(StopIndices[i] - i);
+                    {
+                        var ind = StopIndices[i] - i;
+                        removed.Add((StopIndices[i], Target.Stops[ind]));
+                        Target.Stops.RemoveAt(ind);
+                    }
+
+                    _removed = removed.ToArray();
 
                     break;
                 case GradientOperation.AddStop:
@@ -238,11 +247,21 @@ namespace Rain.Commands
 
                     break;
                 case GradientOperation.RemoveStop:
+                    Target.Stops.SuspendCollectionChangeNotification();
+                    for (var j = 0; j < _removed.Length; j++)
+                    {
+                        var (i, stop) = _removed[j];
+                        var ind = StopIndices[i] + j;
+                        Target.Stops.Insert(ind, stop);
+                    }
+                    Target.Stops.ResumeCollectionChangeNotification();
 
-                    throw new NotImplementedException();
+                    break;
                 case GradientOperation.AddStop:
 
-                    throw new NotImplementedException();
+                    Target.Stops.Remove(Stop);
+
+                    break;
                 default:
 
                     throw new ArgumentOutOfRangeException();
