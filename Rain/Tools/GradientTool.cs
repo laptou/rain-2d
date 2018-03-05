@@ -154,7 +154,7 @@ namespace Rain.Tools
                 var t = new Func<float, Vector2>(
                     o => Vector2.Transform(
                         Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, o),
-                        SelectedLayer.AbsoluteTransform * SelectedBrush.Transform));
+                        SelectedBrush.Transform * SelectedLayer.AbsoluteTransform));
 
                 (GradientStop stop, int index)? target = null;
                 var index = 0;
@@ -197,8 +197,8 @@ namespace Rain.Tools
             if (SelectedLayer == null)
                 return;
 
-            var transform =
-                MathUtils.Invert(SelectedLayer.AbsoluteTransform);
+            var brushTransform = SelectedBrush?.Transform ?? Matrix3x2.Identity;
+            var transform = MathUtils.Invert(brushTransform * SelectedLayer.AbsoluteTransform);
 
             var localLastPos = Vector2.Transform(_mouse.pos, transform);
 

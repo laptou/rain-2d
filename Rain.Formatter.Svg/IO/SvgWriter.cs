@@ -111,7 +111,7 @@ namespace Rain.Formatter.Svg.IO
                     shape.StrokeDashOffset = pen.DashOffset;
                     shape.StrokeLineCap = pen.LineCap;
                     shape.StrokeLineJoin = pen.LineJoin;
-                    shape.StrokeMiterLimit = pen.MiterLimit / pen.Width;
+                    shape.StrokeMiterLimit = pen.MiterLimit;
                 }
             }
 

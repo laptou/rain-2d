@@ -58,7 +58,8 @@ namespace Rain.Formatter.Svg.Paint
                         X1 = (brush.StartPoint.X, LengthUnit.Pixels),
                         Y1 = (brush.StartPoint.Y, LengthUnit.Pixels),
                         X2 = (brush.EndPoint.X, LengthUnit.Pixels),
-                        Y2 = (brush.EndPoint.Y, LengthUnit.Pixels)
+                        Y2 = (brush.EndPoint.Y, LengthUnit.Pixels),
+                        Transform = brush.Transform
                     };
 
                     break;
@@ -78,7 +79,8 @@ namespace Rain.Formatter.Svg.Paint
                         FocusX = (focus.X, LengthUnit.Pixels),
                         FocusY = (focus.Y, LengthUnit.Pixels),
                         Radius = (radii.X, LengthUnit.Pixels),
-                        Transform = Matrix3x2.CreateScale(1, radii.Y / radii.X, brush.StartPoint)
+                        Transform = Matrix3x2.CreateScale(1, radii.Y / radii.X, brush.StartPoint) *
+                                    brush.Transform
                     };
                     break;
             }
