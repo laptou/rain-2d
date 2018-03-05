@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 using Rain.Core.Model;
@@ -44,19 +45,43 @@ namespace Rain.Formatter.Svg.Paint
         {
             GradientPaint paint = null;
 
-            if (brush.Type == GradientBrushType.Linear)
-                paint = new LinearGradientPaint(brush.Name,
-                                                brush.Stops.Select(s => new GradientStop
-                                                {
-                                                    Color = s.Color,
-                                                    Offset = (s.Offset * 100, LengthUnit.Percent)
-                                                }))
-                {
-                    X1 = (brush.StartPoint.X, LengthUnit.Pixels),
-                    Y1 = (brush.StartPoint.Y, LengthUnit.Pixels),
-                    X2 = (brush.EndPoint.X, LengthUnit.Pixels),
-                    Y2 = (brush.EndPoint.X, LengthUnit.Pixels)
-                };
+            switch (brush.Type)
+            {
+                case GradientBrushType.Linear:
+                    paint = new LinearGradientPaint(brush.Name,
+                                                    brush.Stops.Select(s => new GradientStop
+                                                    {
+                                                        Color = s.Color,
+                                                        Offset = (s.Offset * 100, LengthUnit.Percent)
+                                                    }))
+                    {
+                        X1 = (brush.StartPoint.X, LengthUnit.Pixels),
+                        Y1 = (brush.StartPoint.Y, LengthUnit.Pixels),
+                        X2 = (brush.EndPoint.X, LengthUnit.Pixels),
+                        Y2 = (brush.EndPoint.Y, LengthUnit.Pixels)
+                    };
+
+                    break;
+                case GradientBrushType.Radial:
+                    var radii = brush.EndPoint - brush.StartPoint;
+                    var focus = brush.FocusOffset + brush.StartPoint;
+
+                    paint = new RadialGradientPaint(brush.Name,
+                                                    brush.Stops.Select(s => new GradientStop
+                                                    {
+                                                        Color = s.Color,
+                                                        Offset = (s.Offset * 100, LengthUnit.Percent)
+                                                    }))
+                    {
+                        CenterX = (brush.StartPoint.X, LengthUnit.Pixels),
+                        CenterY = (brush.StartPoint.Y, LengthUnit.Pixels),
+                        FocusX = (focus.X, LengthUnit.Pixels),
+                        FocusY = (focus.Y, LengthUnit.Pixels),
+                        Radius = (radii.X, LengthUnit.Pixels),
+                        Transform = Matrix3x2.CreateScale(1, radii.Y / radii.X, brush.StartPoint)
+                    };
+                    break;
+            }
 
             if (paint != null)
             {

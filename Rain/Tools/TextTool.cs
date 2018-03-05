@@ -56,11 +56,29 @@ namespace Rain.Tools
                    .Set(familyNames.FirstOrDefault());
 
             Options.Create<float>("font-size", ToolOptionType.Length, "Font Size")
-                   .SetValues(new[]
-                    {
-                        8f, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 44, 48, 72, 96,
-                        120, 144, 288, 352
-                    })
+                   .SetValues(8f,
+                              9,
+                              10,
+                              11,
+                              12,
+                              14,
+                              16,
+                              18,
+                              20,
+                              22,
+                              24,
+                              28,
+                              32,
+                              36,
+                              40,
+                              44,
+                              48,
+                              72,
+                              96,
+                              120,
+                              144,
+                              288,
+                              352)
                    .SetUnit(Unit.Points)
                    .SetMinimum(6)
                    .SetMaximum(60000)
@@ -68,24 +86,15 @@ namespace Rain.Tools
 
             Options.Create<FontStretch>("font-stretch", ToolOptionType.Dropdown, "Stretch")
                    .Set(FontStretch.Normal)
-                   .SetValues(new[]
-                    {
-                        FontStretch.Normal
-                    });
+                   .SetValues(FontStretch.Normal);
 
             Options.Create<FontWeight>("font-weight", ToolOptionType.Dropdown, "Weight")
                    .Set(FontWeight.Normal)
-                   .SetValues(new[]
-                    {
-                        FontWeight.Normal
-                    });
+                   .SetValues(FontWeight.Normal);
 
             Options.Create<FontStyle>("font-style", ToolOptionType.Dropdown, "Style")
                    .Set(FontStyle.Normal)
-                   .SetValues(new[]
-                    {
-                        FontStyle.Normal
-                    });
+                   .SetValues(FontStyle.Normal);
 
             Options.OptionChanged += OnOptionChanged;
 
@@ -552,7 +561,11 @@ namespace Rain.Tools
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        protected override void OnSelectionChanged(object sender, EventArgs e) { Update(); }
+        protected override void OnSelectionChanged(object sender, EventArgs e)
+        {
+            Update(); 
+            base.OnSelectionChanged(sender, e);
+        }
 
         private void CopyText()
         {

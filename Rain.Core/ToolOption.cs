@@ -118,6 +118,8 @@ namespace Rain.Core
             return this;
         }
 
+        public ToolOption<T> SetValues(params T[] values) { return SetValues(values.AsEnumerable()); }
+
         #endregion
     }
 }

@@ -27,11 +27,7 @@ namespace Rain.Renderer.Direct2D
                                                                         {
                                                                             Center = center,
                                                                             GradientOriginOffset =
-                                                                                new RawVector2(
-                                                                                    focus.X - center
-                                                                                       .X,
-                                                                                    focus.Y - center
-                                                                                       .Y),
+                                                                                focus,
                                                                             RadiusX = radii.X,
                                                                             RadiusY = radii.Y
                                                                         },

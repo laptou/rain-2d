@@ -147,7 +147,7 @@ namespace Rain.Commands
 
                     break;
                 case GradientOperation.ChangeFocus:
-                    Target.Focus += VectorDelta;
+                    Target.FocusOffset += VectorDelta;
 
                     break;
                 case GradientOperation.ChangeEnd:
@@ -226,7 +226,7 @@ namespace Rain.Commands
 
                     break;
                 case GradientOperation.ChangeFocus:
-                    Target.Focus -= VectorDelta;
+                    Target.FocusOffset -= VectorDelta;
 
                     break;
                 case GradientOperation.ChangeEnd:

@@ -5,12 +5,17 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Rain.Core.Model;
-using Rain.Core.Model.DocumentGraph;
+
+using DG = Rain.Core.Model.DocumentGraph;
+
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
+
+using SVG = Rain.Formatter.Svg;
+
 using Rain.Formatter.Svg.Paint;
 using Rain.Formatter.Svg.Shapes;
 using Rain.Formatter.Svg.Structure;
@@ -28,50 +33,67 @@ namespace Rain.Formatter.Svg.IO
 {
     public static class SvgReader
     {
-        public static Core.Model.DocumentGraph.Document FromSvg(Document svgDocument)
+        public static DG.Document FromSvg(Document svgDocument)
         {
-            var doc = new Core.Model.DocumentGraph.Document
+            var doc = new DG.Document
             {
-                Root = new Core.Model.DocumentGraph.Group(),
+                Root = new DG.Group(),
                 Bounds = new RectangleF(svgDocument.Viewbox.Left,
                                         svgDocument.Viewbox.Top,
                                         svgDocument.Viewbox.Width,
                                         svgDocument.Viewbox.Height)
             };
 
+            var resolved = new Dictionary<string, object>();
+
             foreach (var child in svgDocument
                                  .OfType<IGraphicalElement>()
-                                 .Select(g => FromSvg(svgDocument, g)))
+                                 .Select(g => FromSvg(g, resolved)))
                 doc.Root.Add(child, 0);
 
             return doc;
         }
 
-        private static Layer FromSvg(Document svgDocument, IGraphicalElement element)
+        private static DG.ILayer FromSvg(
+            IGraphicalElement element, IDictionary<string, object> resolved)
         {
-            Layer layer = null;
+            if (element.Id != null &&
+                resolved.TryGetValue(element.Id, out var resolvedObject) &&
+                resolvedObject is DG.ILayer resolvedLayer)
+                return resolvedLayer;
+
+            DG.ILayer layer = null;
 
             if (element is Group containerElement)
             {
-                var group = new Core.Model.DocumentGraph.Group();
+                var group = new DG.Group();
 
                 foreach (var child in containerElement
                                      .OfType<IGraphicalElement>()
-                                     .Select(g => FromSvg(svgDocument, g)))
+                                     .Select(g => FromSvg(g, resolved)))
                     group.Add(child, 0);
 
                 layer = group;
             }
 
-            if (element is IShapeElement shapeElement)
+            if (element is Use useElement)
             {
-                IGeometricLayer shape;
+                var target = useElement.Document.Resolve<IGraphicalElement>(useElement.Target);
+                if (target != null)
+                    layer = new DG.Clone
+                    {
+                        Target = FromSvg(target, resolved)
+                    };
+            }
+            else if (element is IShapeElement shapeElement)
+            {
+                DG.IGeometricLayer shape;
 
                 // ReSharper disable RedundantNameQualifier
                 switch (shapeElement)
                 {
                     case Ellipse ellipse:
-                        shape = new Core.Model.DocumentGraph.Ellipse
+                        shape = new DG.Ellipse
                         {
                             CenterX = ellipse.CenterX.To(LengthUnit.Pixels),
                             CenterY = ellipse.CenterY.To(LengthUnit.Pixels),
@@ -81,7 +103,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Line line:
-                        var linePath = new Core.Model.DocumentGraph.Path();
+                        var linePath = new DG.Path();
 
                         linePath.Instructions.Add(
                             new MovePathInstruction(
@@ -97,7 +119,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Path path:
-                        var pathPath = new Core.Model.DocumentGraph.Path();
+                        var pathPath = new DG.Path();
 
                         pathPath.Instructions.AddItems(path.Data);
 
@@ -105,7 +127,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Polygon polygon:
-                        var polygonPath = new Core.Model.DocumentGraph.Path();
+                        var polygonPath = new DG.Path();
 
                         polygonPath.Instructions.AddItems(
                             polygon.Points.Select(v => new LinePathInstruction(v)));
@@ -116,7 +138,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Polyline polyline:
-                        var polylinePath = new Core.Model.DocumentGraph.Path();
+                        var polylinePath = new DG.Path();
 
                         polylinePath.Instructions.AddItems(
                             polyline.Points.Select(v => new LinePathInstruction(v)));
@@ -127,7 +149,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Rectangle rectangle:
-                        shape = new Core.Model.DocumentGraph.Rectangle
+                        shape = new DG.Rectangle
                         {
                             X = rectangle.X.To(LengthUnit.Pixels),
                             Y = rectangle.Y.To(LengthUnit.Pixels),
@@ -137,7 +159,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Circle circle:
-                        shape = new Core.Model.DocumentGraph.Ellipse
+                        shape = new DG.Ellipse
                         {
                             CenterX = circle.CenterX.To(LengthUnit.Pixels),
                             CenterY = circle.CenterY.To(LengthUnit.Pixels),
@@ -147,7 +169,7 @@ namespace Rain.Formatter.Svg.IO
 
                         break;
                     case Text text:
-                        shape = new Core.Model.DocumentGraph.Text
+                        shape = new DG.Text
                         {
                             TextStyle = new TextInfo
                             {
@@ -167,24 +189,23 @@ namespace Rain.Formatter.Svg.IO
 
                 // ReSharper restore RedundantNameQualifier
 
-                var dashes = shapeElement.StrokeDashArray
-                                         .Select(
-                                              f => f / shapeElement.StrokeWidth.To(
-                                                       LengthUnit.Pixels))
-                                         .ToArray();
 
-                shape.Fill = FromSvg(svgDocument, shapeElement.Fill, shapeElement.FillOpacity);
-                shape.Stroke = FromSvg(svgDocument,
-                                       shapeElement.Stroke,
+                shape.Fill = FromSvg(shapeElement.Fill,
+                                     shapeElement.FillOpacity,
+                                     resolved,
+                                     shapeElement.Document);
+                shape.Stroke = FromSvg(shapeElement.Stroke,
                                        shapeElement.StrokeOpacity,
                                        shapeElement.StrokeWidth.To(LengthUnit.Pixels),
-                                       dashes,
+                                       shapeElement.StrokeDashArray,
                                        shapeElement.StrokeDashOffset,
                                        shapeElement.StrokeLineCap,
                                        shapeElement.StrokeLineJoin,
-                                       shapeElement.StrokeMiterLimit);
+                                       shapeElement.StrokeMiterLimit,
+                                       resolved,
+                                       shapeElement.Document);
 
-                layer = (Layer) shape;
+                layer = shape;
             }
 
             if (layer != null)
@@ -192,25 +213,33 @@ namespace Rain.Formatter.Svg.IO
                 layer.ApplyTransform(element.Transform);
 
                 layer.Name = element.Name ?? element.Id;
+
+                if(layer.Name != null)
+                resolved[layer.Name] = layer;
             }
 
             return layer;
         }
 
         private static IBrushInfo FromSvg(
-            Document svgDocument, Paint.Paint paint, float opacity)
+            Paint.Paint paint, float opacity, IDictionary<string, object> resolved,
+            Document svgDocument)
         {
+            IBrushInfo brush;
+
             switch (paint)
             {
                 case SolidColorPaint solidColor:
                     var color = solidColor.Color;
 
-                    return new SolidColorBrushInfo(
+                    brush = new SolidColorBrushInfo(
                         new Color(color.Red, color.Green, color.Blue, color.Alpha * opacity));
+
+                    break;
 
                 case LinearGradientPaint linearGradient:
 
-                    return new GradientBrushInfo
+                    brush = new GradientBrushInfo
                     {
                         Stops = new ObservableList<GradientStop>(
                             linearGradient.Stops.Select(s => new GradientStop
@@ -219,14 +248,12 @@ namespace Rain.Formatter.Svg.IO
                                                   s.Color.Green,
                                                   s.Color.Blue,
                                                   s.Color.Alpha * s.Opacity),
-                                Offset = s.Offset.To(LengthUnit.Pixels, 1)
+                                Offset = s.Offset.To(LengthUnit.Number, 1)
                             })),
                         StartPoint =
-                            new Vector2(linearGradient.X1.To(LengthUnit.Pixels, 1),
-                                        linearGradient.Y1.To(LengthUnit.Pixels, 1)),
+                           (linearGradient.X1, linearGradient.Y1).To(LengthUnit.Pixels, 1),
                         EndPoint =
-                            new Vector2(linearGradient.X2.To(LengthUnit.Pixels, 1),
-                                        linearGradient.Y2.To(LengthUnit.Pixels, 1)),
+                            (linearGradient.X2, linearGradient.Y2).To(LengthUnit.Pixels, 1),
                         Name = linearGradient.Name ?? linearGradient.Id,
                         Transform = linearGradient.Transform,
                         SpreadMethod = linearGradient.SpreadMethod,
@@ -234,56 +261,71 @@ namespace Rain.Formatter.Svg.IO
                         Type = GradientBrushType.Linear
                     };
 
-                case RadialGradientPaint radialGradient:
+                    break;
 
-                    return new GradientBrushInfo
+                case RadialGradientPaint radialGradient:
+                {
+                    var stops = radialGradient.Stops.Select(s => new GradientStop
                     {
-                        Stops = new ObservableList<GradientStop>(
-                            radialGradient.Stops.Select(s => new GradientStop
-                            {
-                                Color = new Color(s.Color.Red,
-                                                  s.Color.Green,
-                                                  s.Color.Blue,
-                                                  s.Color.Alpha),
-                                Offset = s.Offset.To(LengthUnit.Pixels, 1)
-                            })),
-                        StartPoint =
-                            new Vector2(radialGradient.CenterX.To(LengthUnit.Pixels, 1),
-                                        radialGradient.CenterY.To(LengthUnit.Pixels, 1)),
-                        Focus =
-                            new Vector2(radialGradient.FocusX.To(LengthUnit.Pixels, 1),
-                                        radialGradient.FocusY.To(LengthUnit.Pixels, 1)),
-                        EndPoint =
-                            new Vector2(
-                                radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
-                                radialGradient.Radius.To(LengthUnit.Pixels, 1),
-                                radialGradient.CenterX.To(LengthUnit.Pixels, 1) +
-                                radialGradient.Radius.To(LengthUnit.Pixels, 1)),
+                        Color = new Color(s.Color.Red, s.Color.Green, s.Color.Blue, s.Color.Alpha),
+                        Offset = s.Offset.To(LengthUnit.Number, 1)
+                    });
+
+                    var start =
+                        (radialGradient.CenterX, radialGradient.CenterY).To(LengthUnit.Pixels, 1);
+                    var focus =
+                        (radialGradient.FocusX, radialGradient.FocusX).To(LengthUnit.Pixels, 1);
+                    var radius =
+                        (radialGradient.Radius, radialGradient.Radius).To(LengthUnit.Pixels, 1);
+
+                    brush = new GradientBrushInfo
+                    {
+                        Stops = new ObservableList<GradientStop>(stops),
+                        StartPoint = start,
+                        FocusOffset = focus - start,
+                        EndPoint = radius + start,
                         Name = radialGradient.Name ?? radialGradient.Id,
                         Transform = radialGradient.Transform,
                         SpreadMethod = radialGradient.SpreadMethod,
                         Opacity = opacity,
                         Type = GradientBrushType.Radial
                     };
+                }
+
+                    break;
 
                 case ReferencePaint reference:
 
-                    return FromSvg(svgDocument,
-                                   svgDocument.Defs[reference.Reference.GetFragment()] as Paint.Paint,
-                                   1);
+                    return FromSvg(svgDocument.ResolveDef<Paint.Paint>(reference.Reference),
+                                   1,
+                                   resolved,
+                                   svgDocument);
+
+                case null:
+
+                    return null;
+
+                default:
+
+                    throw new NotImplementedException();
             }
 
-            return null;
+            brush.Name = paint.Name;
+
+            if (brush.Name != null)
+                resolved.Add(brush.Name, brush);
+
+            return brush;
         }
 
         private static IPenInfo FromSvg(
-            Document svgDocument, Paint.Paint paint, float opacity, float width,
-            IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
-            float miterLimit)
+            Paint.Paint paint, float opacity, float width, IEnumerable<float> dashes,
+            float dashOffset, LineCap lineCap, LineJoin lineJoin, float miterLimit,
+            IDictionary<string, object> resolved, Document svgDocument)
         {
             var stroke = new PenInfo
             {
-                Brush = FromSvg(svgDocument, paint, opacity),
+                Brush = FromSvg(paint, opacity, resolved, svgDocument),
                 Width = width,
                 LineCap = lineCap,
                 LineJoin = lineJoin,

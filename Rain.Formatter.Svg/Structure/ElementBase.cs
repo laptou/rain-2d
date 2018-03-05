@@ -14,6 +14,8 @@ namespace Rain.Formatter.Svg.Structure
 {
     public abstract class ElementBase : IElement
     {
+        public Document Document => Parent is Document doc ? doc : Parent?.Document;
+
         protected string LazyGet(XElement element, XName name, bool inherit = false)
         {
             if (inherit)
@@ -113,6 +115,13 @@ namespace Rain.Formatter.Svg.Structure
                 case RectangleF rect:
                     element.SetAttributeValue(name,
                                               $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
+
+                    break;
+                case Matrix3x2 mat:
+                    element.SetAttributeValue(name,
+                                              $"matrix(" + 
+                                              $"{mat.M11},{mat.M12},{mat.M21}," +
+                                              $"{mat.M22},{mat.M31},{mat.M32})");
 
                     break;
                 case Color color:

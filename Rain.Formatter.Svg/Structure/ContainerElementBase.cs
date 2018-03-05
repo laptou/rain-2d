@@ -39,7 +39,8 @@ namespace Rain.Formatter.Svg.Structure
         {
             base.FromXml(element, context);
 
-            _list.AddRange(element.Elements().Select(x => X.FromXml(x, context)));
+            foreach (var x in element.Elements())
+                Add(X.FromXml(x, context));
         }
 
         public IEnumerator<IElement> GetEnumerator() { return _list.GetEnumerator(); }

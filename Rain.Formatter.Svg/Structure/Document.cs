@@ -6,6 +6,7 @@ using System.Xml.Linq;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Measurement;
+using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
@@ -61,6 +62,20 @@ namespace Rain.Formatter.Svg.Structure
             LazySet(element, "height", Height);
 
             return element;
+        }
+
+        public T Resolve<T>(Uri uri) where T : class, IElement
+        {
+            var id = uri.GetFragment();
+
+            return this[id] as T;
+        }
+
+        public T ResolveDef<T>(Uri uri) where T : class, IElement
+        {
+            var id = uri.GetFragment();
+
+            return Defs[id] as T;
         }
     }
 }

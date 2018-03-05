@@ -19,7 +19,7 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
-        public Vector2 Focus
+        public Vector2 FocusOffset
         {
             get => Get<Vector2>();
             set => Set(value);
@@ -77,8 +77,8 @@ namespace Rain.Core.Model.Paint
                                             StartPoint.Y,
                                             EndPoint.X - StartPoint.X,
                                             EndPoint.Y - StartPoint.Y,
-                                            Focus.X,
-                                            Focus.Y);
+                                            FocusOffset.X,
+                                            FocusOffset.Y);
 
                     break;
                 default:

@@ -28,7 +28,7 @@ namespace Rain.Formatter.Svg.IO
         {
             var svgDoc = new Document();
 
-            var nodes = Utility.Crawl(doc).ToArray();
+            var nodes = NodeReader.ToNodes(doc).ToArray();
             var lookup = nodes.ToLookup(n => n.Target);
             var defs = new Defs();
             svgDoc.Add(defs);

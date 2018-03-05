@@ -75,6 +75,16 @@ namespace Rain.Core
         public abstract void FillRectangle(
             float left, float top, float width, float height, IBrush brush);
 
+        public void FillRectangle(Vector2 center, Vector2 radii, IBrush brush)
+        {
+            FillRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, brush);
+        }
+
+        public void DrawRectangle(Vector2 center, Vector2 radii, IPen pen)
+        {
+            DrawRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, pen);
+        }
+
         public abstract float GetDpi();
 
         public abstract IRenderImage GetRenderImage(IImageFrame image);

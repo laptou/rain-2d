@@ -62,7 +62,7 @@ namespace Rain.Renderer.WPF
         {
             return new RadialGradientBrush(stops,
                                            new Point(centerX, centerY),
-                                           new Size(radiusX, radiusX),
+                                           new Size(Math.Abs(radiusX), Math.Abs(radiusY)),
                                            new Point(focusX, focusY));
         }
 

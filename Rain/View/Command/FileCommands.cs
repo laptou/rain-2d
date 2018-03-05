@@ -40,7 +40,7 @@ namespace Rain.View.Command
                 {
                     var xdoc = XDocument.Load(stream);
                     var doc = new Document();
-                    doc.FromXml(xdoc.Root, new SvgContext {Root = xdoc.Root});
+                    doc.FromXml(xdoc.Root, new SvgContext(xdoc.Root));
 
                     var vm = new ViewManager(artCtx);
 

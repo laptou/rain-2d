@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ namespace Rain.Tools
         private (Vector2 start, Vector2 end)? _drag;
 
         private (bool down, bool moved, Vector2 pos) _mouse;
+        private bool                                 _updatingOptions;
+        private bool _end, _start;
 
         public GradientTool(IToolManager toolManager) : base(toolManager)
         {
@@ -39,6 +42,47 @@ namespace Rain.Tools
             Options.Create<Action>("remove-stop", ToolOptionType.Button, "Remove Stop")
                    .SetIcon("icon-remove")
                    .Set(Remove);
+
+            Options.Create<GradientBrushType>("type", ToolOptionType.Dropdown, "Type")
+                   .SetValues(GradientBrushType.Linear, GradientBrushType.Radial)
+                   .Set(GradientBrushType.Linear);
+
+            Options.OptionChanged += OnOptionChanged;
+        }
+
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_updatingOptions) return;
+
+            var option = (ToolOptionBase) sender;
+
+            if (SelectedBrush == null) return;
+
+            switch (option)
+            {
+                case ToolOption<GradientBrushType> gradientType when option.Id == "type":
+
+                    SelectedBrush.Type = gradientType.Value;
+
+                    break;
+            }
+        }
+
+
+        /// <inheritdoc />
+        protected override void OnSelectionChanged(object sender, EventArgs args)
+        {
+            UpdateOptions();
+            base.OnSelectionChanged(sender, args);
+        }
+
+        private void UpdateOptions()
+        {
+            _updatingOptions = true;
+
+            Options.Set("type", SelectedBrush?.Type ?? GradientBrushType.Linear);
+
+            _updatingOptions = false;
         }
 
         public GradientBrushInfo SelectedBrush =>
@@ -110,7 +154,7 @@ namespace Rain.Tools
                 var t = new Func<float, Vector2>(
                     o => Vector2.Transform(
                         Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, o),
-                        SelectedLayer.AbsoluteTransform));
+                        SelectedLayer.AbsoluteTransform * SelectedBrush.Transform));
 
                 (GradientStop stop, int index)? target = null;
                 var index = 0;
@@ -153,11 +197,12 @@ namespace Rain.Tools
             if (SelectedLayer == null)
                 return;
 
-            var localLastPos =
-                Vector2.Transform(_mouse.pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var transform =
+                MathUtils.Invert(SelectedLayer.AbsoluteTransform);
 
-            var localPos =
-                Vector2.Transform(pos, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
+            var localLastPos = Vector2.Transform(_mouse.pos, transform);
+
+            var localPos = Vector2.Transform(pos, transform);
 
             var localDelta = localPos - localLastPos;
 
@@ -174,9 +219,19 @@ namespace Rain.Tools
                     localDelta;
 
                 if (IsEndpoint(stop) &&
-                    _selection.Count == 1)
+                    _selection.Count == 1 &&
+                    !evt.ModifierState.Alt)
                 {
-                    Move(localDelta,
+                    var delta = localDelta;
+
+                    if (evt.ModifierState.Shift)
+                    {
+                        delta = MathUtils.Project(delta,
+                                                  SelectedBrush.EndPoint -
+                                                  SelectedBrush.StartPoint);
+                    }
+
+                    Move(delta,
                          Equals(stop, SelectedBrush.Stops[0])
                              ? GradientOp.ChangeStart
                              : GradientOp.ChangeEnd);
@@ -196,6 +251,8 @@ namespace Rain.Tools
 
                     if (localStopPos.X < SelectedBrush.StartPoint.X)
                         newOffset = -newOffset;
+
+                    newOffset = MathUtils.Clamp(0, 1, newOffset);
 
                     Move(_selection.ToArray(), newOffset - stop.Offset);
                 }
@@ -262,8 +319,10 @@ namespace Rain.Tools
             RenderContext target, ICacheManager cacheManager, IViewManager view)
         {
             var fill = cacheManager.GetBrush(nameof(EditorColors.Node));
+            var fillAlt = cacheManager.GetBrush(nameof(EditorColors.SpecialNode));
             var outline = cacheManager.GetBrush(nameof(EditorColors.NodeOutline));
-            var outlineAlt = cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt));
+            var outlineSel = cacheManager.GetBrush(nameof(EditorColors.GradientHandleSelected));
+            var outlineAlt = cacheManager.GetBrush(nameof(EditorColors.SpecialNodeOutline));
 
             if (_drag != null)
                 using (var n = target.CreatePen(1, outline))
@@ -274,23 +333,44 @@ namespace Rain.Tools
             if (SelectedBrush == null)
                 return;
 
-            var transform = SelectedLayer.AbsoluteTransform;
+            var transform = SelectedBrush.Transform * SelectedLayer.AbsoluteTransform;
             var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, transform));
             var zoom = view.Zoom;
             var radius = 6 / zoom;
 
             var p = target.CreatePen(1, outline);
-            var p2 = target.CreatePen(2, outlineAlt);
+            var p2 = target.CreatePen(2, outlineSel);
+            var p3 = target.CreatePen(1, outlineAlt);
 
             Vector2 start = t(SelectedBrush.StartPoint), end = t(SelectedBrush.EndPoint);
 
-            target.DrawLine(start, end, p);
+            target.DrawLine(start, end, p3);
 
-            target.FillCircle(start, radius, fill);
-            target.DrawCircle(start, radius, p);
+            if (SelectedBrush.Type == GradientBrushType.Linear)
+            {
+                target.FillRectangle(end, new Vector2(radius * 0.75f), fillAlt);
+                target.DrawRectangle(end, new Vector2(radius * 0.75f), p3);
+            }
 
-            target.FillCircle(end, radius, fill);
-            target.DrawCircle(end, radius, p);
+            if (SelectedBrush.Type == GradientBrushType.Radial)
+            {
+                var s = SelectedBrush.StartPoint;
+                var e = SelectedBrush.EndPoint;
+                var v = t(s + new Vector2(0, e.Y - s.Y));
+                var h = t(s + new Vector2(e.X - s.X, 0));
+
+                target.DrawLine(start, v, p3);
+                target.DrawLine(start, h, p3);
+
+                target.FillRectangle(v, new Vector2(radius * 0.75f), fillAlt);
+                target.DrawRectangle(v, new Vector2(radius * 0.75f), p3);
+
+                target.FillRectangle(h, new Vector2(radius * 0.75f), fillAlt);
+                target.DrawRectangle(h, new Vector2(radius * 0.75f), p3);
+            }
+
+            target.FillRectangle(start, new Vector2(radius * 0.75f), fillAlt);
+            target.DrawRectangle(start, new Vector2(radius * 0.75f), p3);
 
             var shadow = target.CreateEffect<IDropShadowEffect>();
             shadow.Color = new Color(0, 0, 0, 0.5f);
@@ -315,9 +395,10 @@ namespace Rain.Tools
             shadow.Dispose();
 
             // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerated b/c they are resource brushes
+            // and do not automatically regenerate b/c they are resource brushes
             p?.Dispose();
             p2?.Dispose();
+            p3?.Dispose();
         }
 
         private void Add(Color color, int index)
@@ -360,6 +441,8 @@ namespace Rain.Tools
         {
             if (SelectedBrush == null) return false;
             if (SelectedBrush.Stops.Count <= 2) return true;
+            if (Math.Abs(stop.Offset - 1) > MathUtils.Epsilon &&
+                Math.Abs(stop.Offset) > MathUtils.Epsilon) return false;
             if (Equals(stop, SelectedBrush.Stops[0])) return true;
             if (Equals(stop, SelectedBrush.Stops[SelectedBrush.Stops.Count - 1])) return true;
 
@@ -395,9 +478,6 @@ namespace Rain.Tools
                 Time.DoubleClick);
         }
 
-        private void Remove()
-        {
-            Remove(_selection.ToArray());
-        }
+        private void Remove() { Remove(_selection.ToArray()); }
     }
 }

@@ -8,9 +8,9 @@ using Rain.Core.Model.Paint;
 
 namespace Rain.Core.Model.DocumentGraph
 {
-    public class Utility
+    public class NodeReader
     {
-        public static IEnumerable<Node> Crawl(Document doc)
+        public static IEnumerable<Node> ToNodes(Document doc)
         {
             var root = new Node(null, doc, null);
 
@@ -20,11 +20,11 @@ namespace Rain.Core.Model.DocumentGraph
                 yield return new Node(swatch.Name, swatch, root);
 
             foreach (var layer in doc.Root.SubLayers.Reverse())
-                foreach (var node in Crawl(layer, root))
+                foreach (var node in ToNodes(layer, root))
                     yield return node;
         }
 
-        public static IEnumerable<Node> Crawl(IBrushInfo brush, Node ancestor)
+        public static IEnumerable<Node> ToNodes(IBrushInfo brush, Node ancestor)
         {
             var node = new Node(brush.Name, brush, ancestor);
 
@@ -35,18 +35,18 @@ namespace Rain.Core.Model.DocumentGraph
                     yield return new Node(null, stop, node);
         }
 
-        public static IEnumerable<Node> Crawl(IPenInfo pen, Node ancestor)
+        public static IEnumerable<Node> ToNodes(IPenInfo pen, Node ancestor)
         {
             var node = new Node(null, pen, ancestor);
 
             yield return node;
 
             if (pen.Brush != null)
-                foreach (var n in Crawl(pen.Brush, node))
+                foreach (var n in ToNodes(pen.Brush, node))
                     yield return n;
         }
 
-        public static IEnumerable<Node> Crawl(ILayer layer, Node ancestor)
+        public static IEnumerable<Node> ToNodes(ILayer layer, Node ancestor)
         {
             var root = new Node(layer.Name, layer, ancestor);
 
@@ -54,26 +54,26 @@ namespace Rain.Core.Model.DocumentGraph
 
             if (layer is IFilledLayer filled &&
                 filled.Fill != null)
-                foreach (var node in Crawl(filled.Fill, root))
+                foreach (var node in ToNodes(filled.Fill, root))
                     yield return node;
 
             if (layer is IStrokedLayer stroked &&
                 stroked.Stroke != null)
-                foreach (var node in Crawl(stroked.Stroke, root))
+                foreach (var node in ToNodes(stroked.Stroke, root))
                     yield return node;
 
             if (layer is ITextLayer text &&
                 text.Value != null)
-                foreach (var node in Crawl(text, root))
+                foreach (var node in ToNodes(text, root))
                     yield return node;
 
             if (layer is IContainerLayer container)
                 foreach (var sublayer in container.SubLayers.Reverse())
-                    foreach (var node in Crawl(sublayer, root))
+                    foreach (var node in ToNodes(sublayer, root))
                         yield return node;
         }
 
-        public static IEnumerable<Node> Crawl(ITextLayer layer, Node ancestor)
+        public static IEnumerable<Node> ToNodes(ITextLayer layer, Node ancestor)
         {
             var node = new Node(layer.Name, layer, ancestor);
 

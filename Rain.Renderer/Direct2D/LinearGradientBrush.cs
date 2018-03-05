@@ -37,6 +37,7 @@ namespace Rain.Renderer.Direct2D
                                                                                         end.Y)
                                                                             },
                                                                         nativeStops);
+                
             }
         }
 

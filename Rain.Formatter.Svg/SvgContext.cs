@@ -14,6 +14,16 @@ namespace Rain.Formatter.Svg
         private readonly Dictionary<string, IElement>
             _elements = new Dictionary<string, IElement>();
 
+        public SvgContext(XElement root)
+        {
+            Root = root;
+        }
+
+        public SvgContext()
+        {
+            Root = new XElement(SvgNames.Svg);
+        }
+
         public IElement this[string id]
         {
             get =>

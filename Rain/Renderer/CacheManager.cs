@@ -167,6 +167,11 @@ namespace Rain.Renderer
                     grad.Stops.ReplaceRange(gradInfo.Stops);
 
                     break;
+                case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Type):
+                    // let the brush be recreated on the next frame
+                    grad.Dispose();
+                    _brushBindings.Remove(info);
+                    break;
                 case ILinearGradientBrush grad
                     when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
                     gradInfo = (GradientBrushInfo) info;

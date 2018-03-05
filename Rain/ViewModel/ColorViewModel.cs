@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 
 using Rain.Utility;
 
@@ -134,6 +135,29 @@ namespace Rain.ViewModel
             Ui(() =>
                {
                    Fill = brushInfo?.CreateWpfBrush();
+
+                   if (Fill is WPF.LinearGradientBrush lgb)
+                   {
+                       var dir = Vector2.Normalize(
+                           lgb.EndPoint.Convert() - lgb.StartPoint.Convert());
+
+                       lgb.StartPoint = (new Vector2(0.5f) - dir / 2).Convert();
+                       lgb.EndPoint = (new Vector2(0.5f) + dir / 2).Convert();
+                       lgb.MappingMode = WPF.BrushMappingMode.RelativeToBoundingBox;
+                   }
+
+
+                   if (Fill is WPF.RadialGradientBrush rgb)
+                   {
+                       var dir = Vector2.Normalize(new Vector2((float) rgb.RadiusX, (float) rgb.RadiusY)) / 2;
+
+                       rgb.GradientOrigin = new Vector2(0.5f).Convert();
+                       rgb.Center = new Vector2(0.5f).Convert();
+                       rgb.RadiusX = dir.X;
+                       rgb.RadiusY = dir.Y;
+                       rgb.MappingMode = WPF.BrushMappingMode.RelativeToBoundingBox;
+                   }
+
                    Update();
                });
         }

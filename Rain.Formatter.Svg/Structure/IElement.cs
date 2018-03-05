@@ -11,6 +11,7 @@ namespace Rain.Formatter.Svg.Structure
         string Id { get; set; }
         string Name { get; set; }
         IContainerElement Parent { get; set; }
+        Document Document { get; }
 
         void FromXml(XElement element, SvgContext context);
         XElement ToXml(SvgContext context);

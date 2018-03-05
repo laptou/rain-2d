@@ -78,6 +78,7 @@ namespace Rain.Formatter.Svg.Paint
             }
 
             LazySet(element, "gradientUnits", space);
+            LazySet(element, "gradientTransform", Transform);
 
             element.Add(Stops.Select(g => g.ToXml(context)));
 

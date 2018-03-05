@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -10,6 +11,16 @@ namespace Rain.Formatter.Svg.Paint
 {
     public class RadialGradientPaint : GradientPaint
     {
+        public RadialGradientPaint()
+        {
+        }
+
+        public RadialGradientPaint(string id, IEnumerable<GradientStop> stops)
+        {
+            Id = id;
+            Stops = stops.ToArray();
+        }
+
         public Length CenterX { get; set; }
         public Length CenterY { get; set; }
         public Length FocusX { get; set; }
@@ -22,8 +33,8 @@ namespace Rain.Formatter.Svg.Paint
 
             CenterX = LazyGet(element, "cx", Length.Zero);
             CenterY = LazyGet(element, "cy", Length.Zero);
-            CenterY = LazyGet(element, "fx", Length.Zero);
-            CenterY = LazyGet(element, "fy", Length.Zero);
+            FocusX = LazyGet(element, "fx", CenterX);
+            FocusY = LazyGet(element, "fy", CenterY);
             Radius = LazyGet(element, "r", Length.Zero);
         }
 
