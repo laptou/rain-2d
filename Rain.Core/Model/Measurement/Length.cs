@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -81,6 +82,8 @@ namespace Rain.Core.Model.Measurement
 
             return To(target);
         }
+
+        
 
         public override string ToString()
         {
@@ -213,5 +216,13 @@ namespace Rain.Core.Model.Measurement
         }
 
         public static bool operator !=(Length l1, Length l2) { return !(l1 == l2); }
+    }
+
+    public static class LengthHelper
+    {
+        public static Vector2 To(this (Length, Length) tup, LengthUnit target, float baseline)
+        {
+            return new Vector2(tup.Item1.To(target, baseline), tup.Item2.To(target, baseline));
+        }
     }
 }

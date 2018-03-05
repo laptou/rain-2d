@@ -60,7 +60,7 @@ namespace Rain.Formatter.Svg.Shapes
                 LazySet(element, "stroke-dash-offset", StrokeDashOffset);
                 LazySet(element, "stroke-opacity", StrokeOpacity * Stroke.Opacity, 1);
                 LazySet(element, "stroke-linecap", StrokeLineCap);
-                LazySet(element, "stroke-linejoin", StrokeLineJoin);
+                LazySet(element, "stroke-linejoin", StrokeLineJoin, LineJoin.Miter);
                 LazySet(element, "stroke-miterlimit", StrokeMiterLimit, 4f);
                 LazySet(element, "stroke-width", StrokeWidth, new Length(1, LengthUnit.Pixels));
             }
