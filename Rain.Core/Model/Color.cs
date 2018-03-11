@@ -325,6 +325,8 @@ namespace Rain.Core.Model
         public float Green { get; set; }
         public float Red { get; set; }
 
+        public static Color Transparent => new Color(0, 0, 0, 0);
+
         public Vector4 AsVector() { return new Vector4(Red, Green, Blue, Alpha); }
 
         public static Color operator +(Color c, Vector4 v) { return new Color(c.AsVector() + v); }

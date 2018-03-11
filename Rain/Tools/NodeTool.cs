@@ -201,7 +201,7 @@ namespace Rain.Tools
         }
 
         public override void Render(
-            RenderContext target, ICacheManager cacheManager, IViewManager view)
+            IRenderContext target, ICacheManager cacheManager, IViewManager view)
         {
             if (SelectedLayer == null)
                 return;

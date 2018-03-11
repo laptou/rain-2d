@@ -7,6 +7,6 @@ namespace Rain.Core
 {
     public interface IRenderable
     {
-        void Render(RenderContext target, ICacheManager cache, IViewManager view);
+        void Render(IRenderContext target, ICacheManager cache, IViewManager view);
     }
 }

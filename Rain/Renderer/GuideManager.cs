@@ -83,7 +83,7 @@ namespace Rain.Renderer
             return (origin + dist, result);
         }
 
-        public void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             var guides = GetGuides(GuideType.All).ToArray();
 
@@ -91,7 +91,10 @@ namespace Rain.Renderer
 
             var fx = target.CreateEffect<IGlowEffect>();
 
-            target.PushEffect(fx);
+            var fxLayer = target.CreateEffectLayer();
+
+            fxLayer.Begin(null);
+            fxLayer.PushEffect(fx);
 
             foreach (var guide in guides)
             {
@@ -150,7 +153,7 @@ namespace Rain.Renderer
                 }
             }
 
-            target.PopEffect();
+            fxLayer.End();
 
             fx.Dispose();
         }

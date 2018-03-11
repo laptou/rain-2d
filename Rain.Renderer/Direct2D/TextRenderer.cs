@@ -23,7 +23,7 @@ namespace Rain.Renderer.Direct2D
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
 
-            var path = new PathGeometry(context.RenderContext.Factory2D);
+            var path = new PathGeometry(context.RenderContext.FactoryD2D);
             var sink = path.Open();
 
             glyphRun.FontFace.GetGlyphRunOutline(glyphRun.FontSize,
@@ -36,7 +36,7 @@ namespace Rain.Renderer.Direct2D
 
             sink.Close();
 
-            var geometry = new TransformedGeometry(context.RenderContext.Factory2D,
+            var geometry = new TransformedGeometry(context.RenderContext.FactoryD2D,
                                                    path,
                                                    Matrix3x2.Translation(
                                                        baselineOriginX,

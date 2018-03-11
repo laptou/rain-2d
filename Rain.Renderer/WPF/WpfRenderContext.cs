@@ -43,6 +43,9 @@ namespace Rain.Renderer.WPF
         }
 
         /// <inheritdoc />
+        public override IEffectLayer CreateEffectLayer() { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
         public override IRenderImage GetRenderImage(IImageFrame image) { throw new NotImplementedException(); }
 
         public override ISolidColorBrush CreateBrush(Color color)
@@ -109,6 +112,9 @@ namespace Rain.Renderer.WPF
         }
 
         public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
+        public override void DrawEffectLayer(IEffectLayer layer) { throw new NotImplementedException(); }
 
         public override void Dispose() { _ctx = null; }
 
@@ -179,11 +185,7 @@ namespace Rain.Renderer.WPF
                 new RectangleRenderCommand(left, top, width, height, true, brush, null));
         }
 
-        public override float GetDpi() { return 0; }
-
-        public override void PopEffect() { throw new NotImplementedException(); }
-
-        public override void PushEffect(IEffect effect) { throw new NotImplementedException(); }
+        public override float GetDpi() { return 96; }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {

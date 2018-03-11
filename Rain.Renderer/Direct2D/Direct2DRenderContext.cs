@@ -27,31 +27,94 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace Rain.Renderer.Direct2D
 {
-    public class Direct2DRenderContext : RenderContext
+    public class Direct2DEffectLayer : Direct2DRenderContext, IEffectLayer, IRenderImage
     {
-        private readonly Stack<Effect> _effects = new Stack<Effect>();
+        private readonly D2D.BitmapRenderTarget _target;
+        private readonly Bitmap _bmp;
+        private          Effect                 _effect;
 
-        private readonly D2D.RenderTarget       _target;
-        private readonly D2D.BitmapRenderTarget _virtualTarget;
 
-        public Direct2DRenderContext(D2D.RenderTarget target)
+        public IEffect GetEffect() => _effect;
+
+        internal Direct2DEffectLayer(Direct2DRenderContext ctx) :
+            base(CreateTarget(ctx))
         {
-            _target = target;
-            _virtualTarget =
-                new D2D.BitmapRenderTarget(target,
-                                           D2D.CompatibleRenderTargetOptions.None,
-                                           _target.Size);
-            FactoryDW = new DW.Factory(DW.FactoryType.Shared);
+            _target = (D2D.BitmapRenderTarget) base.Target;
+            _bmp = new Bitmap(_target.Bitmap);
         }
 
-        public D2D.Factory Factory2D => Target.Factory;
+        internal override D2D.RenderTarget Target => _target;
+
+
+        private static D2D.RenderTarget CreateTarget(Direct2DRenderContext ctx)
+        {
+            return new D2D.BitmapRenderTarget(ctx.Target, D2D.CompatibleRenderTargetOptions.None);
+        }
+
+        public void ClearEffect()
+        {
+            _effect = null;
+        }
+
+        /// <inheritdoc />
+        public override void Dispose()
+        {
+            _bmp.Dispose();
+            base.Dispose();
+        }
+
+        public void PushEffect(IEffect effect)
+        {
+            if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
+
+            fx.SetInput(0, _bmp);
+
+            if (_effect != null)
+                _effect.SetInput(0, fx);
+            else
+                _effect = fx;
+        }
+
+        /// <inheritdoc />
+        public bool Alpha => true;
+
+        /// <inheritdoc />
+        public float Dpi => _target.DotsPerInch.Width;
+
+        /// <inheritdoc />
+        public int PixelHeight => _target.PixelSize.Height;
+
+        /// <inheritdoc />
+        public int PixelWidth => _target.PixelSize.Width;
+
+        /// <inheritdoc />
+        public T Unwrap<T>() where T : class { return _target.Bitmap as T; }
+    }
+
+
+    public class Direct2DRenderContext : RenderContext
+    {
+        private readonly D2D.RenderTarget _target;
+
+        internal virtual D2D.RenderTarget Target => _target;
+
+        public Direct2DRenderContext(D2D.RenderTarget target) : this(
+            target,
+            new DW.Factory(DW.FactoryType.Shared)) { }
+
+        public Direct2DRenderContext(D2D.RenderTarget target, DW.Factory factory)
+        {
+            _target = target;
+            FactoryDW = factory;
+        }
+
+        public D2D.Factory FactoryD2D => _target.Factory;
 
         public DW.Factory FactoryDW { get; }
 
-        public override float Height => Target.Size.Height;
+        public override float Height => _target.Size.Height;
 
-        public D2D.RenderTarget Target => _effects.Count > 0 ? _virtualTarget : _target;
-        public override float Width => Target.Size.Width;
+        public override float Width => _target.Size.Width;
 
         /// <inheritdoc />
         public override IFontSource CreateFontSource()
@@ -61,17 +124,15 @@ namespace Rain.Renderer.Direct2D
 
         public override void Begin(object ctx)
         {
-            _target.BeginDraw();
-            _virtualTarget.BeginDraw();
-            _target.Transform = SharpDX.Matrix3x2.Identity;
-            _virtualTarget.Transform = SharpDX.Matrix3x2.Identity;
+            Target.Transform = SharpDX.Matrix3x2.Identity;
+
+            Target.BeginDraw();
         }
 
-        public override void Clear(Color color)
-        {
-            _target.Clear(color.Convert());
-            _virtualTarget.Clear(null);
-        }
+        public override void Clear(Color color) { Target.Clear(color.Convert()); }
+
+        /// <inheritdoc />
+        public override IEffectLayer CreateEffectLayer() { return new Direct2DEffectLayer(this); }
 
 
         public override ISolidColorBrush CreateBrush(Color color)
@@ -101,12 +162,15 @@ namespace Rain.Renderer.Direct2D
 
         public override T CreateEffect<T>()
         {
-            if (typeof(T) == typeof(IGlowEffect))
-                return new GlowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
-            if (typeof(T) == typeof(IDropShadowEffect))
-                return new DropShadowEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
-            if (typeof(T) == typeof(IScaleEffect))
-                return new ScaleEffect(_target.QueryInterface<D2D.DeviceContext>()) as T;
+            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+            {
+                if (typeof(T) == typeof(IGlowEffect))
+                    return new GlowEffect(dc) as T;
+                if (typeof(T) == typeof(IDropShadowEffect))
+                    return new DropShadowEffect(dc) as T;
+                if (typeof(T) == typeof(IScaleEffect))
+                    return new ScaleEffect(dc) as T;
+            }
 
             return default;
         }
@@ -114,7 +178,7 @@ namespace Rain.Renderer.Direct2D
         public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
             return new Geometry(Target,
-                                new D2D.EllipseGeometry(Factory2D,
+                                new D2D.EllipseGeometry(FactoryD2D,
                                                         new D2D.Ellipse(
                                                             new RawVector2(cx, cy),
                                                             rx,
@@ -151,17 +215,28 @@ namespace Rain.Renderer.Direct2D
                            lineCap,
                            lineJoin,
                            miterLimit,
-                           Target);
+                           _target);
         }
 
         public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
         {
             return new Geometry(Target,
-                                new D2D.RectangleGeometry(Factory2D,
+                                new D2D.RectangleGeometry(FactoryD2D,
                                                           new RawRectangleF(x, y, x + w, y + h)));
         }
 
         public override ITextLayout CreateTextLayout() { return new DirectWriteTextLayout(this); }
+
+        /// <inheritdoc />
+        public override void DrawEffectLayer(IEffectLayer layer)
+        {
+            var native = layer.GetEffect().Unwrap<D2D.Effect>();
+
+            if (native == null) return;
+
+            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+                dc.DrawImage(native);
+        }
 
         public override void Dispose()
         {
@@ -172,10 +247,12 @@ namespace Rain.Renderer.Direct2D
         /// <inheritdoc />
         public override void DrawBitmap(IRenderImage img, RectangleF dstRect, ScaleMode scaleMode)
         {
-            if (!(img is Bitmap bitmap)) return;
+            var native = img.Unwrap<D2D.Bitmap>();
 
-            Target.QueryInterface<D2D.DeviceContext>()
-                  .DrawBitmap(bitmap,
+            if (native == null) return;
+
+            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+            dc.DrawBitmap(native,
                               dstRect.Convert(),
                               1,
                               (D2D.InterpolationMode) scaleMode,
@@ -212,7 +289,7 @@ namespace Rain.Renderer.Direct2D
 
         public override void DrawLine(Vector2 v1, Vector2 v2, IPen iPen)
         {
-            var pen = iPen as Pen;
+            var pen = (Pen) iPen;
 
             if (iPen == null) return;
 
@@ -222,18 +299,15 @@ namespace Rain.Renderer.Direct2D
         public override void DrawRectangle(
             float left, float top, float width, float height, IPen iPen)
         {
-            var pen = iPen as Pen;
+            var pen = (Pen) iPen;
+
             Target.DrawRectangle(new SharpDX.RectangleF(left, top, width, height),
                                  pen.Brush,
                                  pen.Width,
                                  pen.Style);
         }
 
-        public override void End()
-        {
-            _virtualTarget.EndDraw();
-            _target.EndDraw();
-        }
+        public override void End() { Target.EndDraw(); }
 
         public override void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush)
         {
@@ -260,7 +334,7 @@ namespace Rain.Renderer.Direct2D
         public override IRenderImage GetRenderImage(IImageFrame image)
         {
             if (image is ImageFrame wicImageFrame)
-                return new Bitmap(_target, wicImageFrame);
+                return new Bitmap(Target, wicImageFrame);
 
             throw new ArgumentException("This render context can only process WIC images.");
         }
@@ -274,12 +348,12 @@ namespace Rain.Renderer.Direct2D
             using (var bmp = GetRenderImage(image))
             {
                 using (var target =
-                    new D2D.BitmapRenderTarget(_target,
-                                               D2D.CompatibleRenderTargetOptions.None,
-                                               size))
+                        new D2D.BitmapRenderTarget(Target,
+                                                   D2D.CompatibleRenderTargetOptions.None,
+                                                   size)
+                    )
                 {
-                    using (var effect =
-                        new ScaleEffect(_target.QueryInterface<D2D.DeviceContext>()))
+                    using (var effect = new ScaleEffect(Target.QueryInterface<D2D.DeviceContext>()))
                     {
                         var dpi = new Vector2(target.DotsPerInch.Width, target.DotsPerInch.Height);
                         effect.ScaleMode = mode;
@@ -287,7 +361,8 @@ namespace Rain.Renderer.Direct2D
                         effect.SetInput(0, bmp);
                         var img = effect.GetOutput();
                         target.BeginDraw();
-                        target.QueryInterface<D2D.DeviceContext>().DrawImage(img);
+            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+                        dc.DrawImage(img);
                         target.EndDraw();
                     }
 
@@ -296,49 +371,13 @@ namespace Rain.Renderer.Direct2D
             }
         }
 
-        public override void PopEffect()
-        {
-            var d2dEffect = _effects.Pop();
-
-            if (_effects.Count == 0)
-            {
-                _virtualTarget.TryEndDraw(out _, out _);
-
-                var t = _target.Transform;
-
-                _target.Transform = SharpDX.Matrix3x2.Identity;
-
-                using (var output = d2dEffect.GetOutput())
-                {
-                    _target.QueryInterface<D2D.DeviceContext>().DrawImage(output);
-                }
-
-                _target.Transform = t;
-
-                _virtualTarget.BeginDraw();
-                _virtualTarget.Clear(null);
-            }
-        }
-
-        public override void PushEffect(IEffect effect)
-        {
-            if (!(effect is Effect fx)) throw new ArgumentException(nameof(effect));
-
-            fx.SetInput(0, new Bitmap(_virtualTarget.Bitmap));
-
-            if (_effects.Count > 0)
-                _effects.Peek().SetInput(0, fx);
-
-            _effects.Push(fx);
-        }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
             if (absolute)
-                _virtualTarget.Transform = _target.Transform = transform.Convert();
+                Target.Transform = transform.Convert();
             else
-                _virtualTarget.Transform =
-                    _target.Transform = transform.Convert() * _target.Transform;
+                Target.Transform = transform.Convert() * Target.Transform;
         }
     }
 }

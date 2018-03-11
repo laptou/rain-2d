@@ -96,7 +96,7 @@ namespace Rain.Core.Model.DocumentGraph
             return default;
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (!Visible) return;
 

@@ -60,6 +60,20 @@ namespace Rain.Core.Model.Text
             set => Set(value);
         }
 
+        /// <inheritdoc />
+        public ITextInfo ApplyFormat(Format format)
+        {
+            return new TextInfo
+            {
+                Baseline = Baseline,
+                FontFamily = format?.FontFamily ?? FontFamily,
+                FontSize = format?.FontSize ?? FontSize,
+                FontStretch = format?.FontStretch ?? FontStretch,
+                FontStyle = format?.FontStyle ?? FontStyle,
+                FontWeight = format?.FontWeight ?? FontWeight
+            };
+        }
+
         #endregion
     }
 }

@@ -159,7 +159,7 @@ namespace Rain.Tools
             Context.InvalidateRender();
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             var zoom = view.Zoom;
 

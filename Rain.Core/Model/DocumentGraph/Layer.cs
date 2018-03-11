@@ -76,7 +76,7 @@ namespace Rain.Core.Model.DocumentGraph
         public abstract T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
             where T : ILayer;
 
-        public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
+        public abstract void Render(IRenderContext target, ICacheManager cache, IViewManager view);
 
         public virtual string DefaultName => "Layer";
 

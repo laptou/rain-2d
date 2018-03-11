@@ -20,4 +20,13 @@ namespace Rain.Core.Model.Effects
         /// <returns>The native object representing the effect.</returns>
         T Unwrap<T>() where T : class;
     }
+
+    public interface IEffectLayer : IRenderContext
+    {
+        void ClearEffect();
+
+        void PushEffect(IEffect effect);
+
+        IEffect GetEffect();
+    }
 }

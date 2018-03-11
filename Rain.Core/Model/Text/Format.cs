@@ -18,7 +18,7 @@ namespace Rain.Core.Model.Text
 
         public float? CharacterSpacing { get; set; }
 
-        public string FontFamilyName { get; set; }
+        public string FontFamily { get; set; }
 
         public float? FontSize { get; set; }
 
@@ -59,7 +59,7 @@ namespace Rain.Core.Model.Text
                 Superscript = Superscript,
                 Subscript = Subscript,
                 FontSize = FontSize,
-                FontFamilyName = FontFamilyName,
+                FontFamily = FontFamily,
                 FontStyle = FontStyle,
                 FontStretch = FontStretch,
                 FontWeight = FontWeight,
@@ -75,7 +75,7 @@ namespace Rain.Core.Model.Text
         {
             return new Format
             {
-                FontFamilyName = newFormat.FontFamilyName ?? FontFamilyName,
+                FontFamily = newFormat.FontFamily ?? FontFamily,
                 FontStyle = newFormat.FontStyle ?? FontStyle,
                 FontSize = newFormat.FontSize ?? FontSize,
                 FontStretch = newFormat.FontStretch ?? FontStretch,

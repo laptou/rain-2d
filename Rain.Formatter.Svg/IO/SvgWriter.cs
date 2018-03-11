@@ -121,7 +121,7 @@ namespace Rain.Formatter.Svg.IO
 
                 element = new Span
                 {
-                    FontFamily = textFormat.FontFamilyName,
+                    FontFamily = textFormat.FontFamily,
                     FontStretch = textFormat.FontStretch,
                     FontWeight = textFormat.FontWeight,
                     FontStyle = textFormat.FontStyle,

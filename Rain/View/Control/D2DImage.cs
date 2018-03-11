@@ -119,7 +119,7 @@ namespace Rain.View.Control
                     var delta = NativeHelper.HighWord(wParam);
 
                     var pos = NativeHelper.GetCoordinates(lParam,
-                                                          _d2dFactory.DesktopDpi.Height,
+                                                          _dpi,
                                                           hWnd);
 
                     var scrollEvt = new ScrollEvent(delta,
@@ -143,7 +143,7 @@ namespace Rain.View.Control
                 {
                     WindowHelper.SetFocus(hWnd);
 
-                    var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
                     lock (_events)
                     {
@@ -162,7 +162,7 @@ namespace Rain.View.Control
                 {
                     WindowHelper.SetFocus(hWnd);
 
-                    var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
                     lock (_events)
                     {
@@ -181,7 +181,7 @@ namespace Rain.View.Control
                 {
                     WindowHelper.SetFocus(hWnd);
 
-                    var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
                     lock (_events)
                     {
@@ -200,7 +200,7 @@ namespace Rain.View.Control
                 {
                     WindowHelper.SetFocus(hWnd);
 
-                    var pos = NativeHelper.GetCoordinates(lParam, _d2dFactory.DesktopDpi.Height);
+                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
                     lock (_events)
                     {
@@ -281,6 +281,7 @@ namespace Rain.View.Control
                     goto default;
                 case WindowMessage.Size:
                     InvalidateSurface();
+                    _dpi = WindowHelper.GetDpiForWindow(hWnd);
                     goto default;
                 default:
 
@@ -387,14 +388,14 @@ namespace Rain.View.Control
 
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
 
-            var width = (int) Math.Max(1, ActualWidth * _d2dFactory.DesktopDpi.Width / 96.0);
-            var height = (int) Math.Max(1, ActualHeight * _d2dFactory.DesktopDpi.Height / 96.0);
+            var width = (int) Math.Max(1, ActualWidth * _dpi / 96.0);
+            var height = (int) Math.Max(1, ActualHeight * _dpi / 96.0);
 
             var rtp = new D2D.RenderTargetProperties(
                     new D2D.PixelFormat(Format.Unknown, D2D.AlphaMode.Premultiplied))
                 {
-                    DpiX = _d2dFactory.DesktopDpi.Width,
-                    DpiY = _d2dFactory.DesktopDpi.Height,
+                    DpiX = _dpi,
+                    DpiY = _dpi,
                     Type = D2D.RenderTargetType.Hardware
                 };
 
@@ -452,6 +453,7 @@ namespace Rain.View.Control
 
         // ReSharper disable once NotAccessedField.Local
         private WndProc _proc;
+        private float _dpi;
 
         #endregion
 

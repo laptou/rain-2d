@@ -111,8 +111,8 @@ namespace Rain.Renderer.Direct2D
 
                     _dwLayout.SetTypography(typography, range);
 
-                    if (format.FontFamilyName != null)
-                        _dwLayout.SetFontFamilyName(format.FontFamilyName, range);
+                    if (format.FontFamily != null)
+                        _dwLayout.SetFontFamilyName(format.FontFamily, range);
 
                     if (format.FontSize != null)
                         _dwLayout.SetFontSize(format.FontSize.Value, range);

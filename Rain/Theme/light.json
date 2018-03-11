@@ -22,6 +22,8 @@
         "accent-error": "#E2302D",
 
         "text-1": "#404040",
+        "text-2": "#505050",
+        "text-disabled": "#707070",
 
         "text-1-inverse": "#FFFFFF",
 

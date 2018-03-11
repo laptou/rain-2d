@@ -545,7 +545,7 @@ namespace Rain.Tools
             return format?.Stroke ?? base.ProvideStroke();
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (SelectedLayer == null) return;
 
@@ -661,7 +661,7 @@ namespace Rain.Tools
                     else
                         Format(new Format
                         {
-                            FontFamilyName = fontFamily.Value,
+                            FontFamily = fontFamily.Value,
                             Range = (_selection.index, _selection.length)
                         });
 
@@ -832,7 +832,7 @@ namespace Rain.Tools
 
                 var format = text.GetFormat(_selection.index);
 
-                UpdateOptions(format?.FontFamilyName ?? SelectedLayer.TextStyle.FontFamily,
+                UpdateOptions(format?.FontFamily ?? SelectedLayer.TextStyle.FontFamily,
                               format?.FontSize ?? SelectedLayer.TextStyle.FontSize,
                               format?.FontStretch ?? SelectedLayer.TextStyle.FontStretch,
                               format?.FontWeight ?? SelectedLayer.TextStyle.FontWeight,
@@ -876,13 +876,24 @@ namespace Rain.Tools
 
             var layout = Context.CacheManager.GetTextLayout(textLayer);
 
-            var metrics = layout.MeasurePosition(_selection.index + _selection.length);
+            var index = _selection.index + _selection.length;
+            var format = layout.GetFormat(index);
+            var style = textLayer.TextStyle.ApplyFormat(format);
+            var face = _fontSource.GetFace(style);
+            var metrics = layout.MeasurePosition(index);
+
+            var left = metrics.Left;
+            var baseline = metrics.Baseline;
+            var ascender = face.Ascent * style.FontSize;
+            var descender = face.Descent * style.FontSize;
+            var top = baseline + metrics.Top - ascender;
+            var height = ascender + descender;
 
             if (_caret == null)
             {
                 try
                 {
-                    _caret = Context.CreateCaret(0, (int) metrics.Height);
+                    _caret = Context.CreateCaret(0, (int)  height);
                 }
                 catch
                 {
@@ -897,9 +908,9 @@ namespace Rain.Tools
                 _caret.Visible = true;
             }
 
-            _caret.Position =
-                ToWorldSpace(new Vector2(metrics.Left,
-                                         (metrics.Top - metrics.Baseline + metrics.Height)));
+            _caret.Position = ToWorldSpace(new Vector2(left, top));
+
+            face.Dispose();
         }
 
         private void UpdateOptions(

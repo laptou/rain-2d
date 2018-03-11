@@ -316,7 +316,7 @@ namespace Rain.Tools
         public override IPenInfo ProvideStroke() { return null; }
 
         public override void Render(
-            RenderContext target, ICacheManager cacheManager, IViewManager view)
+            IRenderContext target, ICacheManager cacheManager, IViewManager view)
         {
             var fill = cacheManager.GetBrush(nameof(EditorColors.Node));
             var fillAlt = cacheManager.GetBrush(nameof(EditorColors.SpecialNode));
@@ -372,27 +372,36 @@ namespace Rain.Tools
             target.FillRectangle(start, new Vector2(radius * 0.75f), fillAlt);
             target.DrawRectangle(start, new Vector2(radius * 0.75f), p3);
 
-            var shadow = target.CreateEffect<IDropShadowEffect>();
-            shadow.Color = new Color(0, 0, 0, 0.5f);
-            target.PushEffect(shadow);
-
-            for (var i = 0; i < SelectedBrush.Stops.Count; i++)
+            using (var fxLayer = target.CreateEffectLayer())
             {
-                var stop = SelectedBrush.Stops[i];
-                var pos = Vector2.Lerp(start, end, stop.Offset);
-
-                target.FillCircle(pos, radius * 1.25f, fill);
-
-                target.DrawCircle(pos, radius * 1.25f, _selection.Contains(i) ? p2 : p);
-
-                using (var brush = target.CreateBrush(stop.Color))
+                using (var shadow = fxLayer.CreateEffect<IDropShadowEffect>())
                 {
-                    target.FillCircle(pos, radius * 0.75f, brush);
+                    shadow.Color = new Color(0, 0, 0, 0.5f);
+
+                    fxLayer.Begin(null);
+                    fxLayer.Clear(Color.Transparent);
+                    fxLayer.PushEffect(shadow);
+
+                    for (var i = 0; i < SelectedBrush.Stops.Count; i++)
+                    {
+                        var stop = SelectedBrush.Stops[i];
+                        var pos = Vector2.Lerp(start, end, stop.Offset);
+
+                        fxLayer.FillCircle(pos, radius * 1.25f, fill);
+
+                        fxLayer.DrawCircle(pos, radius * 1.25f, _selection.Contains(i) ? p2 : p);
+
+                        using (var brush = fxLayer.CreateBrush(stop.Color))
+                        {
+                            fxLayer.FillCircle(pos, radius * 0.75f, brush);
+                        }
+                    }
+
+                    fxLayer.End();
+
+                    target.DrawEffectLayer(fxLayer);
                 }
             }
-
-            target.PopEffect();
-            shadow.Dispose();
 
             // do not dispose the brushes! they are being used by the cache manager
             // and do not automatically regenerate b/c they are resource brushes

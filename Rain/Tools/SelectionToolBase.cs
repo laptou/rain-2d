@@ -111,7 +111,7 @@ namespace Rain.Tools
             return null;
         }
 
-        public abstract void Render(RenderContext target, ICacheManager cache, IViewManager view);
+        public abstract void Render(IRenderContext target, ICacheManager cache, IViewManager view);
 
         public virtual string Cursor { get; protected set; }
         public virtual float CursorRotate { get; protected set; }
@@ -199,7 +199,7 @@ namespace Rain.Tools
         #region Rendering
 
         protected void RenderBoundingBoxes(
-            RenderContext target, ICacheManager cache, IViewManager view)
+            IRenderContext target, ICacheManager cache, IViewManager view)
         {
             var outline =
                 target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline)));
@@ -233,7 +233,7 @@ namespace Rain.Tools
         }
 
         protected void RenderPathOutlines(
-            RenderContext target, ICacheManager cache, IViewManager view)
+            IRenderContext target, ICacheManager cache, IViewManager view)
         {
             foreach (var shape in Selection.OfType<IGeometricLayer>())
             {

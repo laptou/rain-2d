@@ -13,5 +13,7 @@ namespace Rain.Core.Model.Text
         FontStretch FontStretch { get; set; }
         FontStyle FontStyle { get; set; }
         FontWeight FontWeight { get; set; }
+
+        ITextInfo ApplyFormat(Format format);
     }
 }

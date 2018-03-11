@@ -13,7 +13,7 @@ using Rain.Core.Model.Text;
 
 namespace Rain.Core
 {
-    public abstract class RenderContext : IDisposable
+    public abstract class RenderContext : IRenderContext
     {
         public abstract float Height { get; }
 
@@ -24,6 +24,9 @@ namespace Rain.Core
         public abstract void Begin(object ctx);
 
         public abstract void Clear(Color color);
+
+        /// <inheritdoc />
+        public abstract IEffectLayer CreateEffectLayer();
 
         public abstract ISolidColorBrush CreateBrush(Color color);
 
@@ -51,6 +54,9 @@ namespace Rain.Core
         public abstract IGeometry CreateRectangleGeometry(float x, float y, float w, float h);
 
         public abstract ITextLayout CreateTextLayout();
+
+        /// <inheritdoc />
+        public abstract void DrawEffectLayer(IEffectLayer layer);
 
         public abstract void DrawBitmap(
             IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode);
@@ -92,9 +98,7 @@ namespace Rain.Core
         public abstract IRenderImage GetRenderImage(
             IImageFrame image, Vector2 scale, ScaleMode mode);
 
-        public abstract void PopEffect();
-
-        public abstract void PushEffect(IEffect effect);
+        
 
         public abstract void Transform(Matrix3x2 transform, bool absolute = false);
 

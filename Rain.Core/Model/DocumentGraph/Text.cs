@@ -27,9 +27,6 @@ namespace Rain.Core.Model.DocumentGraph
             Formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
         }
 
-
-        public float Baseline { get; private set; }
-
         public bool IsBlock
         {
             get => Get<bool>();
@@ -109,18 +106,18 @@ namespace Rain.Core.Model.DocumentGraph
         {
             if (_suppressed) return;
 
-            RaiseBoundsChanged();
-
             GeometryChanged?.Invoke(this, null);
+
+            RaiseBoundsChanged();
         }
 
         protected void RaiseLayoutChanged()
         {
             if (_suppressed) return;
 
-            RaiseGeometryChanged();
-
             LayoutChanged?.Invoke(this, null);
+
+            RaiseGeometryChanged();
         }
 
         protected void RaiseStrokeChanged()
@@ -134,9 +131,9 @@ namespace Rain.Core.Model.DocumentGraph
         {
             if (_suppressed) return;
 
-            RaiseLayoutChanged();
-
             TextStyleChanged?.Invoke(this, null);
+
+            RaiseLayoutChanged();
         }
 
         private void OnTextStylePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -298,7 +295,7 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (!Visible) return;
 

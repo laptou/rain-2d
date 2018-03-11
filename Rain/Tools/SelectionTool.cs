@@ -399,7 +399,7 @@ namespace Rain.Tools
             base.MouseUp(context, evt);
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (!SelectionManager.Selection.Any()) return;
 

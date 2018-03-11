@@ -40,6 +40,13 @@ namespace Rain.Renderer.DirectWrite
         }
 
         /// <inheritdoc />
+        public IFontFace GetFace(ITextInfo info)
+        {
+            using (var family = GetFamilyByName(info.FontFamily))
+                return family.GetFontFace(info.FontWeight, info.FontStyle, info.FontStretch);
+        }
+
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
     }
 

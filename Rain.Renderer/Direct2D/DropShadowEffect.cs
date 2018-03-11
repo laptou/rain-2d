@@ -14,55 +14,55 @@ namespace Rain.Renderer.Direct2D
 {
     public class DropShadowEffect : Effect, IDropShadowEffect
     {
-        private readonly SharpDX.Direct2D1.Effect composite;
-        private readonly SharpDX.Direct2D1.Effect shadow;
+        private readonly SharpDX.Direct2D1.Effect _composite;
+        private readonly SharpDX.Direct2D1.Effect _shadow;
 
         public DropShadowEffect(DeviceContext dc)
         {
-            shadow = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.Shadow);
+            _shadow = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.Shadow);
 
-            composite = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.Composite);
-            composite.SetInputEffect(0, shadow, false);
+            _composite = new SharpDX.Direct2D1.Effect(dc, SharpDX.Direct2D1.Effect.Composite);
+            _composite.SetInputEffect(0, _shadow, false);
         }
 
-        public override Image GetOutput() { return composite.Output; }
+        public override Image GetOutput() { return _composite.Output; }
 
         #region IDropShadowEffect Members
 
         public override void Dispose()
         {
-            shadow.Dispose();
-            composite.Dispose();
+            _shadow.Dispose();
+            _composite.Dispose();
         }
 
         public override void SetInput(int index, IRenderImage bitmap)
         {
             if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
 
-            shadow.SetInput(0, bitmap.Unwrap<SharpDX.Direct2D1.Bitmap>(), true);
-            composite.SetInput(1, bitmap.Unwrap<SharpDX.Direct2D1.Bitmap>(), true);
+            _shadow.SetInput(0, bitmap.Unwrap<SharpDX.Direct2D1.Bitmap>(), true);
+            _composite.SetInput(1, bitmap.Unwrap<SharpDX.Direct2D1.Bitmap>(), true);
         }
 
         public override void SetInput(int index, IEffect effect)
         {
             if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
 
-            shadow.SetInputEffect(0, effect.Unwrap<SharpDX.Direct2D1.Effect>());
-            composite.SetInputEffect(1, effect.Unwrap<SharpDX.Direct2D1.Effect>());
+            _shadow.SetInputEffect(0, effect.Unwrap<SharpDX.Direct2D1.Effect>());
+            _composite.SetInputEffect(1, effect.Unwrap<SharpDX.Direct2D1.Effect>());
         }
 
-        public override T Unwrap<T>() { return shadow as T; }
+        public override T Unwrap<T>() { return _composite as T; }
 
         public Color Color
         {
-            get => shadow.GetColor4Value((int) ShadowProperties.Color).Convert();
-            set => shadow.SetValue((int) ShadowProperties.Color, (RawColor4) value.Convert());
+            get => _shadow.GetColor4Value((int) ShadowProperties.Color).Convert();
+            set => _shadow.SetValue((int) ShadowProperties.Color, (RawColor4) value.Convert());
         }
 
         public float Radius
         {
-            get => shadow.GetFloatValue((int) ShadowProperties.BlurStandardDeviation);
-            set => shadow.SetValue((int) ShadowProperties.BlurStandardDeviation, value);
+            get => _shadow.GetFloatValue((int) ShadowProperties.BlurStandardDeviation);
+            set => _shadow.SetValue((int) ShadowProperties.BlurStandardDeviation, value);
         }
 
         #endregion

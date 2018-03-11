@@ -145,7 +145,7 @@ namespace Rain.Core.Model.DocumentGraph
             LayerRemoved?.Invoke(this, child);
         }
 
-        public override void Render(RenderContext target, ICacheManager cache, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (!Visible) return;
 
