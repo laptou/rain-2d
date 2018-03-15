@@ -14,7 +14,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
-using Rain.Resources;
+using Rain.Theme;
 using Rain.Utility;
 
 using GradientOp = Rain.Commands.ModifyGradientCommand.GradientOperation;
@@ -318,11 +318,11 @@ namespace Rain.Tools
         public override void Render(
             IRenderContext target, ICacheManager cacheManager, IViewManager view)
         {
-            var fill = cacheManager.GetBrush(nameof(EditorColors.Node));
-            var fillAlt = cacheManager.GetBrush(nameof(EditorColors.SpecialNode));
-            var outline = cacheManager.GetBrush(nameof(EditorColors.NodeOutline));
-            var outlineSel = cacheManager.GetBrush(nameof(EditorColors.GradientHandleSelected));
-            var outlineAlt = cacheManager.GetBrush(nameof(EditorColors.SpecialNodeOutline));
+            var fill = cacheManager.GetBrush(Colors.Node);
+            var fillAlt = cacheManager.GetBrush(Colors.NodeSpecial);
+            var outline = cacheManager.GetBrush(Colors.GradientHandleOutline);
+            var outlineSel = cacheManager.GetBrush(Colors.GradientHandleSelectedOutline);
+            var outlineAlt = cacheManager.GetBrush(Colors.NodeSpecialOutline);
 
             if (_drag != null)
                 using (var n = target.CreatePen(1, outline))

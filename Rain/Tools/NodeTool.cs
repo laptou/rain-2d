@@ -13,7 +13,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
-using Rain.Resources;
+using Rain.Theme;
 
 namespace Rain.Tools
 {
@@ -212,21 +212,20 @@ namespace Rain.Tools
             var transform = SelectedLayer.AbsoluteTransform;
             var zoom = view.Zoom;
 
-            var p = target.CreatePen(1, cacheManager.GetBrush(nameof(EditorColors.NodeOutline)));
-            var p2 = target.CreatePen(1,
-                                      cacheManager.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+            var p = target.CreatePen(1, cacheManager.GetBrush(Colors.NodeOutline));
+            var p2 = target.CreatePen(1, cacheManager.GetBrush(Colors.NodeOutlineAlt));
 
             IBrush GetBrush(bool over, bool down, bool selected)
             {
                 if (over)
                     if (down)
-                        return cacheManager.GetBrush(nameof(EditorColors.NodeClick));
+                        return cacheManager.GetBrush(Colors.NodeClick);
                     else
-                        return cacheManager.GetBrush(nameof(EditorColors.NodeHover));
+                        return cacheManager.GetBrush(Colors.NodeHover);
 
-                if (selected) return cacheManager.GetBrush(nameof(EditorColors.NodeSelected));
+                if (selected) return cacheManager.GetBrush(Colors.NodeSelected);
 
-                return cacheManager.GetBrush(nameof(EditorColors.Node));
+                return cacheManager.GetBrush(Colors.Node);
             }
 
             var start = true;

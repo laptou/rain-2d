@@ -8,7 +8,7 @@ using Rain.Core;
 using Rain.Core.Model.Effects;
 using Rain.Core.Utility;
 using Rain.Model;
-using Rain.Resources;
+using Rain.Theme;
 
 namespace Rain.Renderer
 {
@@ -98,7 +98,7 @@ namespace Rain.Renderer
 
             foreach (var guide in guides)
             {
-                var brush = cache.GetBrush(nameof(EditorColors.Guide));
+                var brush = cache.GetBrush(Colors.Guide);
 
                 if (guide.Type.HasFlag(GuideType.Linear))
                 {

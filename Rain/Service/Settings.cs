@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -14,7 +16,7 @@ using Rain.Core.Model;
 
 namespace Rain.Service
 {
-    public abstract class Settings
+    public abstract class Settings : IEnumerable<KeyValuePair<string, object>>
     {
         private readonly IDictionary<string, object> _cache = new Dictionary<string, object>();
 
@@ -30,6 +32,8 @@ namespace Rain.Service
         {
             return Contains(path) ? Color.Parse(GetString(path, "none")) : @default;
         }
+
+        public Settings GetSubset(string path) { return Get(path) as Settings; }
 
         public T GetEnum<T>(string path, T @default = default) where T : struct
         {
@@ -53,6 +57,17 @@ namespace Rain.Service
         public string GetString(string path, string @default = default)
         {
             return Get(path, @default) as string;
+        }
+
+        public void Set<T>(string path, T value = default)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Setting path is invalid.");
+
+            if (!char.IsLetterOrDigit(path[0]))
+                throw new ArgumentException("Setting path is invalid.");
+
+            _cache[path] = value;
         }
 
         public void Load()
@@ -116,7 +131,7 @@ namespace Rain.Service
                 case JArray arr:
                     for (var i = 0; i < arr.Count; i++)
                         Deserialize(arr[i], path + $"[{i}]");
-
+                    
                     _cache[path + ".$count"] = arr.Count;
 
                     break;
@@ -129,7 +144,32 @@ namespace Rain.Service
 
         private object Get(string path, object @default = default)
         {
-            if (!Contains(path)) return @default;
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Setting path is invalid.");
+
+            if (!Contains(path))
+            {
+                var subpaths = (from kv in _cache where kv.Key.StartsWith(path) select kv).ToList();
+
+                if (subpaths.Count > 0)
+                {
+                    var sub = new DerivedSettings(this);
+
+                    foreach (var kv in subpaths)
+                    {
+                        // is the value a reference?
+                        if (kv.Value is string str &&
+                            str.StartsWith("@"))
+                            sub.Set(kv.Key.Substring(path.Length + 1), Get(kv.Key));
+                        else
+                            sub.Set(kv.Key.Substring(path.Length + 1), kv.Value);
+                    }
+
+                    return sub;
+                }
+
+                return @default;
+            }
 
             var data = _cache[path];
 
@@ -184,6 +224,31 @@ namespace Rain.Service
             }
 
             return obj;
+        }
+
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            var groups = from kv in _cache let path = kv.Key.Split('.')[0] group kv.Key by path;
+
+            foreach (var group in groups)
+                yield return new KeyValuePair<string, object>(group.Key, Get(group.Key));
+        }
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
+        private class DerivedSettings : Settings
+        {
+            private readonly Settings _parent;
+
+            public DerivedSettings(Settings parent) { _parent = parent; }
+
+            /// <inheritdoc />
+            protected override Stream GetReadStream() => _parent.GetReadStream();
+
+            /// <inheritdoc />
+            protected override Stream GetWriteStream() => _parent.GetWriteStream();
         }
     }
 }

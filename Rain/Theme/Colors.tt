@@ -1,0 +1,40 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="Newtonsoft.Json" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="Newtonsoft.Json" #>
+<#@ import namespace="Newtonsoft.Json.Linq" #>
+<#@ output extension=".cs" #>
+
+namespace Rain.Theme 
+{
+	internal static class Colors
+	{
+	<#
+		var path = Host.ResolvePath("light.json");
+
+		JObject obj;
+		using (var file = File.OpenRead(path))
+		{
+			var reader = new JsonTextReader(new StreamReader(file));
+
+			obj = JObject.Load(reader);
+		}
+
+		var colors = obj.Property("colors").Value as JObject;
+		Func<string, string> capitalizer = CultureInfo.GetCultureInfo("en-US").TextInfo.ToTitleCase;
+
+		foreach(var color in colors.Properties())
+		{
+			var csharpName = string.Join("", color.Name.Split('-').Select(capitalizer));
+	#>
+		public const string <#= csharpName #> = "<#= color.Name #>";
+	<#
+		}
+	#>
+	}
+}

@@ -13,7 +13,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
-using Rain.Resources;
+using Rain.Theme;
 
 namespace Rain.Tools
 {
@@ -163,8 +163,8 @@ namespace Rain.Tools
         {
             var zoom = view.Zoom;
 
-            var p = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.NodeOutline)));
-            var p2 = target.CreatePen(1, cache.GetBrush(nameof(EditorColors.NodeOutlineAlt)));
+            var p = target.CreatePen(1, cache.GetBrush(Colors.NodeOutline));
+            var p2 = target.CreatePen(1, cache.GetBrush(Colors.NodeOutlineAlt));
 
             var radius = 4f / zoom;
 
@@ -194,7 +194,7 @@ namespace Rain.Tools
 
             using (var geom = cache.GetGeometry(SelectedLayer))
             using (var pen =
-                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline)))
             {
                 target.DrawGeometry(geom, pen);
             }
@@ -205,11 +205,11 @@ namespace Rain.Tools
             {
                 if (over)
                     if (down)
-                        return cache.GetBrush(nameof(EditorColors.NodeClick));
+                        return cache.GetBrush(Colors.NodeClick);
                     else
-                        return cache.GetBrush(nameof(EditorColors.NodeHover));
+                        return cache.GetBrush(Colors.NodeHover);
 
-                return cache.GetBrush(nameof(EditorColors.Node));
+                return cache.GetBrush(Colors.Node);
             }
 
 

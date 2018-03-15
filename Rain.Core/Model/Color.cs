@@ -22,10 +22,7 @@ namespace Rain.Core.Model
 
             if (hexMatch.Success)
             {
-                var digits = hexMatch.Groups[1]
-                                     .Captures.OfType<Regex.Capture>()
-                                     .Select(c => c.Value)
-                                     .ToArray();
+                var digits = input.Substring(1).Select(c => c.ToString()).ToArray();
 
                 if (digits.Length == 3)
                 {
@@ -41,6 +38,16 @@ namespace Rain.Core.Model
                     color = new Color(Convert.ToInt32(digits[0] + digits[1], 16) / 256f,
                                       Convert.ToInt32(digits[2] + digits[3], 16) / 256f,
                                       Convert.ToInt32(digits[4] + digits[5], 16) / 256f);
+
+                    return true;
+                }
+
+                if (digits.Length == 8)
+                {
+                    color = new Color(Convert.ToInt32(digits[0] + digits[1], 16) / 256f,
+                                      Convert.ToInt32(digits[2] + digits[3], 16) / 256f,
+                                      Convert.ToInt32(digits[4] + digits[5], 16) / 256f,
+                                      Convert.ToInt32(digits[6] + digits[7], 16) / 256f);
 
                     return true;
                 }
@@ -287,7 +294,7 @@ namespace Rain.Core.Model
         }
 
         private static readonly Regex.Regex Hex = new Regex.Regex(
-            "(?:#(?:([0-9A-F]){3}){1,2})",
+            "(?:#(?:([0-9A-F]{2}){3,4}|[0-9A-F]{3}))",
             Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Rgb = new Regex.Regex(

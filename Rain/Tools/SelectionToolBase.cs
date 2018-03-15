@@ -12,7 +12,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
-using Rain.Resources;
+using Rain.Theme;
 using Rain.Utility;
 
 namespace Rain.Tools
@@ -201,11 +201,8 @@ namespace Rain.Tools
         protected void RenderBoundingBoxes(
             IRenderContext target, ICacheManager cache, IViewManager view)
         {
-            var outline =
-                target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline)));
-            var outlineRef = target.CreatePen(1,
-                                              cache.GetBrush(
-                                                  nameof(EditorColors.SelectionReferenceOutline)));
+            var outline = target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline));
+            var outlineRef = target.CreatePen(1, cache.GetBrush(Colors.SelectionReferenceOutline));
 
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);
@@ -239,8 +236,7 @@ namespace Rain.Tools
             {
                 target.Transform(shape.AbsoluteTransform);
 
-                using (var pen =
-                    target.CreatePen(1, cache.GetBrush(nameof(EditorColors.SelectionOutline))))
+                using (var pen = target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline)))
                 {
                     target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
                 }

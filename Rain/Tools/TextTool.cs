@@ -17,7 +17,7 @@ using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
 using Rain.Renderer.Direct2D;
-using Rain.Resources;
+using Rain.Theme;
 using Rain.Utility;
 
 using DW = SharpDX.DirectWrite;
@@ -555,8 +555,7 @@ namespace Rain.Tools
 
             if (_selection.length > 0)
                 foreach (var selectionRect in _selectionRects)
-                    target.FillRectangle(selectionRect,
-                                         cache.GetBrush(nameof(EditorColors.TextHighlight)));
+                    target.FillRectangle(selectionRect, cache.GetBrush(Colors.TextHighlight));
 
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }

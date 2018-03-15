@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -15,7 +16,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
-using Rain.Resources;
+using Rain.Service;
 
 namespace Rain.Renderer
 {
@@ -427,8 +428,12 @@ namespace Rain.Renderer
 
         public void LoadBrushes(RenderContext target)
         {
-            foreach (var field in typeof(EditorColors).GetFields())
-                _brushes[field.Name] = target.CreateBrush((Color) field.GetValue(null));
+            foreach (KeyValuePair<string, object> key in AppSettings.Current.Theme.GetSubset("colors"))
+            {
+                if (!Color.TryParse(key.Value as string, out var color)) continue;
+
+                _brushes[key.Key] = target.CreateBrush(color);
+            }
         }
 
         public void ReleaseDeviceResources()

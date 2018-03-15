@@ -199,7 +199,6 @@
     <Compile Include="Native\WindowStylesEx.cs" />
     <Compile Include="Native\WndClass.cs" />
     <Compile Include="Native\WndProc.cs" />
-    <Compile Include="Resources\EditorColors.cs" />
     <Compile Include="Renderer\BrushManager.cs" />
     <Compile Include="Commands\AddLayerCommand.cs" />
     <Compile Include="Commands\AlignCommand.cs" />
@@ -222,6 +221,11 @@
     <Compile Include="Service\AppSettings.cs" />
     <Compile Include="Service\Settings.cs" />
     <Compile Include="Service\ThemeSettings.cs" />
+    <Compile Include="Theme\Colors.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Colors.tt</DependentUpon>
+    </Compile>
     <Compile Include="Tools\GradientTool.cs" />
     <Compile Include="Tools\NodeTool.cs" />
     <Compile Include="Tools\SelectionToolBase.cs" />
@@ -411,6 +415,10 @@
     <Resource Include="Resources\Icon\tool-select-dark.svg" />
     <Resource Include="Resources\Icon\tool-text-dark.svg" />
     <Resource Include="Resources\Icon\tool-zoom-dark.svg" />
+    <Content Include="Theme\Colors.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Colors.cs</LastGenOutput>
+    </Content>
     <Content Include="Theme\light.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

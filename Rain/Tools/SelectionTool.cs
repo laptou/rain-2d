@@ -15,7 +15,7 @@ using Rain.Core.Model;
 using Rain.Core.Model.DocumentGraph;
 using Rain.Model;
 using Rain.Renderer;
-using Rain.Resources;
+using Rain.Theme;
 using Rain.Utility;
 
 namespace Rain.Tools
@@ -417,7 +417,7 @@ namespace Rain.Tools
             var handles = GetHandles(rect, view.Zoom).ToDictionary();
 
             using (var pen =
-                target.CreatePen(2, cache.GetBrush(nameof(EditorColors.SelectionHandleOutline))))
+                target.CreatePen(2, cache.GetBrush(Colors.SelectionHandleOutline)))
             {
                 target.DrawLine(handles[SelectionHandle.Top],
                                 handles[SelectionHandle.Rotation],
@@ -428,7 +428,7 @@ namespace Rain.Tools
                     target.FillEllipse(v,
                                        5f / view.Zoom,
                                        5f / view.Zoom,
-                                       cache.GetBrush(nameof(EditorColors.SelectionHandle)));
+                                       cache.GetBrush(Colors.SelectionHandle));
                     target.DrawEllipse(v, 5f / view.Zoom, 5f / view.Zoom, pen);
                 }
             }
