@@ -1123,7 +1123,7 @@ namespace Rain.Native
         ///     Sent when the user drops a file on the window of an application that has registered itself as a recipient of
         ///     dropped files.
         /// </summary>
-        Dropfiles = 0x0233,
+        DropFiles = 0x0233,
 
         /// <summary>
         ///     An application sends the WM_MDIREFRESHMENU message to a multiple-document interface (MDI) client window to refresh

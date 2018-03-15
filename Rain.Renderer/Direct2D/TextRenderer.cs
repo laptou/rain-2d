@@ -56,7 +56,7 @@ namespace Rain.Renderer.Direct2D
 
         #region Nested type: Context
 
-        public class Context
+        public class Context : IDisposable
         {
             public Context(Direct2DRenderContext ctx) { RenderContext = ctx; }
 
@@ -68,6 +68,25 @@ namespace Rain.Renderer.Direct2D
             public List<IPen> Pens { get; } = new List<IPen>();
 
             public Direct2DRenderContext RenderContext { get; }
+
+            public void Dispose()
+            {
+                foreach (var brush in Brushes)
+                    brush?.Dispose();
+
+                foreach (var geometry in Geometries)
+                    geometry?.Dispose();
+
+                foreach (var pen in Pens)
+                    pen?.Dispose();
+
+                Brushes.Clear();
+                Geometries.Clear();
+                Pens.Clear();
+                CharactersForGeometry.Clear();
+                GeometryCount = GlyphCount = 0;
+
+            }
         }
 
         #endregion

@@ -309,7 +309,7 @@
             </Grid.ColumnDefinitions>
             <TabControl Background="Transparent">
                 <TabItem Background="White">
-                    <control:ArtView x:Name="ArtView" />
+                    <control:ArtView x:Name="ArtView" AllowDrop="True" />
                 </TabItem>
             </TabControl>
             <GridSplitter Grid.Row="0" Grid.Column="1"
@@ -612,6 +612,49 @@
             </Grid>
             <StatusBar Grid.Row="1" Grid.Column="0"
                        Height="25">
+                <StatusBar.Background>
+                    <SolidColorBrush x:Name="StatusBarBackground" Opacity="0.25" />
+                </StatusBar.Background>
+                <StatusBar.Style>
+                    <Style BasedOn="{StaticResource {x:Type StatusBar}}" TargetType="StatusBar">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Error">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard Storyboard.Target="{x:Reference StatusBarBackground}" Storyboard.TargetProperty="Color">
+                                            <ColorAnimation To="{utility:Theme color(accent-error)}" Duration="0:0:0.125" />
+                                            <ColorAnimation To="Transparent" Duration="0:0:2.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Warning">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard Storyboard.Target="{x:Reference StatusBarBackground}" Storyboard.TargetProperty="Color">
+                                            <ColorAnimation To="{utility:Theme color(accent-error)}" Duration="0:0:0.125" />
+                                            <ColorAnimation To="Transparent" Duration="0:0:2.5" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Success">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard Storyboard.Target="{x:Reference StatusBarBackground}" Storyboard.TargetProperty="Color">
+                                            <ColorAnimation To="{utility:Theme color(accent-success)}" Duration="0:0:0.125" />
+                                            <ColorAnimation To="Transparent" Duration="0:0:2.5">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuarticEase EasingMode="EaseIn" />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StatusBar.Style>
                 <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}">
                     <TextBlock.Style>
                         <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
@@ -620,7 +663,15 @@
                                     <Setter Property="Foreground" Value="{utility:Theme text-1}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Error">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
                                     <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Warning">
+                                    <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Success">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Foreground" Value="{utility:Theme accent-success}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

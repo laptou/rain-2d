@@ -104,17 +104,14 @@ namespace Rain.Core.Model.DocumentGraph
             var transform = Transform;
 
             target.Transform(transform);
+            
+            if (Fill != null)
+                target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
 
-            lock (this)
+            if (Stroke?.Brush != null)
             {
-                if (Fill != null)
-                    target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
-
-                if (Stroke?.Brush != null)
-                {
-                    var pen = cache.GetStroke(this);
-                    target.DrawGeometry(cache.GetGeometry(this), pen, pen.Width * view.Zoom);
-                }
+                var pen = cache.GetStroke(this);
+                target.DrawGeometry(cache.GetGeometry(this), pen, pen.Width * view.Zoom);
             }
 
             target.Transform(MathUtils.Invert(transform));

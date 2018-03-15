@@ -84,7 +84,7 @@ namespace Rain.Core.Model.DocumentGraph
                            : ScaleMode.MultiSampleLinear;
 
 
-            target.DrawBitmap(image, new RectangleF(0, 0, Image.Frames[0].Width, Image.Frames[0].Height), mode);
+            target.DrawBitmap(image, new RectangleF(0, 0, Image.Frames[Frame].Width, Image.Frames[Frame].Height), mode);
 
             target.Transform(MathUtils.Invert(transform));
         }

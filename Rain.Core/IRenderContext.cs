@@ -43,7 +43,9 @@ namespace Rain.Core
         void DrawGeometry(IGeometry geometry, IPen pen, float width);
         void DrawLine(Vector2 v1, Vector2 v2, IPen pen);
         void DrawRectangle(float left, float top, float width, float height, IPen pen);
+        void DrawRectangle(RectangleF rectangleF, IPen pen, float penWidth);
         void DrawRectangle(RectangleF rect, IPen pen);
+        void DrawEllipse(float centerX, float centerY, float radiusX, float radiusY, IPen pen, float penWidth);
         void DrawRectangle(Vector2 center, Vector2 radii, IPen pen);
         void End();
         void FillCircle(float cx, float cy, float r, IBrush brush);

@@ -259,17 +259,18 @@ namespace Rain.Renderer.Direct2D
                               null,
                               null);
         }
-
-        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen)
+        
+        /// <inheritdoc />
+        public override void DrawEllipse(
+            float cx, float cy, float rx, float ry, IPen iPen, float penWidth)
         {
-            var pen = iPen as Pen;
-
-            if (iPen == null) return;
-
-            Target.DrawEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry),
+            if (iPen is Pen pen)
+            {
+                Target.DrawEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry),
                                pen.Brush,
-                               pen.Width,
+                               penWidth,
                                pen.Style);
+            }
         }
 
         public override void DrawGeometry(IGeometry geometry, IPen iPen)
@@ -296,14 +297,14 @@ namespace Rain.Renderer.Direct2D
             Target.DrawLine(v1.Convert(), v2.Convert(), pen.Brush, pen.Width, pen.Style);
         }
 
-        public override void DrawRectangle(
-            float left, float top, float width, float height, IPen iPen)
+        /// <inheritdoc />
+        public override void DrawRectangle(RectangleF rect, IPen iPen, float penWidth)
         {
-            var pen = (Pen) iPen;
+            var pen = (Pen)iPen;
 
-            Target.DrawRectangle(new SharpDX.RectangleF(left, top, width, height),
+            Target.DrawRectangle(rect.Convert(),
                                  pen.Brush,
-                                 pen.Width,
+                                 penWidth,
                                  pen.Style);
         }
 

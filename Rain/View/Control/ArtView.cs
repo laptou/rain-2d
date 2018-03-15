@@ -11,6 +11,7 @@ using System.Windows.Media;
 
 using Rain.Core;
 using Rain.Core.Input;
+using Rain.Core.Model.DocumentGraph;
 using Rain.Native;
 
 using Color = Rain.Core.Model.Color;
@@ -20,7 +21,7 @@ namespace Rain.View.Control
     public class ArtView : D2DImage
     {
         private readonly Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
-        private bool _middle = false;
+        private          bool                       _middle  = false;
 
         public ArtView()
         {
@@ -112,8 +113,66 @@ namespace Rain.View.Control
                     ac.InvalidateRender();
 
                     break;
+                case DropEvent dropEvent:
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    OnDropEvent(dropEvent);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    break;
                 default: throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private async Task OnDropEvent(DropEvent dropEvent)
+        {
+            await Task.Run(() =>
+                           {
+                               var ctx = ArtContext;
+                               ctx.SelectionManager.ClearSelection();
+
+                               var root = ctx.ViewManager.Root;
+                               var failCount = 0;
+
+                               foreach (var fn in dropEvent.FileNames)
+                               {
+                                   try
+                                   {
+                                       var image = ctx.ResourceContext.LoadImageFromFilename(fn);
+                                       var pic = new Picture {Image = image};
+                                       var center =
+                                           new Vector2(pic.Image.Frames[0].Width,
+                                                       pic.Image.Frames[0].Height) / 2;
+                                       pic.ApplyTransform(
+                                           Matrix3x2.CreateTranslation(-center + dropEvent.Position));
+                                       root.Add(pic, 0);
+                                       pic.Selected = true;
+                                   }
+                                   catch
+                                   {
+                                       failCount++;
+                                   }
+                               }
+
+                               switch (failCount)
+                               {
+                                   case 0:
+                                       ArtContext.Status =
+                                           new Status(Status.StatusType.Success, "Images loaded.");
+
+                                       break;
+                                   case 1:
+                                       ArtContext.Status = new Status(
+                                           Status.StatusType.Error,
+                                           "1 file failed to load.");
+
+                                       break;
+                                   default:
+                                       ArtContext.Status = new Status(
+                                           Status.StatusType.Error,
+                                           $"{failCount} file failed to load.");
+
+                                       break;
+                               }
+                           });
         }
 
         protected override IntPtr OnMessage(

@@ -908,7 +908,7 @@ namespace Rain.Tools
                 _caret.Visible = true;
             }
 
-            _caret.Position = ToWorldSpace(new Vector2(left, top));
+            _caret.Position = Context.ViewManager.FromArtSpace(ToWorldSpace(new Vector2(left, top)));
 
             face.Dispose();
         }

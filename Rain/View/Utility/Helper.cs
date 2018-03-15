@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 using FPMO = System.Windows.FrameworkPropertyMetadataOptions;
 
@@ -35,6 +37,46 @@ namespace Rain.View.Utility
                                                 new FrameworkPropertyMetadata(
                                                     0,
                                                     FPMO.AffectsRender));
+
+        public static readonly DependencyProperty StoryboardTraceProperty =
+            DependencyProperty.RegisterAttached("StoryboardTrace",
+                                                typeof(bool),
+                                                typeof(Helper),
+                                                new PropertyMetadata(false, StorybardTraceChanged));
+
+        private static void StorybardTraceChanged(
+            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is Storyboard storyboard)
+            {
+                if (e.NewValue as bool? == true)
+                {
+                    storyboard.Completed += StoryboardOnCompleted;
+                    storyboard.CurrentStateInvalidated += StoryboardOnCurrentStateInvalidated;
+                }
+                else
+                {
+                    storyboard.Completed -= StoryboardOnCompleted;
+                    storyboard.CurrentStateInvalidated -= StoryboardOnCurrentStateInvalidated;
+                }
+            }
+        }
+
+        private static void StoryboardOnCurrentStateInvalidated(object sender, EventArgs eventArgs)
+        {
+            if (sender is Storyboard sb)
+            {
+                Trace.WriteLine($"SB:: {DateTime.Now}: Storyboard {sb.Name} is now in clock state {sb.GetCurrentState()}.");
+            }
+        }
+
+        private static void StoryboardOnCompleted(object sender, EventArgs eventArgs)
+        {
+            if (sender is Storyboard sb)
+            {
+                Trace.WriteLine($"SB:: {DateTime.Now}: Storyboard {sb.Name} has completed.");
+            }
+        }
 
         public static Color GetAccent(DependencyObject obj)
         {
@@ -79,6 +121,16 @@ namespace Rain.View.Utility
                 foreach (var inputBinding in value)
                     ui.InputBindings.Add(inputBinding);
             }
+        }
+
+        public static bool GetStoryboardTrace(UIElement element)
+        {
+            return (bool) element.GetValue(StoryboardTraceProperty);
+        }
+
+        public static void SetStoryboardTrace(UIElement element, bool value)
+        {
+            element.SetValue(StoryboardTraceProperty, value);
         }
     }
 

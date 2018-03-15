@@ -196,6 +196,7 @@
     <Compile Include="Native\WindowHelper.cs" />
     <Compile Include="Native\WindowMessage.cs" />
     <Compile Include="Native\WindowStyles.cs" />
+    <Compile Include="Native\WindowStylesEx.cs" />
     <Compile Include="Native\WndClass.cs" />
     <Compile Include="Native\WndProc.cs" />
     <Compile Include="Resources\EditorColors.cs" />
@@ -411,7 +412,7 @@
     <Resource Include="Resources\Icon\tool-text-dark.svg" />
     <Resource Include="Resources\Icon\tool-zoom-dark.svg" />
     <Content Include="Theme\light.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Resource Include="settings.default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

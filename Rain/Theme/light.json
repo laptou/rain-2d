@@ -19,7 +19,8 @@
         "accent-4-inverse": "#FA7921",
         "accent-5-inverse": "#891D1B",
 
-        "accent-error": "#E2302D",
+        "accent-error": "#ab1a18",
+        "accent-success": "#093b23",
 
         "text-1": "#404040",
         "text-2": "#505050",

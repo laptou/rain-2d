@@ -2,10 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
+
+using static System.Runtime.InteropServices.UnmanagedType;
 
 namespace Rain.Native
 {
+    internal static class DragHelper
+    {
+        [DllImport("shell32.dll")]
+        public static extern bool DragQueryPoint(IntPtr hDrop, out NativePoint lppt);
+
+        [DllImport("shell32.dll")]
+        public static extern void DragFinish();
+
+        [DllImport("shell32.dll")]
+        public static extern void DragAcceptFiles(IntPtr hWnd, bool fAccept);
+
+        [DllImport("shell32.dll")]
+        public static extern int DragQueryFile(
+            [In] IntPtr hDrop, [In] uint iFile, [Out] StringBuilder lpszFile, int cch);
+    }
+
     internal static class WindowHelper
     {
         [DllImport("user32.dll")]
@@ -13,9 +32,9 @@ namespace Rain.Native
 
         [DllImport("user32.dll", EntryPoint = "CreateWindowEx", CharSet = CharSet.Unicode)]
         public static extern IntPtr CreateWindowEx(
-            uint dwExStyle, ushort lpszClassName, string lpszWindowName, WindowStyles style, int x,
-            int y, int width, int height, IntPtr hWndParent, IntPtr hMenu, IntPtr hInst,
-            [MarshalAs(UnmanagedType.AsAny)] object pvParam);
+            WindowStylesEx dwExStyle, ushort lpszClassName, string lpszWindowName,
+            WindowStyles style, int x, int y, int width, int height, IntPtr hWndParent,
+            IntPtr hMenu, IntPtr hInst, [MarshalAs(AsAny)] object pvParam);
 
         [DllImport("user32.dll")]
         public static extern IntPtr DefWindowProc(
@@ -73,7 +92,7 @@ namespace Rain.Native
 
         [DllImport("user32.dll")]
         public static extern ushort UnregisterClass(
-            [MarshalAs(UnmanagedType.LPTStr)] string lpClassName, [Optional] IntPtr hInstance);
+            [MarshalAs(LPTStr)] string lpClassName, [Optional] IntPtr hInstance);
 
         [DllImport("user32.dll")]
         public static extern IntPtr UpdateWindow(IntPtr hWnd);

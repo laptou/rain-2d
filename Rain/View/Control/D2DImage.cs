@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,9 +17,11 @@ using Rain.Native;
 using Rain.Renderer.Direct2D;
 using Rain.Utility;
 
+using SharpDX.Direct3D;
 using SharpDX.DXGI;
 
 using DX = SharpDX;
+using D3D = SharpDX.Direct3D11;
 using D2D = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 using MouseButton = Rain.Core.Input.MouseButton;
@@ -54,16 +57,17 @@ namespace Rain.View.Control
 
             SizeChanged += OnSizeChanged;
             IsVisibleChanged += OnIsVisibleChanged;
+            AllowDrop = true;
         }
 
-        public D2D.Factory Direct2DFactory => _d2dFactory;
+        public D2D.Factory Direct2DFactory => _factory;
 
         public DW.Factory DirectWriteFactory => _dwFactory;
 
         public bool EnableAntialiasing
         {
-            get => _renderTarget?.AntialiasMode == D2D.AntialiasMode.Aliased;
-            set => _renderTarget.AntialiasMode =
+            get => _target?.AntialiasMode == D2D.AntialiasMode.Aliased;
+            set => _target.AntialiasMode =
                        value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
@@ -78,6 +82,9 @@ namespace Rain.View.Control
         public virtual void InvalidateSurface()
         {
             _invalidated = true;
+
+            
+
             WindowHelper.RedrawWindow(_host, IntPtr.Zero, IntPtr.Zero, 0b0001);
         }
 
@@ -87,19 +94,19 @@ namespace Rain.View.Control
             switch (msg)
             {
                 case WindowMessage.Paint:
-                    if (_renderTarget == null) goto default;
+                    if (_target == null) goto default;
 
                     WindowHelper.BeginPaint(hWnd, out var paintStruct);
 
                     try
                     {
-                        if (_invalidated &&
-                            _renderTarget.CheckWindowState() == D2D.WindowState.None)
+                        if (_invalidated)
                         {
                             _invalidated = false;
                             RenderContext.Begin(null);
                             OnRender(RenderContext);
                             RenderContext.End();
+                            _swapChain.Present(0, PresentFlags.None, default);
                         }
                     }
                     catch (DX.SharpDXException ex) when (ex.Descriptor ==
@@ -118,9 +125,7 @@ namespace Rain.View.Control
                 {
                     var delta = NativeHelper.HighWord(wParam);
 
-                    var pos = NativeHelper.GetCoordinates(lParam,
-                                                          _dpi,
-                                                          hWnd);
+                    var pos = NativeHelper.GetCoordinates(lParam, _dpi, hWnd);
 
                     var scrollEvt = new ScrollEvent(delta,
                                                     pos,
@@ -280,9 +285,48 @@ namespace Rain.View.Control
                     OnInput(new FocusEvent(false, KeyboardHelper.GetModifierState()));
                     goto default;
                 case WindowMessage.Size:
-                    InvalidateSurface();
                     _dpi = WindowHelper.GetDpiForWindow(hWnd);
+
+                    if (_swapChain != null)
+                    {
+                        RenderContext.Dispose();
+
+                        _swapChain.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.None);
+
+                        var targetProps = new D2D.RenderTargetProperties(
+                            D2D.RenderTargetType.Hardware,
+                            new D2D.PixelFormat(Format.B8G8R8A8_UNorm, D2D.AlphaMode.Ignore),
+                            _dpi,
+                            _dpi,
+                            D2D.RenderTargetUsage.None,
+                            D2D.FeatureLevel.Level_10);
+
+                        using (var surf = _swapChain.GetBackBuffer<Surface>(0))
+                            _target = new D2D.RenderTarget(_factory, surf, targetProps);
+
+                        RenderContext = new Direct2DRenderContext(_target);
+                    }
+
+                    InvalidateSurface();
                     goto default;
+                case WindowMessage.DropFiles:
+                    var numFiles = DragHelper.DragQueryFile(wParam, 0xFFFFFFFF, null, 0);
+                    var files = new List<string>(numFiles);
+
+                    for (var i = 0u; i < numFiles; i++)
+                    {
+                        var sb = new StringBuilder(2048);
+                        DragHelper.DragQueryFile(wParam, i, sb, 2048);
+                        files.Add(sb.ToString());
+                    }
+
+                    DragHelper.DragQueryPoint(wParam, out var pt);
+
+                    OnInput(new DropEvent(files, new Vector2(pt.x, pt.y) / _dpi * 96f));
+
+                    DragHelper.DragAcceptFiles(hWnd, true);
+
+                    break;
                 default:
 
                     return WindowHelper.DefWindowProc(hWnd, msg, wParam, lParam);
@@ -313,7 +357,7 @@ namespace Rain.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _host = WindowHelper.CreateWindowEx(0,
+            _host = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles,
                                                 cls,
                                                 "",
                                                 WindowStyles.Child | WindowStyles.Visible,
@@ -333,15 +377,22 @@ namespace Rain.View.Control
                 throw new Win32Exception(code);
             }
 
-            Initialize();
-
             WindowHelper.UpdateWindow(_host);
+
+            Initialize();
 
             return new HandleRef(this, _host);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
+            Disposer.SafeDispose(ref _factory);
+            Disposer.SafeDispose(ref _dwFactory);
+            Disposer.SafeDispose(ref _target);
+            Disposer.SafeDispose(ref _swapChain);
+            Disposer.SafeDispose(ref _d3dDevice);
+            Disposer.SafeDispose(ref _dxgiDevice);
+
             WindowHelper.DestroyWindow(hwnd.Handle);
             _proc = null;
         }
@@ -375,40 +426,62 @@ namespace Rain.View.Control
 
         private void Initialize()
         {
-            Disposer.SafeDispose(ref _d2dFactory);
-            Disposer.SafeDispose(ref _dwFactory);
-            Disposer.SafeDispose(ref _renderTarget);
+            Disposer.SafeDispose(ref _factory);
+            Disposer.SafeDispose(ref _swapChain);
+            Disposer.SafeDispose(ref _target);
 
             #if DEBUG
-            _d2dFactory =
-                new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
+            _factory =
+                new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
             #else
             _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
-            #endif
+                                                                        #endif
 
+            if(_dwFactory == null)
             _dwFactory = new DW.Factory(DW.FactoryType.Shared);
 
-            var width = (int) Math.Max(1, ActualWidth * _dpi / 96.0);
-            var height = (int) Math.Max(1, ActualHeight * _dpi / 96.0);
+            if(_d3dDevice == null)
+            _d3dDevice = new D3D.Device(DriverType.Hardware,
+                                           D3D.DeviceCreationFlags.BgraSupport |
+                                           D3D.DeviceCreationFlags.Debug);
+            if(_dxgiDevice == null)
+                _dxgiDevice = _d3dDevice.QueryInterface<Device>();
 
-            var rtp = new D2D.RenderTargetProperties(
-                    new D2D.PixelFormat(Format.Unknown, D2D.AlphaMode.Premultiplied))
-                {
-                    DpiX = _dpi,
-                    DpiY = _dpi,
-                    Type = D2D.RenderTargetType.Hardware
-                };
-
-            var hrtp = new D2D.HwndRenderTargetProperties
+            var swapChainDesc = new SwapChainDescription1
             {
-                Hwnd = _host,
-                PixelSize = new DX.Size2(width, height),
-                PresentOptions = D2D.PresentOptions.None
+                Width = 0,
+                Height = 0,
+                Format = Format.B8G8R8A8_UNorm,
+                Stereo = false,
+                SampleDescription = new SampleDescription(1, 0), // no multisampling,
+                BufferCount = 2, // use double buffering to enable flip,
+                Usage = Usage.RenderTargetOutput,
+#warning does not work in win7
+                Scaling = Scaling.None,
+                SwapEffect = SwapEffect.FlipSequential, // TODO: find out what this means
+                AlphaMode = AlphaMode.Ignore
             };
 
-            _renderTarget = new D2D.WindowRenderTarget(_d2dFactory, rtp, hrtp);
+            var dxgiAdapter = _dxgiDevice.Adapter;
+            var dxgiFactory = dxgiAdapter.GetParent<Factory2>();
+            var swapChain = new SwapChain1(dxgiFactory, _dxgiDevice, _host, ref swapChainDesc);
 
-            RenderContext = new Direct2DRenderContext(_renderTarget);
+            var dpi = WindowHelper.GetDpiForWindow(_host);
+
+            var targetProps = new D2D.RenderTargetProperties(
+                D2D.RenderTargetType.Hardware,
+                new D2D.PixelFormat(Format.B8G8R8A8_UNorm, D2D.AlphaMode.Ignore),
+                dpi,
+                dpi,
+                D2D.RenderTargetUsage.None,
+                D2D.FeatureLevel.Level_10);
+            
+            using (var surf = swapChain.GetBackBuffer<Surface>(0))
+                _target = new D2D.RenderTarget(_factory, surf, targetProps);
+
+            _swapChain = swapChain;
+
+            RenderContext = new Direct2DRenderContext(_target);
 
             RenderTargetCreated?.Invoke(this, null);
         }
@@ -421,8 +494,7 @@ namespace Rain.View.Control
 
                 if (_evtThread == null)
                 {
-                    _evtThread = new Thread(EventLoop);
-                    _evtThread.Priority = ThreadPriority.AboveNormal;
+                    _evtThread = new Thread(EventLoop) {Priority = ThreadPriority.AboveNormal};
                     _evtThread.Start();
                 }
             }
@@ -433,7 +505,10 @@ namespace Rain.View.Control
             }
         }
 
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e) { Initialize(); }
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            //Initialize();
+        }
 
         #region Event Loop
 
@@ -453,16 +528,20 @@ namespace Rain.View.Control
 
         // ReSharper disable once NotAccessedField.Local
         private WndProc _proc;
-        private float _dpi;
+        private float   _dpi;
 
         #endregion
 
         #region Direct2D
 
-        private bool                   _invalidated = true;
-        private D2D.Factory            _d2dFactory;
-        private DW.Factory             _dwFactory;
-        private D2D.WindowRenderTarget _renderTarget;
+        private bool              _invalidated = true;
+        private D2D.Factory1      _factory;
+        private D2D.Bitmap1       _targetBmp;
+        private DW.Factory        _dwFactory;
+        private D2D.RenderTarget _target;
+        private SwapChain1        _swapChain;
+        private D3D.Device _d3dDevice;
+        private Device _dxgiDevice;
 
         #endregion
     }

@@ -15,92 +15,7 @@ namespace Rain.Core
 {
     public abstract class RenderContext : IRenderContext
     {
-        public abstract float Height { get; }
-
-        public abstract float Width { get; }
-
-        public abstract IFontSource CreateFontSource();
-
-        public abstract void Begin(object ctx);
-
-        public abstract void Clear(Color color);
-
-        /// <inheritdoc />
-        public abstract IEffectLayer CreateEffectLayer();
-
-        public abstract ISolidColorBrush CreateBrush(Color color);
-
-        public abstract ILinearGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY);
-
-        public abstract IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
-            float radiusY, float focusX, float focusY);
-
-        public abstract T CreateEffect<T>() where T : class, IEffect;
-
-        public abstract IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry);
-
-        public abstract IGeometry CreateGeometry();
-
-        public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
-
-        public abstract IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes);
-
-        public abstract IPen CreatePen(
-            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit);
-
-        public abstract IGeometry CreateRectangleGeometry(float x, float y, float w, float h);
-
-        public abstract ITextLayout CreateTextLayout();
-
-        /// <inheritdoc />
-        public abstract void DrawEffectLayer(IEffectLayer layer);
-
-        public abstract void DrawBitmap(
-            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode);
-
-        public abstract void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
-
-        public abstract void DrawGeometry(IGeometry geometry, IPen pen);
-
-        public abstract void DrawGeometry(IGeometry geometry, IPen pen, float width);
-
-        public abstract void DrawLine(Vector2 v1, Vector2 v2, IPen pen);
-
-        public abstract void DrawRectangle(
-            float left, float top, float width, float height, IPen pen);
-
-        public abstract void End();
-
-        public abstract void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush);
-
-        public abstract void FillGeometry(IGeometry geometry, IBrush brush);
-
-        public abstract void FillRectangle(
-            float left, float top, float width, float height, IBrush brush);
-
-        public void FillRectangle(Vector2 center, Vector2 radii, IBrush brush)
-        {
-            FillRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, brush);
-        }
-
-        public void DrawRectangle(Vector2 center, Vector2 radii, IPen pen)
-        {
-            DrawRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, pen);
-        }
-
-        public abstract float GetDpi();
-
-        public abstract IRenderImage GetRenderImage(IImageFrame image);
-
-        public abstract IRenderImage GetRenderImage(
-            IImageFrame image, Vector2 scale, ScaleMode mode);
-
-        
-
-        public abstract void Transform(Matrix3x2 transform, bool absolute = false);
+        #region IRenderContext Members
 
         public virtual IPen CreatePen(float width, IBrush brush)
         {
@@ -149,9 +64,104 @@ namespace Rain.Core
             FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height, brush);
         }
 
-        #region IDisposable Members
+        public abstract void Begin(object ctx);
+
+        public abstract void Clear(Color color);
+
+        public abstract ISolidColorBrush CreateBrush(Color color);
+
+        public abstract ILinearGradientBrush CreateBrush(
+            IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY);
+
+        public abstract IRadialGradientBrush CreateBrush(
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
+            float radiusY, float focusX, float focusY);
+
+        public abstract T CreateEffect<T>() where T : class, IEffect;
+
+        /// <inheritdoc />
+        public abstract IEffectLayer CreateEffectLayer();
+
+        public abstract IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry);
+
+        public abstract IFontSource CreateFontSource();
+
+        public abstract IGeometry CreateGeometry();
+
+        public abstract IGeometry CreateGeometryGroup(params IGeometry[] geometries);
+
+        public abstract IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes);
+
+        public abstract IPen CreatePen(
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit);
+
+        public abstract IGeometry CreateRectangleGeometry(float x, float y, float w, float h);
+
+        public abstract ITextLayout CreateTextLayout();
 
         public abstract void Dispose();
+
+        public abstract void DrawBitmap(
+            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode);
+
+        /// <inheritdoc />
+        public abstract void DrawEffectLayer(IEffectLayer layer);
+
+        public virtual void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
+        {
+            DrawEllipse(cx, cy, rx, ry, pen, pen.Width);
+        }
+
+        /// <inheritdoc />
+        public abstract void DrawEllipse(
+            float cx, float cy, float rx, float ry, IPen pen, float penWidth);
+
+        public abstract void DrawGeometry(IGeometry geometry, IPen pen);
+
+        public abstract void DrawGeometry(IGeometry geometry, IPen pen, float width);
+
+        public abstract void DrawLine(Vector2 v1, Vector2 v2, IPen pen);
+
+        public virtual void DrawRectangle(float left, float top, float width, float height, IPen pen)
+        {
+            DrawRectangle(new RectangleF(left, top, width, height), pen, pen.Width);
+        }
+
+        /// <inheritdoc />
+        public abstract void DrawRectangle(RectangleF rectangleF, IPen pen, float penWidth);
+
+        public void DrawRectangle(Vector2 center, Vector2 radii, IPen pen)
+        {
+            DrawRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, pen);
+        }
+
+        public abstract void End();
+
+        public abstract void FillEllipse(float cx, float cy, float rx, float ry, IBrush brush);
+
+        public abstract void FillGeometry(IGeometry geometry, IBrush brush);
+
+        public abstract void FillRectangle(
+            float left, float top, float width, float height, IBrush brush);
+
+        public void FillRectangle(Vector2 center, Vector2 radii, IBrush brush)
+        {
+            FillRectangle(center.X - radii.X, center.Y - radii.Y, radii.X * 2, radii.Y * 2, brush);
+        }
+
+        public abstract float GetDpi();
+
+        public abstract IRenderImage GetRenderImage(IImageFrame image);
+
+        public abstract IRenderImage GetRenderImage(
+            IImageFrame image, Vector2 scale, ScaleMode mode);
+
+
+        public abstract void Transform(Matrix3x2 transform, bool absolute = false);
+        public abstract float Height { get; }
+
+        public abstract float Width { get; }
 
         #endregion
     }

@@ -46,7 +46,10 @@ namespace Rain.Renderer.WPF
         public override IEffectLayer CreateEffectLayer() { throw new NotImplementedException(); }
 
         /// <inheritdoc />
-        public override IRenderImage GetRenderImage(IImageFrame image) { throw new NotImplementedException(); }
+        public override IRenderImage GetRenderImage(IImageFrame image)
+        {
+            throw new NotImplementedException();
+        }
 
         public override ISolidColorBrush CreateBrush(Color color)
         {
@@ -114,21 +117,42 @@ namespace Rain.Renderer.WPF
         public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
         /// <inheritdoc />
-        public override void DrawEffectLayer(IEffectLayer layer) { throw new NotImplementedException(); }
+        public override void DrawEffectLayer(IEffectLayer layer)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void Dispose() { _ctx = null; }
 
         /// <inheritdoc />
         public override void DrawBitmap(
-            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode) { throw new NotImplementedException(); }
+            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <inheritdoc />
-        public override IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode) { throw new NotImplementedException(); }
+        public override IRenderImage GetRenderImage(
+            IImageFrame image, Vector2 scale, ScaleMode mode)
+        {
+            throw new NotImplementedException();
+        }
 
-        public override void DrawBitmap(IRenderImage bitmap) { throw new NotImplementedException(); }
+        public override void DrawBitmap(IRenderImage bitmap)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {
+            _commandQueue.Enqueue(new EllipseRenderCommand(cx, cy, rx, ry, false, null, pen));
+        }
+
+        /// <inheritdoc />
+        public override void DrawEllipse(
+            float cx, float cy, float rx, float ry, IPen pen, float penWidth)
+        {
+#warning This currently ignores the width parameter. See Apply().
             _commandQueue.Enqueue(new EllipseRenderCommand(cx, cy, rx, ry, false, null, pen));
         }
 
@@ -153,6 +177,14 @@ namespace Rain.Renderer.WPF
         {
             _commandQueue.Enqueue(
                 new RectangleRenderCommand(left, top, height, width, false, null, pen));
+        }
+
+        /// <inheritdoc />
+        public override void DrawRectangle(RectangleF r, IPen pen, float penWidth)
+        {
+#warning This currently ignores the width parameter. See Apply().
+            _commandQueue.Enqueue(
+                new RectangleRenderCommand(r.Left, r.Top, r.Width, r.Height, false, null, pen));
         }
 
         public override void End()

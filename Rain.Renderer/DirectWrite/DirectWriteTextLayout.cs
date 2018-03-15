@@ -6,18 +6,19 @@ using System.Threading.Tasks;
 
 using Rain.Core;
 using Rain.Core.Model;
-using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
+using Rain.Renderer.Direct2D;
 
 using DW = SharpDX.DirectWrite;
 using FontStretch = Rain.Core.Model.Text.FontStretch;
 using FontStyle = Rain.Core.Model.Text.FontStyle;
 using FontWeight = Rain.Core.Model.Text.FontWeight;
+using TextRenderer = Rain.Renderer.Direct2D.TextRenderer;
 
-namespace Rain.Renderer.Direct2D
+namespace Rain.Renderer.DirectWrite
 {
     internal sealed class DirectWriteTextLayout : ResourceBase, ITextLayout
     {
@@ -28,6 +29,7 @@ namespace Rain.Renderer.Direct2D
         private          TextRenderer.Context   _textContext;
 
         public DirectWriteTextLayout(Direct2DRenderContext ctx) { _ctx = ctx; }
+
         public float FontHeight { get; private set; }
 
         public float Height { get; set; }
@@ -38,7 +40,9 @@ namespace Rain.Renderer.Direct2D
 
         public Format GetFormat(int position, out int index)
         {
-            var sorted = _formats.OrderBy(f => f.Range.Index).ToArray();
+            Format[] sorted;
+            lock (_formats)
+                sorted = _formats.OrderBy(f => f.Range.Index).ToArray();
 
             index = 0;
 
@@ -143,7 +147,10 @@ namespace Rain.Renderer.Direct2D
 
             using (var renderer = new TextRenderer())
             {
-                _dwLayout.Draw(_textContext = new TextRenderer.Context(_ctx),
+                _textContext?.Dispose();
+                _textContext = new TextRenderer.Context(_ctx);
+
+                _dwLayout.Draw(_textContext,
                                renderer,
                                0,
                                -FontHeight);

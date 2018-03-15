@@ -189,16 +189,11 @@ namespace Rain.ViewModel
             reference2.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
             reference3.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
             reference2.Fill = new SolidColorBrushInfo(new Color(1, 0, 0));
-
-            var pic = new Picture();
-            pic.ApplyTransform(Matrix3x2.CreateScale(0.25f) * Matrix3x2.CreateTranslation(300, 200));
-            pic.Image = ArtContext.ResourceContext.LoadImageFromFilename(@"C:\Users\ibiyemi.CENTRAL\Pictures\anders-jilden-307322-unsplash.jpg");
-
+            
             root.Add(reference1);
             root.Add(reference2);
             root.Add(reference3);
             root.Add(l);
-            root.Add(pic);
 
             l.Add(e);
             l.Add(r);
