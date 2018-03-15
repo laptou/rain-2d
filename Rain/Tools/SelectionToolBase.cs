@@ -201,8 +201,8 @@ namespace Rain.Tools
         protected void RenderBoundingBoxes(
             IRenderContext target, ICacheManager cache, IViewManager view)
         {
-            var outline = target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline));
-            var outlineRef = target.CreatePen(1, cache.GetBrush(Colors.SelectionReferenceOutline));
+            var outline = cache.GetPen(Colors.SelectionOutline, 1);
+            var outlineRef = cache.GetPen(Colors.SelectionReferenceOutline, 1);
 
             // bounding box outlines
             target.Transform(SelectionManager.SelectionTransform);
@@ -232,14 +232,13 @@ namespace Rain.Tools
         protected void RenderPathOutlines(
             IRenderContext target, ICacheManager cache, IViewManager view)
         {
+            var outline = cache.GetPen(Colors.SelectionOutline, 1);
+
             foreach (var shape in Selection.OfType<IGeometricLayer>())
             {
                 target.Transform(shape.AbsoluteTransform);
 
-                using (var pen = target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline)))
-                {
-                    target.DrawGeometry(Context.CacheManager.GetGeometry(shape), pen);
-                }
+                target.DrawGeometry(cache.GetGeometry(shape), outline);
 
                 target.Transform(MathUtils.Invert(shape.AbsoluteTransform));
             }

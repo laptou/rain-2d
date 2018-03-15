@@ -33,6 +33,8 @@ namespace Rain.Renderer
 
         private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
 
+        private readonly Dictionary<(string, int), IPen> _pens = new Dictionary<(string, int), IPen>();
+
         private readonly Dictionary<IFilledLayer, IBrush> _fills =
             new Dictionary<IFilledLayer, IBrush>();
 
@@ -384,7 +386,15 @@ namespace Rain.Renderer
             return Get(_bounds, layer, l => l.GetBounds(Context));
         }
 
-        public IBrush GetBrush(string key) { return _brushes[key]; }
+        public IBrush GetBrush(string key) { return _brushes.TryGet(key); }
+
+        /// <inheritdoc />
+        public IPen GetPen(string key, int width)
+        {
+            return Get(_pens,
+                       (key, width),
+                       ((string k, int w) p) => Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
+        }
 
         public IBrush GetFill(IFilledLayer layer)
         {
@@ -417,25 +427,24 @@ namespace Rain.Renderer
             return Get(_texts, layer, t => t.GetLayout(Context));
         }
 
-        public void LoadBitmaps(RenderContext target)
+        public void LoadApplicationResources(RenderContext target)
         {
             _bitmaps["cursor-resize-ns"] = LoadBitmap(target, "cursor-resize-ns");
             _bitmaps["cursor-resize-ew"] = LoadBitmap(target, "cursor-resize-ew");
             _bitmaps["cursor-resize-nwse"] = LoadBitmap(target, "cursor-resize-nwse");
             _bitmaps["cursor-resize-nesw"] = LoadBitmap(target, "cursor-resize-nesw");
             _bitmaps["cursor-rotate"] = LoadBitmap(target, "cursor-rotate");
-        }
 
-        public void LoadBrushes(RenderContext target)
-        {
-            foreach (KeyValuePair<string, object> key in AppSettings.Current.Theme.GetSubset("colors"))
+            foreach (var key in AppSettings.Current.Theme.GetSubset("colors"))
             {
                 if (!Color.TryParse(key.Value as string, out var color)) continue;
 
-                _brushes[key.Key] = target.CreateBrush(color);
+                var brush = target.CreateBrush(color);
+                _brushes[key.Key] = brush;
+                _pens[(key.Key, 1)] = target.CreatePen(1, brush);
             }
         }
-
+        
         public void ReleaseDeviceResources()
         {
             EnterWriteLock();

@@ -163,14 +163,14 @@ namespace Rain.Tools
         {
             var zoom = view.Zoom;
 
-            var p = target.CreatePen(1, cache.GetBrush(Colors.NodeOutline));
-            var p2 = target.CreatePen(1, cache.GetBrush(Colors.NodeOutlineAlt));
+            var nOutline = cache.GetPen(Colors.NodeOutline, 1);
+            var sOutline = cache.GetPen(Colors.SelectionOutline, 1);
 
             var radius = 4f / zoom;
 
             if (_start != null)
             {
-                target.DrawLine(_start.Value, _mouse.pos, p);
+                target.DrawLine(_start.Value, _mouse.pos, nOutline);
 
                 var rect = new RectangleF(_start.Value.X - radius,
                                           _start.Value.Y - radius,
@@ -178,36 +178,24 @@ namespace Rain.Tools
                                           radius * 2);
 
                 target.FillRectangle(rect, GetBrush(false, false));
-                target.DrawRectangle(rect, p2);
+                target.DrawRectangle(rect, sOutline);
             }
 
             if (SelectedLayer == null)
-            {
-                p.Dispose();
-                p2.Dispose();
-
                 return;
-            }
 
             var transform = SelectedLayer.AbsoluteTransform;
+
             target.Transform(transform);
 
-            using (var geom = cache.GetGeometry(SelectedLayer))
-            using (var pen =
-                target.CreatePen(1, cache.GetBrush(Colors.SelectionOutline)))
-            {
-                target.DrawGeometry(geom, pen);
-            }
+            target.DrawGeometry(cache.GetGeometry(SelectedLayer), sOutline);
 
             target.Transform(MathUtils.Invert(transform));
 
             IBrush GetBrush(bool over, bool down)
             {
                 if (over)
-                    if (down)
-                        return cache.GetBrush(Colors.NodeClick);
-                    else
-                        return cache.GetBrush(Colors.NodeHover);
+                    return cache.GetBrush(down ? Colors.NodeClick : Colors.NodeHover);
 
                 return cache.GetBrush(Colors.Node);
             }
@@ -223,13 +211,8 @@ namespace Rain.Tools
 
                 target.FillRectangle(rect, GetBrush(over, _mouse.down));
 
-                target.DrawRectangle(rect, node.Index == 0 ? p2 : p);
+                target.DrawRectangle(rect, node.Index == 0 ? sOutline : nOutline);
             }
-
-            // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerated b/c they are resource brushes
-            p.Dispose();
-            p2.Dispose();
         }
 
         protected override void OnSelectionChanged(object sender, EventArgs args)

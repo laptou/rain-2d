@@ -16,7 +16,10 @@ namespace Rain.Core
         #region Retrieval
 
         IRenderImage GetBitmap(string key);
+
         IBrush GetBrush(string key);
+        IPen GetPen(string key, int width);
+
         IBrush GetFill(IFilledLayer layer);
         IRenderImage GetImage(IImageLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);
@@ -25,8 +28,7 @@ namespace Rain.Core
 
         #endregion
 
-        void LoadBitmaps(RenderContext target);
-        void LoadBrushes(RenderContext target);
+        void LoadApplicationResources(RenderContext target);
 
         void SuppressInvalidation();
         void RestoreInvalidation();

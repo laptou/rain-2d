@@ -29,7 +29,7 @@ namespace Rain.Tools
 
         private (bool down, bool moved, Vector2 pos) _mouse;
         private bool                                 _updatingOptions;
-        private bool _end, _start;
+        private bool                                 _end, _start;
 
         public GradientTool(IToolManager toolManager) : base(toolManager)
         {
@@ -315,41 +315,39 @@ namespace Rain.Tools
 
         public override IPenInfo ProvideStroke() { return null; }
 
-        public override void Render(
-            IRenderContext target, ICacheManager cacheManager, IViewManager view)
+        public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
-            var fill = cacheManager.GetBrush(Colors.Node);
-            var fillAlt = cacheManager.GetBrush(Colors.NodeSpecial);
-            var outline = cacheManager.GetBrush(Colors.GradientHandleOutline);
-            var outlineSel = cacheManager.GetBrush(Colors.GradientHandleSelectedOutline);
-            var outlineAlt = cacheManager.GetBrush(Colors.NodeSpecialOutline);
-
             if (_drag != null)
-                using (var n = target.CreatePen(1, outline))
-                {
-                    target.DrawLine(_drag.Value.start, _drag.Value.end, n);
-                }
+            {
+                target.DrawLine(_drag.Value.start,
+                                _drag.Value.end,
+                                cache.GetPen(Colors.GradientHandleOutline, 1));
+
+                return;
+            }
 
             if (SelectedBrush == null)
                 return;
+
+            var fill = cache.GetBrush(Colors.Node);
+            var fillAlt = cache.GetBrush(Colors.NodeSpecial);
+            var outline = cache.GetPen(Colors.GradientHandleOutline, 1);
+            var outlineSel = cache.GetPen(Colors.GradientHandleSelectedOutline, 1);
+            var outlineAlt = cache.GetPen(Colors.NodeSpecialOutline, 1);
 
             var transform = SelectedBrush.Transform * SelectedLayer.AbsoluteTransform;
             var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, transform));
             var zoom = view.Zoom;
             var radius = 6 / zoom;
 
-            var p = target.CreatePen(1, outline);
-            var p2 = target.CreatePen(2, outlineSel);
-            var p3 = target.CreatePen(1, outlineAlt);
-
             Vector2 start = t(SelectedBrush.StartPoint), end = t(SelectedBrush.EndPoint);
 
-            target.DrawLine(start, end, p3);
+            target.DrawLine(start, end, outlineAlt);
 
             if (SelectedBrush.Type == GradientBrushType.Linear)
             {
                 target.FillRectangle(end, new Vector2(radius * 0.75f), fillAlt);
-                target.DrawRectangle(end, new Vector2(radius * 0.75f), p3);
+                target.DrawRectangle(end, new Vector2(radius * 0.75f), outlineAlt);
             }
 
             if (SelectedBrush.Type == GradientBrushType.Radial)
@@ -359,18 +357,18 @@ namespace Rain.Tools
                 var v = t(s + new Vector2(0, e.Y - s.Y));
                 var h = t(s + new Vector2(e.X - s.X, 0));
 
-                target.DrawLine(start, v, p3);
-                target.DrawLine(start, h, p3);
+                target.DrawLine(start, v, outlineAlt);
+                target.DrawLine(start, h, outlineAlt);
 
                 target.FillRectangle(v, new Vector2(radius * 0.75f), fillAlt);
-                target.DrawRectangle(v, new Vector2(radius * 0.75f), p3);
+                target.DrawRectangle(v, new Vector2(radius * 0.75f), outlineAlt);
 
                 target.FillRectangle(h, new Vector2(radius * 0.75f), fillAlt);
-                target.DrawRectangle(h, new Vector2(radius * 0.75f), p3);
+                target.DrawRectangle(h, new Vector2(radius * 0.75f), outlineAlt);
             }
 
             target.FillRectangle(start, new Vector2(radius * 0.75f), fillAlt);
-            target.DrawRectangle(start, new Vector2(radius * 0.75f), p3);
+            target.DrawRectangle(start, new Vector2(radius * 0.75f), outlineAlt);
 
             using (var fxLayer = target.CreateEffectLayer())
             {
@@ -389,7 +387,9 @@ namespace Rain.Tools
 
                         fxLayer.FillCircle(pos, radius * 1.25f, fill);
 
-                        fxLayer.DrawCircle(pos, radius * 1.25f, _selection.Contains(i) ? p2 : p);
+                        fxLayer.DrawCircle(pos,
+                                           radius * 1.25f,
+                                           _selection.Contains(i) ? outlineSel : outline);
 
                         using (var brush = fxLayer.CreateBrush(stop.Color))
                         {
@@ -402,12 +402,6 @@ namespace Rain.Tools
                     target.DrawEffectLayer(fxLayer);
                 }
             }
-
-            // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerate b/c they are resource brushes
-            p?.Dispose();
-            p2?.Dispose();
-            p3?.Dispose();
         }
 
         private void Add(Color color, int index)

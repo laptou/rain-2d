@@ -47,8 +47,7 @@ namespace Rain.View.Command
                     vm.Document = SvgReader.FromSvg(doc);
 
                     artCtx.CacheManager.ReleaseResources();
-                    artCtx.CacheManager.LoadBitmaps(artCtx.RenderContext);
-                    artCtx.CacheManager.LoadBrushes(artCtx.RenderContext);
+                    artCtx.CacheManager.LoadApplicationResources(artCtx.RenderContext);
                     artCtx.CacheManager.BindLayer(vm.Document.Root);
                     vm.Pan = Vector2.One * 10;
 

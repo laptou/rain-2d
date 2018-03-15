@@ -60,8 +60,7 @@ namespace Rain.View.Control
 
                 if (_artView.RenderContext != null)
                 {
-                    CacheManager.LoadBrushes(_artView.RenderContext);
-                    CacheManager.LoadBitmaps(_artView.RenderContext);
+                    CacheManager.LoadApplicationResources(_artView.RenderContext);
 
                     if (ViewManager?.Root != null)
                         CacheManager?.BindLayer(ViewManager.Document.Root);

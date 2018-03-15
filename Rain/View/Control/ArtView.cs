@@ -236,8 +236,7 @@ namespace Rain.View.Control
         private void OnRenderTargetCreated(object sender, EventArgs eventArgs)
         {
             ArtContext.CacheManager?.ReleaseResources();
-            ArtContext.CacheManager?.LoadBrushes(RenderContext);
-            ArtContext.CacheManager?.LoadBitmaps(RenderContext);
+            ArtContext.CacheManager?.LoadApplicationResources(RenderContext);
 
             if (ArtContext.ViewManager?.Root != null)
                 ArtContext.CacheManager?.BindLayer(ArtContext.ViewManager.Document.Root);

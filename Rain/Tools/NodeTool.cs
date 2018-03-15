@@ -201,31 +201,32 @@ namespace Rain.Tools
         }
 
         public override void Render(
-            IRenderContext target, ICacheManager cacheManager, IViewManager view)
+            IRenderContext target, ICacheManager cache, IViewManager view)
         {
             if (SelectedLayer == null)
                 return;
 
-            RenderBoundingBoxes(target, cacheManager, view);
-            RenderPathOutlines(target, cacheManager, view);
+            RenderBoundingBoxes(target, cache, view);
+            RenderPathOutlines(target, cache, view);
 
             var transform = SelectedLayer.AbsoluteTransform;
             var zoom = view.Zoom;
 
-            var p = target.CreatePen(1, cacheManager.GetBrush(Colors.NodeOutline));
-            var p2 = target.CreatePen(1, cacheManager.GetBrush(Colors.NodeOutlineAlt));
+            var nOutline = cache.GetPen(Colors.NodeOutline, 1);
+            var nOutlineAlt = cache.GetPen(Colors.NodeOutlineAlt, 1);
+            var sOutline = cache.GetPen(Colors.SelectionOutline, 1);
 
             IBrush GetBrush(bool over, bool down, bool selected)
             {
                 if (over)
                     if (down)
-                        return cacheManager.GetBrush(Colors.NodeClick);
+                        return cache.GetBrush(Colors.NodeClick);
                     else
-                        return cacheManager.GetBrush(Colors.NodeHover);
+                        return cache.GetBrush(Colors.NodeHover);
 
-                if (selected) return cacheManager.GetBrush(Colors.NodeSelected);
+                if (selected) return cache.GetBrush(Colors.NodeSelected);
 
-                return cacheManager.GetBrush(Colors.Node);
+                return cache.GetBrush(Colors.Node);
             }
 
             var start = true;
@@ -246,11 +247,11 @@ namespace Rain.Tools
                             var lPos = Vector2.Transform(node.IncomingControl.Value, transform);
                             var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
 
-                            target.DrawLine(lPos, pos, p);
+                            target.DrawLine(lPos, pos, nOutline);
                             target.FillCircle(lPos,
                                               radius / 1.2f,
                                               GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.2f, p);
+                            target.DrawCircle(lPos, radius / 1.2f, nOutline);
                         }
 
                         if (node.OutgoingControl != null)
@@ -258,17 +259,17 @@ namespace Rain.Tools
                             var lPos = Vector2.Transform(node.OutgoingControl.Value, transform);
                             var lOver = Vector2.DistanceSquared(lPos, _mouse.pos) < radius * radius;
 
-                            target.DrawLine(lPos, pos, p);
+                            target.DrawLine(lPos, pos, nOutline);
                             target.FillCircle(lPos,
                                               radius / 1.2f,
                                               GetBrush(lOver, _mouse.down, false));
-                            target.DrawCircle(lPos, radius / 1.2f, p);
+                            target.DrawCircle(lPos, radius / 1.2f, nOutline);
                         }
                     }
 
                     var over = Vector2.DistanceSquared(pos, _mouse.pos) < radius * radius;
                     target.FillCircle(pos, radius, GetBrush(over, _mouse.down, selected));
-                    target.DrawCircle(pos, radius, node.Index == 0 ? p2 : p);
+                    target.DrawCircle(pos, radius, node.Index == 0 ? nOutlineAlt : nOutline);
                 }
                 else
                 {
@@ -279,16 +280,11 @@ namespace Rain.Tools
 
                     target.FillRectangle(rect, GetBrush(over, _mouse.down, selected));
 
-                    target.DrawRectangle(rect, start ? p2 : p);
+                    target.DrawRectangle(rect, start ? nOutlineAlt : nOutline);
                 }
 
                 start = node.FigureEnd != null;
             }
-
-            // do not dispose the brushes! they are being used by the cache manager
-            // and do not automatically regenerated b/c they are resource brushes
-            p.Dispose();
-            p2.Dispose();
         }
 
         protected override ILayer HitTest(ILayer layer, Vector2 position)
