@@ -57,5 +57,9 @@ namespace Rain.Native
 
             return (short) (val32 & 0x0000FFFF);
         }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern int WaitForSingleObjectEx(
+            [In] IntPtr hHandle, [In] uint dwMilliseconds, [In] bool bAlertable);
     }
 }

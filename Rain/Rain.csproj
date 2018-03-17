@@ -199,6 +199,7 @@
     <Compile Include="Native\WindowStylesEx.cs" />
     <Compile Include="Native\WndClass.cs" />
     <Compile Include="Native\WndProc.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Renderer\BrushManager.cs" />
     <Compile Include="Commands\AddLayerCommand.cs" />
     <Compile Include="Commands\AlignCommand.cs" />

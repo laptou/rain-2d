@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -11,6 +13,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
+using Rain.Annotations;
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Native;
@@ -46,18 +49,12 @@ namespace Rain.View.Control
         }
     }
 
-    public abstract class D2DImage : HwndHost
+    public abstract class D2DImage : HwndHost, INotifyPropertyChanged
     {
         protected D2DImage()
         {
             SnapsToDevicePixels = true;
             UseLayoutRounding = true;
-
-            if (App.IsDesigner) return;
-
-            SizeChanged += OnSizeChanged;
-            IsVisibleChanged += OnIsVisibleChanged;
-            AllowDrop = true;
         }
 
         public D2D.Factory Direct2DFactory => _factory;
@@ -73,6 +70,48 @@ namespace Rain.View.Control
 
         public RenderContext RenderContext { get; set; }
 
+        private float _renderTime;
+
+        public float RenderTime
+        {
+            get => _renderTime;
+            set
+            {
+                if (value.Equals(_renderTime)) return;
+
+                _renderTime = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private float _frameTime;
+
+        public float FrameTime
+        {
+            get => _frameTime;
+            set
+            {
+                if (value.Equals(_frameTime)) return;
+
+                _frameTime = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private float _waitTime;
+
+        public float WaitTime
+        {
+            get => _waitTime;
+            set
+            {
+                if (value.Equals(_waitTime)) return;
+
+                _waitTime = value;
+                OnPropertyChanged();
+            }
+        }
+
         public event EventHandler RenderTargetCreated;
 
         protected abstract void OnInput(IInputEvent inputEvent);
@@ -83,143 +122,175 @@ namespace Rain.View.Control
         {
             _invalidated = true;
 
-            
+            WindowHelper.RedrawWindow(_hwnd, IntPtr.Zero, IntPtr.Zero, 0b0001);
+        }
 
-            WindowHelper.RedrawWindow(_host, IntPtr.Zero, IntPtr.Zero, 0b0001);
+        private void Render()
+        {
+            if (_target == null) return;
+
+            if (_invalidated)
+            {
+                try
+                {
+                    _invalidated = false;
+
+                    _stopwatch.Restart();
+
+                    NativeHelper.WaitForSingleObjectEx(_frameLatencyWaitHandle, 1000, true);
+
+                    _stopwatch.Stop();
+
+                    _waits[_frame++ % 10] = (float)_stopwatch.Elapsed.TotalMilliseconds;
+
+                    _stopwatch.Restart();
+
+                    RenderContext.Begin(null);
+                    OnRender(RenderContext);
+                    RenderContext.End();
+
+                    _stopwatch.Stop();
+
+                    _frames[_frame++ % 10] = (float)_stopwatch.Elapsed.TotalMilliseconds;
+
+                    _swapChain.Present(1, PresentFlags.None, default);
+
+                    if (_frame % 10 == 0)
+                    {
+                        RenderTime = _frames.Average();
+                        WaitTime = _waits.Average();
+                        FrameTime = RenderTime + WaitTime;
+                    }
+                }
+                catch (DX.SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
+                {
+                    Initialize();
+
+                    _invalidated = true;
+                }
+            }
+
         }
 
         protected virtual IntPtr OnMessage(
             IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
+            void PushEvent(IInputEvent evt)
+            {
+                lock (_events)
+                {
+                    _events.Enqueue(evt);
+                }
+
+                _eventFlag.Set();
+            }
+
+            void OnMouseMove()
+            {
+                WindowHelper.SetFocus(hWnd);
+
+                var pos = NativeHelper.GetCoordinates(lParam, _dpi);
+
+                PushEvent(new PointerEvent(pos,
+                                           _lastMousePos - pos,
+                                           KeyboardHelper.GetModifierState(wParam)));
+
+                _lastMousePos = pos;
+            }
+
+            void OnMouseWheel()
+            {
+                var delta = NativeHelper.HighWord(wParam);
+
+                var pos = NativeHelper.GetCoordinates(lParam, _dpi, hWnd);
+
+                PushEvent(new ScrollEvent(delta,
+                                          pos,
+                                          msg == WindowMessage.MouseWheel
+                                              ? ScrollDirection.Vertical
+                                              : ScrollDirection.Horizontal,
+                                          KeyboardHelper.GetModifierState(wParam)));
+            }
+
+            void OnLeftMouseButtonDown()
+            {
+                WindowHelper.SetFocus(hWnd);
+
+                var pos = NativeHelper.GetCoordinates(lParam, _dpi);
+
+                PushEvent(new ClickEvent(pos,
+                                         MouseButton.Left,
+                                         ClickType.Down,
+                                         KeyboardHelper.GetModifierState(wParam)));
+
+                _lastMousePos = pos;
+            }
+
+            void OnLeftMouseButtonUp()
+            {
+                WindowHelper.SetFocus(hWnd);
+
+                var pos = NativeHelper.GetCoordinates(lParam, _dpi);
+
+                PushEvent(new ClickEvent(pos,
+                                         MouseButton.Left,
+                                         ClickType.Up,
+                                         KeyboardHelper.GetModifierState(wParam)));
+
+                _lastMousePos = pos;
+            }
+
+            void OnLeftMouseButtonDoubleClick()
+            {
+                WindowHelper.SetFocus(hWnd);
+
+                var pos = NativeHelper.GetCoordinates(lParam, _dpi);
+
+                PushEvent(new ClickEvent(pos,
+                                         MouseButton.Left,
+                                         ClickType.Double,
+                                         KeyboardHelper.GetModifierState(wParam)));
+
+                _lastMousePos = pos;
+            }
+
             switch (msg)
             {
                 case WindowMessage.Paint:
-                    if (_target == null) goto default;
+                    Render();
 
-                    WindowHelper.BeginPaint(hWnd, out var paintStruct);
+                    goto default;
 
-                    try
-                    {
-                        if (_invalidated)
-                        {
-                            _invalidated = false;
-                            RenderContext.Begin(null);
-                            OnRender(RenderContext);
-                            RenderContext.End();
-                            _swapChain.Present(0, PresentFlags.None, default);
-                        }
-                    }
-                    catch (DX.SharpDXException ex) when (ex.Descriptor ==
-                                                         D2D.ResultCode.RecreateTarget)
-                    {
-                        Initialize();
-                    }
+                case WindowMessage.EraseBackground:
 
-                    WindowHelper.EndPaint(hWnd, ref paintStruct);
-
-                    _invalidated = false;
-
-                    break;
+                    // return 1, meaning that the background was erased
+                    return (IntPtr) 1;
                 case WindowMessage.MouseWheelHorizontal:
                 case WindowMessage.MouseWheel:
-                {
-                    var delta = NativeHelper.HighWord(wParam);
-
-                    var pos = NativeHelper.GetCoordinates(lParam, _dpi, hWnd);
-
-                    var scrollEvt = new ScrollEvent(delta,
-                                                    pos,
-                                                    msg == WindowMessage.MouseWheel
-                                                        ? ScrollDirection.Vertical
-                                                        : ScrollDirection.Horizontal,
-                                                    KeyboardHelper.GetModifierState(wParam));
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(scrollEvt);
-                    }
-
-                    _eventFlag.Set();
+                    OnMouseWheel();
 
                     break;
-                }
 
                 case WindowMessage.MouseMove:
-                {
-                    WindowHelper.SetFocus(hWnd);
-
-                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(new PointerEvent(pos,
-                                                         _lastMousePos - pos,
-                                                         KeyboardHelper.GetModifierState(wParam)));
-                    }
-
-                    _eventFlag.Set();
-                    _lastMousePos = pos;
+                    OnMouseMove();
 
                     break;
-                }
 
                 case WindowMessage.LeftButtonDown:
-                {
-                    WindowHelper.SetFocus(hWnd);
-
-                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(new ClickEvent(pos,
-                                                       MouseButton.Left,
-                                                       ClickType.Down,
-                                                       KeyboardHelper.GetModifierState(wParam)));
-                    }
-
-                    _eventFlag.Set();
-                    _lastMousePos = pos;
+                    OnLeftMouseButtonDown();
 
                     break;
-                }
+
                 case WindowMessage.LeftButtonUp:
-                {
-                    WindowHelper.SetFocus(hWnd);
-
-                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(new ClickEvent(pos,
-                                                       MouseButton.Left,
-                                                       ClickType.Up,
-                                                       KeyboardHelper.GetModifierState(wParam)));
-                    }
-
-                    _eventFlag.Set();
-                    _lastMousePos = pos;
+                    OnLeftMouseButtonUp();
 
                     break;
-                }
+
                 case WindowMessage.LeftButtonDoubleClick:
-                {
-                    WindowHelper.SetFocus(hWnd);
-
-                    var pos = NativeHelper.GetCoordinates(lParam, _dpi);
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(new ClickEvent(pos,
-                                                       MouseButton.Left,
-                                                       ClickType.Double,
-                                                       KeyboardHelper.GetModifierState(wParam)));
-                    }
-
-                    _eventFlag.Set();
-                    _lastMousePos = pos;
+                    OnLeftMouseButtonDoubleClick();
 
                     break;
-                }
+
                 case WindowMessage.MouseLeave:
 
                     // lose focus when mouse isn't over this
@@ -231,15 +302,10 @@ namespace Rain.View.Control
                     var repeat = (int) lParam & (1 << 30);
                     var key = KeyInterop.KeyFromVirtualKey((int) wParam);
 
-                    if (repeat != 0) goto default;
-
-                    lock (_events)
-                    {
-                        _events.Enqueue(
-                            new KeyboardEvent((int) key, true, KeyboardHelper.GetModifierState()));
-                    }
-
-                    _eventFlag.Set();
+                    PushEvent(new KeyboardEvent((int) key,
+                                                true,
+                                                repeat != 0,
+                                                KeyboardHelper.GetModifierState()));
 
                     // since the messages are processed asynchronously, 
                     // return 1, meaning it was not handled yet
@@ -248,13 +314,10 @@ namespace Rain.View.Control
                 case WindowMessage.SysKeyUp:
                     key = KeyInterop.KeyFromVirtualKey((int) wParam);
 
-                    lock (_events)
-                    {
-                        _events.Enqueue(
-                            new KeyboardEvent((int) key, false, KeyboardHelper.GetModifierState()));
-                    }
-
-                    _eventFlag.Set();
+                    PushEvent(new KeyboardEvent((int) key,
+                                                false,
+                                                false,
+                                                KeyboardHelper.GetModifierState()));
 
                     return (IntPtr) 1;
                 case WindowMessage.Char:
@@ -267,12 +330,7 @@ namespace Rain.View.Control
                         char.IsControl(str[0]))
                         break;
 
-                    lock (_events)
-                    {
-                        _events.Enqueue(new TextEvent(str, KeyboardHelper.GetModifierState()));
-                    }
-
-                    _eventFlag.Set();
+                    PushEvent(new TextEvent(str, KeyboardHelper.GetModifierState()));
 
                     break;
 
@@ -284,6 +342,7 @@ namespace Rain.View.Control
                 case WindowMessage.KillFocus:
                     OnInput(new FocusEvent(false, KeyboardHelper.GetModifierState()));
                     goto default;
+
                 case WindowMessage.Size:
                     _dpi = WindowHelper.GetDpiForWindow(hWnd);
 
@@ -291,7 +350,11 @@ namespace Rain.View.Control
                     {
                         RenderContext.Dispose();
 
-                        _swapChain.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.None);
+                        _swapChain.ResizeBuffers(0,
+                                                 0,
+                                                 0,
+                                                 Format.Unknown,
+                                                 SwapChainFlags.FrameLatencyWaitAbleObject);
 
                         var targetProps = new D2D.RenderTargetProperties(
                             D2D.RenderTargetType.Hardware,
@@ -309,6 +372,7 @@ namespace Rain.View.Control
 
                     InvalidateSurface();
                     goto default;
+
                 case WindowMessage.DropFiles:
                     var numFiles = DragHelper.DragQueryFile(wParam, 0xFFFFFFFF, null, 0);
                     var files = new List<string>(numFiles);
@@ -327,11 +391,11 @@ namespace Rain.View.Control
                     DragHelper.DragAcceptFiles(hWnd, true);
 
                     break;
-                default:
 
+                default:
                     return WindowHelper.DefWindowProc(hWnd, msg, wParam, lParam);
             }
-
+            
             return IntPtr.Zero;
         }
 
@@ -357,7 +421,7 @@ namespace Rain.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _host = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles,
+            _hwnd = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles,
                                                 cls,
                                                 "",
                                                 WindowStyles.Child | WindowStyles.Visible,
@@ -370,22 +434,29 @@ namespace Rain.View.Control
                                                 IntPtr.Zero,
                                                 0);
 
-            if (_host == IntPtr.Zero)
+            if (_hwnd == IntPtr.Zero)
             {
                 var code = Marshal.GetLastWin32Error();
 
                 throw new Win32Exception(code);
             }
 
-            WindowHelper.UpdateWindow(_host);
+            WindowHelper.UpdateWindow(_hwnd);
 
             Initialize();
 
-            return new HandleRef(this, _host);
+            _loop = true;
+
+            _evtThread = new Thread(EventLoop) {Priority = ThreadPriority.AboveNormal};
+            _evtThread.Start();
+
+            return new HandleRef(this, _hwnd);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
+            _loop = false;
+
             Disposer.SafeDispose(ref _factory);
             Disposer.SafeDispose(ref _dwFactory);
             Disposer.SafeDispose(ref _target);
@@ -393,7 +464,6 @@ namespace Rain.View.Control
             Disposer.SafeDispose(ref _d3dDevice);
             Disposer.SafeDispose(ref _dxgiDevice);
 
-            WindowHelper.DestroyWindow(hwnd.Handle);
             _proc = null;
         }
 
@@ -401,7 +471,7 @@ namespace Rain.View.Control
 
         private void EventLoop()
         {
-            while (_eventLoop)
+            while (_loop)
             {
                 while (_events.Count > 0)
                 {
@@ -431,20 +501,19 @@ namespace Rain.View.Control
             Disposer.SafeDispose(ref _target);
 
             #if DEBUG
-            _factory =
-                new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
+            _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
             #else
             _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
-                                                                        #endif
+                                                                                                                        #endif
 
-            if(_dwFactory == null)
-            _dwFactory = new DW.Factory(DW.FactoryType.Shared);
+            if (_dwFactory == null)
+                _dwFactory = new DW.Factory(DW.FactoryType.Shared);
 
-            if(_d3dDevice == null)
-            _d3dDevice = new D3D.Device(DriverType.Hardware,
-                                           D3D.DeviceCreationFlags.BgraSupport |
-                                           D3D.DeviceCreationFlags.Debug);
-            if(_dxgiDevice == null)
+            if (_d3dDevice == null)
+                _d3dDevice = new D3D.Device(DriverType.Hardware,
+                                            D3D.DeviceCreationFlags.BgraSupport |
+                                            D3D.DeviceCreationFlags.Debug);
+            if (_dxgiDevice == null)
                 _dxgiDevice = _d3dDevice.QueryInterface<Device>();
 
             var swapChainDesc = new SwapChainDescription1
@@ -459,14 +528,15 @@ namespace Rain.View.Control
 #warning does not work in win7
                 Scaling = Scaling.None,
                 SwapEffect = SwapEffect.FlipSequential, // TODO: find out what this means
-                AlphaMode = AlphaMode.Ignore
+                AlphaMode = AlphaMode.Ignore,
+                Flags = SwapChainFlags.FrameLatencyWaitAbleObject
             };
 
             var dxgiAdapter = _dxgiDevice.Adapter;
             var dxgiFactory = dxgiAdapter.GetParent<Factory2>();
-            var swapChain = new SwapChain1(dxgiFactory, _dxgiDevice, _host, ref swapChainDesc);
+            var swapChain = new SwapChain1(dxgiFactory, _dxgiDevice, _hwnd, ref swapChainDesc);
 
-            var dpi = WindowHelper.GetDpiForWindow(_host);
+            var dpi = WindowHelper.GetDpiForWindow(_hwnd);
 
             var targetProps = new D2D.RenderTargetProperties(
                 D2D.RenderTargetType.Hardware,
@@ -475,46 +545,24 @@ namespace Rain.View.Control
                 dpi,
                 D2D.RenderTargetUsage.None,
                 D2D.FeatureLevel.Level_10);
-            
+
             using (var surf = swapChain.GetBackBuffer<Surface>(0))
                 _target = new D2D.RenderTarget(_factory, surf, targetProps);
 
-            _swapChain = swapChain;
+            _swapChain = swapChain.QueryInterface<SwapChain2>();
+            _swapChain.MaximumFrameLatency = 1;
+            _frameLatencyWaitHandle = _swapChain.FrameLatencyWaitableObject;
 
             RenderContext = new Direct2DRenderContext(_target);
 
             RenderTargetCreated?.Invoke(this, null);
         }
 
-        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (IsVisible)
-            {
-                _eventLoop = true;
-
-                if (_evtThread == null)
-                {
-                    _evtThread = new Thread(EventLoop) {Priority = ThreadPriority.AboveNormal};
-                    _evtThread.Start();
-                }
-            }
-            else
-            {
-                _eventLoop = false;
-                _evtThread = null;
-            }
-        }
-
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //Initialize();
-        }
-
         #region Event Loop
 
         private readonly AutoResetEvent     _eventFlag = new AutoResetEvent(false);
         private readonly Queue<IInputEvent> _events    = new Queue<IInputEvent>();
-        private          bool               _eventLoop;
+        private          bool               _loop;
         private          Thread             _evtThread;
         private          Vector2            _lastMousePos;
 
@@ -523,7 +571,7 @@ namespace Rain.View.Control
 
         #region Win32
 
-        private IntPtr _host;
+        private IntPtr _hwnd;
         private IntPtr _parent;
 
         // ReSharper disable once NotAccessedField.Local
@@ -534,15 +582,27 @@ namespace Rain.View.Control
 
         #region Direct2D
 
-        private bool              _invalidated = true;
-        private D2D.Factory1      _factory;
-        private D2D.Bitmap1       _targetBmp;
-        private DW.Factory        _dwFactory;
+        private bool             _invalidated = true;
+        private D2D.Factory1     _factory;
+        private DW.Factory       _dwFactory;
         private D2D.RenderTarget _target;
-        private SwapChain1        _swapChain;
-        private D3D.Device _d3dDevice;
-        private Device _dxgiDevice;
+        private SwapChain2       _swapChain;
+        private D3D.Device       _d3dDevice;
+        private Device           _dxgiDevice;
+        private IntPtr           _frameLatencyWaitHandle;
 
         #endregion
+
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private readonly float[] _frames = new float[10];
+        private readonly float[] _waits = new float[10];
+        private long _frame;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

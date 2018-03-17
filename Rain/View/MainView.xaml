@@ -611,7 +611,8 @@
                 </TabControl>
             </Grid>
             <StatusBar Grid.Row="1" Grid.Column="0"
-                       Height="25">
+                       Height="25"
+                       HorizontalContentAlignment="Stretch">
                 <StatusBar.Background>
                     <SolidColorBrush x:Name="StatusBarBackground" Opacity="0.25" />
                 </StatusBar.Background>
@@ -655,28 +656,36 @@
                         </Style.Triggers>
                     </Style>
                 </StatusBar.Style>
-                <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}">
-                    <TextBlock.Style>
-                        <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Info">
-                                    <Setter Property="Foreground" Value="{utility:Theme text-1}" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Error">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Warning">
-                                    <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Success">
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="Foreground" Value="{utility:Theme accent-success}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <DockPanel HorizontalAlignment="Stretch">
+                    <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}" DockPanel.Dock="Left">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Info">
+                                        <Setter Property="Foreground" Value="{utility:Theme text-1}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Error">
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Warning">
+                                        <Setter Property="Foreground" Value="{utility:Theme accent-error}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ArtContext.Status.Type}" Value="Success">
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="Foreground" Value="{utility:Theme accent-success}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Margin="16,0"
+                               DockPanel.Dock="Right" Text="{Binding RenderTime, ElementName=ArtView, StringFormat=Render Time: {0:F2}ms}" />
+                    <TextBlock Margin="16,0"
+                               DockPanel.Dock="Right" Text="{Binding WaitTime, ElementName=ArtView, StringFormat=Wait Time: {0:F2}ms}" />
+                    <TextBlock Margin="16,0"
+                               DockPanel.Dock="Right" Text="{Binding FrameTime, ElementName=ArtView, StringFormat=Frame Time: {0:F2}ms}" />
+                </DockPanel>
             </StatusBar>
         </Grid>
     </Grid>

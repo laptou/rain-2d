@@ -136,7 +136,7 @@ namespace Rain.Native
         ///     The WM_ERASEBKGND message is sent when the window background must be erased (for example, when a window is
         ///     resized). The message is sent to prepare an invalidated portion of a window for painting.
         /// </summary>
-        Erasebkgnd = 0x0014,
+        EraseBackground = 0x0014,
 
         /// <summary>
         ///     This message is sent to all top-level windows when a change is made to a system color setting.
