@@ -103,7 +103,7 @@ namespace Rain.ViewModel
                                  nameof(Blue),
                                  nameof(Alpha));
 
-            Context.InvalidateRender();
+            Context.Invalidate();
 
             _changing = false;
         }

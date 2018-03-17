@@ -191,7 +191,7 @@ namespace Rain.Tools
             _mouse.position = evt.Position;
             _mouse.down = false;
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         #endregion

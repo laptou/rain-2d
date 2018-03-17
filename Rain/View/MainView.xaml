@@ -679,11 +679,8 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Margin="16,0"
-                               DockPanel.Dock="Right" Text="{Binding RenderTime, ElementName=ArtView, StringFormat=Render Time: {0:F2}ms}" />
-                    <TextBlock Margin="16,0"
-                               DockPanel.Dock="Right" Text="{Binding WaitTime, ElementName=ArtView, StringFormat=Wait Time: {0:F2}ms}" />
-                    <TextBlock Margin="16,0"
+
+                    <TextBlock Margin="16,0" HorizontalAlignment="Right"
                                DockPanel.Dock="Right" Text="{Binding FrameTime, ElementName=ArtView, StringFormat=Frame Time: {0:F2}ms}" />
                 </DockPanel>
             </StatusBar>

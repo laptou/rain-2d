@@ -142,7 +142,7 @@ namespace Rain.Tools
 
         public override void MouseMove(IArtContext context, PointerEvent evt)
         {
-            Context.InvalidateRender();
+            Context.Invalidate();
 
             var pos = context.ViewManager.ToArtSpace(evt.Position);
             var localPos = SelectionManager.ToSelectionSpace(pos);
@@ -235,7 +235,7 @@ namespace Rain.Tools
                     // setting rotate to 0 means that the transformation matrix is
                     // identity, which will cause rendering to stop so we invalidate
                     // the matrix
-                    Context.InvalidateRender();
+                    Context.Invalidate();
 
                     if (Math.Abs(_deltaRotation) > MathUtils.PiOverFour / 2)
                     {

@@ -192,7 +192,7 @@ namespace Rain.Tools
         public override void MouseMove(IArtContext context, PointerEvent evt)
         {
             var pos = context.ViewManager.ToArtSpace(evt.Position);
-            Context.InvalidateRender();
+            Context.Invalidate();
 
             if (SelectedLayer == null)
                 return;
@@ -258,7 +258,7 @@ namespace Rain.Tools
                 }
             }
 
-            Context.InvalidateRender();
+            Context.Invalidate();
             if (_drag != null)
                 _drag = (_drag.Value.start, pos);
         }
@@ -300,7 +300,7 @@ namespace Rain.Tools
             }
 
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         public override IBrushInfo ProvideFill()

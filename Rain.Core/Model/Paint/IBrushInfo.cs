@@ -12,6 +12,6 @@ namespace Rain.Core.Model.Paint
         float Opacity { get; set; }
         Matrix3x2 Transform { get; set; }
 
-        IBrush CreateBrush(RenderContext target);
+        IBrush CreateBrush(IRenderContext target);
     }
 }

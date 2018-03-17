@@ -194,7 +194,7 @@ namespace Rain.Renderer
 
             Context.HistoryManager.Merge(command, 500);
 
-            Context.InvalidateRender();
+            Context.Invalidate();
 
             SelectionBoundsChanged?.Invoke(this, null);
         }
@@ -222,7 +222,7 @@ namespace Rain.Renderer
                 SelectionTransform = Matrix3x2.Identity;
             }
 
-            Context.InvalidateRender();
+            Context.Invalidate();
 
             SelectionBoundsChanged?.Invoke(this, null);
         }

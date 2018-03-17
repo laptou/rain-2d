@@ -144,6 +144,13 @@ namespace Rain.Native
             }
         }
 
+        /// <inheritdoc />
+        public long BlinkPeriod
+        {
+            get => CaretHelper.GetCaretBlinkTime();
+            set => CaretHelper.SetCaretBlinkTime((uint)value);
+        }
+
         #endregion
     }
 }

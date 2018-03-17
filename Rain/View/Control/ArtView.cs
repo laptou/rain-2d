@@ -57,7 +57,7 @@ namespace Rain.View.Control
                     if (pointerEvent.ModifierState.MiddleMouse)
                     {
                         ac.ViewManager.Pan -= pointerEvent.Delta;
-                        ac.InvalidateRender();
+                        ac.Invalidate();
 
                         return;
                     }
@@ -110,7 +110,7 @@ namespace Rain.View.Control
                                 new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
                     }
 
-                    ac.InvalidateRender();
+                    ac.Invalidate();
 
                     break;
                 case DropEvent dropEvent:

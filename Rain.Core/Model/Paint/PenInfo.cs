@@ -17,7 +17,7 @@ namespace Rain.Core.Model.Paint
 
         #region IPenInfo Members
 
-        public IPen CreatePen(RenderContext renderCtx)
+        public IPen CreatePen(IRenderContext renderCtx)
         {
             return renderCtx.CreatePen(Width,
                                        Brush?.CreateBrush(renderCtx),

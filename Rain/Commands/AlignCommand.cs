@@ -74,7 +74,7 @@ namespace Rain.Commands
                 _transformations[target] = mat;
             }
 
-            artContext.InvalidateRender();
+            artContext.Invalidate();
         }
 
         public override void Undo(IArtContext artContext)
@@ -85,7 +85,7 @@ namespace Rain.Commands
                 target.ApplyTransform(global: mat);
             }
 
-            artContext.InvalidateRender();
+            artContext.Invalidate();
         }
     }
 

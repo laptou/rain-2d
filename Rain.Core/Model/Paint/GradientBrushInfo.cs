@@ -55,7 +55,7 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
-        public override IBrush CreateBrush(RenderContext ctx)
+        public override IBrush CreateBrush(IRenderContext ctx)
         {
             if (Stops.Count == 0) return null;
 

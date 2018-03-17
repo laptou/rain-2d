@@ -28,7 +28,7 @@ namespace Rain.Core
 
         #endregion
 
-        void LoadApplicationResources(RenderContext target);
+        void LoadApplicationResources(IRenderContext target);
 
         void SuppressInvalidation();
         void RestoreInvalidation();

@@ -169,7 +169,7 @@ namespace Rain.View.Control
         /// <inheritdoc />
         public ICaret CreateCaret(int width, int height) { throw new NotImplementedException(); }
 
-        public void InvalidateRender() { InvalidateVisual(); }
+        public void Invalidate() { InvalidateVisual(); }
 
         /// <inheritdoc />
         public void RaiseAttached(IArtContextManager mgr) { throw new NotImplementedException(); }
@@ -184,7 +184,7 @@ namespace Rain.View.Control
             throw new InvalidOperationException();
         }
 
-        public RenderContext RenderContext { get; } = new WpfRenderContext();
+        public IRenderContext RenderContext { get; } = new WpfRenderContext();
 
         /// <inheritdoc />
         public ResourceContext ResourceContext { get; }

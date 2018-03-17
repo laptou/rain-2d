@@ -22,7 +22,7 @@ namespace Rain.Core.Model.Paint
 
         #region IBrushInfo Members
 
-        public abstract IBrush CreateBrush(RenderContext target);
+        public abstract IBrush CreateBrush(IRenderContext target);
 
         public string Name
         {
@@ -33,12 +33,6 @@ namespace Rain.Core.Model.Paint
         public float Opacity
         {
             get => Get<float>();
-            set => Set(value);
-        }
-
-        public ResourceScope Scope
-        {
-            get => Get<ResourceScope>();
             set => Set(value);
         }
 

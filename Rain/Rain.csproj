@@ -255,6 +255,7 @@
     <Compile Include="ViewModel\ViewModel.cs" />
     <Compile Include="View\Control\ArtContext.cs" />
     <Compile Include="View\Control\D2DImage.cs" />
+    <Compile Include="Utility\Disposer.cs" />
     <Compile Include="View\Control\SegmentButton.xaml.cs">
       <DependentUpon>SegmentButton.xaml</DependentUpon>
     </Compile>

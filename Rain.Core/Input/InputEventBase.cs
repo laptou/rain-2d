@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace Rain.Core.Input
     {
         #region IInputEvent Members
 
-        public long Timestamp { get; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        public long Timestamp { get; } = Stopwatch.GetTimestamp();
 
         #endregion
     }

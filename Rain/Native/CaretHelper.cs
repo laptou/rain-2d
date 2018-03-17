@@ -25,5 +25,11 @@ namespace Rain.Native
 
         [DllImport("user32.dll")]
         public static extern bool ShowCaret([Optional] IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern uint GetCaretBlinkTime();
+
+        [DllImport("user32.dll")]
+        public static extern bool SetCaretBlinkTime(uint ms);
     }
 }

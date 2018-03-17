@@ -46,7 +46,7 @@ namespace Rain.Tools
 
                 case Key.Delete:
                     Remove(_nodes.Count - 1);
-                    Context.InvalidateRender();
+                    Context.Invalidate();
 
                     break;
             }
@@ -151,12 +151,12 @@ namespace Rain.Tools
             var pos = context.ViewManager.ToArtSpace(evt.Position);
             _mouse = (_mouse.down, true, pos);
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         public override void MouseUp(IArtContext context, ClickEvent evt)
         {
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)

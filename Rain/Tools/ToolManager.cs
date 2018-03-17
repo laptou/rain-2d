@@ -52,7 +52,7 @@ namespace Rain.Tools
             RaisePropertyChanged(nameof(Type));
             RaiseFillUpdate();
             RaiseStrokeUpdate();
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         #region IToolManager Members

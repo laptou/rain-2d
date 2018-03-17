@@ -56,7 +56,7 @@ namespace Rain.Renderer
             {
                 command.Do(Context);
                 Push(command);
-                Context.InvalidateRender();
+                Context.Invalidate();
             }
             catch (Exception e)
             {
@@ -91,7 +91,7 @@ namespace Rain.Renderer
                     }
                     else Push(command);
 
-                    Context.InvalidateRender();
+                    Context.Invalidate();
                 }
                 else
                 {

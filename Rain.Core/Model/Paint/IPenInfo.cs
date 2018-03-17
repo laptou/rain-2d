@@ -18,6 +18,6 @@ namespace Rain.Core.Model.Paint
         float MiterLimit { get; set; }
         float Width { get; set; }
 
-        IPen CreatePen(RenderContext renderCtx);
+        IPen CreatePen(IRenderContext renderCtx);
     }
 }

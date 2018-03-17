@@ -121,7 +121,7 @@ namespace Rain.Renderer
             return newVal;
         }
 
-        private IRenderImage LoadBitmap(RenderContext target, string name)
+        private IRenderImage LoadBitmap(IRenderContext target, string name)
         {
             var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
 
@@ -207,7 +207,7 @@ namespace Rain.Renderer
 
             if (_suppressed) return;
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         private void OnManagerDetached(object sender, EventArgs e)
@@ -271,7 +271,7 @@ namespace Rain.Renderer
 
             if (_suppressed) return;
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         #region ICacheManager Members
@@ -302,7 +302,7 @@ namespace Rain.Renderer
 
                           if (_suppressed) return;
 
-                          Context.InvalidateRender();
+                          Context.Invalidate();
                       });
             }
 
@@ -349,7 +349,7 @@ namespace Rain.Renderer
 
                                        if (_suppressed) return;
 
-                                       Context.InvalidateRender();
+                                       Context.Invalidate();
                                    };
 
             if (layer is IContainerLayer group)
@@ -427,7 +427,7 @@ namespace Rain.Renderer
             return Get(_texts, layer, t => t.GetLayout(Context));
         }
 
-        public void LoadApplicationResources(RenderContext target)
+        public void LoadApplicationResources(IRenderContext target)
         {
             _bitmaps["cursor-resize-ns"] = LoadBitmap(target, "cursor-resize-ns");
             _bitmaps["cursor-resize-ew"] = LoadBitmap(target, "cursor-resize-ew");

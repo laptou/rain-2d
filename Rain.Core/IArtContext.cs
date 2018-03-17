@@ -19,7 +19,7 @@ namespace Rain.Core
 
         IHistoryManager HistoryManager { get; }
 
-        RenderContext RenderContext { get; }
+        IRenderContext RenderContext { get; }
 
         ResourceContext ResourceContext { get; }
 
@@ -55,13 +55,12 @@ namespace Rain.Core
          
         ICaret CreateCaret(int width, int height);
 
-        void InvalidateRender();
-
         void RaiseAttached(IArtContextManager mgr);
 
         void RaiseDetached(IArtContextManager mgr);
 
         void SetManager<T>(T manager) where T : IArtContextManager;
+        void Invalidate();
     }
 
     public abstract class ResourceContext

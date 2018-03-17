@@ -31,26 +31,15 @@ using MouseButton = Rain.Core.Input.MouseButton;
 
 namespace Rain.View.Control
 {
-    internal static class Disposer
-    {
-        public static void SafeDispose<T>(ref T resource) where T : class
-        {
-            if (resource == null)
-                return;
-
-            if (resource is IDisposable disposer)
-                try
-                {
-                    disposer.Dispose();
-                }
-                catch { }
-
-            resource = null;
-        }
-    }
-
     public abstract class D2DImage : HwndHost, INotifyPropertyChanged
     {
+        private readonly float[] _frames = new float[10];
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+        private          long      _frame;
+
+
+        private float _frameTime;
+
         protected D2DImage()
         {
             SnapsToDevicePixels = true;
@@ -68,24 +57,6 @@ namespace Rain.View.Control
                        value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
-        public RenderContext RenderContext { get; set; }
-
-        private float _renderTime;
-
-        public float RenderTime
-        {
-            get => _renderTime;
-            set
-            {
-                if (value.Equals(_renderTime)) return;
-
-                _renderTime = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private float _frameTime;
-
         public float FrameTime
         {
             get => _frameTime;
@@ -98,19 +69,7 @@ namespace Rain.View.Control
             }
         }
 
-        private float _waitTime;
-
-        public float WaitTime
-        {
-            get => _waitTime;
-            set
-            {
-                if (value.Equals(_waitTime)) return;
-
-                _waitTime = value;
-                OnPropertyChanged();
-            }
-        }
+        public RenderContext RenderContext { get; set; }
 
         public event EventHandler RenderTargetCreated;
 
@@ -123,53 +82,6 @@ namespace Rain.View.Control
             _invalidated = true;
 
             WindowHelper.RedrawWindow(_hwnd, IntPtr.Zero, IntPtr.Zero, 0b0001);
-        }
-
-        private void Render()
-        {
-            if (_target == null) return;
-
-            if (_invalidated)
-            {
-                try
-                {
-                    _invalidated = false;
-
-                    _stopwatch.Restart();
-
-                    NativeHelper.WaitForSingleObjectEx(_frameLatencyWaitHandle, 1000, true);
-
-                    _stopwatch.Stop();
-
-                    _waits[_frame++ % 10] = (float)_stopwatch.Elapsed.TotalMilliseconds;
-
-                    _stopwatch.Restart();
-
-                    RenderContext.Begin(null);
-                    OnRender(RenderContext);
-                    RenderContext.End();
-
-                    _stopwatch.Stop();
-
-                    _frames[_frame++ % 10] = (float)_stopwatch.Elapsed.TotalMilliseconds;
-
-                    _swapChain.Present(1, PresentFlags.None, default);
-
-                    if (_frame % 10 == 0)
-                    {
-                        RenderTime = _frames.Average();
-                        WaitTime = _waits.Average();
-                        FrameTime = RenderTime + WaitTime;
-                    }
-                }
-                catch (DX.SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
-                {
-                    Initialize();
-
-                    _invalidated = true;
-                }
-            }
-
         }
 
         protected virtual IntPtr OnMessage(
@@ -258,8 +170,9 @@ namespace Rain.View.Control
             {
                 case WindowMessage.Paint:
                     Render();
+                    WindowHelper.ValidateRect(_hwnd, IntPtr.Zero);
 
-                    goto default;
+                    break;
 
                 case WindowMessage.EraseBackground:
 
@@ -392,11 +305,28 @@ namespace Rain.View.Control
 
                     break;
 
+                case WindowMessage.Close:
+                    WindowHelper.DestroyWindow(_hwnd);
+
+                    break;
+
+                case WindowMessage.Destroy:
+                    WindowHelper.PostQuitMessage(0);
+
+                    break;
+
                 default:
+
                     return WindowHelper.DefWindowProc(hWnd, msg, wParam, lParam);
             }
-            
+
             return IntPtr.Zero;
+        }
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected override Size ArrangeOverride(Size arrangeSize) { return arrangeSize; }
@@ -421,7 +351,7 @@ namespace Rain.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _hwnd = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles,
+            _hwnd = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles | WindowStylesEx.Composited,
                                                 cls,
                                                 "",
                                                 WindowStyles.Child | WindowStyles.Visible,
@@ -434,12 +364,7 @@ namespace Rain.View.Control
                                                 IntPtr.Zero,
                                                 0);
 
-            if (_hwnd == IntPtr.Zero)
-            {
-                var code = Marshal.GetLastWin32Error();
-
-                throw new Win32Exception(code);
-            }
+            if (_hwnd == IntPtr.Zero) NativeHelper.CheckError();
 
             WindowHelper.UpdateWindow(_hwnd);
 
@@ -471,25 +396,54 @@ namespace Rain.View.Control
 
         private void EventLoop()
         {
-            while (_loop)
+            bool TryGetEvent(out IInputEvent evt)
             {
-                while (_events.Count > 0)
+                lock (_events)
                 {
-                    IInputEvent evt;
-
-                    lock (_events)
+                    if (_events.Count > 0)
                     {
                         evt = _events.Dequeue();
+
+                        return true;
                     }
 
+                    evt = null;
+
+                    return false;
+                }
+            }
+
+            var threshold = Stopwatch.Frequency / 60;
+            var factor = 1d / Stopwatch.Frequency * 1000;
+
+            while (_loop)
+            {
+                while (TryGetEvent(out var evt))
+                {
+                    var latency = Stopwatch.GetTimestamp() - evt.Timestamp;
+
                     // discard old events
-                    if (Time.Now - evt.Timestamp > 500) continue;
+                    if (latency > threshold)
+                    {
+                        #if DEBUG
+                        Trace.WriteLine($"Input event dropped: {evt}, " +
+                                        $"latency {latency * factor}ms");
+                        #endif
+                        continue;
+                    }
 
                     OnInput(evt);
+
+                    var time = Stopwatch.GetTimestamp() - evt.Timestamp;
+
+                    #if DEBUG
+                    if (time > threshold)
+                        Trace.WriteLine($"Input event took too long: {evt}, " +
+                                        $"latency {time * factor}ms");
+                    #endif
                 }
 
                 _eventFlag.Reset();
-
                 _eventFlag.WaitOne(5000);
             }
         }
@@ -503,8 +457,8 @@ namespace Rain.View.Control
             #if DEBUG
             _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
             #else
-            _d2dFactory = new D2D.Factory(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
-                                                                                                                        #endif
+            _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
+                        #endif
 
             if (_dwFactory == null)
                 _dwFactory = new DW.Factory(DW.FactoryType.Shared);
@@ -547,7 +501,9 @@ namespace Rain.View.Control
                 D2D.FeatureLevel.Level_10);
 
             using (var surf = swapChain.GetBackBuffer<Surface>(0))
+            {
                 _target = new D2D.RenderTarget(_factory, surf, targetProps);
+            }
 
             _swapChain = swapChain.QueryInterface<SwapChain2>();
             _swapChain.MaximumFrameLatency = 1;
@@ -557,6 +513,45 @@ namespace Rain.View.Control
 
             RenderTargetCreated?.Invoke(this, null);
         }
+
+        private void Render()
+        {
+            if (_target == null ||
+                !_invalidated) return;
+
+            try
+            {
+                _invalidated = false;
+
+                _stopwatch.Restart();
+
+                NativeHelper.WaitForSingleObjectEx(_frameLatencyWaitHandle, 1000, true);
+
+                RenderContext.Begin(null);
+                OnRender(RenderContext);
+                RenderContext.End();
+
+                _swapChain.Present(1, PresentFlags.None, default);
+
+                _stopwatch.Stop();
+
+                _frames[_frame++ % 10] = (float) _stopwatch.Elapsed.TotalMilliseconds;
+
+                if (_frame % 10 == 0)
+                    FrameTime = _frames.Average();
+            }
+            catch (DX.SharpDXException ex) when (ex.Descriptor == D2D.ResultCode.RecreateTarget)
+            {
+                Initialize();
+                _invalidated = true;
+            }
+        }
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
 
         #region Event Loop
 
@@ -592,17 +587,5 @@ namespace Rain.View.Control
         private IntPtr           _frameLatencyWaitHandle;
 
         #endregion
-
-        private readonly Stopwatch _stopwatch = new Stopwatch();
-        private readonly float[] _frames = new float[10];
-        private readonly float[] _waits = new float[10];
-        private long _frame;
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

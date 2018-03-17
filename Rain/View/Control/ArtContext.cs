@@ -37,7 +37,7 @@ namespace Rain.View.Control
 
         
 
-        public void InvalidateRender() { _artView.InvalidateSurface(); }
+        public void Invalidate() { _artView.InvalidateSurface(); }
 
         public void SetManager<T>(T manager) where T : IArtContextManager
         {
@@ -95,10 +95,10 @@ namespace Rain.View.Control
                 ViewManager.Attach(this);
             }
 
-            InvalidateRender();
+            Invalidate();
         }
 
-        public RenderContext RenderContext => _artView.RenderContext;
+        public IRenderContext RenderContext => _artView.RenderContext;
 
         /// <inheritdoc />
         public ResourceContext ResourceContext { get; } = new WICResourceContext();

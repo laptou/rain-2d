@@ -18,7 +18,7 @@ namespace Rain.Core.Model.Paint
         }
 
 
-        public override IBrush CreateBrush(RenderContext target)
+        public override IBrush CreateBrush(IRenderContext target)
         {
             return target.CreateBrush(Color);
         }

@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
+
+using Rain.Core.Utility;
+
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -15,8 +19,6 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
-using Rain.Core.Utility;
-using Rain.Renderer.Direct2D;
 using Rain.Theme;
 using Rain.Utility;
 
@@ -32,6 +34,7 @@ namespace Rain.Tools
         private readonly IFontSource _fontSource;
 
         private ICaret                                  _caret;
+        private CaretState                              _caretState;
         private (Vector2 start, Vector2 end, long time) _drag;
         private bool                                    _focus;
 
@@ -40,6 +43,8 @@ namespace Rain.Tools
 
         private RectangleF[] _selectionRects = new RectangleF[0];
         private bool         _updatingOptions;
+
+        private Timer _timer;
 
         public TextTool(IToolManager manager) : base(manager)
         {
@@ -139,7 +144,7 @@ namespace Rain.Tools
             context.Text += OnText;
             context.GainedFocus += OnGainedFocus;
             context.LostFocus += OnLostFocus;
-
+            
             base.Attach(context);
         }
 
@@ -557,12 +562,26 @@ namespace Rain.Tools
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(selectionRect, cache.GetBrush(Colors.TextHighlight));
 
+            if (_caret != null && _caret.Visible)
+            {
+                var width = (int) (_caretState.Width + 0.99f);
+
+                if (Time.Now % _caret.BlinkPeriod > _caret.BlinkPeriod / 2)
+                {
+                    target.DrawLine(_caretState.Position,
+                                    _caretState.Position + new Vector2(0, _caretState.Height),
+                                    cache.GetPen(Colors.TextCaret, width));
+                }
+
+                Context.Invalidate();
+            }
+
             target.Transform(MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
         protected override void OnSelectionChanged(object sender, EventArgs e)
         {
-            Update(); 
+            Update();
             base.OnSelectionChanged(sender, e);
         }
 
@@ -605,10 +624,8 @@ namespace Rain.Tools
             if (family == null) yield break;
 
             foreach (var fontFace in family)
-            {
                 using (fontFace)
                     yield return new FontFace(fontFace.Stretch, fontFace.Style, fontFace.Weight);
-            }
         }
 
 
@@ -852,7 +869,7 @@ namespace Rain.Tools
                 Manager.RaiseStrokeUpdate();
             }
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         private void UpdateCaret()
@@ -892,7 +909,7 @@ namespace Rain.Tools
             {
                 try
                 {
-                    _caret = Context.CreateCaret(0, (int)  height);
+                    _caret = Context.CreateCaret(0, (int) height);
                 }
                 catch
                 {
@@ -907,7 +924,16 @@ namespace Rain.Tools
                 _caret.Visible = true;
             }
 
-            _caret.Position = Context.ViewManager.FromArtSpace(ToWorldSpace(new Vector2(left, top)));
+            _caretState = new CaretState
+            {
+                Width = (float) SystemParameters.CaretWidth,
+                Height = height,
+                Position = new Vector2(left, top)
+            };
+
+            _caret.Position = Context.ViewManager.FromArtSpace(ToWorldSpace(_caretState.Position));
+
+            Context.Invalidate();
 
             face.Dispose();
         }
@@ -947,6 +973,17 @@ namespace Rain.Tools
 
             _updatingOptions = false;
         }
+
+        #region Nested type: CaretState
+
+        private struct CaretState
+        {
+            public Vector2 Position;
+            public float   Height;
+            public float   Width;
+        }
+
+        #endregion
 
         #region Nested type: FontFace
 

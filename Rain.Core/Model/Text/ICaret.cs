@@ -10,5 +10,6 @@ namespace Rain.Core.Model.Text
     {
         Vector2 Position { get; set; }
         bool Visible { get; set; }
+        long BlinkPeriod { get; set; }
     }
 }

@@ -66,7 +66,7 @@ namespace Rain.Tools
 
                 case Key.Delete:
                     Remove(_selection.ToArray());
-                    Context.InvalidateRender();
+                    Context.Invalidate();
 
                     break;
 
@@ -182,7 +182,7 @@ namespace Rain.Tools
                         break;
                 }
 
-                Context.InvalidateRender();
+                Context.Invalidate();
             }
         }
 
@@ -197,7 +197,7 @@ namespace Rain.Tools
 
             _mouse = (false, _mouse.moved, evt.Position);
 
-            Context.InvalidateRender();
+            Context.Invalidate();
         }
 
         public override void Render(

@@ -102,5 +102,8 @@ namespace Rain.Native
 
         [DllImport("user32.dll")]
         public static extern bool ValidateRect([In] IntPtr hWnd, [In] IntPtr lpRect);
+
+        [DllImport("user32.dll")]
+        public static extern void PostQuitMessage(int code);
     }
 }
