@@ -10,8 +10,8 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:utility="clr-namespace:Rain.View.Utility"
         xmlns:viewmodel="clr-namespace:Rain.ViewModel"
         Title="Rain Animator 2D"
-        d:DesignHeight="1080" d:DesignWidth="1920" Icon="/Rain;component/Resources/logo.png"
-        WindowState="Maximized"
+        d:DesignHeight="1080" d:DesignWidth="1920" Background="Transparent"
+        Icon="/Rain;component/Resources/logo.png" WindowState="Maximized"
         mc:Ignorable="d">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="30" CornerRadius="5" ResizeBorderThickness="5"
@@ -33,7 +33,7 @@
         <viewmodel:MainViewModel />
     </d:Window.DataContext>
 
-    <Grid Background="{utility:Theme background-3}">
+    <Grid Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="48" />
             <ColumnDefinition />
@@ -44,17 +44,12 @@
             <RowDefinition Height="36" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Border Grid.RowSpan="4" Grid.Column="0"
-                Panel.ZIndex="98"
-                Background="Black">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Opacity="0.75" ShadowDepth="0" />
-            </Border.Effect>
-        </Border>
 
         <Grid Grid.Row="0" Grid.RowSpan="4" Grid.Column="0"
-              Panel.ZIndex="99"
-              Background="{utility:Theme background-1-inverse}">
+              Panel.ZIndex="99">
+            <Grid.Background>
+                <SolidColorBrush Opacity="0.75" Color="{utility:Theme color(background-1-inverse)}" />
+            </Grid.Background>
             <Grid.RowDefinitions>
                 <RowDefinition Height="120" />
                 <RowDefinition />
@@ -118,18 +113,18 @@
                 </ToolBar>
             </ToolBarTray>
         </Grid>
-
         <Border Grid.Row="0" Grid.Column="1"
                 Background="{utility:Theme background-2}">
             <Grid UseLayoutRounding="True">
                 <Menu Margin="18,0,0,0" VerticalAlignment="Center"
-                      Background="Transparent" ItemsSource="{Binding MenuItems}" WindowChrome.IsHitTestVisibleInChrome="True">
+                      Background="Transparent" ItemsSource="{Binding MenuItems}">
                     <Menu.ItemContainerStyle>
                         <Style TargetType="{x:Type MenuItem}">
                             <Setter Property="Command" Value="{Binding Command}" />
                             <Setter Property="CommandParameter" Value="{Binding ArtContext}" />
                             <Setter Property="FontSize" Value="12" />
                             <Setter Property="InputGestureText" Value="{Binding Shortcut}" />
+                            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Type}" Value="{x:Static viewmodel:MenuItemType.Separator}">
                                     <Setter Property="Template">
@@ -200,7 +195,8 @@
         <Separator Grid.Row="1" Grid.Column="1"
                    Margin="0" VerticalAlignment="Bottom"
                    BorderBrush="{utility:Theme divider}" BorderThickness="1" />
-        <Border Grid.Row="2" Grid.Column="1">
+        <Border Grid.Row="2" Grid.Column="1"
+                Background="{utility:Theme background-3}">
             <DockPanel>
                 <TextBlock Margin="24,0" VerticalAlignment="Center"
                            DockPanel.Dock="Left" FontWeight="Bold" Text="{Binding ToolManager.Tool.Type}" />
@@ -298,7 +294,8 @@
                 </ItemsControl>
             </DockPanel>
         </Border>
-        <Grid Grid.Row="3" Grid.Column="1">
+        <Grid Grid.Row="3" Grid.Column="1"
+              Background="{utility:Theme background-3}">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />

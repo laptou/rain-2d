@@ -191,6 +191,7 @@
     <Compile Include="Native\NativePoint.cs" />
     <Compile Include="Native\NativeRect.cs" />
     <Compile Include="Native\PaintStruct.cs" />
+    <Compile Include="Native\VersionHelper.cs" />
     <Compile Include="Native\WindowCompositionAttribute.cs" />
     <Compile Include="Native\WindowCompositionAttributeData.cs" />
     <Compile Include="Native\WindowHelper.cs" />

@@ -33,7 +33,7 @@ namespace Rain.View.Control
 {
     public abstract class D2DImage : HwndHost, INotifyPropertyChanged
     {
-        private readonly float[] _frames = new float[10];
+        private readonly float[]   _frames    = new float[10];
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private          long      _frame;
 
@@ -351,18 +351,19 @@ namespace Rain.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _hwnd = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles | WindowStylesEx.Composited,
-                                                cls,
-                                                "",
-                                                WindowStyles.Child | WindowStyles.Visible,
-                                                0,
-                                                0,
-                                                (int) ActualWidth + 1,
-                                                (int) ActualHeight + 1,
-                                                hwndParent.Handle,
-                                                (IntPtr) 1,
-                                                IntPtr.Zero,
-                                                0);
+            _hwnd = WindowHelper.CreateWindowEx(
+                WindowStylesEx.AcceptFiles | WindowStylesEx.Composited,
+                cls,
+                "",
+                WindowStyles.Child | WindowStyles.Visible,
+                0,
+                0,
+                (int) ActualWidth + 1,
+                (int) ActualHeight + 1,
+                hwndParent.Handle,
+                (IntPtr) 1,
+                IntPtr.Zero,
+                0);
 
             if (_hwnd == IntPtr.Zero) NativeHelper.CheckError();
 
@@ -458,7 +459,7 @@ namespace Rain.View.Control
             _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
             #else
             _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
-                        #endif
+                                    #endif
 
             if (_dwFactory == null)
                 _dwFactory = new DW.Factory(DW.FactoryType.Shared);
@@ -479,12 +480,14 @@ namespace Rain.View.Control
                 SampleDescription = new SampleDescription(1, 0), // no multisampling,
                 BufferCount = 2, // use double buffering to enable flip,
                 Usage = Usage.RenderTargetOutput,
-#warning does not work in win7
-                Scaling = Scaling.None,
+                Scaling = Scaling.Stretch,
                 SwapEffect = SwapEffect.FlipSequential, // TODO: find out what this means
                 AlphaMode = AlphaMode.Ignore,
                 Flags = SwapChainFlags.FrameLatencyWaitAbleObject
             };
+
+            if (VersionHelper.RequireVersion(6, 3, 0, 0))
+                swapChainDesc.Scaling = Scaling.None;
 
             var dxgiAdapter = _dxgiDevice.Adapter;
             var dxgiFactory = dxgiAdapter.GetParent<Factory2>();

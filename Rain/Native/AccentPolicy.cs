@@ -10,8 +10,16 @@ namespace Rain.Native
     internal struct AccentPolicy
     {
         public AccentState AccentState;
+
+        /// <summary>
+        /// Set to 2 to use custom colour if possible.
+        /// </summary>
         public int         AccentFlags;
-        public int         GradientColor;
+
+        /// <summary>
+        /// Colour in ARGB format.
+        /// </summary>
+        public uint         GradientColor;
         public int         AnimationId;
     }
 }

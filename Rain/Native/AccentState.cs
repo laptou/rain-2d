@@ -7,10 +7,35 @@ namespace Rain.Native
 {
     internal enum AccentState
     {
-        ACCENT_DISABLED                   = 1,
-        ACCENT_ENABLE_GRADIENT            = 0,
-        ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
-        ACCENT_ENABLE_BLURBEHIND          = 3,
-        ACCENT_INVALID_STATE              = 4
+        /// <summary>
+        /// Solid black background.
+        /// </summary>
+        Disabled = 0,
+
+        /// <summary>
+        /// Solid coloured background.
+        /// </summary>
+        EnableGradient = 1,
+
+        /// <summary>
+        /// Translucent coloured background.
+        /// </summary>
+        EnableTransparentGradient = 2,
+
+        /// <summary>
+        /// Translucent background that blurs what is behind it.
+        /// </summary>
+        EnableBlurBehind = 3,
+
+        /// <summary>
+        /// Fluent coloured background. Warning: This is ACCENT_INVALID_STATE 
+        /// on versions of Windows earlier than build 17063.
+        /// </summary>
+        EnableFluent = 4,
+
+        /// <summary>
+        /// Completely transparent background.
+        /// </summary>
+        InvalidState = 5
     }
 }
