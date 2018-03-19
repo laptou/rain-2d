@@ -39,7 +39,7 @@ namespace Rain.Native
 
             if (!_visible) return new Vector2(_x, _y);
 
-            return App.Dispatcher.Invoke(() =>
+            return App.CurrentDispatcher.Invoke(() =>
                                          {
                                              var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
                                              if (!CaretHelper.GetCaretPos(out var pt))
@@ -53,7 +53,7 @@ namespace Rain.Native
         {
             if (!_visible) return true;
 
-            return App.Dispatcher.Invoke(() =>
+            return App.CurrentDispatcher.Invoke(() =>
                                          {
                                              if (!CaretHelper.HideCaret(_hWnd))
                                              {
@@ -74,7 +74,7 @@ namespace Rain.Native
 
             (_x, _y) = (x, y);
 
-            App.Dispatcher.Invoke(() =>
+            App.CurrentDispatcher.Invoke(() =>
                                   {
                                       var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
 
@@ -89,7 +89,7 @@ namespace Rain.Native
         {
             if (_visible) return true;
 
-            return App.Dispatcher.Invoke(() =>
+            return App.CurrentDispatcher.Invoke(() =>
                                          {
                                              if (!CaretHelper.ShowCaret(_hWnd))
                                              {
@@ -109,7 +109,7 @@ namespace Rain.Native
 
         private void ReleaseUnmanagedResources()
         {
-            App.Dispatcher.Invoke(() =>
+            App.CurrentDispatcher.Invoke(() =>
                                   {
                                       if (!CaretHelper.DestroyCaret())
                                           NativeHelper.CheckError();

@@ -31,25 +31,63 @@ namespace Rain
     /// </summary>
     public partial class App
     {
+        [STAThread]
+        public static void Main()
+        {
+            App app = new App();
+            app.InitializeComponent();
+            app.Run();
+        }
+
         public App()
         {
+            _startTime = Stopwatch.GetTimestamp();
+
+            LogEvent("App..ctor() called.");
+
             InitializeComponent();
 
-            AppSettings.LoadDefault();
+            LogEvent("App.IntializeComponent() completed.");
+
+            AppSettings.BeginLoadDefault();
+
+            LogEvent("AppSettings.BeginLoadDefault() completed.");
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }
 
-        public new static Dispatcher Dispatcher => Current.Dispatcher;
+        private readonly long _startTime;
+
+        public static Dispatcher CurrentDispatcher => Current.Dispatcher;
+
+        public new static App Current => Application.Current as App;
 
         public static bool IsDesigner =>
             LicenseManager.UsageMode == LicenseUsageMode.Designtime;
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            LogEvent("App.OnStartup() called.");
+
             base.OnStartup(e);
 
+            LogEvent("Application.OnStartup() completed.");
+
             SetDefaultFont();
+
+            LogEvent("App.OnStartup() completed.");
+        }
+
+        public void LogEvent(string evt)
+        {
+            var time = Stopwatch.GetTimestamp() - _startTime;
+            var seconds = time / (double) Stopwatch.Frequency;
+
+            #if DEBUG
+            Trace.WriteLine($"[{seconds * 1000:F2}ms]: {evt}");
+            #else
+            Console.WriteLine($"[{seconds * 1000:F2}ms]: {evt}");
+            #endif
         }
 
         private static async Task LogError(object o, int level)

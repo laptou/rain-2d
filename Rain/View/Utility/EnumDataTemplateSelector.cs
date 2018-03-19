@@ -1,17 +1,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
+using Rain.ViewModel;
+
 namespace Rain.View.Utility
 {
     public class EnumDataTemplateSelector : DataTemplateSelector, IDictionary
     {
-        private IDictionary _dict = new Dictionary<Enum, DataTemplate>();
+        private readonly IDictionary _dict = new Dictionary<Enum, DataTemplate>();
 
         public string PropertyName { get; set; }
 
@@ -19,8 +22,7 @@ namespace Rain.View.Utility
         {
             var itemsControl = container.FindVisualAncestor<ItemsControl>();
 
-            if (item != null &&
-                itemsControl != null)
+            if (item != null)
             {
                 var type = item.GetType();
 
@@ -35,9 +37,10 @@ namespace Rain.View.Utility
                         if (Contains(e))
                             return this[e] as DataTemplate;
 
-                        var resource = itemsControl.FindResource(key);
+                        var resource = itemsControl?.FindResource(key);
 
-                        if (resource is DataTemplate template) return template;
+                        if (resource is DataTemplate template)
+                            return template;
                     }
                 }
             }

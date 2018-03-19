@@ -77,6 +77,10 @@ namespace Rain.Native
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern int WaitForSingleObjectEx(
             [In] IntPtr hHandle, [In] uint dwMilliseconds, [In] bool bAlertable);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern void CopyMemory(
+            [In] IntPtr dest, [In] IntPtr src, [In] uint length);
     }
 
     public class SmartPtr : IDisposable
@@ -101,6 +105,11 @@ namespace Rain.Native
         public static SmartPtr Alloc(ValueType value)
         {
             return new SmartPtr(value.ToPtr(out var size), size);
+        }
+
+        public static SmartPtr Alloc(int size)
+        {
+            return new SmartPtr(Marshal.AllocHGlobal(size), size);
         }
 
         public static implicit operator IntPtr(SmartPtr ptr) { return ptr.Pointer; }

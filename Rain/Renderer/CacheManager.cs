@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -33,8 +32,6 @@ namespace Rain.Renderer
 
         private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
 
-        private readonly Dictionary<(string, int), IPen> _pens = new Dictionary<(string, int), IPen>();
-
         private readonly Dictionary<IFilledLayer, IBrush> _fills =
             new Dictionary<IFilledLayer, IBrush>();
 
@@ -43,6 +40,9 @@ namespace Rain.Renderer
 
         private readonly Dictionary<IImageLayer, IRenderImage> _images =
             new Dictionary<IImageLayer, IRenderImage>();
+
+        private readonly Dictionary<(string, int), IPen> _pens =
+            new Dictionary<(string, int), IPen>();
 
         private readonly ReaderWriterLockSlim _renderLock =
             new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -171,9 +171,11 @@ namespace Rain.Renderer
 
                     break;
                 case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Type):
+
                     // let the brush be recreated on the next frame
                     grad.Dispose();
                     _brushBindings.Remove(info);
+
                     break;
                 case ILinearGradientBrush grad
                     when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
@@ -210,10 +212,29 @@ namespace Rain.Renderer
             Context.Invalidate();
         }
 
+        private void OnManagerAttached(object sender, EventArgs e)
+        {
+            if (sender is IViewManager vm)
+            {
+                vm.RootUpdated += OnRootUpdated;
+            }
+        }
+
         private void OnManagerDetached(object sender, EventArgs e)
         {
-            if (sender is IViewManager)
+            if (sender is IViewManager vm)
+            {
+                vm.RootUpdated -= OnRootUpdated;
                 ReleaseSceneResources();
+            }
+        }
+
+        private void OnRootUpdated(object sender, PropertyChangedEventArgs e)
+        {
+            ReleaseSceneResources();
+
+            if (Context.ViewManager?.Root != null)
+                BindLayer(Context.ViewManager.Document.Root);
         }
 
         private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -279,7 +300,18 @@ namespace Rain.Renderer
         /// <inheritdoc />
         public void Attach(IArtContext context)
         {
+            if (context.RenderContext != null)
+            {
+                LoadApplicationResources(context.RenderContext);
+
+                if (context.ViewManager?.Root != null)
+                    BindLayer(context.ViewManager.Document.Root);
+            }
+
+            Context = context;
+
             context.ManagerDetached += OnManagerDetached;
+            context.ManagerAttached += OnManagerAttached;
             context.RaiseAttached(this);
         }
 
@@ -313,7 +345,7 @@ namespace Rain.Renderer
                     _fills.TryGet(filled)?.Dispose();
                     _fills[filled] = BindBrush(filled, filled.Fill);
                 }
-                
+
                 BindProperty(h => filled.FillChanged += h, _fills);
             }
 
@@ -326,7 +358,6 @@ namespace Rain.Renderer
                 }
 
                 BindProperty(h => stroked.StrokeChanged += h, _strokes);
-
             }
 
             if (layer is ITextLayer text)
@@ -369,6 +400,7 @@ namespace Rain.Renderer
         {
             ReleaseResources();
             context.ManagerDetached -= OnManagerDetached;
+            context.ManagerAttached -= OnManagerAttached;
             context.RaiseDetached(this);
         }
 
@@ -388,14 +420,6 @@ namespace Rain.Renderer
 
         public IBrush GetBrush(string key) { return _brushes.TryGet(key); }
 
-        /// <inheritdoc />
-        public IPen GetPen(string key, int width)
-        {
-            return Get(_pens,
-                       (key, width),
-                       ((string k, int w) p) => Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
-        }
-
         public IBrush GetFill(IFilledLayer layer)
         {
             return Get(_fills, layer, l => BindBrush(l, l.Fill));
@@ -409,6 +433,15 @@ namespace Rain.Renderer
         public IRenderImage GetImage(IImageLayer layer)
         {
             return Get(_images, layer, t => t.GetImage(Context));
+        }
+
+        /// <inheritdoc />
+        public IPen GetPen(string key, int width)
+        {
+            return Get(_pens,
+                       (key, width),
+                       ((string k, int w) p) =>
+                           Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
         }
 
         /// <inheritdoc />
@@ -444,7 +477,7 @@ namespace Rain.Renderer
                 _pens[(key.Key, 1)] = target.CreatePen(1, brush);
             }
         }
-        
+
         public void ReleaseDeviceResources()
         {
             EnterWriteLock();

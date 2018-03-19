@@ -33,7 +33,7 @@ namespace Rain.View.Command
                 CheckFileExists = true
             };
 
-            await App.Dispatcher.InvokeAsync(() => ofd.ShowDialog());
+            await App.CurrentDispatcher.InvokeAsync(() => ofd.ShowDialog());
 
             if (!string.IsNullOrWhiteSpace(ofd.FileName))
                 using (var stream = ofd.OpenFile())
@@ -72,7 +72,7 @@ namespace Rain.View.Command
                     Filter = "SVG file|*.svg"
                 };
 
-                await App.Dispatcher.InvokeAsync(() => sfd.ShowDialog());
+                await App.CurrentDispatcher.InvokeAsync(() => sfd.ShowDialog());
 
                 if (string.IsNullOrWhiteSpace(sfd.FileName))
                     return;

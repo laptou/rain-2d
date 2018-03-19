@@ -352,7 +352,7 @@ namespace Rain.Tools
                         if (_selection.length > 0)
                             Remove(_selection.index, _selection.length);
 
-                        var pasted = App.Dispatcher.Invoke(Clipboard.GetText);
+                        var pasted = App.CurrentDispatcher.Invoke(Clipboard.GetText);
 
                         Insert(_selection.index, pasted);
 

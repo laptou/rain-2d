@@ -54,6 +54,7 @@ namespace Rain.View.Control
                 var theme = AppSettings.Current.GetString("theme");
 
                 if (icon.Inverted)
+                {
                     switch (theme)
                     {
                         case "dark":
@@ -65,6 +66,10 @@ namespace Rain.View.Control
 
                             break;
                     }
+                }
+
+                if(string.IsNullOrWhiteSpace(theme))
+                    throw new Exception();
 
                 icon.Source =
                     new Uri($"/Rain;component/Resources/Icon/{icon.IconName}-{theme}.svg",

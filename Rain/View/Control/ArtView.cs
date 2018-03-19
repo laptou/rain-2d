@@ -199,15 +199,15 @@ namespace Rain.View.Control
         {
             target.Clear(new Color(0.5f));
 
-            if (ArtContext.ViewManager == null) return;
-
             var ac = ArtContext;
+
+            if (ac?.ViewManager == null) return;
 
             target.Transform(ac.ViewManager.Transform, true);
 
             ac.ViewManager.Render(target, ac.CacheManager);
 
-            ac.ViewManager.Root.Render(target, ac.CacheManager, ac.ViewManager);
+            ac.ViewManager.Root?.Render(target, ac.CacheManager, ac.ViewManager);
 
             ac.ToolManager?.Tool?.Render(target, ac.CacheManager, ac.ViewManager);
         }

@@ -52,19 +52,9 @@ namespace Rain.View.Control
 
             if (manager is ICacheManager cacheManager)
             {
-                CacheManager?.ReleaseResources();
                 CacheManager?.Detach(this);
-
                 CacheManager = cacheManager;
                 CacheManager.Attach(this);
-
-                if (_artView.RenderContext != null)
-                {
-                    CacheManager.LoadApplicationResources(_artView.RenderContext);
-
-                    if (ViewManager?.Root != null)
-                        CacheManager?.BindLayer(ViewManager.Document.Root);
-                }
             }
 
             if (manager is IHistoryManager historyManager)

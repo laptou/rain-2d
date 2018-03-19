@@ -23,16 +23,13 @@ namespace Rain.Renderer
 
         public event PropertyChangingEventHandler DocumentUpdating;
 
-        public RectangleF FromArtSpace(RectangleF v) { return MathUtils.Bounds(v, Transform); }
-
-        public RectangleF ToArtSpace(RectangleF v)
-        {
-            return MathUtils.Bounds(v, MathUtils.Invert(Transform));
-        }
-
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
             DocumentUpdated?.Invoke(sender, e);
+
+            if (sender == Document &&
+                e.PropertyName == nameof(Document.Root))
+                RootUpdated?.Invoke(sender, e);
 
             if (sender is IFilledLayer filled &&
                 e.PropertyName == nameof(IFilledLayer.Fill))
@@ -60,6 +57,7 @@ namespace Rain.Renderer
         #region IViewManager Members
 
         public event PropertyChangedEventHandler DocumentUpdated;
+        public event PropertyChangedEventHandler RootUpdated;
 
         /// <inheritdoc />
         public void Attach(IArtContext context)
@@ -85,6 +83,8 @@ namespace Rain.Renderer
             Context.RaiseDetached(this);
         }
 
+        public RectangleF FromArtSpace(RectangleF v) { return MathUtils.Bounds(v, Transform); }
+
         public Vector2 FromArtSpace(Vector2 v) { return Vector2.Transform(v, Transform); }
 
         public void Render(RenderContext target, ICacheManager cache)
@@ -99,6 +99,11 @@ namespace Rain.Renderer
             {
                 target.FillRectangle(Document.Bounds, brush);
             }
+        }
+
+        public RectangleF ToArtSpace(RectangleF v)
+        {
+            return MathUtils.Bounds(v, MathUtils.Invert(Transform));
         }
 
         public Vector2 ToArtSpace(Vector2 v)
@@ -135,7 +140,9 @@ namespace Rain.Renderer
             get => Get<Vector2>();
             set
             {
-                Set(Vector2.Clamp(value, -Document.Bounds.Size * Zoom, Document.Bounds.Size * Zoom));
+                Set(Vector2.Clamp(value,
+                                  -Document.Bounds.Size * Zoom,
+                                  Document.Bounds.Size * Zoom));
                 RaisePropertyChanged(nameof(Transform));
             }
         }

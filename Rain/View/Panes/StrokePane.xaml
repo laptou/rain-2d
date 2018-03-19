@@ -1,0 +1,145 @@
+﻿<control:Pane x:Class="Rain.View.Panes.StrokePane"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:control="clr-namespace:Rain.View.Control" xmlns:core="clr-namespace:Rain.Core;assembly=Rain.Core"
+              xmlns:coremodel="clr-namespace:Rain.Core.Model;assembly=Rain.Core"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:measurement="clr-namespace:Rain.Core.Model.Measurement;assembly=Rain.Core"
+              xmlns:system="clr-namespace:System;assembly=mscorlib" xmlns:utility="clr-namespace:Rain.View.Utility"
+              xmlns:viewModel="clr-namespace:Rain.ViewModel"
+              d:DataContext="{d:DesignInstance Type=viewModel:StrokeViewModel, IsDesignTimeCreatable=False}"
+              d:DesignHeight="300" d:DesignWidth="300" FocusManager.IsFocusScope="True"
+              mc:Ignorable="d">
+    <control:Pane.Resources>
+        <utility:UnitConverter x:Key="AngleConverter" BaseUnit="Radians" />
+        <utility:UnitConverter x:Key="DistanceConverter" BaseUnit="Pixels" />
+    </control:Pane.Resources>
+    <Grid Background="{utility:Theme background-2}">
+        <Grid Margin="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Margin="16,8,16,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="Width:" />
+
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Margin="4" HorizontalContentAlignment="Center"
+                     Text="{Binding Width, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
+                <i:Interaction.Behaviors>
+                    <utility:TextBoxEnterBehavior />
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="Style:" />
+
+            <control:SegmentButton Grid.Row="0" Grid.Column="3"
+                                   Margin="4"
+                                   SelectedValue="{Binding HasDashes, Mode=TwoWay}">
+                <control:Segment ToolTip="No Dashes">
+                    <control:Segment.Value>
+                        <system:Boolean>False</system:Boolean>
+                    </control:Segment.Value>
+                    <control:Icon IconName="icon-stroke-solid" />
+                </control:Segment>
+                <control:Segment ToolTip="Dashes">
+                    <control:Segment.Value>
+                        <system:Boolean>True</system:Boolean>
+                    </control:Segment.Value>
+                    <control:Icon IconName="icon-stroke-dash" />
+                </control:Segment>
+            </control:SegmentButton>
+
+            <TextBlock Grid.Row="1" Grid.Column="0"
+                       Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="End:" />
+
+            <control:SegmentButton Grid.Row="1" Grid.Column="1"
+                                   Margin="4"
+                                   SelectedValue="{Binding LineCap, Mode=TwoWay}">
+                <control:Segment ToolTip="Flat" Value="{x:Static coremodel:LineCap.Butt}">
+                    <control:Icon IconName="icon-end-flat" />
+                </control:Segment>
+                <control:Segment ToolTip="Round" Value="{x:Static coremodel:LineCap.Round}">
+                    <control:Icon IconName="icon-end-round" />
+                </control:Segment>
+                <control:Segment ToolTip="Square" Value="{x:Static coremodel:LineCap.Square}">
+                    <control:Icon IconName="icon-end-square" />
+                </control:Segment>
+            </control:SegmentButton>
+
+            <TextBlock Grid.Row="1" Grid.Column="2"
+                       Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="Corner:" />
+
+            <control:SegmentButton Grid.Row="1" Grid.Column="3"
+                                   Margin="4"
+                                   SelectedValue="{Binding LineJoin, Mode=TwoWay}">
+                <control:Segment ToolTip="Miter" Value="{x:Static coremodel:LineJoin.Miter}">
+                    <control:Icon IconName="icon-corner-miter" />
+                </control:Segment>
+                <control:Segment ToolTip="Bevel" Value="{x:Static coremodel:LineJoin.Bevel}">
+                    <control:Icon IconName="icon-corner-bevel" />
+                </control:Segment>
+                <control:Segment ToolTip="Round" Value="{x:Static coremodel:LineJoin.Round}">
+                    <control:Icon IconName="icon-corner-round" />
+                </control:Segment>
+            </control:SegmentButton>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="Miter:" />
+
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Margin="4" HorizontalContentAlignment="Center"
+                     Text="{Binding MiterLimit, Mode=TwoWay, Converter={StaticResource DistanceConverter}}">
+                <i:Interaction.Behaviors>
+                    <utility:TextBoxEnterBehavior />
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <TextBlock Grid.Row="3" Grid.Column="0"
+                       Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       DockPanel.Dock="Left" Text="Dashes:" />
+
+            <UniformGrid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                         Margin="0,4"
+                         Columns="4">
+                <TextBox Margin="4,0" Text="{Binding Dashes[0], Mode=TwoWay}">
+                    <i:Interaction.Behaviors>
+                        <utility:TextBoxEnterBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+                <TextBox Margin="4,0" Text="{Binding Dashes[1], Mode=TwoWay}">
+                    <i:Interaction.Behaviors>
+                        <utility:TextBoxEnterBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+                <TextBox Margin="4,0" Text="{Binding Dashes[2], Mode=TwoWay}">
+                    <i:Interaction.Behaviors>
+                        <utility:TextBoxEnterBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+                <TextBox Margin="4,0" Text="{Binding Dashes[3], Mode=TwoWay}">
+                    <i:Interaction.Behaviors>
+                        <utility:TextBoxEnterBehavior />
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </UniformGrid>
+        </Grid>
+    </Grid>
+</control:Pane>

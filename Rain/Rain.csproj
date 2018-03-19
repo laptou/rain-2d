@@ -102,6 +102,9 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>ibinimator.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Expression.Blend.Sdk.WPF.1.0.1\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
@@ -171,10 +174,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </ApplicationDefinition>
+    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -267,6 +270,9 @@
     </Compile>
     <Compile Include="View\Panes\HistoryPane.xaml.cs">
       <DependentUpon>HistoryPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Panes\StrokePane.xaml.cs">
+      <DependentUpon>StrokePane.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Panes\TransformPane.xaml.cs">
       <DependentUpon>TransformPane.xaml</DependentUpon>
@@ -486,6 +492,10 @@
     <Page Include="View\Panes\HistoryPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Panes\StrokePane.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="View\Panes\TransformPane.xaml">
       <SubType>Designer</SubType>

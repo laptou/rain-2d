@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 
+using Rain.Renderer.WPF;
 using Rain.Utility;
 
 using System.Threading.Tasks;
@@ -15,8 +20,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 using Rain.Core.Utility;
+using Rain.Native;
 using Rain.Renderer.Utility;
-using Rain.Renderer.WPF;
 
 using Color = Rain.Core.Model.Color;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
@@ -46,19 +51,19 @@ namespace Rain.View.Control
         private bool _draggingRing;
         private bool _draggingTriangle;
 
-
         private WriteableBitmap _ring;
-
         private WriteableBitmap _triangle;
+        private int             _size;
+        private long _update;
 
         public HslWheel()
         {
             InitializeComponent();
 
+
             Ring.MouseDown += OnRingMouseDown;
             Triangle.MouseDown += OnTriangleMouseDown;
-
-            UpdateHandles();
+            Loaded += OnLoaded;
         }
 
 
@@ -110,8 +115,6 @@ namespace Rain.View.Control
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            base.OnMouseMove(e);
-
             if (!_draggingRing && !_draggingTriangle ||
                 !IsMouseCaptured)
                 return;
@@ -123,13 +126,12 @@ namespace Rain.View.Control
             if (_draggingRing)
             {
                 var rotation = Math.Atan2(pos.Y, pos.X);
+                var hue = (rotation / pi2 * 360 + 360) % 360;
 
-                Hue = (rotation / pi2 * 360 + 360) % 360;
+                Hue = hue;
 
                 UpdateHandles();
-                UpdateTriangle();
-
-                Dispatcher.BeginInvoke((Action) UpdateTriangle, DispatcherPriority.Render, null);
+                UpdateTriangle(hue);
             }
 
             if (_draggingTriangle)
@@ -168,21 +170,21 @@ namespace Rain.View.Control
             {
                 var pt = PointToScreen(new Point());
                 var screen = Screen.FromPoint(new System.Drawing.Point((int) pt.X, (int) pt.Y));
-                var dpi = screen.GetDpiForMonitor(DpiType.Effective);
-                var size = (int) Math.Min(ActualHeight * dpi.y / 96, ActualWidth * dpi.x / 96);
+                var (x, y) = screen.GetDpiForMonitor(DpiType.Effective);
+                _size = (int) Math.Min(ActualHeight * y / 96, ActualWidth * x / 96);
 
-                _triangle = new WriteableBitmap(size,
-                                                (int) (size / MathUtils.Sqrt3Over2),
-                                                dpi.x,
-                                                dpi.y,
-                                                PixelFormats.Bgra32,
+                _triangle = new WriteableBitmap(_size,
+                                                (int) (_size / MathUtils.Sqrt3Over2),
+                                                x,
+                                                y,
+                                                PixelFormats.Bgr24,
                                                 null);
-                _ring = new WriteableBitmap(size, size, dpi.x, dpi.y, PixelFormats.Bgra32, null);
+                _ring = new WriteableBitmap(_size, _size, x, y, PixelFormats.Bgr24, null);
 
                 Triangle.Fill = new ImageBrush(_triangle);
                 Ring.Fill = new ImageBrush(_ring);
 
-                UpdateTriangle();
+                UpdateTriangle(Hue);
                 UpdateRing();
             }
             catch { }
@@ -198,8 +200,15 @@ namespace Rain.View.Control
             if (d is HslWheel hslWheel)
             {
                 hslWheel.UpdateHandles();
-                hslWheel.UpdateTriangle();
+
+                if (e.Property == HueProperty)
+                    hslWheel.UpdateTriangle(hslWheel.Hue);
             }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            UpdateHandles();
         }
 
         private void OnRingMouseDown(object sender, MouseButtonEventArgs e)
@@ -219,26 +228,27 @@ namespace Rain.View.Control
 
         private void UpdateHandles()
         {
-            var transform = (RotateTransform) Triangle.RenderTransform;
-            transform.Angle = Hue + 90;
-            RingHandleTransform.Angle = Hue;
+            var (hue, sat, lit) = (Hue, Saturation, Lightness);
+            var width = Triangle.ActualWidth;
 
-            var height = (int) (Triangle.ActualWidth / Math.Sqrt(3) * 1.5);
+            TriangleTransform.Angle = hue + 90;
+            RingHandleTransform.Angle = hue;
+
+            var height = (int) (width / Math.Sqrt(3) * 1.5);
             var slope = 1.0 / Math.Sqrt(3);
 
-            var hpos = new Point((Lightness - 0.5) * Triangle.ActualWidth,
-                                 (1 - Saturation) * height);
+            var hpos = new Point((lit - 0.5) * width, (1 - sat) * height);
 
             hpos.Y = Math.Max(0, Math.Min(height, hpos.Y));
-            hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) +
-                     Triangle.ActualWidth / 2;
+            hpos.X = Math.Max(-slope * hpos.Y, Math.Min(slope * hpos.Y, hpos.X)) + width / 2;
 
             hpos = Triangle.TranslatePoint(hpos, this);
 
-            var rcolor = ColorUtils.HslToColor(Hue, 1f, 0.5f);
-            var tcolor = ColorUtils.HslToColor(Hue, Saturation, Lightness);
-            ((SolidColorBrush) RingHandle.Fill).Color = rcolor.Convert();
-            ((SolidColorBrush) TriangleHandle.Fill).Color = tcolor.Convert();
+            var rcolor = ColorUtils.HslToColor(hue, 1f, 0.5f);
+            var tcolor = ColorUtils.HslToColor(hue, sat, lit);
+
+            RingHandleFill.Color = rcolor.Convert();
+            TriangleHandleFill.Color = tcolor.Convert();
 
             Canvas.SetLeft(TriangleHandle, hpos.X);
             Canvas.SetTop(TriangleHandle, hpos.Y);
@@ -262,67 +272,64 @@ namespace Rain.View.Control
 
                     (double r, double g, double b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
 
-                    *(pStart + currentPixel * 4 + 3) = 255; //alpha
-                    *(pStart + currentPixel * 4 + 2) = (byte) (r * 255f); //red
-                    *(pStart + currentPixel * 4 + 1) = (byte) (g * 255f); //Green
-                    *(pStart + currentPixel * 4 + 0) = (byte) (b * 255f); //Blue
+                    *(pStart + currentPixel * 3 + 2) = (byte) (r * 255f); //red
+                    *(pStart + currentPixel * 3 + 1) = (byte) (g * 255f); //Green
+                    *(pStart + currentPixel * 3 + 0) = (byte) (b * 255f); //Blue
                 }
 
             _ring.AddDirtyRect(new Int32Rect(0, 0, _ring.PixelWidth, _ring.PixelHeight));
             _ring.Unlock();
         }
 
-        private unsafe void UpdateTriangle()
+        private unsafe void UpdateTriangle(double hue)
         {
-            Dispatcher.BeginInvoke(new Action(() =>
-                                              {
-                                                  var height =
-                                                      (int) (_triangle.PixelWidth / Math.Sqrt(3) *
-                                                             1.5);
-                                                  var slope = 1.0 / Math.Sqrt(3);
-                                                  var hue = Hue;
+            var time = Stopwatch.GetTimestamp();
 
-                                                  _triangle.Lock();
-                                                  var pStart = (byte*) (void*) _triangle.BackBuffer;
+            if (time - _update < Stopwatch.Frequency / 30)
+                return;
 
-                                                  for (var iRow = 0; iRow < height; iRow++)
-                                                  {
-                                                      var offset = (int) (iRow * slope);
+            _update = time;
 
-                                                      for (var iCol =
-                                                               _triangle.PixelWidth / 2 - offset;
-                                                           iCol < _triangle.PixelWidth / 2 + offset;
-                                                           iCol++)
-                                                      {
-                                                          var currentPixel =
-                                                              iRow * _triangle.PixelWidth + iCol;
+            var ptr = SmartPtr.Alloc(_size * _size * 3);
+            var pStart = (byte*) (IntPtr) ptr;
 
-                                                          var s = 1f - (double) iRow / height;
-                                                          var l = (double) iCol /
-                                                                  _triangle.PixelWidth;
+            var height = (int) (_size / Math.Sqrt(3) * 1.5);
+            var slope = 1.0 / Math.Sqrt(3);
 
-                                                          (double r, double g, double b) =
-                                                              ColorUtils.HslToRgb(hue, s, l);
+            for (var iRow = 0; iRow < height; iRow++)
+            {
+                var offset = (int) (iRow * slope);
 
-                                                          *(pStart + currentPixel * 4 + 3) =
-                                                              255; //alpha
-                                                          *(pStart + currentPixel * 4 + 2) =
-                                                              (byte) (r * 255.0); //red
-                                                          *(pStart + currentPixel * 4 + 1) =
-                                                              (byte) (g * 255.0); //Green
-                                                          *(pStart + currentPixel * 4 + 0) =
-                                                              (byte) (b * 255.0); //Blue
-                                                      }
-                                                  }
+                for (var iCol = _size / 2 - offset; iCol < _size / 2 + offset; iCol++)
+                {
+                    var currentPixel = iRow * _size + iCol;
 
-                                                  _triangle.AddDirtyRect(
-                                                      new Int32Rect(
-                                                          0,
-                                                          0,
-                                                          _triangle.PixelWidth,
-                                                          height));
-                                                  _triangle.Unlock();
-                                              }));
+                    var s = 1f - (double) iRow / height;
+                    var l = (double) iCol / _size;
+
+                    (double r, double g, double b) = ColorUtils.HslToRgb(hue, s, l);
+
+                    *(pStart + currentPixel * 3 + 2) = (byte) (r * 255.0); //red
+                    *(pStart + currentPixel * 3 + 1) = (byte) (g * 255.0); //Green
+                    *(pStart + currentPixel * 3 + 0) = (byte) (b * 255.0); //Blue
+                }
+            }
+
+            Dispatcher.Invoke(() =>
+                              {
+                                  _triangle.Lock();
+
+                                  NativeHelper.CopyMemory(_triangle.BackBuffer,
+                                                          (IntPtr) pStart,
+                                                          (uint) (_size * _size * 3));
+
+                                  _triangle.AddDirtyRect(new Int32Rect(0, 0, _size, _size));
+
+                                  _triangle.Unlock();
+                              },
+                    DispatcherPriority.Render);
+
+            ptr.Dispose();
         }
 
         #region INotifyPropertyChanged Members

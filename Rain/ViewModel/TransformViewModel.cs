@@ -105,7 +105,7 @@ namespace Rain.ViewModel
                                             })
                           .Sample(TimeSpan.FromMilliseconds(250))
                           .TakeUntil(_detachObservable.Where(e => e.Sender == sm))
-                          .SubscribeOn(App.Dispatcher)
+                          .SubscribeOn(App.CurrentDispatcher)
                           .Subscribe(SelectionManagerSelectionChanged);
             }
         }

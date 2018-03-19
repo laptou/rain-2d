@@ -8,6 +8,20 @@ namespace Rain.Core.Utility
 {
     public static class StreamExtensions
     {
+        public static async Task<string> ReadAsStringAsync(this Stream stream)
+        {
+            var sr = new StreamReader(stream);
+
+            return await sr.ReadToEndAsync();
+        }
+
+        public static string ReadAsString(this Stream stream)
+        {
+            var sr = new StreamReader(stream);
+
+            return sr.ReadToEnd();
+        }
+
         public static int ReadInt(this Stream stream)
         {
             var buf = new byte[4];

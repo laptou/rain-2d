@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 
 using Rain.Native;
+using Rain.Service;
 using Rain.ViewModel;
 
 namespace Rain.View
@@ -20,7 +21,19 @@ namespace Rain.View
     {
         public MainView()
         {
+            App.Current.LogEvent("MainView..ctor() called.");
+
+            // blocks on settings loading b/c otherwise utility:Theme
+            // markup extensions won't work
+            AppSettings.EndLoadDefault();
+
+            App.Current.LogEvent("AppSettings.EndLoadDefault() completed.");
+
             InitializeComponent();
+
+            App.Current.LogEvent("MainView.InitializeComponent() completed.");
+
+            ViewModel = new MainViewModel(ArtView);
 
             CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand,
                                                    (s, e) => SystemCommands.CloseWindow(this),
@@ -35,8 +48,37 @@ namespace Rain.View
                                                                      ? WindowState.Normal
                                                                      : WindowState.Maximized,
                                                    (s, e) => e.CanExecute = true));
+        }
 
-            DataContext = new MainViewModel(ArtView);
+        /// <inheritdoc />
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+
+            if (!ViewModel.Initialized)
+            {
+                ViewModel.Initialize();
+                App.Current.LogEvent("MainView.DataContext initialized.");
+            }
+        }
+
+        public MainViewModel ViewModel
+        {
+            get => DataContext as MainViewModel;
+            set => DataContext = value;
+        }
+
+        /// <inheritdoc />
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            InitializeBlurBehind();
+
+            base.OnSourceInitialized(e);
+        }
+
+        private void InitializeBlurBehind()
+        {
+            // HWND has been created, but window is not visible yet
 
             var interop = new WindowInteropHelper(this);
 
@@ -59,12 +101,25 @@ namespace Rain.View
                     Data = ptr,
                     SizeOfData = ptr.Size
                 };
-                
-                var hr = WindowHelper.SetWindowCompositionAttribute(interop.EnsureHandle(), ref cdata);
 
-                if(hr != 0)
+                var hr = WindowHelper.SetWindowCompositionAttribute(
+                    interop.EnsureHandle(),
+                    ref cdata);
+
+                if (hr != 0)
                     NativeHelper.CheckError();
             }
+
+            App.Current.LogEvent("Blur-behind initialized.");
+        }
+
+        /// <inheritdoc />
+        protected override void OnContentRendered(EventArgs e)
+        {
+
+            App.Current.LogEvent("MainView.OnContentRendered() called.");
+
+            base.OnContentRendered(e);
         }
     }
 }

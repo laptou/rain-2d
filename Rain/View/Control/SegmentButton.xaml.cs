@@ -39,6 +39,12 @@ namespace Rain.View.Control
                                             null,
                                             SelectedSegmentChanged));
 
+        public static readonly DependencyProperty SegmentsProperty =
+            DependencyProperty.Register("Segments",
+                                        typeof(ObservableCollection<Segment>),
+                                        typeof(SegmentButton),
+                                        new PropertyMetadata(null, OnSegmentsChanged));
+
         private bool _selectionChanging;
 
         static SegmentButton()
@@ -50,12 +56,15 @@ namespace Rain.View.Control
 
         public SegmentButton()
         {
-            Segments.CollectionChanged += SegmentsChanged;
+            Segments = new ObservableCollection<Segment>();
             InitializeComponent();
         }
 
-        public ObservableCollection<Segment> Segments { get; } =
-            new ObservableCollection<Segment>();
+        public ObservableCollection<Segment> Segments
+        {
+            get => (ObservableCollection<Segment>) GetValue(SegmentsProperty);
+            set => SetValue(SegmentsProperty, value);
+        }
 
         public int SelectedIndex
         {
@@ -73,6 +82,18 @@ namespace Rain.View.Control
         {
             get => GetValue(SelectedValueProperty);
             set => SetValue(SelectedValueProperty, value);
+        }
+
+        private static void OnSegmentsChanged(
+            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var sb = (SegmentButton) d;
+
+            if (e.OldValue is ObservableCollection<Segment> old)
+                old.CollectionChanged -= sb.SegmentsChanged;
+
+            if (e.NewValue is ObservableCollection<Segment> current)
+                current.CollectionChanged += sb.SegmentsChanged;
         }
 
         private void SegmentOnClick(object sender, RoutedEventArgs routedEventArgs)

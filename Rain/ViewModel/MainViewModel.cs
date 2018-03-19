@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
@@ -39,8 +40,6 @@ namespace Rain.ViewModel
 
             ArtContext = artView.ArtContext;
 
-            ViewManager.Root = Load();
-
             artView.ArtContext.SetManager(cache);
             artView.ArtContext.SetManager(ViewManager);
             artView.ArtContext.SetManager(HistoryManager);
@@ -48,20 +47,33 @@ namespace Rain.ViewModel
             artView.ArtContext.SetManager(ToolManager);
             artView.ArtContext.SetManager(BrushManager);
 
+            Shortcuts = new ObservableCollection<InputBinding>();
+            MenuItems = new ObservableCollection<MenuItem>();
+            ToolbarItems = new ObservableCollection<ToolbarItem>();
+
+            SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
+            JumpHistoryCommand = new DelegateCommand<long>(id => HistoryManager.Position = id, null);
 
             ColorViewModel = new ColorViewModel(ArtContext);
             TransformViewModel = new TransformViewModel(ArtContext);
             StrokeViewModel = new StrokeViewModel(ArtContext);
+        }
 
+        public void Initialize()
+        {
+            ViewManager.Root = LoadSample();
             ToolManager.Type = ToolType.Select;
 
-            SelectLayerCommand = new DelegateCommand<Layer>(SelectLayer, null);
-            JumpHistoryCommand =
-                new DelegateCommand<long>(id => HistoryManager.Position = id, null);
+            foreach (var menu in LoadMenus("menus")) MenuItems.Add(menu);
+            foreach (var toolbar in LoadToolbars("toolbars")) ToolbarItems.Add(toolbar);
 
-            MenuItems = LoadMenus("menus").ToList();
-            ToolbarItems = LoadToolbars("toolbars").ToList();
+            RaisePropertyChanged(nameof(MenuItems));
+            RaisePropertyChanged(nameof(ToolbarItems));
+
+            Initialized = true;
         }
+
+        public bool Initialized { get; private set; }
 
         public MainViewModel()
         {
@@ -69,10 +81,7 @@ namespace Rain.ViewModel
                               "This constructor only exists so that the XAML designer doesn't " +
                               "complain. Do not call this."));
 
-            AppSettings.LoadDefault();
-
-            MenuItems = LoadMenus("menus").ToList();
-            ToolbarItems = LoadToolbars("toolbars").ToList();
+            AppSettings.EndLoadDefault();
         }
 
         public IArtContext ArtContext { get; set; }
@@ -83,7 +92,7 @@ namespace Rain.ViewModel
 
         public event EventHandler SelectionUpdated;
 
-        public IContainerLayer Load()
+        public IContainerLayer LoadSample()
         {
             var root = new Group();
 
@@ -258,6 +267,7 @@ namespace Rain.ViewModel
                     }
                 }
             }
+
         }
 
         private IEnumerable<ToolbarItem> LoadToolbars(string path)
@@ -296,6 +306,7 @@ namespace Rain.ViewModel
                         throw new ArgumentOutOfRangeException();
                 }
             }
+            
         }
 
         private static ICommand MapCommand(string name)
@@ -372,11 +383,11 @@ namespace Rain.ViewModel
 
         #region Input
 
-        public List<MenuItem> MenuItems { get; set; }
+        public ObservableCollection<MenuItem> MenuItems { get; set; }
 
-        public List<InputBinding> Shortcuts { get; } = new List<InputBinding>();
+        public ObservableCollection<InputBinding> Shortcuts { get; set; }
 
-        public List<ToolbarItem> ToolbarItems { get; set; }
+        public ObservableCollection<ToolbarItem> ToolbarItems { get; set; }
 
         #endregion
 

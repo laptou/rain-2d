@@ -38,8 +38,8 @@ namespace Rain.Renderer
 
         public (IBrushInfo Fill, IPenInfo Stroke) Query()
         {
-            var fill = Context.ToolManager.Tool.ProvideFill();
-            var stroke = Context.ToolManager.Tool.ProvideStroke();
+            var fill = Context.ToolManager.Tool?.ProvideFill();
+            var stroke = Context.ToolManager.Tool?.ProvideStroke();
 
             var top = _brushHistory.Count == 0 ? null : _brushHistory.Peek();
 

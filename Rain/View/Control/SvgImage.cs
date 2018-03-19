@@ -15,6 +15,7 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Text;
+using Rain.Core.Utility;
 using Rain.Formatter.Svg;
 using Rain.Formatter.Svg.IO;
 using Rain.Renderer;
@@ -38,8 +39,6 @@ namespace Rain.View.Control
                                             typeof(SvgImage),
                                             new WPF.FrameworkPropertyMetadata(
                                                 null,
-                                                WPF.FrameworkPropertyMetadataOptions
-                                                   .AffectsMeasure |
                                                 WPF.FrameworkPropertyMetadataOptions.AffectsRender,
                                                 SourceChanged));
 
@@ -114,38 +113,30 @@ namespace Rain.View.Control
             RenderContext.End();
         }
 
-        private async Task<Stream> GetStream()
+        private Stream GetStream()
         {
-            if (Source.IsAbsoluteUri)
-                switch (Source.Scheme)
-                {
-                    case "file":
+            if (!Source.IsAbsoluteUri)
+                return WPF.Application.GetResourceStream(Source)?.Stream;
 
-                        return File.OpenRead(Source.LocalPath);
-                    case "http":
-                        var request = WebRequest.CreateHttp(Source);
-                        var response =
-                            await Task.Factory.FromAsync(request.BeginGetResponse,
-                                                         request.EndGetResponse,
-                                                         null);
+            switch (Source.Scheme)
+            {
+                case "file":
 
-                        return response.GetResponseStream();
-                    default:
+                    return File.OpenRead(Source.LocalPath);
+                default:
 
-                        throw new Exception("Unsupported URI scheme!");
-                }
-
-            return WPF.Application.GetResourceStream(Source)?.Stream;
+                    throw new Exception("Unsupported URI scheme!");
+            }
         }
 
-        private static async void SourceChanged(
+        private static void SourceChanged(
             WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
-                await svgImage.UpdateAsync();
+                svgImage.Update();
         }
 
-        private async Task UpdateAsync()
+        private void Update()
         {
             if (Source == null) return;
 
@@ -153,10 +144,8 @@ namespace Rain.View.Control
 
             XDocument xdoc;
 
-            using (var stream = await GetStream())
-            {
+            using (var stream = GetStream())
                 xdoc = XDocument.Load(stream);
-            }
 
             var document = new Formatter.Svg.Structure.Document();
             document.FromXml(xdoc.Root, new SvgContext());

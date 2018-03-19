@@ -14,7 +14,7 @@ namespace Rain.View.Command
 
         private static void License(object obj)
         {
-            App.Dispatcher.Invoke(() => { new LicenseView().ShowDialog(); });
+            App.CurrentDispatcher.Invoke(() => { new LicenseView().ShowDialog(); });
         }
     }
 }

@@ -21,6 +21,14 @@ namespace Rain.Service
             Current.Theme = new ThemeSettings(Current["theme"] as string);
         }
 
+        public static async Task LoadDefaultAsync()
+        {
+            Current = new AppSettings();
+            await Current.LoadAsync();
+
+            Current.Theme = new ThemeSettings(Current["theme"] as string);
+        }
+
         protected override Stream GetReadStream()
         {
             var defaultUri = new Uri("/Rain;component/settings.default.json",
@@ -55,5 +63,13 @@ namespace Rain.Service
                              FileAccess.Write,
                              FileShare.Read);
         }
+
+        private static Task _loadTask;
+
+        public static void BeginLoadDefault() => _loadTask = LoadDefaultAsync();
+
+        public static void EndLoadDefault() => _loadTask.Wait();
+
+        public static Task GetLoadTask() => _loadTask;
     }
 }
