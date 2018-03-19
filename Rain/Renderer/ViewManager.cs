@@ -29,7 +29,10 @@ namespace Rain.Renderer
 
             if (sender == Document &&
                 e.PropertyName == nameof(Document.Root))
+            {
                 RootUpdated?.Invoke(sender, e);
+                RaisePropertyChanged(nameof(Root));
+            }
 
             if (sender is IFilledLayer filled &&
                 e.PropertyName == nameof(IFilledLayer.Fill))

@@ -1,0 +1,149 @@
+﻿<control:Pane x:Class="Rain.View.Panes.LayerPane"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:control="clr-namespace:Rain.View.Control" xmlns:core="clr-namespace:Rain.Core;assembly=Rain.Core"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:documentGraph="clr-namespace:Rain.Core.Model.DocumentGraph;assembly=Rain.Core"
+              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:renderer="clr-namespace:Rain.Renderer;assembly=Rain.Renderer" xmlns:service="clr-namespace:Rain.Service"
+              xmlns:utility="clr-namespace:Rain.View.Utility"
+              d:DataContext="{d:DesignInstance core:IViewManager}" d:DesignHeight="300" d:DesignWidth="300"
+              FocusManager.IsFocusScope="True"
+              mc:Ignorable="d">
+    <Grid>
+        <TreeView x:Name="LayerTree"
+                  Padding="0"
+                  Background="{utility:Theme background-3}" BorderThickness="0" ItemsSource="{Binding Root.SubLayers}">
+            <TreeView.Resources>
+                <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Height" Value="12" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                <Border Width="12" Height="12"
+                                        Background="Transparent">
+                                    <control:Icon x:Name="ExpandPath"
+                                                  Width="12" Height="12"
+                                                  Cursor="Hand" IconName="icon-expander" RenderTransformOrigin="0.5,0.5">
+                                        <control:Icon.RenderTransform>
+                                            <RotateTransform Angle="-90" />
+                                        </control:Icon.RenderTransform>
+                                    </control:Icon>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter TargetName="ExpandPath" Property="RenderTransform">
+                                            <Setter.Value>
+                                                <RotateTransform Angle="-45" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Width" Value="12" />
+                </Style>
+            </TreeView.Resources>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type documentGraph:IContainerLayer}" ItemsSource="{Binding SubLayers}">
+                    <TextBlock x:Name="layerName"
+                               FontWeight="Bold" Text="{Binding Name}" />
+                    <HierarchicalDataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
+                            <Setter TargetName="layerName" Property="FontWeight" Value="Normal" />
+                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat=(\{0\})}" />
+                        </DataTrigger>
+                    </HierarchicalDataTemplate.Triggers>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectedItemChanged">
+                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}" CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="Background" Value="{utility:Theme background-2}" />
+                    <Setter Property="Foreground" Value="{utility:Theme text-1}" />
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    <Setter Property="Padding" Value="0,10,0,0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                                <Border x:Name="Bd"
+                                        Margin="-19,0,0,0" Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+                                    <Grid Margin="19,0,0,0" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" MinWidth="19" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="19" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <ToggleButton x:Name="Expander"
+                                                      ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      Style="{StaticResource ExpandCollapseToggleStyle}" />
+
+                                        <Separator Grid.ColumnSpan="3"
+                                                   Margin="0,0,0,-10" VerticalAlignment="Bottom" />
+
+                                        <ContentPresenter x:Name="PART_Header"
+                                                          Grid.Column="1"
+                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                          ContentSource="Header" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                                        <CheckBox Grid.Column="2"
+                                                  HorizontalAlignment="Right"
+                                                  IsChecked="{Binding Visible}" />
+
+                                        <ItemsPresenter x:Name="ItemsHost"
+                                                        Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                        Margin="0,10,0,0" />
+
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsExpanded" Value="false">
+                                        <Setter Property="Padding" Value="0,10" />
+                                        <Setter TargetName="ItemsHost" Property="Margin" Value="0" />
+                                        <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed" />
+                                    </Trigger>
+                                    <Trigger Property="HasItems" Value="false">
+                                        <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding Selected}" Value="true">
+                                        <Setter TargetName="Bd" Property="Background" Value="{utility:Theme background-1}" />
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                    <Style.Triggers>
+                        <Trigger Property="VirtualizingPanel.IsVirtualizing" Value="true">
+                            <Setter Property="ItemsPanel">
+                                <Setter.Value>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel />
+                                    </ItemsPanelTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <!--<i:Interaction.Behaviors>
+                                    <view:TreeViewMultipleSelectionBehavior SelectedItems="{Binding Selection}" />
+                                </i:Interaction.Behaviors>-->
+        </TreeView>
+    </Grid>
+</control:Pane>
