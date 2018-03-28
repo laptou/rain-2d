@@ -136,8 +136,7 @@ namespace Rain.Tools
                                                   Context.HistoryManager.Position + 1,
                                                   SelectedLayer,
                                                   new[] {new PathNode(_nodes.Count, tpos)},
-                                                  _nodes.Count,
-                                                  ModifyPathCommand.NodeOperation.Add));
+                                                  _nodes.Count));
                 }
             }
 

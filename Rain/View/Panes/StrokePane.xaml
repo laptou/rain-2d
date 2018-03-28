@@ -116,30 +116,29 @@
                        Margin="16,4" HorizontalAlignment="Center" VerticalAlignment="Center"
                        DockPanel.Dock="Left" Text="Dashes:" />
 
-            <UniformGrid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                         Margin="0,4"
-                         Columns="4">
-                <TextBox Margin="4,0" Text="{Binding Dashes[0], Mode=TwoWay}">
-                    <i:Interaction.Behaviors>
-                        <utility:TextBoxEnterBehavior />
-                    </i:Interaction.Behaviors>
-                </TextBox>
-                <TextBox Margin="4,0" Text="{Binding Dashes[1], Mode=TwoWay}">
-                    <i:Interaction.Behaviors>
-                        <utility:TextBoxEnterBehavior />
-                    </i:Interaction.Behaviors>
-                </TextBox>
-                <TextBox Margin="4,0" Text="{Binding Dashes[2], Mode=TwoWay}">
-                    <i:Interaction.Behaviors>
-                        <utility:TextBoxEnterBehavior />
-                    </i:Interaction.Behaviors>
-                </TextBox>
-                <TextBox Margin="4,0" Text="{Binding Dashes[3], Mode=TwoWay}">
-                    <i:Interaction.Behaviors>
-                        <utility:TextBoxEnterBehavior />
-                    </i:Interaction.Behaviors>
-                </TextBox>
-            </UniformGrid>
+            <ItemsControl Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                          Margin="0,4">
+                <ItemsControl.ItemsSource>
+                    <CompositeCollection>
+                        <CollectionContainer Collection="{Binding Dashes, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Command="{Binding AddDashCommand}" Content="+" />
+                    </CompositeCollection>
+                </ItemsControl.ItemsSource>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="system:Single">
+                        <TextBox Margin="4,0" Text="{Binding Mode=TwoWay}">
+                            <i:Interaction.Behaviors>
+                                <utility:TextBoxEnterBehavior />
+                            </i:Interaction.Behaviors>
+                        </TextBox>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </Grid>
 </control:Pane>

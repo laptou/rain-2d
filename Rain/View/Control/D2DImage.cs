@@ -165,7 +165,7 @@ namespace Rain.View.Control
 
                 _lastMousePos = pos;
             }
-
+            
             switch (msg)
             {
                 case WindowMessage.Paint:
@@ -210,15 +210,17 @@ namespace Rain.View.Control
                     WindowHelper.SetFocus(_parent);
 
                     break;
+
                 case WindowMessage.KeyDown:
                 case WindowMessage.SysKeyDown:
                     var repeat = (int) lParam & (1 << 30);
                     var key = KeyInterop.KeyFromVirtualKey((int) wParam);
+                    var state = KeyboardHelper.GetModifierState();
 
                     PushEvent(new KeyboardEvent((int) key,
                                                 true,
                                                 repeat != 0,
-                                                KeyboardHelper.GetModifierState()));
+                                                state));
 
                     // since the messages are processed asynchronously, 
                     // return 1, meaning it was not handled yet
@@ -459,7 +461,7 @@ namespace Rain.View.Control
             _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.Information);
             #else
             _factory = new D2D.Factory1(D2D.FactoryType.MultiThreaded, D2D.DebugLevel.None);
-                                    #endif
+                                                #endif
 
             if (_dwFactory == null)
                 _dwFactory = new DW.Factory(DW.FactoryType.Shared);

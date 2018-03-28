@@ -14,7 +14,11 @@ namespace Rain.ViewModel
 {
     public class StrokeViewModel : ViewModel
     {
-        public StrokeViewModel(IArtContext artContext) { Context = artContext; }
+        public StrokeViewModel(IArtContext artContext)
+        {
+            Context = artContext;
+            AddDashCommand = new DelegateCommand<object>(OnAddDash, null);
+        }
 
         public IArtContext Context
         {
@@ -117,6 +121,13 @@ namespace Rain.ViewModel
                 Current.Width = value;
                 Apply();
             }
+        }
+
+        public DelegateCommand<object> AddDashCommand { get; }
+
+        private void OnAddDash(object obj)
+        {
+            Dashes.Add(0);
         }
 
         private void Apply() { Context.BrushManager.Apply(Current); }

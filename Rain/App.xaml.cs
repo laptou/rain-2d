@@ -31,18 +31,31 @@ namespace Rain
     /// </summary>
     public partial class App
     {
+        private static StreamWriter log;
+
         [STAThread]
         public static void Main()
         {
+            _startTime = Stopwatch.GetTimestamp();
+
+            log = new StreamWriter(File.Open("rain.log",
+                                             FileMode.Create,
+                                             FileAccess.ReadWrite,
+                                             FileShare.Read));
+
+            LogEvent("App.Main() called.");
+
             var app = new App();
             app.InitializeComponent();
             app.Run();
+
+            LogEvent("App shutting down.");
+
+            log.Flush();
         }
 
         public App()
         {
-            _startTime = Stopwatch.GetTimestamp();
-
             LogEvent("App..ctor() called.");
 
             InitializeComponent();
@@ -56,7 +69,7 @@ namespace Rain
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }
 
-        private readonly long _startTime;
+        private static long _startTime;
 
         public static Dispatcher CurrentDispatcher => Current.Dispatcher;
 
@@ -78,63 +91,57 @@ namespace Rain
             LogEvent("App.OnStartup() completed.");
         }
 
-        public void LogEvent(string evt)
+        public static void LogEvent(string evt)
         {
             var time = Stopwatch.GetTimestamp() - _startTime;
             var seconds = time / (double) Stopwatch.Frequency;
 
             #if DEBUG
-            Trace.WriteLine($"[{seconds * 1000:F2}ms]: {evt}");
+            Trace.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}", "Event");
             #else
-            Console.WriteLine($"[{seconds * 1000:F2}ms]: {evt}");
+            log.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}");
             #endif
         }
 
         private static async Task LogError(object o, int level)
         {
-            // log that bitch
-            using (var writer = new StreamWriter(File.Open("rain.log", FileMode.Append)))
+            var indent = new string('\t', level - 1);
+            var time = Stopwatch.GetTimestamp() - _startTime;
+            var seconds = time / (double)Stopwatch.Frequency;
+
+            await log.WriteLineAsync(indent + $"Error [{DateTime.Now}, {seconds * 1000:F2}ms]");
+
+            indent += "\t";
+
+            if (o is Exception ex)
             {
-                await LogError(o, level, writer);
-            }
-        }
+                await log.WriteLineAsync(indent + $"Type: {ex.GetType().AssemblyQualifiedName}");
+                await log.WriteLineAsync(indent + $"Message: {ex.Message}");
+                await log.WriteLineAsync(indent + $"HResult: 0x{ex.HResult:X}");
+                await log.WriteLineAsync(indent + $"Source: {ex.Source}");
 
-        private static async Task LogError(object o, int level, StreamWriter writer)
-        {
-            var ex = o as Exception;
+                var stack =
+                    ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indent);
 
-            await writer.WriteLineAsync(new string('\t', level - 1) + $"Error [{DateTime.Now}]");
-
-            if (ex != null)
-            {
-                await writer.WriteLineAsync(new string('\t', level) +
-                                            $"Type: {ex.GetType().AssemblyQualifiedName}");
-                await writer.WriteLineAsync(new string('\t', level) + $"Message: {ex.Message}");
-                await writer.WriteLineAsync(new string('\t', level) + $"HResult: 0x{ex.HResult:X}");
-                await writer.WriteLineAsync(new string('\t', level) + $"Source: {ex.Source}");
-
-                var stack = ex.StackTrace.Replace(Environment.NewLine,
-                                                  Environment.NewLine + new string('\t', level));
-
-                await writer.WriteLineAsync(new string('\t', level) + $"Stack Trace:\r\n{stack}");
+                await log.WriteLineAsync(indent + $"Stack Trace:\r\n{stack}");
 
                 if (ex.InnerException != null)
                 {
-                    await writer.WriteLineAsync(new string('\t', level) + "Inner Exception: ");
-                    await LogError(ex.InnerException, level + 1, writer);
+                    await log.WriteLineAsync(indent + "Inner Exception: ");
+                    await LogError(ex.InnerException, level + 1);
                 }
             }
             else
             {
-                await writer.WriteLineAsync(new string('\t', level) + $"{o}");
+                await log.WriteLineAsync(indent + $"{o}");
             }
 
-            await writer.FlushAsync();
+            await log.FlushAsync();
         }
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Task.Run(async () => await LogError(e.ExceptionObject, 1)).Wait();
+            LogError(e.ExceptionObject, 1).Wait();
 
             // wait on the task because if this handler returns, the process exits
         }

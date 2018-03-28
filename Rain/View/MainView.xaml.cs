@@ -21,17 +21,17 @@ namespace Rain.View
     {
         public MainView()
         {
-            App.Current.LogEvent("MainView..ctor() called.");
+            App.LogEvent("MainView..ctor() called.");
 
             // blocks on settings loading b/c otherwise utility:Theme
             // markup extensions won't work
             AppSettings.EndLoadDefault();
 
-            App.Current.LogEvent("AppSettings.EndLoadDefault() completed.");
+            App.LogEvent("AppSettings.EndLoadDefault() completed.");
 
             InitializeComponent();
 
-            App.Current.LogEvent("MainView.InitializeComponent() completed.");
+            App.LogEvent("MainView.InitializeComponent() completed.");
 
             ViewModel = new MainViewModel(ArtView);
 
@@ -58,7 +58,7 @@ namespace Rain.View
             if (!ViewModel.Initialized)
             {
                 ViewModel.Initialize();
-                App.Current.LogEvent("MainView.DataContext initialized.");
+                App.LogEvent("MainView.DataContext initialized.");
             }
         }
 
@@ -86,7 +86,7 @@ namespace Rain.View
             {
                 AccentState = AccentState.EnableBlurBehind,
                 AccentFlags = 2,
-                GradientColor = 0x2058D432u
+                GradientColor = 0x20333333u
             };
 
             // Fluent design is not available before RS4 (Spring Creators Update)
@@ -110,14 +110,14 @@ namespace Rain.View
                     NativeHelper.CheckError();
             }
 
-            App.Current.LogEvent("Blur-behind initialized.");
+            App.LogEvent("Blur-behind initialized.");
         }
 
         /// <inheritdoc />
         protected override void OnContentRendered(EventArgs e)
         {
 
-            App.Current.LogEvent("MainView.OnContentRendered() called.");
+            App.LogEvent("MainView.OnContentRendered() called.");
 
             base.OnContentRendered(e);
         }

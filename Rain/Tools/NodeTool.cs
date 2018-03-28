@@ -14,6 +14,7 @@ using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
 using Rain.Theme;
+using Rain.Utility;
 
 namespace Rain.Tools
 {
@@ -66,7 +67,6 @@ namespace Rain.Tools
 
                 case Key.Delete:
                     Remove(_selection.ToArray());
-                    Context.Invalidate();
 
                     break;
 
@@ -99,7 +99,7 @@ namespace Rain.Tools
             foreach (var node in _nodes)
             {
                 if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position),
-                                            pos) < 3)
+                                            pos) < 5)
                 {
                     _handle = 0;
                     target = node;
@@ -112,7 +112,7 @@ namespace Rain.Tools
                 if (node.IncomingControl != null &&
                     Vector2.DistanceSquared(
                         SelectionManager.FromSelectionSpace(node.IncomingControl.Value),
-                        pos) < 2)
+                        pos) < 3)
                 {
                     _handle = -1;
                     target = node;
@@ -123,7 +123,7 @@ namespace Rain.Tools
                 if (node.OutgoingControl != null &&
                     Vector2.DistanceSquared(
                         SelectionManager.FromSelectionSpace(node.OutgoingControl.Value),
-                        pos) < 2)
+                        pos) < 3)
                 {
                     _handle = +1;
                     target = node;
@@ -348,11 +348,11 @@ namespace Rain.Tools
                                       indices,
                                       op);
 
-            newCmd.Do(Context);
+            history.Merge(newCmd, Time.DoubleClick);
 
             UpdateNodes();
 
-            MergeCommands(newCmd);
+            Context.Invalidate();
         }
 
         private void OnTraversed(object sender, long e) { UpdateNodes(); }
@@ -371,6 +371,8 @@ namespace Rain.Tools
 
             foreach (var index in indices)
                 _selection.Remove(index);
+
+            Context.Invalidate();
         }
 
         private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }

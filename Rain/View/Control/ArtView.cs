@@ -181,6 +181,9 @@ namespace Rain.View.Control
             switch (msg)
             {
                 case WindowMessage.SetCursor:
+                    if (ArtContext?.ToolManager?.Tool == null)
+                        goto default;
+
                     CursorHelper.SetCursor(ArtContext.ToolManager.Tool.Cursor != null
                                                ? _cursors[ArtContext.ToolManager.Tool.Cursor]
                                                : _cursors["default"]);
