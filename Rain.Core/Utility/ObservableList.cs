@@ -100,6 +100,10 @@ namespace Rain.Core.Utility
             }
         }
 
+        /// <summary>
+        /// Replaces all of the items in this ObservableList with
+        /// the items given.
+        /// </summary>
         public void ReplaceRange(IEnumerable<T> items)
         {
             lock (_locker)

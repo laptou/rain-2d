@@ -324,13 +324,13 @@ namespace Rain.Commands
                             if (newMPC.Indices.Length != 1) break;
                             if (Indices[0] != newMPC.Indices[0]) break;
 
-                            return new ModifyPathCommand(newCommand.Id,
+                            return new ModifyPathCommand(Id,
                                 Targets[0],
                                 Nodes.Concat(newMPC.Nodes),
                                 Indices[0]);
 
                         case NodeOperation.Remove:
-                            return new ModifyPathCommand(newCommand.Id,
+                            return new ModifyPathCommand(Id,
                                 Targets[0],
                                 Indices.Concat(newMPC.Indices).ToArray(),
                                 NodeOperation.Remove);
@@ -341,10 +341,10 @@ namespace Rain.Commands
                             if (!Enumerable.SequenceEqual(Indices, newMPC.Indices))
                                 break;
 
-                            return new ModifyPathCommand(newCommand.Id,
+                            return new ModifyPathCommand(Id,
                                 Targets[0],
                                 Delta + newMPC.Delta,
-                                Indices.Concat(newMPC.Indices).ToArray(),
+                                Indices,
                                 Operation);
                     }
                 }

@@ -1,10 +1,7 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-using System.Windows.Input;
-
+using System;
 using Rain.Commands;
 using Rain.Core;
 using Rain.Core.Input;
@@ -16,6 +13,13 @@ using Rain.Core.Utility;
 using Rain.Theme;
 using Rain.Utility;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using System.Numerics;
+using System.Windows.Input;
+
 namespace Rain.Tools
 {
     public class NodeTool : SelectionToolBase<IGeometricLayer>
@@ -23,16 +27,62 @@ namespace Rain.Tools
         private readonly ISet<int> _selection = new HashSet<int>();
 
         private int? _handle;
-
-        //private (bool alt, bool shift) _kbd;
         private (bool down, bool moved, Vector2 pos) _mouse;
-        private IList<PathNode>                      _nodes;
+        private IList<PathNode> _nodes;
 
         public NodeTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Node;
 
+            Options.Create<Action>("add-node", ToolOptionType.Button, "Add Node")
+                .SetIcon("icon-add")
+                .Set(() =>
+                {
+                    var indices = _selection.ToArray();
+
+                    if (indices.Length != 2) return;
+
+                    var min = Math.Min(indices[0], indices[1]);
+                    var max = Math.Max(indices[0], indices[1]);
+
+                    if (max - min != 1) return;
+
+                    Subdivide(min);
+                });
+
+            Options.Create<Action>("remove-node", ToolOptionType.Button, "Remove Node")
+                .SetIcon("icon-remove")
+                .Set(() => Remove(_selection.ToArray()));
+
             UpdateNodes();
+        }
+
+        private void Subdivide(int index)
+        {
+            ConvertToPath();
+            
+            Context.HistoryManager.Do(
+                new SubdividePathCommand(Context.HistoryManager.Position + 1,
+                                         SelectedLayer as Path,
+                                         index));
+
+            foreach (var node in _selection.OrderByDescending(i => i).ToArray())
+            {
+                if (node >= index)
+                {
+                    _selection.Remove(node);
+                    _selection.Add(node + 1);
+                    continue;
+                }
+
+                break;
+            }
+
+            UpdateNodes();
+
+            _selection.Add(index);
+
+            Context.Invalidate();
         }
 
         public string Status =>
@@ -57,7 +107,7 @@ namespace Rain.Tools
 
         public override void KeyDown(IArtContext context, KeyboardEvent evt)
         {
-            switch ((Key) evt.KeyCode)
+            switch ((Key)evt.KeyCode)
             {
                 case Key.Escape:
                     Context.SelectionManager.ClearSelection();
@@ -99,7 +149,7 @@ namespace Rain.Tools
             foreach (var node in _nodes)
             {
                 if (Vector2.DistanceSquared(SelectionManager.FromSelectionSpace(node.Position),
-                                            pos) < 5)
+                                            pos) < 16)
                 {
                     _handle = 0;
                     target = node;
@@ -112,7 +162,7 @@ namespace Rain.Tools
                 if (node.IncomingControl != null &&
                     Vector2.DistanceSquared(
                         SelectionManager.FromSelectionSpace(node.IncomingControl.Value),
-                        pos) < 3)
+                        pos) < 11.11)
                 {
                     _handle = -1;
                     target = node;
@@ -123,7 +173,7 @@ namespace Rain.Tools
                 if (node.OutgoingControl != null &&
                     Vector2.DistanceSquared(
                         SelectionManager.FromSelectionSpace(node.OutgoingControl.Value),
-                        pos) < 3)
+                        pos) < 11.11)
                 {
                     _handle = +1;
                     target = node;
@@ -170,10 +220,12 @@ namespace Rain.Tools
                              ModifyPathCommand.NodeOperation.MoveInHandle);
 
                         break;
+
                     case 0:
                         Move(_selection.ToArray(), delta, ModifyPathCommand.NodeOperation.Move);
 
                         break;
+
                     case +1:
                         Move(_selection.ToArray(),
                              delta,
@@ -305,7 +357,7 @@ namespace Rain.Tools
             var shape = SelectedLayer;
             shape.Selected = false;
 
-            var ctp = new ConvertToPathCommand(Context.HistoryManager.Position + 1, new[] {shape});
+            var ctp = new ConvertToPathCommand(Context.HistoryManager.Position + 1, new[] { shape });
             Context.HistoryManager.Do(ctp);
 
             ctp.Products[0].Selected = true;
@@ -355,7 +407,10 @@ namespace Rain.Tools
             Context.Invalidate();
         }
 
-        private void OnTraversed(object sender, long e) { UpdateNodes(); }
+        private void OnTraversed(object sender, long e)
+        {
+            UpdateNodes();
+        }
 
         private void Remove(params int[] indices)
         {
@@ -375,6 +430,9 @@ namespace Rain.Tools
             Context.Invalidate();
         }
 
-        private void UpdateNodes() { _nodes = GetGeometricNodes().ToList(); }
+        private void UpdateNodes()
+        {
+            _nodes = GetGeometricNodes().ToList();
+        }
     }
 }

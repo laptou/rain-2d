@@ -18,8 +18,9 @@ namespace Rain.Core.Model.Geometry
                 if (first)
                 {
                     yield return new MovePathInstruction(node.Position);
-
+                    previous = node;
                     first = false;
+                    continue;
                 }
 
                 if (node.IncomingControl != null)
@@ -32,8 +33,8 @@ namespace Rain.Core.Model.Geometry
                         yield return new QuadraticPathInstruction(
                             node.Position,
                             node.IncomingControl.Value);
-
-                yield return new LinePathInstruction(node.Position);
+                else
+                    yield return new LinePathInstruction(node.Position);
 
                 if (node.FigureEnd != null)
                 {
@@ -112,6 +113,21 @@ namespace Rain.Core.Model.Geometry
                     default: throw new Exception("wat");
                 }
             }
+        }
+
+        public static IEnumerable<PathNode> ToNodes(this IEnumerable<PathInstruction> instructions)
+        {
+            return NodesFromInstructions(instructions);
+        }
+
+        public static IList<PathNode> ToNodeList(this IEnumerable<PathInstruction> instructions)
+        {
+            return NodesFromInstructions(instructions).ToList();
+        }
+
+        public static IEnumerable<PathInstruction> ToInstructions(this IEnumerable<PathNode> nodes)
+        {
+            return InstructionsFromNodes(nodes);
         }
     }
 }

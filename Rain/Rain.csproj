@@ -182,7 +182,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Commands\CompoundCommand.cs" />
     <Compile Include="Commands\ModifyTextCommand.cs" />
+    <Compile Include="Commands\SubdividePathCommand.cs" />
     <Compile Include="Model\Guide.cs" />
     <Compile Include="Native\AccentPolicy.cs" />
     <Compile Include="Native\AccentState.cs" />

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 using Rain.Core;
 using Rain.Core.Model.DocumentGraph;
+using Rain.Core.Model.Geometry;
+using Rain.Core.Utility;
 
 namespace Rain.Commands
 {
@@ -16,10 +19,9 @@ namespace Rain.Commands
         public ConvertToPathCommand(long id, IReadOnlyCollection<IGeometricLayer> targets) :
             base(id, targets.Where(l => !(l is Path)).ToArray())
         {
-            Description = $"Converted {targets.Count} layer(s) to paths";
         }
 
-        public override string Description { get; }
+        public override string Description => $"Converted {Targets.Count} layer(s) to paths";
 
         public IReadOnlyList<Path> Products => _products;
 
@@ -34,7 +36,9 @@ namespace Rain.Commands
 
                 var path = new Path();
                 var geometry = artContext.CacheManager.GetGeometry(target);
+                
                 path.Instructions.AddItems(geometry.Read());
+
                 path.Fill = target.Fill;
                 path.Stroke = target.Stroke;
                 path.ApplyTransform(target.Transform);
@@ -45,6 +49,8 @@ namespace Rain.Commands
 
                 target.Parent.Add(path, index);
                 target.Parent.Remove(target);
+
+                path.Selected = target.Selected;
             }
 
             _targetParents = parents.ToArray();
