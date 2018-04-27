@@ -308,7 +308,7 @@ namespace Rain.Commands
                     throw new ArgumentOutOfRangeException();
             }
 
-            target.Instructions.ReplaceRange(GeometryHelper.InstructionsFromNodes(nodes));
+            target.Instructions.ReplaceRange(nodes.ToInstructions());
         }
 
         public IOperationCommand<Path> Merge(IOperationCommand<Path> newCommand)

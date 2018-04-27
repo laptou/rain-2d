@@ -9,16 +9,19 @@ namespace Rain.Core.Model
     {
         public bool Disposed { get; private set; }
 
+        public virtual bool Optimized { get; protected set; }
+
         #region IResource Members
 
         public virtual void Dispose() { Disposed = true; }
-
-        public abstract void Optimize();
 
         #endregion
 
         /// <inheritdoc />
         public ResourceScope Scope { get; set; }
+
+        /// <inheritdoc />
+        public virtual void Optimize(IRenderContext context) { throw new NotImplementedException(); }
 
         /// <inheritdoc />
         public void AddReference() { ReferenceCount++; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -10,12 +11,47 @@ namespace Rain.Native
 {
     internal static class NativeHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe IntPtr Blit<T>(this T value, out int size) where T : struct
+        {
+            size = SizeOf<T>();
+
+            var bytePtr = (byte*) Marshal.AllocHGlobal(size);
+
+            var valueref = __makeref(value);
+            var valuePtr = (byte*) *((IntPtr*) &valueref);
+
+            for (var i = 0; i < size; ++i)
+                bytePtr[i] = valuePtr[i];
+
+            return (IntPtr) bytePtr;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T Blit<T>(this IntPtr ptr) where T : struct
+        {
+            var size = SizeOf<T>();
+            var bytePtr = (byte*) ptr;
+
+            var value = default(T);
+            var valueref = __makeref(value);
+            var valuePtr = (byte*) *((IntPtr*) &valueref);
+
+            for (var i = 0; i < size; ++i)
+                valuePtr[i] = bytePtr[i];
+
+            return value;
+        }
+
         public static void CheckError()
         {
             var error = Marshal.GetLastWin32Error();
 
             if (error != 0) throw new Win32Exception(error);
         }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern void CopyMemory([In] IntPtr dest, [In] IntPtr src, [In] uint length);
 
         public static Vector2 GetCoordinates(IntPtr lParam, float dpi)
         {
@@ -58,7 +94,116 @@ namespace Rain.Native
             return (short) (val32 & 0x0000FFFF);
         }
 
-        public static IntPtr ToPtr(this ValueType valueType) { return valueType.ToPtr(out var _); }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe TOut Reinterpret<TIn, TOut>(TIn curValue, int sizeBytes)
+            where TIn : struct where TOut : struct
+        {
+            var result = default(TOut);
+
+            var resultRef = __makeref(result);
+            var resultPtr = (byte*) *((IntPtr*) &resultRef);
+
+            var curValueRef = __makeref(curValue);
+            var curValuePtr = (byte*) *((IntPtr*) &curValueRef);
+
+            for (var i = 0; i < sizeBytes; ++i)
+                resultPtr[i] = curValuePtr[i];
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TOut Reinterpret<TIn, TOut>(TIn curValue)
+            where TIn : struct where TOut : struct
+        {
+            return Reinterpret<TIn, TOut>(curValue, SizeOf<TIn>());
+        }
+
+        public static unsafe int SizeOf<T>() where T : struct
+        {
+            var type = typeof(T);
+
+            var typeCode = Type.GetTypeCode(type);
+
+            switch (typeCode)
+            {
+                case TypeCode.Boolean:
+
+                    return sizeof(bool);
+                case TypeCode.Char:
+
+                    return sizeof(char);
+                case TypeCode.SByte:
+
+                    return sizeof(sbyte);
+                case TypeCode.Byte:
+
+                    return sizeof(byte);
+                case TypeCode.Int16:
+
+                    return sizeof(short);
+                case TypeCode.UInt16:
+
+                    return sizeof(ushort);
+                case TypeCode.Int32:
+
+                    return sizeof(int);
+                case TypeCode.UInt32:
+
+                    return sizeof(uint);
+                case TypeCode.Int64:
+
+                    return sizeof(long);
+                case TypeCode.UInt64:
+
+                    return sizeof(ulong);
+                case TypeCode.Single:
+
+                    return sizeof(float);
+                case TypeCode.Double:
+
+                    return sizeof(double);
+                case TypeCode.Decimal:
+
+                    return sizeof(decimal);
+                case TypeCode.DateTime:
+
+                    return sizeof(DateTime);
+                default:
+                    var tArray = new T[2];
+                    var tArrayPinned = GCHandle.Alloc(tArray, GCHandleType.Pinned);
+
+                    try
+                    {
+                        var tRef0 = __makeref(tArray[0]);
+                        var tRef1 = __makeref(tArray[1]);
+                        var ptrToT0 = *((IntPtr*) &tRef0);
+                        var ptrToT1 = *((IntPtr*) &tRef1);
+
+                        return (int) ((byte*) ptrToT1 - (byte*) ptrToT0);
+                    }
+                    finally
+                    {
+                        tArrayPinned.Free();
+                    }
+            }
+        }
+
+        public static IntPtr ToPtr<T>(this T valueType) where T : struct
+        {
+            return valueType.ToPtr(out _);
+        }
+
+        public static IntPtr ToPtr(this ValueType valueType) { return valueType.ToPtr(out _); }
+
+        public static IntPtr ToPtr<T>(this T valueType, out int size) where T : struct
+        {
+            size = SizeOf<T>();
+            var ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(valueType, ptr, false);
+
+            return ptr;
+        }
 
         public static IntPtr ToPtr(this ValueType valueType, out int size)
         {
@@ -69,6 +214,11 @@ namespace Rain.Native
             return ptr;
         }
 
+        public static SmartPtr ToSmartPtr<T>(this T valueType) where T : struct
+        {
+            return SmartPtr.Alloc(valueType);
+        }
+
         public static SmartPtr ToSmartPtr(this ValueType valueType)
         {
             return SmartPtr.Alloc(valueType);
@@ -77,10 +227,6 @@ namespace Rain.Native
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern int WaitForSingleObjectEx(
             [In] IntPtr hHandle, [In] uint dwMilliseconds, [In] bool bAlertable);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern void CopyMemory(
-            [In] IntPtr dest, [In] IntPtr src, [In] uint length);
     }
 
     public class SmartPtr : IDisposable

@@ -98,7 +98,7 @@ namespace Rain.Renderer
 
             foreach (var guide in guides)
             {
-                var brush = cache.GetBrush(Colors.Guide);
+                var pen = cache.GetPen(Colors.Guide, 2);
 
                 if (guide.Type.HasFlag(GuideType.Linear))
                 {
@@ -120,10 +120,7 @@ namespace Rain.Renderer
                         p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
                     }
 
-                    using (var pen = target.CreatePen(2, brush))
-                    {
-                        target.DrawLine(p1, p2, pen);
-                    }
+                    target.DrawLine(p1, p2, pen);
                 }
 
                 if (guide.Type.HasFlag(GuideType.Radial))
@@ -136,20 +133,14 @@ namespace Rain.Renderer
                         guide.Angle + MathUtils.PiOverFour * 3
                     };
 
-                    using (var pen = target.CreatePen(1, brush))
-                    {
-                        target.DrawEllipse(origin, 20, 20, pen);
+                    target.DrawEllipse(origin, 20, 20, pen);
 
-                        foreach (var x in axes)
-                            target.DrawLine(origin + MathUtils.Angle(x) * 20,
-                                            origin - MathUtils.Angle(x) * 20,
-                                            pen);
-                    }
+                    foreach (var x in axes)
+                        target.DrawLine(origin + MathUtils.Angle(x) * 20,
+                                        origin - MathUtils.Angle(x) * 20,
+                                        pen);
 
-                    using (var pen = target.CreatePen(2, brush))
-                    {
-                        target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25, origin, pen);
-                    }
+                    target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25, origin, pen);
                 }
             }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
@@ -55,7 +56,7 @@ namespace Rain.Renderer.Direct2D
 
         public T Unwrap<T>() where T : class { return _bmp as T; }
 
-        public override void Optimize()
+        public override void Optimize(IRenderContext context)
         {
             throw new NotImplementedException();
         }

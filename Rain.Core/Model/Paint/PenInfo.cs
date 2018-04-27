@@ -78,7 +78,8 @@ namespace Rain.Core.Model.Paint
 
         #endregion
 
+        /// <param name="context"></param>
         /// <inheritdoc />
-        public override void Optimize() { throw new NotImplementedException(); }
+        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
     }
 }

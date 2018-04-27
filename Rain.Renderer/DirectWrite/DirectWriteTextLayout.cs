@@ -315,7 +315,7 @@ namespace Rain.Renderer.DirectWrite
                             .ToArray();
         }
 
-        public override void Optimize() { throw new NotImplementedException(); }
+        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
 
         public void RemoveText(int position, int range)
         {

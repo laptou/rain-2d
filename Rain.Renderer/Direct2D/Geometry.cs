@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
 
@@ -18,8 +19,9 @@ namespace Rain.Renderer.Direct2D
 {
     internal class Geometry : ResourceBase, IGeometry, IEquatable<Geometry>
     {
-        private readonly D2D1.RenderTarget _target;
-        private          D2D1.Geometry     _geom;
+        private readonly D2D1.RenderTarget        _target;
+        private          D2D1.GeometryRealization _fill;
+        private          D2D1.Geometry            _geom;
 
         public Geometry(D2D1.RenderTarget target) : this(target,
                                                          new D2D1.PathGeometry(target.Factory)) { }
@@ -54,6 +56,14 @@ namespace Rain.Renderer.Direct2D
         public override bool Equals(object obj) { return Equals(obj as Geometry); }
 
         public override int GetHashCode() { return (int) _geom.NativePointer; }
+
+        public override void Optimize(IRenderContext context)
+        {
+            // maybe do a geometry realization, but that transforms this into a device-dependent
+            // resource
+            
+            _fill = new D2D1.GeometryRealization(context.Provide<D2D1.DeviceContext1>(), _geom, _geom.FlatteningTolerance);
+        }
 
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
         {
@@ -213,12 +223,6 @@ namespace Rain.Renderer.Direct2D
             _geom = new D2D1.PathGeometry(_target.Factory);
 
             return new WritingSink(Path);
-        }
-
-        public override void Optimize()
-        {
-            // maybe do a geometry realization, but that transforms this into a device-dependent
-            // resource
         }
 
         public IGeometry Outline(float width)
@@ -389,6 +393,11 @@ namespace Rain.Renderer.Direct2D
 
             public WritingSink(D2D1.PathGeometry geometry) { _sink = geometry.Open(); }
 
+            public void Optimize()
+            {
+                // does nothing to this class
+            }
+
             private void Begin()
             {
                 if (!_b)
@@ -463,11 +472,6 @@ namespace Rain.Renderer.Direct2D
                     _sink.AddLine(new RawVector2(x, y));
 
                 (_x, _y) = (x, y);
-            }
-
-            public void Optimize()
-            {
-                // does nothing to this class
             }
 
             public void Quadratic(float x, float y, float cx1, float cy1)

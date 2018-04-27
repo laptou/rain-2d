@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
@@ -46,7 +47,7 @@ namespace Rain.Renderer.Direct2D
             base.Dispose();
         }
 
-        public override void Optimize()
+        public override void Optimize(IRenderContext context)
         {
             // this doesn't do anything; Direct2D objects aren't freezable
         }

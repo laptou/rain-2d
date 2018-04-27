@@ -892,7 +892,7 @@ namespace Rain.Tools
 
             var layout = Context.CacheManager.GetTextLayout(textLayer);
 
-            var index = _selection.index + _selection.length;
+            var index = _selection.index;
             var format = layout.GetFormat(index);
             var style = textLayer.TextStyle.ApplyFormat(format);
             var face = _fontSource.GetFace(style);

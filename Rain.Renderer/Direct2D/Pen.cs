@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
@@ -74,7 +75,7 @@ namespace Rain.Renderer.Direct2D
 
         public StrokeStyle1 Style { get; private set; }
 
-        public override void Optimize() { throw new NotImplementedException(); }
+        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
 
         private void RecreateStyle()
         {

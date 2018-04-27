@@ -310,9 +310,16 @@ namespace Rain.Renderer
 
             Context = context;
 
+            _timer = new Timer(PeriodicUpdate, null, 1000, 1000);
+
             context.ManagerDetached += OnManagerDetached;
             context.ManagerAttached += OnManagerAttached;
             context.RaiseAttached(this);
+        }
+
+        private void PeriodicUpdate(object state)
+        {
+            
         }
 
         /// <inheritdoc />
@@ -628,6 +635,8 @@ namespace Rain.Renderer
         }
 
         public IArtContext Context { get; set; }
+
+        private Timer _timer;
 
         #endregion
     }

@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
+using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
@@ -28,7 +29,7 @@ namespace Rain.Renderer.WPF
             base.Dispose();
         }
 
-        public override void Optimize() { WpfBrush.Freeze(); }
+        public override void Optimize(IRenderContext context) { WpfBrush.Freeze(); }
 
         public T Unwrap<T>() where T : class { return WpfBrush as T; }
 
