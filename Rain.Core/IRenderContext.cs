@@ -74,7 +74,6 @@ namespace Rain.Core
         float GetDpi();
         IRenderImage GetRenderImage(IImageFrame image);
         IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode);
-        T Provide<T>();
         void Transform(Matrix3x2 transform, bool absolute = false);
     }
 }

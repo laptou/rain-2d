@@ -61,8 +61,11 @@ namespace Rain.Renderer.Direct2D
         {
             // maybe do a geometry realization, but that transforms this into a device-dependent
             // resource
-            
-            _fill = new D2D1.GeometryRealization(context.Provide<D2D1.DeviceContext1>(), _geom, _geom.FlatteningTolerance);
+
+            if(!(context is Direct2DRenderContext d2d))
+                throw new ArgumentException("A Direct2D render context is required to perform this operation.");
+
+            _fill = new D2D1.GeometryRealization(d2d.Target.QueryInterface<D2D1.DeviceContext1>(), _geom, _geom.FlatteningTolerance);
         }
 
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
