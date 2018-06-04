@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Imaging;
-using Rain.Core.Model.Paint;
 
 namespace Rain.Core.Model.Effects
 {
@@ -25,8 +24,8 @@ namespace Rain.Core.Model.Effects
     {
         void ClearEffect();
 
-        void PushEffect(IEffect effect);
-
         IEffect GetEffect();
+
+        void PushEffect(IEffect effect);
     }
 }

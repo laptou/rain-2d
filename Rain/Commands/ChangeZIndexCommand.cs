@@ -17,7 +17,8 @@ namespace Rain.Commands
         }
 
         public int Delta { get; }
-        public override string Description => $"Changed z-index of {Targets.Count} layer(s)";
+
+        #region IMergeableOperationCommand Members
 
         public override void Do(IArtContext artContext)
         {
@@ -51,5 +52,9 @@ namespace Rain.Commands
 
             artContext.SelectionManager.UpdateBounds();
         }
+
+        public override string Description => $"Changed z-index of {Targets.Count} layer(s)";
+
+        #endregion
     }
 }

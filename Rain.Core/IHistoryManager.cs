@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rain.Core
 {
-    public interface IHistoryManager
-        : IArtContextManager, INotifyCollectionChanged, IEnumerable<IOperationCommand>
+    public interface IHistoryManager : IArtContextManager, INotifyCollectionChanged, IEnumerable<IOperationCommand>
     {
         /// <summary>
         ///     Returns the last operation that was performed.

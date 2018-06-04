@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using Rain.Core;
-using Rain.Core.Model.DocumentGraph;
-using Rain.Core.Model.Geometry;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using System.Numerics;
+
+using Rain.Core;
+using Rain.Core.Model.DocumentGraph;
+using Rain.Core.Model.Geometry;
 
 namespace Rain.Commands
 {
@@ -29,7 +28,7 @@ namespace Rain.Commands
             EndFigureOpen
         }
 
-        #endregion NodeOperation enum
+        #endregion
 
         /// <summary>
         ///     This will create a command with <see cref="NodeOperation.Add" />
@@ -40,12 +39,12 @@ namespace Rain.Commands
         /// <param name="target">The path to modify.</param>
         /// <param name="nodes">The nodes to insert.</param>
         /// <param name="index">The index at which to insert them.</param>
-        public ModifyPathCommand(
-            long id, Path target, IEnumerable<PathNode> nodes, int index) :
-            base(id, new[] { target })
+        public ModifyPathCommand(long id, Path target, IEnumerable<PathNode> nodes, int index) : base(
+            id,
+            new[] {target})
         {
             Nodes = nodes.ToArray();
-            Indices = new[] { index };
+            Indices = new[] {index};
             Operation = NodeOperation.Add;
         }
 
@@ -60,10 +59,9 @@ namespace Rain.Commands
         /// <param name="delta">The amount to move the handles.</param>
         /// <param name="indices">The indices of the nodes to modify.</param>
         /// <param name="operation">The operation to perform.</param>
-        public ModifyPathCommand(
-            long id, Path target, Vector2 delta, int[] indices, NodeOperation operation) : base(
+        public ModifyPathCommand(long id, Path target, Vector2 delta, int[] indices, NodeOperation operation) : base(
             id,
-            new[] { target })
+            new[] {target})
         {
             if (operation != NodeOperation.Move &&
                 operation != NodeOperation.MoveInHandle &&
@@ -87,8 +85,9 @@ namespace Rain.Commands
         /// <param name="target">The path to modify.</param>
         /// <param name="indices">The indices of the nodes to remove.</param>
         /// <param name="operation">The operation to apply.</param>
-        public ModifyPathCommand(long id, Path target, int[] indices, NodeOperation operation) :
-            base(id, new[] { target })
+        public ModifyPathCommand(long id, Path target, int[] indices, NodeOperation operation) : base(
+            id,
+            new[] {target})
         {
             if (operation != NodeOperation.Remove &&
                 operation != NodeOperation.EndFigureClosed)
@@ -102,91 +101,11 @@ namespace Rain.Commands
 
         public Vector2 Delta { get; }
 
-        public override string Description
-        {
-            get
-            {
-                switch (Operation)
-                {
-                    case NodeOperation.Add:
-
-                        return $"Added {Indices.Length} node(s)";
-
-                    case NodeOperation.Remove:
-
-                        return $"Removed {Indices.Length} node(s)";
-
-                    case NodeOperation.Move:
-
-                        return $"Moved {Indices.Length} node(s)";
-
-                    case NodeOperation.MoveInHandle:
-                    case NodeOperation.MoveOutHandle:
-
-                        return "Modified node handle(s)";
-
-                    default:
-
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-
         public int[] Indices { get; }
 
         public PathNode[] Nodes { get; private set; }
 
         public NodeOperation Operation { get; }
-
-        public override void Do(IArtContext context)
-        {
-            Apply(context, Operation, Indices, Nodes, Delta);
-        }
-
-        public override void Undo(IArtContext context)
-        {
-            switch (Operation)
-            {
-                case NodeOperation.Add:
-                    Apply(context, NodeOperation.Remove, Indices, Nodes, Delta);
-
-                    break;
-
-                case NodeOperation.Remove:
-                    Apply(context, NodeOperation.Add, Indices, Nodes, Delta);
-
-                    break;
-
-                case NodeOperation.Move:
-                    Apply(context, NodeOperation.Move, Indices, Nodes, -Delta);
-
-                    break;
-
-                case NodeOperation.MoveInHandle:
-                    Apply(context, NodeOperation.MoveInHandle, Indices, Nodes, -Delta);
-
-                    break;
-
-                case NodeOperation.MoveOutHandle:
-                    Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
-
-                    break;
-
-                case NodeOperation.EndFigureClosed:
-                    Apply(context, NodeOperation.EndFigureOpen, Indices, Nodes, -Delta);
-
-                    break;
-
-                case NodeOperation.EndFigureOpen:
-                    Apply(context, NodeOperation.EndFigureClosed, Indices, Nodes, -Delta);
-
-                    break;
-
-                default:
-
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
 
         private void Apply(
             IArtContext context, NodeOperation operation, IReadOnlyList<int> indices,
@@ -203,12 +122,11 @@ namespace Rain.Commands
                     for (var i = 0; i < Indices.Length; i++)
                     {
                         if (nodes.Count == indices[i] + i)
-                            nodes[indices[i] + i - 1] = new PathNode(
-                                nodes[indices[i] + i - 1].Index,
-                                nodes[indices[i] + i - 1].Position,
-                                nodes[indices[i] + i - 1].IncomingControl,
-                                nodes[indices[i] + i - 1].OutgoingControl,
-                                null);
+                            nodes[indices[i] + i - 1] = new PathNode(nodes[indices[i] + i - 1].Index,
+                                                                     nodes[indices[i] + i - 1].Position,
+                                                                     nodes[indices[i] + i - 1].IncomingControl,
+                                                                     nodes[indices[i] + i - 1].OutgoingControl,
+                                                                     null);
 
                         nodes.Insert(indices[i] + i, targetNodes[i]);
                     }
@@ -311,44 +229,40 @@ namespace Rain.Commands
             target.Instructions.ReplaceRange(nodes.ToInstructions());
         }
 
+        #region IMergeableOperationCommand<Path> Members
+
+        public override void Do(IArtContext context) { Apply(context, Operation, Indices, Nodes, Delta); }
+
         public IOperationCommand<Path> Merge(IOperationCommand<Path> newCommand)
         {
             if (newCommand is ModifyPathCommand newMPC)
-            {
                 if (newMPC.Operation == Operation)
-                {
                     switch (Operation)
                     {
                         case NodeOperation.Add:
+
                             if (Indices.Length != 1) break;
                             if (newMPC.Indices.Length != 1) break;
                             if (Indices[0] != newMPC.Indices[0]) break;
 
-                            return new ModifyPathCommand(Id,
-                                Targets[0],
-                                Nodes.Concat(newMPC.Nodes),
-                                Indices[0]);
+                            return new ModifyPathCommand(Id, Targets[0], Nodes.Concat(newMPC.Nodes), Indices[0]);
 
                         case NodeOperation.Remove:
+
                             return new ModifyPathCommand(Id,
-                                Targets[0],
-                                Indices.Concat(newMPC.Indices).ToArray(),
-                                NodeOperation.Remove);
+                                                         Targets[0],
+                                                         Indices.Concat(newMPC.Indices).ToArray(),
+                                                         NodeOperation.Remove);
 
                         case NodeOperation.Move:
                         case NodeOperation.MoveInHandle:
                         case NodeOperation.MoveOutHandle:
-                            if (!Enumerable.SequenceEqual(Indices, newMPC.Indices))
+
+                            if (!Indices.SequenceEqual(newMPC.Indices))
                                 break;
 
-                            return new ModifyPathCommand(Id,
-                                Targets[0],
-                                Delta + newMPC.Delta,
-                                Indices,
-                                Operation);
+                            return new ModifyPathCommand(Id, Targets[0], Delta + newMPC.Delta, Indices, Operation);
                     }
-                }
-            }
 
             return null;
         }
@@ -357,5 +271,82 @@ namespace Rain.Commands
         {
             return Merge(newCommand as IOperationCommand<Path>);
         }
+
+        public override void Undo(IArtContext context)
+        {
+            switch (Operation)
+            {
+                case NodeOperation.Add:
+                    Apply(context, NodeOperation.Remove, Indices, Nodes, Delta);
+
+                    break;
+
+                case NodeOperation.Remove:
+                    Apply(context, NodeOperation.Add, Indices, Nodes, Delta);
+
+                    break;
+
+                case NodeOperation.Move:
+                    Apply(context, NodeOperation.Move, Indices, Nodes, -Delta);
+
+                    break;
+
+                case NodeOperation.MoveInHandle:
+                    Apply(context, NodeOperation.MoveInHandle, Indices, Nodes, -Delta);
+
+                    break;
+
+                case NodeOperation.MoveOutHandle:
+                    Apply(context, NodeOperation.MoveOutHandle, Indices, Nodes, -Delta);
+
+                    break;
+
+                case NodeOperation.EndFigureClosed:
+                    Apply(context, NodeOperation.EndFigureOpen, Indices, Nodes, -Delta);
+
+                    break;
+
+                case NodeOperation.EndFigureOpen:
+                    Apply(context, NodeOperation.EndFigureClosed, Indices, Nodes, -Delta);
+
+                    break;
+
+                default:
+
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public override string Description
+        {
+            get
+            {
+                switch (Operation)
+                {
+                    case NodeOperation.Add:
+
+                        return $"Added {Indices.Length} node(s)";
+
+                    case NodeOperation.Remove:
+
+                        return $"Removed {Indices.Length} node(s)";
+
+                    case NodeOperation.Move:
+
+                        return $"Moved {Indices.Length} node(s)";
+
+                    case NodeOperation.MoveInHandle:
+                    case NodeOperation.MoveOutHandle:
+
+                        return "Modified node handle(s)";
+
+                    default:
+
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        #endregion
     }
 }

@@ -14,9 +14,6 @@ namespace Rain.View.Utility
 
         public string Path { get; }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            return AppSettings.Current[Path];
-        }
+        public override object ProvideValue(IServiceProvider serviceProvider) { return AppSettings.Current[Path]; }
     }
 }

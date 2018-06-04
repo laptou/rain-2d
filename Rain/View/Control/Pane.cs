@@ -11,10 +11,7 @@ namespace Rain.View.Control
     public class Pane : TabItem
     {
         public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.Register("Source",
-                                        typeof(Uri),
-                                        typeof(Pane),
-                                        new PropertyMetadata(SourceChanged));
+            DependencyProperty.Register("Source", typeof(Uri), typeof(Pane), new PropertyMetadata(SourceChanged));
 
         public Pane() { Loaded += OnLoaded; }
 

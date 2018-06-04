@@ -13,8 +13,7 @@ namespace Rain.Core.Model
 {
     public abstract class Model : IModel
     {
-        private readonly Dictionary<string, Delegate>
-            _handlers = new Dictionary<string, Delegate>();
+        private readonly Dictionary<string, Delegate> _handlers = new Dictionary<string, Delegate>();
 
         private Dictionary<string, object> _properties = new Dictionary<string, object>();
         private bool                       _suppressed;
@@ -24,18 +23,15 @@ namespace Rain.Core.Model
             return _properties.TryGetValue(propertyName, out var o) && o is T ? (T) o : default;
         }
 
-        protected PropertyInfo GetPropertyInfo<TProperty>(
-            Expression<Func<TProperty>> propertyLambda)
+        protected PropertyInfo GetPropertyInfo<TProperty>(Expression<Func<TProperty>> propertyLambda)
         {
             if (!(propertyLambda.Body is MemberExpression member))
-                throw new ArgumentException(
-                    $"Expression '{propertyLambda}' refers to a method, not a property.");
+                throw new ArgumentException($"Expression '{propertyLambda}' refers to a method, not a property.");
 
             var propInfo = member.Member as PropertyInfo;
 
             if (propInfo == null)
-                throw new ArgumentException(
-                    $"Expression '{propertyLambda}' refers to a field, not a property.");
+                throw new ArgumentException($"Expression '{propertyLambda}' refers to a field, not a property.");
 
             return propInfo;
         }
@@ -87,9 +83,7 @@ namespace Rain.Core.Model
             RaisePropertyChanging(propertyName);
         }
 
-        protected void Set<T>(
-            T value, [CallerMemberName] string propertyName = "",
-            params string[] dependentProperties)
+        protected void Set<T>(T value, [CallerMemberName] string propertyName = "", params string[] dependentProperties)
         {
             if (value is INotifyCollectionChanged collection)
             {
@@ -97,17 +91,12 @@ namespace Rain.Core.Model
 
                 if (old != null &&
                     _handlers.ContainsKey(propertyName))
-                    old.CollectionChanged -=
-                        (NotifyCollectionChangedEventHandler) _handlers[propertyName];
+                    old.CollectionChanged -= (NotifyCollectionChangedEventHandler) _handlers[propertyName];
 
                 _handlers[propertyName] =
-                    new NotifyCollectionChangedEventHandler((s, e) =>
-                                                            {
-                                                                RaisePropertyChanged(propertyName);
-                                                            });
+                    new NotifyCollectionChangedEventHandler((s, e) => { RaisePropertyChanged(propertyName); });
 
-                collection.CollectionChanged +=
-                    (NotifyCollectionChangedEventHandler) _handlers[propertyName];
+                collection.CollectionChanged += (NotifyCollectionChangedEventHandler) _handlers[propertyName];
             }
 
             RaisePropertyChanging(propertyName);
@@ -117,8 +106,7 @@ namespace Rain.Core.Model
             RaisePropertyChanged(dependentProperties);
         }
 
-        protected void Set<T>(
-            T value, PropertyChangedEventHandler after, [CallerMemberName] string propertyName = "")
+        protected void Set<T>(T value, PropertyChangedEventHandler after, [CallerMemberName] string propertyName = "")
         {
             Set(value, propertyName);
             if (!_suppressed)
@@ -126,8 +114,7 @@ namespace Rain.Core.Model
         }
 
         protected void Set<T>(
-            T value, out T variable, PropertyChangedEventHandler after,
-            [CallerMemberName] string propertyName = "")
+            T value, out T variable, PropertyChangedEventHandler after, [CallerMemberName] string propertyName = "")
         {
             Set(value, out variable, propertyName);
             if (!_suppressed)
@@ -187,9 +174,7 @@ namespace Rain.Core.Model
         public object Clone(Type type)
         {
             var t = (Model) Activator.CreateInstance(type);
-            t._properties =
-                _properties.ToDictionary(kv => kv.Key,
-                                         kv => (kv.Value as Model)?.Clone() ?? kv.Value);
+            t._properties = _properties.ToDictionary(kv => kv.Key, kv => (kv.Value as Model)?.Clone() ?? kv.Value);
 
             return t;
         }

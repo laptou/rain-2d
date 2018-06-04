@@ -12,7 +12,7 @@ namespace Rain.Formatter.Svg.Paint
 {
     public abstract class Paint : ElementBase
     {
-        private static Regex Url = new Regex(@"url\((.+)\)", RegexOptions.Compiled);
+        private static readonly Regex Url = new Regex(@"url\((.+)\)", RegexOptions.Compiled);
         public virtual float Opacity { get; set; }
 
         public abstract string ToInline();
@@ -32,6 +32,7 @@ namespace Rain.Formatter.Svg.Paint
             if (string.IsNullOrWhiteSpace(input))
             {
                 paint = null;
+
                 return false;
             }
 
@@ -45,14 +46,12 @@ namespace Rain.Formatter.Svg.Paint
             var match = Url.Match(input);
 
             if (match != null)
-            {
                 if (UriHelper.TryParse(match.Groups[1].Value, out var uri))
                 {
                     paint = new ReferencePaint {Reference = uri};
 
                     return true;
                 }
-            }
 
             paint = null;
 

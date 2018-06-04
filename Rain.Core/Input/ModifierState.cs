@@ -8,8 +8,8 @@ namespace Rain.Core.Input
     public struct ModifierState
     {
         public ModifierState(
-            bool control, bool shift, bool alt, bool leftMouse, bool middleMouse, bool rightMouse,
-            bool xMouse1, bool xMouse2) : this()
+            bool control, bool shift, bool alt, bool leftMouse, bool middleMouse, bool rightMouse, bool xMouse1,
+            bool xMouse2) : this()
         {
             Control = control;
             Shift = shift;

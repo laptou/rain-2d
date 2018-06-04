@@ -10,8 +10,7 @@ namespace Rain.Commands
 {
     public sealed class AddLayerCommand : LayerCommandBase<IContainerLayer>
     {
-        public AddLayerCommand(long id, IContainerLayer target, ILayer layer) :
-            base(id, new[] {target})
+        public AddLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
         {
             Layer = layer;
         }
@@ -21,7 +20,7 @@ namespace Rain.Commands
         public ILayer Layer { get; }
 
         public override void Do(IArtContext artView) { Targets[0].Add(Layer as Layer); }
-        
+
         public override void Undo(IArtContext artView) { Targets[0].Remove(Layer as Layer); }
     }
 }

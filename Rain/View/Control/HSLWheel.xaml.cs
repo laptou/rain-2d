@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 
 using Rain.Renderer.WPF;
 using Rain.Utility;
@@ -52,9 +49,9 @@ namespace Rain.View.Control
         private bool _draggingTriangle;
 
         private WriteableBitmap _ring;
-        private WriteableBitmap _triangle;
         private int             _size;
-        private long _update;
+        private WriteableBitmap _triangle;
+        private long            _update;
 
         public HslWheel()
         {
@@ -194,8 +191,7 @@ namespace Rain.View.Control
             UpdateHandles();
         }
 
-        private static void OnDependencyPropertyChanged(
-            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnDependencyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is HslWheel hslWheel)
             {
@@ -206,20 +202,11 @@ namespace Rain.View.Control
             }
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            UpdateHandles();
-        }
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs) { UpdateHandles(); }
 
-        private void OnRingMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            _draggingRing = true;
-        }
+        private void OnRingMouseDown(object sender, MouseButtonEventArgs e) { _draggingRing = true; }
 
-        private void OnTriangleMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            _draggingTriangle = true;
-        }
+        private void OnTriangleMouseDown(object sender, MouseButtonEventArgs e) { _draggingTriangle = true; }
 
         private void RaisePropertyChanged(string name)
         {
@@ -259,9 +246,7 @@ namespace Rain.View.Control
             _ring.Lock();
             var pStart = (byte*) (void*) _ring.BackBuffer;
 
-            for (var radius = (int) (_ring.PixelWidth * 0.375);
-                 radius <= _ring.PixelWidth * 0.5;
-                 radius += 1)
+            for (var radius = (int) (_ring.PixelWidth * 0.375); radius <= _ring.PixelWidth * 0.5; radius += 1)
                 for (double theta = 0; theta <= MathUtils.TwoPi; theta += 10f / radius / radius)
                 {
                     var row = (int) (radius * Math.Sin(theta)) + _ring.PixelHeight / 2;
@@ -270,7 +255,7 @@ namespace Rain.View.Control
 
                     var h = theta / MathUtils.TwoPi * 360;
 
-                    (double r, double g, double b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
+                    var (r, g, b) = ColorUtils.HslToRgb(h, 1f, 0.5f);
 
                     *(pStart + currentPixel * 3 + 2) = (byte) (r * 255f); //red
                     *(pStart + currentPixel * 3 + 1) = (byte) (g * 255f); //Green
@@ -307,7 +292,7 @@ namespace Rain.View.Control
                     var s = 1f - (double) iRow / height;
                     var l = (double) iCol / _size;
 
-                    (double r, double g, double b) = ColorUtils.HslToRgb(hue, s, l);
+                    var (r, g, b) = ColorUtils.HslToRgb(hue, s, l);
 
                     *(pStart + currentPixel * 3 + 2) = (byte) (r * 255.0); //red
                     *(pStart + currentPixel * 3 + 1) = (byte) (g * 255.0); //Green
@@ -327,7 +312,7 @@ namespace Rain.View.Control
 
                                   _triangle.Unlock();
                               },
-                    DispatcherPriority.Render);
+                              DispatcherPriority.Render);
 
             ptr.Dispose();
         }

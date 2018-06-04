@@ -116,8 +116,7 @@ namespace Rain.View.Utility
             try
             {
                 // Only support simple conversions in here.
-                convertedComparand =
-                    System.Convert.ChangeType(_styleBinding.Comparand, value.GetType());
+                convertedComparand = System.Convert.ChangeType(_styleBinding.Comparand, value.GetType());
             }
             catch (InvalidCastException)
             {
@@ -170,8 +169,7 @@ namespace Rain.View.Utility
         }
 
         // IValueConverter.ConvertBack isn’t supported.
-        public object ConvertBack(
-            object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

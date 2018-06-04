@@ -15,21 +15,21 @@ namespace Rain.Native
         public static extern bool DestroyCaret();
 
         [DllImport("user32.dll")]
+        public static extern uint GetCaretBlinkTime();
+
+        [DllImport("user32.dll")]
         public static extern bool GetCaretPos([Out] out NativePoint lpPoint);
 
         [DllImport("user32.dll")]
         public static extern bool HideCaret([Optional] IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern bool SetCaretBlinkTime(uint ms);
+
+        [DllImport("user32.dll")]
         public static extern bool SetCaretPos(int x, int y);
 
         [DllImport("user32.dll")]
         public static extern bool ShowCaret([Optional] IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        public static extern uint GetCaretBlinkTime();
-
-        [DllImport("user32.dll")]
-        public static extern bool SetCaretBlinkTime(uint ms);
     }
 }

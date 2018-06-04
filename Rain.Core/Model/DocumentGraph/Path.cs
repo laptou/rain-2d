@@ -15,13 +15,9 @@ namespace Rain.Core.Model.DocumentGraph
 
         public override string DefaultName => "Path";
 
-        public ObservableList<PathInstruction> Instructions { get; } =
-            new ObservableList<PathInstruction>();
+        public ObservableList<PathInstruction> Instructions { get; } = new ObservableList<PathInstruction>();
 
-        public override RectangleF GetBounds(IArtContext ctx)
-        {
-            return ctx.CacheManager.GetGeometry(this).Bounds();
-        }
+        public override RectangleF GetBounds(IArtContext ctx) { return ctx.CacheManager.GetGeometry(this).Bounds(); }
 
         public override IGeometry GetGeometry(IArtContext ctx)
         {
@@ -35,9 +31,6 @@ namespace Rain.Core.Model.DocumentGraph
 
         public void Update() { RaiseGeometryChanged(); }
 
-        private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs args)
-        {
-            RaiseGeometryChanged();
-        }
+        private void OnNodesChanged(object sender, NotifyCollectionChangedEventArgs args) { RaiseGeometryChanged(); }
     }
 }

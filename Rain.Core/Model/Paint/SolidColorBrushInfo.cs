@@ -5,11 +5,17 @@ using System.Threading.Tasks;
 
 namespace Rain.Core.Model.Paint
 {
-    public class SolidColorBrushInfo : BrushInfo
+    public class SolidColorBrushInfo : BrushInfo, ISolidColorBrushInfo
     {
         public SolidColorBrushInfo() { }
 
         public SolidColorBrushInfo(Color color) { Color = color; }
+
+        public override string ToString() { return $"Color: {Color}, Opacity: {Opacity}"; }
+
+        #region ISolidColorBrushInfo Members
+
+        public override IBrush CreateBrush(IRenderContext target) { return target.CreateBrush(Color); }
 
         public Color Color
         {
@@ -17,12 +23,6 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
-
-        public override IBrush CreateBrush(IRenderContext target)
-        {
-            return target.CreateBrush(Color);
-        }
-
-        public override string ToString() { return $"Color: {Color}, Opacity: {Opacity}"; }
+        #endregion
     }
 }

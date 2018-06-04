@@ -27,6 +27,16 @@ namespace Rain.Core.Model.DocumentGraph
             Formats.CollectionChanged += (s, e) => RaiseLayoutChanged();
         }
 
+        public float Height
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                RaiseLayoutChanged();
+            }
+        }
+
         public bool IsBlock
         {
             get => Get<bool>();
@@ -34,6 +44,16 @@ namespace Rain.Core.Model.DocumentGraph
             {
                 Set(value);
                 RaiseGeometryChanged();
+            }
+        }
+
+        public float Width
+        {
+            get => Get<float>();
+            set
+            {
+                Set(value);
+                RaiseLayoutChanged();
             }
         }
 
@@ -73,8 +93,7 @@ namespace Rain.Core.Model.DocumentGraph
 
             if (format == null) return null;
 
-            return format.Range.Index + format.Range.Length > position &&
-                   position >= format.Range.Index
+            return format.Range.Index + format.Range.Length > position && position >= format.Range.Index
                        ? format
                        : null;
         }
@@ -136,10 +155,7 @@ namespace Rain.Core.Model.DocumentGraph
             RaiseLayoutChanged();
         }
 
-        private void OnTextStylePropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            RaiseTextStyleChanged();
-        }
+        private void OnTextStylePropertyChanged(object sender, PropertyChangedEventArgs e) { RaiseTextStyleChanged(); }
 
         #region ITextLayer Members
 
@@ -169,7 +185,7 @@ namespace Rain.Core.Model.DocumentGraph
             return ctx.CacheManager.GetTextLayout(this).Measure();
         }
 
-        public Format GetFormat(int position) { return GetFormat(position, out var _); }
+        public Format GetFormat(int position) { return GetFormat(position, out _); }
 
         public IGeometry GetGeometry(IArtContext ctx)
         {
@@ -415,16 +431,6 @@ namespace Rain.Core.Model.DocumentGraph
 
         public ObservableList<Format> Formats { get; } = new ObservableList<Format>();
 
-        public float Height
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
-                RaiseLayoutChanged();
-            }
-        }
-
         public ObservableList<float> Offsets => Get<ObservableList<float>>();
 
         public IPenInfo Stroke
@@ -459,16 +465,6 @@ namespace Rain.Core.Model.DocumentGraph
             {
                 Set(value);
                 RaisePropertyChanged(nameof(DefaultName));
-                RaiseLayoutChanged();
-            }
-        }
-
-        public float Width
-        {
-            get => Get<float>();
-            set
-            {
-                Set(value);
                 RaiseLayoutChanged();
             }
         }

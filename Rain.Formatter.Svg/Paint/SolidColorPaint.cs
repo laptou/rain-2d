@@ -52,8 +52,7 @@ namespace Rain.Formatter.Svg.Paint
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"rgba({Color.Red * 100}%," + $"{Color.Green * 100}%," +
-                   $"{Color.Blue * 100}%," + $"{Color.Alpha})";
+            return $"rgba({Color.Red * 100}%," + $"{Color.Green * 100}%," + $"{Color.Blue * 100}%," + $"{Color.Alpha})";
         }
 
         public override XElement ToXml(SvgContext svgContext)

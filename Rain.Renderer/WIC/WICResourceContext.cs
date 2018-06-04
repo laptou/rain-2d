@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Rain.Core;
 using Rain.Core.Model.Imaging;
-using Rain.Renderer.Direct2D;
 
 namespace Rain.Renderer.WIC
 {

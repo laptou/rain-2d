@@ -19,8 +19,7 @@ namespace Rain.View.Utility
             return value;
         }
 
-        public object ConvertBack(
-            object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool b)
                 return !b;

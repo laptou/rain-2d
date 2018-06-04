@@ -30,16 +30,14 @@ namespace Rain.Renderer.WPF
 
         protected GradientStopCollection ConvertStops()
         {
-            return new GradientStopCollection(Stops.Select(
-                                                  s => new System.Windows.Media.GradientStop
-                                                  {
-                                                      Color = Color.FromArgb(
-                                                          (byte) (s.Color.Alpha * 255),
-                                                          (byte) (s.Color.Red * 255),
-                                                          (byte) (s.Color.Green * 255),
-                                                          (byte) (s.Color.Blue * 255)),
-                                                      Offset = s.Offset
-                                                  }));
+            return new GradientStopCollection(Stops.Select(s => new System.Windows.Media.GradientStop
+            {
+                Color = Color.FromArgb((byte) (s.Color.Alpha * 255),
+                                       (byte) (s.Color.Red * 255),
+                                       (byte) (s.Color.Green * 255),
+                                       (byte) (s.Color.Blue * 255)),
+                Offset = s.Offset
+            }));
         }
 
         #region IGradientBrush Members

@@ -16,12 +16,8 @@ namespace Rain.Renderer.Direct2D
     {
         public SolidColorBrush(D2D1.RenderTarget target, Color color)
         {
-            NativeBrush = new D2D1.SolidColorBrush(target,
-                                                   new RawColor4(
-                                                       color.Red,
-                                                       color.Green,
-                                                       color.Blue,
-                                                       color.Alpha));
+            NativeBrush =
+                new D2D1.SolidColorBrush(target, new RawColor4(color.Red, color.Green, color.Blue, color.Alpha));
         }
 
         #region ISolidColorBrush Members

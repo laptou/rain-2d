@@ -12,8 +12,7 @@ namespace Rain.Core
 {
     public class ToolOptions : INotifyCollectionChanged, IEnumerable<ToolOptionBase>
     {
-        private readonly Dictionary<string, ToolOptionBase> _options =
-            new Dictionary<string, ToolOptionBase>();
+        private readonly Dictionary<string, ToolOptionBase> _options = new Dictionary<string, ToolOptionBase>();
 
         public event PropertyChangedEventHandler OptionChanged;
 
@@ -50,17 +49,11 @@ namespace Rain.Core
                 option.Value = value;
         }
 
-        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            OptionChanged?.Invoke(sender, e);
-        }
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e) { OptionChanged?.Invoke(sender, e); }
 
         #region IEnumerable<ToolOptionBase> Members
 
-        public IEnumerator<ToolOptionBase> GetEnumerator()
-        {
-            return _options.Values.GetEnumerator();
-        }
+        public IEnumerator<ToolOptionBase> GetEnumerator() { return _options.Values.GetEnumerator(); }
 
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 

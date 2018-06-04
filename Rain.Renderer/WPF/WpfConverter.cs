@@ -29,17 +29,11 @@ namespace Rain.Renderer.WPF
 
         public static Point Convert(this Vector2 vec) { return new Point(vec.X, vec.Y); }
 
-        public static Vector2 Convert(this Point vec)
-        {
-            return new Vector2((float) vec.X, (float) vec.Y);
-        }
+        public static Vector2 Convert(this Point vec) { return new Vector2((float) vec.X, (float) vec.Y); }
 
         public static RectangleF Convert(this Rect rect)
         {
-            return new RectangleF((float) rect.Left,
-                                  (float) rect.Top,
-                                  (float) rect.Width,
-                                  (float) rect.Height);
+            return new RectangleF((float) rect.Left, (float) rect.Top, (float) rect.Width, (float) rect.Height);
         }
 
         public static Matrix Convert(this Matrix3x2 mat)

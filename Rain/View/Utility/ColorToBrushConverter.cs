@@ -1,10 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace Rain.View.Utility {
-    public class ColorToBrushConverter : IValueConverter {
+namespace Rain.View.Utility
+{
+    public class ColorToBrushConverter : IValueConverter
+    {
+        #region IValueConverter Members
+
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -22,10 +29,11 @@ namespace Rain.View.Utility {
         }
 
         /// <inheritdoc />
-        public object ConvertBack(
-            object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new InvalidOperationException();
         }
+
+        #endregion
     }
 }

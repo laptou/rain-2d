@@ -12,8 +12,7 @@ namespace Rain.Commands
     {
         private int _index;
 
-        public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) :
-            base(id, new[] {target})
+        public RemoveLayerCommand(long id, IContainerLayer target, ILayer layer) : base(id, new[] {target})
         {
             Layer = layer;
         }
@@ -27,6 +26,7 @@ namespace Rain.Commands
             _index = Targets[0].SubLayers.IndexOf(Layer as Layer);
             Targets[0].Remove(Layer as Layer);
         }
+
         public override void Undo(IArtContext artView) { Targets[0].Add(Layer as Layer, _index); }
     }
 }

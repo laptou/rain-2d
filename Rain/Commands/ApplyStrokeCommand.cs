@@ -20,10 +20,10 @@ namespace Rain.Commands
             NewStroke = newPenInfo?.Clone<IPenInfo>();
         }
 
-        public override string Description => $"Stroked {Targets.Count} layer(s)";
-
         public IPenInfo NewStroke { get; }
         public IPenInfo[] OldStrokes { get; }
+
+        #region IMergeableOperationCommand Members
 
         public override void Do(IArtContext artView)
         {
@@ -51,5 +51,9 @@ namespace Rain.Commands
                     Targets[i].Stroke = OldStrokes[i];
                 }
         }
+
+        public override string Description => $"Stroked {Targets.Count} layer(s)";
+
+        #endregion
     }
 }

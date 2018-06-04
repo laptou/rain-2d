@@ -34,10 +34,7 @@ namespace Rain.Formatter.Svg.Shapes
 
         public bool Contains(IInlineTextElement item) { return _spans.Contains(item); }
 
-        public void CopyTo(IInlineTextElement[] array, int arrayIndex)
-        {
-            _spans.CopyTo(array, arrayIndex);
-        }
+        public void CopyTo(IInlineTextElement[] array, int arrayIndex) { _spans.CopyTo(array, arrayIndex); }
 
         public override void FromXml(XElement element, SvgContext context)
         {
@@ -45,14 +42,10 @@ namespace Rain.Formatter.Svg.Shapes
 
             FontFamily = LazyGet(element, "font-family", true);
             FontSize = LazyGet(element, "font-size", new Length(12, LengthUnit.Pixels), true);
-            FontStretch = LazyGet(element,
-                                  "font-stretch",
-                                  Core.Model.Text.FontStretch.Normal,
-                                  true);
+            FontStretch = LazyGet(element, "font-stretch", Core.Model.Text.FontStretch.Normal, true);
             FontStyle = LazyGet(element, "font-style", Core.Model.Text.FontStyle.Normal, true);
             FontWeight = LazyGet(element, "font-weight", Core.Model.Text.FontWeight.Normal, true);
-            AlignmentBaseline =
-                LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
+            AlignmentBaseline = LazyGet<AlignmentBaseline>(element, "alignment-baseline", inherit: true);
 
             Text = element.Value;
 
@@ -100,10 +93,7 @@ namespace Rain.Formatter.Svg.Shapes
             LazySet(element, "baseline-shift", BaselineShift);
             LazySet(element, "font-family", FontFamily);
             LazySet(element, "font-size", FontSize, (12, LengthUnit.Points));
-            LazySet(element,
-                    "font-stretch",
-                    FontStretch ?? default,
-                    Core.Model.Text.FontStretch.Normal);
+            LazySet(element, "font-stretch", FontStretch ?? default, Core.Model.Text.FontStretch.Normal);
             LazySet(element, "font-style", FontStyle ?? default, Core.Model.Text.FontStyle.Normal);
             LazySet(element, "font-weight", (int) (FontWeight ?? default), 400);
 

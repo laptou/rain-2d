@@ -7,9 +7,7 @@ namespace Rain.Core.Model.Geometry
 {
     public interface IGeometrySink : IDisposable
     {
-        void Arc(
-            float x, float y, float radiusX, float radiusY, float angle, bool clockwise,
-            bool largeArc);
+        void Arc(float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc);
 
         void Close(bool open);
         void Cubic(float x, float y, float cx1, float cy1, float cx2, float cy2);

@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Rain.Utility {
+namespace Rain.Utility
+{
     internal static class Disposer
     {
         public static void SafeDispose<T>(ref T resource) where T : class
@@ -9,7 +13,6 @@ namespace Rain.Utility {
                 return;
 
             if (resource is IDisposable disposable)
-            {
                 try
                 {
                     disposable.Dispose();
@@ -18,7 +21,6 @@ namespace Rain.Utility {
                 {
                     // shhhh...
                 }
-            }
 
             resource = null;
         }

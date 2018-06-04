@@ -10,9 +10,7 @@ namespace Rain.Commands
 {
     public sealed class RemoveTextCommand : LayerCommandBase<ITextLayer>
     {
-        public RemoveTextCommand(long id, ITextLayer target, string text, int index) : base(
-            id,
-            new[] {target})
+        public RemoveTextCommand(long id, ITextLayer target, string text, int index) : base(id, new[] {target})
         {
             Text = text;
             Index = index;

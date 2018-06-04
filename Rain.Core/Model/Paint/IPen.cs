@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rain.Core.Model.Paint
 {
-    public interface IPen : IDisposable, INotifyPropertyChanged
+    public interface IPen : IResource, INotifyPropertyChanged
     {
         IBrush Brush { get; set; }
         IList<float> Dashes { get; }

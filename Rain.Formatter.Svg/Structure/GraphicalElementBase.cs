@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
+using Rain.Formatter.Svg.Utilities;
+
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -9,7 +12,6 @@ using Rain.Core.Model;
 using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Formatter.Svg.Enums;
-using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
@@ -25,8 +27,7 @@ namespace Rain.Formatter.Svg.Structure
             //LazyGet(element, "clip-path", ClipPath);
             //LazyGet(element, "clip-rule", ClipRule);
             ColorInterpolation = LazyGet<ColorInterpolation>(element, "color-interpolation");
-            ColorFilterInterpolation =
-                LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
+            ColorFilterInterpolation = LazyGet<ColorInterpolation>(element, "filter-color-interpolation");
 
             //LazyGet(element, "color", Color);
             //Cursor = LazyGet<Cursor>(element, "cursor", Cursor);
@@ -63,8 +64,8 @@ namespace Rain.Formatter.Svg.Structure
             if (!Transform.IsIdentity)
                 LazySet(element,
                         "transform",
-                        @"matrix(" + $"{Transform.M11},{Transform.M12}," +
-                        $"{Transform.M21},{Transform.M22}," + $"{Transform.M31},{Transform.M32})");
+                        @"matrix(" + $"{Transform.M11},{Transform.M12}," + $"{Transform.M21},{Transform.M22}," +
+                        $"{Transform.M31},{Transform.M32})");
 
             return element;
         }

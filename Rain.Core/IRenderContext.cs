@@ -26,8 +26,8 @@ namespace Rain.Core
             IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY);
 
         IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
-            float radiusY, float focusX, float focusY);
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX, float radiusY, float focusX,
+            float focusY);
 
         T CreateEffect<T>() where T : class, IEffect;
         IEffectLayer CreateEffectLayer();
@@ -39,8 +39,8 @@ namespace Rain.Core
         IPen CreatePen(float width, IBrush brush, IEnumerable<float> dashes);
 
         IPen CreatePen(
-            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit);
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
+            float miterLimit);
 
         IGeometry CreateRectangleGeometry(float x, float y, float w, float h);
         ITextLayout CreateTextLayout();
@@ -52,8 +52,7 @@ namespace Rain.Core
         void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen);
         void DrawEllipse(Vector2 c, float rx, float ry, IPen pen);
 
-        void DrawEllipse(
-            float centerX, float centerY, float radiusX, float radiusY, IPen pen, float penWidth);
+        void DrawEllipse(float centerX, float centerY, float radiusX, float radiusY, IPen pen, float penWidth);
 
         void DrawGeometry(IGeometry geometry, IPen pen);
         void DrawGeometry(IGeometry geometry, IPen pen, float width);

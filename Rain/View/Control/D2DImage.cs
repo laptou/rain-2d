@@ -53,8 +53,7 @@ namespace Rain.View.Control
         public bool EnableAntialiasing
         {
             get => _target?.AntialiasMode == D2D.AntialiasMode.Aliased;
-            set => _target.AntialiasMode =
-                       value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
+            set => _target.AntialiasMode = value ? D2D.AntialiasMode.PerPrimitive : D2D.AntialiasMode.Aliased;
         }
 
         public float FrameTime
@@ -84,8 +83,7 @@ namespace Rain.View.Control
             WindowHelper.RedrawWindow(_hwnd, IntPtr.Zero, IntPtr.Zero, 0b0001);
         }
 
-        protected virtual IntPtr OnMessage(
-            IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        protected virtual IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
             void PushEvent(IInputEvent evt)
             {
@@ -103,9 +101,7 @@ namespace Rain.View.Control
 
                 var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
-                PushEvent(new PointerEvent(pos,
-                                           _lastMousePos - pos,
-                                           KeyboardHelper.GetModifierState(wParam)));
+                PushEvent(new PointerEvent(pos, _lastMousePos - pos, KeyboardHelper.GetModifierState(wParam)));
 
                 _lastMousePos = pos;
             }
@@ -130,10 +126,8 @@ namespace Rain.View.Control
 
                 var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
-                PushEvent(new ClickEvent(pos,
-                                         MouseButton.Left,
-                                         ClickType.Down,
-                                         KeyboardHelper.GetModifierState(wParam)));
+                PushEvent(
+                    new ClickEvent(pos, MouseButton.Left, ClickType.Down, KeyboardHelper.GetModifierState(wParam)));
 
                 _lastMousePos = pos;
             }
@@ -144,10 +138,7 @@ namespace Rain.View.Control
 
                 var pos = NativeHelper.GetCoordinates(lParam, _dpi);
 
-                PushEvent(new ClickEvent(pos,
-                                         MouseButton.Left,
-                                         ClickType.Up,
-                                         KeyboardHelper.GetModifierState(wParam)));
+                PushEvent(new ClickEvent(pos, MouseButton.Left, ClickType.Up, KeyboardHelper.GetModifierState(wParam)));
 
                 _lastMousePos = pos;
             }
@@ -165,7 +156,7 @@ namespace Rain.View.Control
 
                 _lastMousePos = pos;
             }
-            
+
             switch (msg)
             {
                 case WindowMessage.Paint:
@@ -217,10 +208,7 @@ namespace Rain.View.Control
                     var key = KeyInterop.KeyFromVirtualKey((int) wParam);
                     var state = KeyboardHelper.GetModifierState();
 
-                    PushEvent(new KeyboardEvent((int) key,
-                                                true,
-                                                repeat != 0,
-                                                state));
+                    PushEvent(new KeyboardEvent((int) key, true, repeat != 0, state));
 
                     // since the messages are processed asynchronously, 
                     // return 1, meaning it was not handled yet
@@ -229,10 +217,7 @@ namespace Rain.View.Control
                 case WindowMessage.SysKeyUp:
                     key = KeyInterop.KeyFromVirtualKey((int) wParam);
 
-                    PushEvent(new KeyboardEvent((int) key,
-                                                false,
-                                                false,
-                                                KeyboardHelper.GetModifierState()));
+                    PushEvent(new KeyboardEvent((int) key, false, false, KeyboardHelper.GetModifierState()));
 
                     return (IntPtr) 1;
                 case WindowMessage.Char:
@@ -265,11 +250,7 @@ namespace Rain.View.Control
                     {
                         RenderContext.Dispose();
 
-                        _swapChain.ResizeBuffers(0,
-                                                 0,
-                                                 0,
-                                                 Format.Unknown,
-                                                 SwapChainFlags.FrameLatencyWaitAbleObject);
+                        _swapChain.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.FrameLatencyWaitAbleObject);
 
                         var targetProps = new D2D.RenderTargetProperties(
                             D2D.RenderTargetType.Hardware,
@@ -280,7 +261,9 @@ namespace Rain.View.Control
                             D2D.FeatureLevel.Level_10);
 
                         using (var surf = _swapChain.GetBackBuffer<Surface>(0))
+                        {
                             _target = new D2D.RenderTarget(_factory, surf, targetProps);
+                        }
 
                         RenderContext = new Direct2DRenderContext(_target);
                     }
@@ -353,19 +336,18 @@ namespace Rain.View.Control
             }
 
             _parent = hwndParent.Handle;
-            _hwnd = WindowHelper.CreateWindowEx(
-                WindowStylesEx.AcceptFiles | WindowStylesEx.Composited,
-                cls,
-                "",
-                WindowStyles.Child | WindowStyles.Visible,
-                0,
-                0,
-                (int) ActualWidth + 1,
-                (int) ActualHeight + 1,
-                hwndParent.Handle,
-                (IntPtr) 1,
-                IntPtr.Zero,
-                0);
+            _hwnd = WindowHelper.CreateWindowEx(WindowStylesEx.AcceptFiles | WindowStylesEx.Composited,
+                                                cls,
+                                                "",
+                                                WindowStyles.Child | WindowStyles.Visible,
+                                                0,
+                                                0,
+                                                (int) ActualWidth + 1,
+                                                (int) ActualHeight + 1,
+                                                hwndParent.Handle,
+                                                (IntPtr) 1,
+                                                IntPtr.Zero,
+                                                0);
 
             if (_hwnd == IntPtr.Zero) NativeHelper.CheckError();
 
@@ -429,8 +411,7 @@ namespace Rain.View.Control
                     if (latency > threshold)
                     {
                         #if DEBUG
-                        Trace.WriteLine($"Input event dropped: {evt}, " +
-                                        $"latency {latency * factor}ms");
+                        Trace.WriteLine($"Input event dropped: {evt}, " + $"latency {latency * factor}ms");
                         #endif
                         continue;
                     }
@@ -441,8 +422,7 @@ namespace Rain.View.Control
 
                     #if DEBUG
                     if (time > threshold)
-                        Trace.WriteLine($"Input event took too long: {evt}, " +
-                                        $"latency {time * factor}ms");
+                        Trace.WriteLine($"Input event took too long: {evt}, " + $"latency {time * factor}ms");
                     #endif
                 }
 
@@ -468,8 +448,7 @@ namespace Rain.View.Control
 
             if (_d3dDevice == null)
                 _d3dDevice = new D3D.Device(DriverType.Hardware,
-                                            D3D.DeviceCreationFlags.BgraSupport |
-                                            D3D.DeviceCreationFlags.Debug);
+                                            D3D.DeviceCreationFlags.BgraSupport | D3D.DeviceCreationFlags.Debug);
             if (_dxgiDevice == null)
                 _dxgiDevice = _d3dDevice.QueryInterface<Device>();
 
@@ -497,13 +476,14 @@ namespace Rain.View.Control
 
             var dpi = WindowHelper.GetDpiForWindow(_hwnd);
 
-            var targetProps = new D2D.RenderTargetProperties(
-                D2D.RenderTargetType.Hardware,
-                new D2D.PixelFormat(Format.B8G8R8A8_UNorm, D2D.AlphaMode.Ignore),
-                dpi,
-                dpi,
-                D2D.RenderTargetUsage.None,
-                D2D.FeatureLevel.Level_10);
+            var targetProps = new D2D.RenderTargetProperties(D2D.RenderTargetType.Hardware,
+                                                             new D2D.PixelFormat(
+                                                                 Format.B8G8R8A8_UNorm,
+                                                                 D2D.AlphaMode.Ignore),
+                                                             dpi,
+                                                             dpi,
+                                                             D2D.RenderTargetUsage.None,
+                                                             D2D.FeatureLevel.Level_10);
 
             using (var surf = swapChain.GetBackBuffer<Surface>(0))
             {

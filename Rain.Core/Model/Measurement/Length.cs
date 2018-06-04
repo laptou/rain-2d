@@ -14,15 +14,14 @@ namespace Rain.Core.Model.Measurement
                 @"((?:[+-]?[0-9]*\.[0-9]+(?:[Ee][+-]?[0-9]+)?)|(?:(?:[+-]?[0-9]+)(?:[Ee][+-]?[0-9]+)?))(em|ex|px|in|cm|mm|pt|pc|%)?",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Dictionary<LengthUnit, float> Factors =
-            new Dictionary<LengthUnit, float>
-            {
-                [LengthUnit.Number] = 1f,
-                [LengthUnit.Pixels] = 1f,
-                [LengthUnit.Points] = 1.25f,
-                [LengthUnit.Inches] = 96f,
-                [LengthUnit.Percent] = 100f
-            };
+        private static readonly Dictionary<LengthUnit, float> Factors = new Dictionary<LengthUnit, float>
+        {
+            [LengthUnit.Number] = 1f,
+            [LengthUnit.Pixels] = 1f,
+            [LengthUnit.Points] = 1.25f,
+            [LengthUnit.Inches] = 96f,
+            [LengthUnit.Percent] = 100f
+        };
 
         public static Length Zero = (0, LengthUnit.Number);
 
@@ -43,10 +42,7 @@ namespace Rain.Core.Model.Measurement
             return new Length(length.Magnitude * Factors[target] / Factors[length.Unit], target);
         }
 
-        public bool Equals(Length other)
-        {
-            return Magnitude.Equals(other.Magnitude) && Unit == other.Unit;
-        }
+        public bool Equals(Length other) { return Magnitude.Equals(other.Magnitude) && Unit == other.Unit; }
 
         public override bool Equals(object obj)
         {
@@ -83,7 +79,6 @@ namespace Rain.Core.Model.Measurement
             return To(target);
         }
 
-        
 
         public override string ToString()
         {
@@ -210,10 +205,7 @@ namespace Rain.Core.Model.Measurement
             return Math.Abs(l1.Magnitude - l3.Magnitude) < float.Epsilon;
         }
 
-        public static implicit operator Length(ValueTuple<float, LengthUnit> v)
-        {
-            return new Length(v.Item1, v.Item2);
-        }
+        public static implicit operator Length(ValueTuple<float, LengthUnit> v) { return new Length(v.Item1, v.Item2); }
 
         public static bool operator !=(Length l1, Length l2) { return !(l1 == l2); }
     }

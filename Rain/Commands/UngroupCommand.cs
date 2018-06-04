@@ -13,8 +13,7 @@ namespace Rain.Commands
 {
     public class UngroupCommand : LayerCommandBase<IContainerLayer>
     {
-        private readonly Dictionary<ILayer, IContainerLayer> _layers =
-            new Dictionary<ILayer, IContainerLayer>();
+        private readonly Dictionary<ILayer, IContainerLayer> _layers = new Dictionary<ILayer, IContainerLayer>();
 
         private readonly Dictionary<IContainerLayer, IContainerLayer> _parents =
             new Dictionary<IContainerLayer, IContainerLayer>();
@@ -46,6 +45,7 @@ namespace Rain.Commands
                 target.Parent.Remove(target as Layer);
             }
         }
+
         public override void Undo(IArtContext artView)
         {
             foreach (var (layer, target) in _layers.AsTuples())

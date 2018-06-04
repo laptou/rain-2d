@@ -13,15 +13,14 @@ namespace Rain.Commands
     {
         private Format[] _oldFormats;
 
-        public ApplyFormatCommand(long id, ITextLayer target, Format format) :
-            base(id, new[] {target})
+        public ApplyFormatCommand(long id, ITextLayer target, Format format) : base(id, new[] {target})
         {
             Format = format;
         }
 
-        public override string Description => "Changed format of range";
-
         public Format Format { get; }
+
+        #region IMergeableOperationCommand Members
 
         public override void Do(IArtContext artView)
         {
@@ -35,9 +34,7 @@ namespace Rain.Commands
         public IOperationCommand Merge(IOperationCommand newCommand)
         {
             if (newCommand is ApplyFormatCommand cmd)
-                return new ApplyFormatCommand(newCommand.Id,
-                                              cmd.Targets[0],
-                                              Format.Merge(cmd.Format));
+                return new ApplyFormatCommand(newCommand.Id, cmd.Targets[0], Format.Merge(cmd.Format));
 
             return null;
         }
@@ -52,5 +49,9 @@ namespace Rain.Commands
                     target.SetFormat(format);
             }
         }
+
+        public override string Description => "Changed format of range";
+
+        #endregion
     }
 }

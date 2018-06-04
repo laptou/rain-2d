@@ -273,8 +273,7 @@ namespace Rain.Shared
     {
         private const string Prefix = "System.Collections.Generic.Mscorlib_";
 
-        private const string Suffix =
-            ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
+        private const string Suffix = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
 
         private KeyCollection   _keys;
         private ValueCollection _values;
@@ -328,10 +327,7 @@ namespace Rain.Shared
 
         public abstract bool ContainsKey(TKey key);
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            Copy(this, array, arrayIndex);
-        }
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) { Copy(this, array, arrayIndex); }
 
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
 
@@ -382,15 +378,9 @@ namespace Rain.Shared
 
             public void CopyTo(T[] array, int arrayIndex) { Copy(this, array, arrayIndex); }
 
-            public IEnumerator<T> GetEnumerator()
-            {
-                return Dictionary.Select(GetItem).GetEnumerator();
-            }
+            public IEnumerator<T> GetEnumerator() { return Dictionary.Select(GetItem).GetEnumerator(); }
 
-            public bool Remove(T item)
-            {
-                throw new NotSupportedException("Collection is read-only.");
-            }
+            public bool Remove(T item) { throw new NotSupportedException("Collection is read-only."); }
 
             IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
@@ -426,10 +416,7 @@ namespace Rain.Shared
         {
             public ValueCollection(IDictionary<TKey, TValue> dictionary) : base(dictionary) { }
 
-            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair)
-            {
-                return pair.Value;
-            }
+            protected override TValue GetItem(KeyValuePair<TKey, TValue> pair) { return pair.Value; }
         }
 
         #endregion

@@ -12,13 +12,44 @@ namespace Rain.Core.Model.DocumentGraph
 {
     public interface ICloneLayer : ILayer
     {
-        ILayer Target { get; set; }
-
         bool Override { get; set; }
+        ILayer Target { get; set; }
     }
 
     public class Clone : Layer, ICloneLayer, IFilledLayer, IStrokedLayer
     {
+        private bool _suppressed;
+
+        /// <inheritdoc />
+        public override void RestoreNotifications()
+        {
+            _suppressed = false;
+
+            base.RestoreNotifications();
+        }
+
+        /// <inheritdoc />
+        public override void SuppressNotifications()
+        {
+            _suppressed = true;
+
+            base.SuppressNotifications();
+        }
+
+        protected void RaiseFillChanged()
+        {
+            if (_suppressed) return;
+
+            FillChanged?.Invoke(this, null);
+        }
+
+        protected void RaiseStrokeChanged()
+        {
+            if (_suppressed) return;
+
+            StrokeChanged?.Invoke(this, null);
+        }
+
         private void OnTargetBoundsChanged(object sender, EventArgs e) { RaiseBoundsChanged(); }
 
         private void OnTargetChanged(object sender, PropertyChangedEventArgs e)
@@ -51,10 +82,7 @@ namespace Rain.Core.Model.DocumentGraph
         #region ICloneLayer Members
 
         /// <inheritdoc />
-        public override RectangleF GetBounds(IArtContext ctx)
-        {
-            return ctx.CacheManager.GetRelativeBounds(Target);
-        }
+        public override RectangleF GetBounds(IArtContext ctx) { return ctx.CacheManager.GetRelativeBounds(Target); }
 
         /// <inheritdoc />
         public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
@@ -86,7 +114,8 @@ namespace Rain.Core.Model.DocumentGraph
                 {
                     fill = filled.Fill;
 
-                    if (Fill != null && (Override || fill == null))
+                    if (Fill != null &&
+                        (Override || fill == null))
                         filled.Fill = Fill;
                 }
 
@@ -94,7 +123,8 @@ namespace Rain.Core.Model.DocumentGraph
                 {
                     stroke = stroked.Stroke;
 
-                    if (Stroke != null && (Override || stroke == null))
+                    if (Stroke != null &&
+                        (Override || stroke == null))
                         stroked.Stroke = Stroke;
                 }
             }
@@ -121,6 +151,12 @@ namespace Rain.Core.Model.DocumentGraph
         /// <inheritdoc />
         public override string DefaultName => $"Clone of {Target.Name ?? Target.DefaultName}";
 
+        public bool Override
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
         public ILayer Target
         {
             get => Get<ILayer>();
@@ -133,14 +169,6 @@ namespace Rain.Core.Model.DocumentGraph
 
         /// <inheritdoc />
         public event EventHandler FillChanged;
-        
-
-        #endregion
-
-        #region IStrokedLayer Members
-
-        /// <inheritdoc />
-        public event EventHandler StrokeChanged;
 
         public IBrushInfo Fill
         {
@@ -154,11 +182,12 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public bool Override
-        {
-            get => Get<bool>();
-            set => Set(value);
-        }
+        #endregion
+
+        #region IStrokedLayer Members
+
+        /// <inheritdoc />
+        public event EventHandler StrokeChanged;
 
         public IPenInfo Stroke
         {
@@ -171,38 +200,7 @@ namespace Rain.Core.Model.DocumentGraph
                 RaiseStrokeChanged();
             }
         }
+
         #endregion
-
-        private bool _suppressed;
-
-        /// <inheritdoc />
-        public override void RestoreNotifications()
-        {
-            _suppressed = false;
-
-            base.RestoreNotifications();
-        }
-
-        /// <inheritdoc />
-        public override void SuppressNotifications()
-        {
-            _suppressed = true;
-
-            base.SuppressNotifications();
-        }
-
-        protected void RaiseFillChanged()
-        {
-            if (_suppressed) return;
-
-            FillChanged?.Invoke(this, null);
-        }
-
-        protected void RaiseStrokeChanged()
-        {
-            if (_suppressed) return;
-
-            StrokeChanged?.Invoke(this, null);
-        }
     }
 }

@@ -7,12 +7,13 @@ using Rain.Core.Model.Imaging;
 
 using SharpDX.WIC;
 
-namespace Rain.Renderer.WIC {
+namespace Rain.Renderer.WIC
+{
     public class ImageFrameLock : IImageLock
     {
         private readonly BitmapLock _lock;
 
-        public ImageFrameLock(IImageFrame imageFrame, SharpDX.WIC.Bitmap bmp, BitmapLockFlags flags)
+        public ImageFrameLock(IImageFrame imageFrame, Bitmap bmp, BitmapLockFlags flags)
         {
             ImageFrame = imageFrame;
 

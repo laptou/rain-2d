@@ -7,21 +7,22 @@ namespace Rain.Core.Model
 {
     public abstract class ResourceBase : Model, IResource
     {
-        public bool Disposed { get; private set; }
-
-        public virtual bool Optimized { get; protected set; }
+        public bool IsDisposed { get; private set; }
 
         #region IResource Members
 
-        public virtual void Dispose() { Disposed = true; }
-
-        #endregion
+        /// <inheritdoc />
+        public event EventHandler Disposed;
 
         /// <inheritdoc />
-        public ResourceScope Scope { get; set; }
+        public event EventHandler Disposing;
 
-        /// <inheritdoc />
-        public virtual void Optimize(IRenderContext context) { throw new NotImplementedException(); }
+        public virtual void Dispose()
+        {
+            Disposing?.Invoke(this, null);
+            IsDisposed = true;
+            Disposed?.Invoke(this, null);
+        }
 
         /// <inheritdoc />
         public void AddReference() { ReferenceCount++; }
@@ -29,12 +30,19 @@ namespace Rain.Core.Model
         /// <inheritdoc />
         public void RemoveReference()
         {
-            if(ReferenceCount == 0) throw new InvalidOperationException();
+            if (ReferenceCount == 0) throw new InvalidOperationException();
 
             ReferenceCount--;
         }
 
+        public virtual bool Optimized { get; protected set; }
+
         /// <inheritdoc />
         public int ReferenceCount { get; private set; }
+
+        /// <inheritdoc />
+        public ResourceScope Scope { get; set; }
+
+        #endregion
     }
 }

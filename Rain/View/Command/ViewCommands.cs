@@ -9,8 +9,7 @@ namespace Rain.View.Command
 {
     public static class ViewCommands
     {
-        public static DelegateCommand<object> LicenseCommand =
-            new DelegateCommand<object>(License, null);
+        public static DelegateCommand<object> LicenseCommand = new DelegateCommand<object>(License, null);
 
         private static void License(object obj)
         {

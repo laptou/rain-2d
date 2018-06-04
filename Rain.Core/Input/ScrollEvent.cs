@@ -8,8 +8,7 @@ namespace Rain.Core.Input
 {
     public class ScrollEvent : InputEventBase
     {
-        public ScrollEvent(
-            float delta, Vector2 position, ScrollDirection direction, ModifierState modifiers)
+        public ScrollEvent(float delta, Vector2 position, ScrollDirection direction, ModifierState modifiers)
         {
             Delta = delta;
             Direction = direction;

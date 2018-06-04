@@ -27,8 +27,7 @@ namespace Rain.View.Utility
             obj.SetValue(FormattedTextProperty, value);
         }
 
-        private static void FormattedTextChanged(
-            DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private static void FormattedTextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             var value = e.NewValue as string;
 

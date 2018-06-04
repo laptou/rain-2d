@@ -59,6 +59,25 @@ namespace Rain.ViewModel
             StrokeViewModel = new StrokeViewModel(ArtContext);
         }
 
+        public MainViewModel()
+        {
+            RunTime(() => throw new InvalidOperationException(
+                              "This constructor only exists so that the XAML designer doesn't " +
+                              "complain. Do not call this."));
+
+            AppSettings.EndLoadDefault();
+        }
+
+        public IArtContext ArtContext { get; set; }
+
+        public bool Initialized { get; private set; }
+
+        public event PropertyChangedEventHandler BrushUpdated;
+
+        public event PropertyChangedEventHandler LayerUpdated;
+
+        public event EventHandler SelectionUpdated;
+
         public void Initialize()
         {
             ViewManager.Root = LoadSample();
@@ -72,25 +91,6 @@ namespace Rain.ViewModel
 
             Initialized = true;
         }
-
-        public bool Initialized { get; private set; }
-
-        public MainViewModel()
-        {
-            RunTime(() => throw new InvalidOperationException(
-                              "This constructor only exists so that the XAML designer doesn't " +
-                              "complain. Do not call this."));
-
-            AppSettings.EndLoadDefault();
-        }
-
-        public IArtContext ArtContext { get; set; }
-
-        public event PropertyChangedEventHandler BrushUpdated;
-
-        public event PropertyChangedEventHandler LayerUpdated;
-
-        public event EventHandler SelectionUpdated;
 
         public IContainerLayer LoadSample()
         {
@@ -198,7 +198,7 @@ namespace Rain.ViewModel
             reference2.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
             reference3.ApplyTransform(Matrix3x2.CreateTranslation(100, -100));
             reference2.Fill = new SolidColorBrushInfo(new Color(1, 0, 0));
-            
+
             root.Add(reference1);
             root.Add(reference2);
             root.Add(reference3);
@@ -236,13 +236,9 @@ namespace Rain.ViewModel
                     var cmd = settings.GetString(localPath + ".command");
                     var shortcuts = cmd == null
                                         ? Enumerable.Empty<string>()
-                                        : Enumerable
-                                         .Range(0,
-                                                (int) settings.GetFloat(
-                                                    "shortcuts." + cmd + ".$count"))
-                                         .Select(j => settings.GetString(
-                                                     "shortcuts." + cmd + $"[{j}]"))
-                                         .ToList();
+                                        : Enumerable.Range(0, (int) settings.GetFloat("shortcuts." + cmd + ".$count"))
+                                                    .Select(j => settings.GetString("shortcuts." + cmd + $"[{j}]"))
+                                                    .ToList();
 
                     var item = new MenuItem(name,
                                             LoadMenus(localPath + ".menus"),
@@ -267,7 +263,6 @@ namespace Rain.ViewModel
                     }
                 }
             }
-
         }
 
         private IEnumerable<ToolbarItem> LoadToolbars(string path)
@@ -294,9 +289,7 @@ namespace Rain.ViewModel
                     case ToolbarItemType.Button:
 
                         yield return new ToolbarItem(settings.GetString(localPath + ".name"),
-                                                     MapCommand(
-                                                         settings.GetString(
-                                                             localPath + ".command")),
+                                                     MapCommand(settings.GetString(localPath + ".command")),
                                                      settings.GetString(localPath + ".icon"),
                                                      ArtContext);
 
@@ -306,7 +299,6 @@ namespace Rain.ViewModel
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            
         }
 
         private static ICommand MapCommand(string name)
@@ -478,8 +470,7 @@ namespace Rain.ViewModel
         public MenuItem() { Type = MenuItemType.Separator; }
 
         public MenuItem(
-            string name, IEnumerable<MenuItem> subMenus, ICommand command, string shortcut,
-            IArtContext artContext)
+            string name, IEnumerable<MenuItem> subMenus, ICommand command, string shortcut, IArtContext artContext)
         {
             SubMenus = subMenus.ToList();
             Command = command;
@@ -589,8 +580,7 @@ namespace Rain.ViewModel
 
             split = split.Replace("ctrl", "control");
 
-            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(
-                string.Join(" + ", split));
+            return Thread.CurrentThread.CurrentUICulture.TextInfo.ToTitleCase(string.Join(" + ", split));
         }
 
         [DllImport("user32.dll")]

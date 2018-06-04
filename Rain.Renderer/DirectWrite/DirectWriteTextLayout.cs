@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
+using Rain.Renderer.Direct2D;
+
 using System.Threading.Tasks;
 
 using Rain.Core;
@@ -10,13 +13,8 @@ using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
-using Rain.Renderer.Direct2D;
 
 using DW = SharpDX.DirectWrite;
-using FontStretch = Rain.Core.Model.Text.FontStretch;
-using FontStyle = Rain.Core.Model.Text.FontStyle;
-using FontWeight = Rain.Core.Model.Text.FontWeight;
-using TextRenderer = Rain.Renderer.Direct2D.TextRenderer;
 
 namespace Rain.Renderer.DirectWrite
 {
@@ -41,8 +39,11 @@ namespace Rain.Renderer.DirectWrite
         public Format GetFormat(int position, out int index)
         {
             Format[] sorted;
+
             lock (_formats)
+            {
                 sorted = _formats.OrderBy(f => f.Range.Index).ToArray();
+            }
 
             index = 0;
 
@@ -81,21 +82,16 @@ namespace Rain.Renderer.DirectWrite
             var font = family.GetFirstMatchingFont((DW.FontWeight) FontWeight,
                                                    (DW.FontStretch) FontStretch,
                                                    (DW.FontStyle) FontStyle);
-            FontHeight = (float) (font.Metrics.Ascent + font.Metrics.LineGap) /
-                         font.Metrics.DesignUnitsPerEm * dwFormat.FontSize;
+            FontHeight = (float) (font.Metrics.Ascent + font.Metrics.LineGap) / font.Metrics.DesignUnitsPerEm *
+                         dwFormat.FontSize;
 
-            _dwLayout =
-                new DW.TextLayout1(
-                        (IntPtr) new DW.TextLayout(_ctx.FactoryDW,
-                                                   Text ?? "",
-                                                   dwFormat,
-                                                   Width,
-                                                   Height))
-                    {
-                        //TextAlignment = TextAlignment,
-                        //ParagraphAlignment = ParagraphAlignment
-                        WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
-                    };
+            _dwLayout = new DW.TextLayout1(
+                    (IntPtr) new DW.TextLayout(_ctx.FactoryDW, Text ?? "", dwFormat, Width, Height))
+                {
+                    //TextAlignment = TextAlignment,
+                    //ParagraphAlignment = ParagraphAlignment
+                    WordWrapping = IsBlock ? DW.WordWrapping.Wrap : DW.WordWrapping.NoWrap
+                };
 
             lock (_formats)
             {
@@ -104,12 +100,10 @@ namespace Rain.Renderer.DirectWrite
                     var typography = _dwLayout.GetTypography(format.Range.Index);
 
                     if (format.Superscript)
-                        typography.AddFontFeature(
-                            new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
+                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Superscript, 0));
 
                     if (format.Subscript)
-                        typography.AddFontFeature(
-                            new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
+                        typography.AddFontFeature(new DW.FontFeature(DW.FontFeatureTag.Subscript, 0));
 
                     var range = new DW.TextRange(format.Range.Index, format.Range.Length);
 
@@ -150,10 +144,7 @@ namespace Rain.Renderer.DirectWrite
                 _textContext?.Dispose();
                 _textContext = new TextRenderer.Context(_ctx);
 
-                _dwLayout.Draw(_textContext,
-                               renderer,
-                               0,
-                               -FontHeight);
+                _dwLayout.Draw(_textContext, renderer, 0, -FontHeight);
             }
         }
 
@@ -182,7 +173,7 @@ namespace Rain.Renderer.DirectWrite
             return null;
         }
 
-        public Format GetFormat(int index) { return GetFormat(index, out var _); }
+        public Format GetFormat(int index) { return GetFormat(index, out _); }
 
         public IGeometry GetGeometryForGlyphRun(int index)
         {
@@ -233,8 +224,7 @@ namespace Rain.Renderer.DirectWrite
 
         public int GetPosition(Vector2 point, out bool trailing)
         {
-            var metrics =
-                _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out var _);
+            var metrics = _dwLayout.HitTestPoint(point.X, point.Y, out var isTrailingHit, out _);
             trailing = isTrailingHit;
 
             return metrics.TextPosition;
@@ -242,7 +232,7 @@ namespace Rain.Renderer.DirectWrite
 
         public bool Hit(Vector2 point)
         {
-            _dwLayout.HitTestPoint(point.X, point.Y + FontHeight, out var _, out var hit);
+            _dwLayout.HitTestPoint(point.X, point.Y + FontHeight, out _, out var hit);
 
             return hit;
         }
@@ -295,27 +285,17 @@ namespace Rain.Renderer.DirectWrite
 
         public TextPositionMetric MeasurePosition(int index)
         {
-            var m = _dwLayout.HitTestTextPosition(index, false, out var _, out var _);
+            var m = _dwLayout.HitTestTextPosition(index, false, out _, out _);
 
-            return new TextPositionMetric(m.Top - FontHeight,
-                                          m.Left,
-                                          FontHeight,
-                                          m.Height,
-                                          index,
-                                          0);
+            return new TextPositionMetric(m.Top - FontHeight, m.Left, FontHeight, m.Height, index, 0);
         }
 
         public RectangleF[] MeasureRange(int index, int length)
         {
             return _dwLayout.HitTestTextRange(index, length, 0, 0)
-                            .Select(m => new RectangleF(m.Left,
-                                                        m.Top - FontHeight,
-                                                        m.Width,
-                                                        m.Height))
+                            .Select(m => new RectangleF(m.Left, m.Top - FontHeight, m.Width, m.Height))
                             .ToArray();
         }
-
-        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
 
         public void RemoveText(int position, int range)
         {

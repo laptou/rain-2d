@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -33,8 +32,6 @@ namespace Rain.Service
             return Contains(path) ? Color.Parse(GetString(path, "none")) : @default;
         }
 
-        public Settings GetSubset(string path) { return Get(path) as Settings; }
-
         public T GetEnum<T>(string path, T @default = default) where T : struct
         {
             return Enum.TryParse(GetString(path)?.Dedash(), out T e) ? e : @default;
@@ -54,21 +51,9 @@ namespace Rain.Service
             return x is int i ? i : Convert.ToInt32(x);
         }
 
-        public string GetString(string path, string @default = default)
-        {
-            return Get(path, @default) as string;
-        }
+        public string GetString(string path, string @default = default) { return Get(path, @default) as string; }
 
-        public void Set<T>(string path, T value = default)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-                throw new ArgumentException("Setting path is invalid.");
-
-            if (!char.IsLetterOrDigit(path[0]))
-                throw new ArgumentException("Setting path is invalid.");
-
-            _cache[path] = value;
-        }
+        public Settings GetSubset(string path) { return Get(path) as Settings; }
 
         public void Load()
         {
@@ -118,20 +103,30 @@ namespace Rain.Service
             }
         }
 
+        public void Set<T>(string path, T value = default)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Setting path is invalid.");
+
+            if (!char.IsLetterOrDigit(path[0]))
+                throw new ArgumentException("Setting path is invalid.");
+
+            _cache[path] = value;
+        }
+
         private void Deserialize(JToken tok, string path = "")
         {
             switch (tok)
             {
                 case JObject obj:
                     foreach (var property in obj.Properties())
-                        Deserialize(property.Value,
-                                    path.Length == 0 ? property.Name : path + "." + property.Name);
+                        Deserialize(property.Value, path.Length == 0 ? property.Name : path + "." + property.Name);
 
                     break;
                 case JArray arr:
                     for (var i = 0; i < arr.Count; i++)
                         Deserialize(arr[i], path + $"[{i}]");
-                    
+
                     _cache[path + ".$count"] = arr.Count;
 
                     break;
@@ -156,14 +151,13 @@ namespace Rain.Service
                     var sub = new DerivedSettings(this);
 
                     foreach (var kv in subpaths)
-                    {
+
                         // is the value a reference?
                         if (kv.Value is string str &&
                             str.StartsWith("@"))
                             sub.Set(kv.Key.Substring(path.Length + 1), Get(kv.Key));
                         else
                             sub.Set(kv.Key.Substring(path.Length + 1), kv.Value);
-                    }
 
                     return sub;
                 }
@@ -226,6 +220,8 @@ namespace Rain.Service
             return obj;
         }
 
+        #region IEnumerable<KeyValuePair<string,object>> Members
+
         /// <inheritdoc />
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
@@ -238,6 +234,10 @@ namespace Rain.Service
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
+        #endregion
+
+        #region Nested type: DerivedSettings
+
         private class DerivedSettings : Settings
         {
             private readonly Settings _parent;
@@ -245,10 +245,12 @@ namespace Rain.Service
             public DerivedSettings(Settings parent) { _parent = parent; }
 
             /// <inheritdoc />
-            protected override Stream GetReadStream() => _parent.GetReadStream();
+            protected override Stream GetReadStream() { return _parent.GetReadStream(); }
 
             /// <inheritdoc />
-            protected override Stream GetWriteStream() => _parent.GetWriteStream();
+            protected override Stream GetWriteStream() { return _parent.GetWriteStream(); }
         }
+
+        #endregion
     }
 }

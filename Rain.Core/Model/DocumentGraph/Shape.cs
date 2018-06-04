@@ -104,7 +104,7 @@ namespace Rain.Core.Model.DocumentGraph
             var transform = Transform;
 
             target.Transform(transform);
-            
+
             if (Fill != null)
                 target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
 

@@ -18,19 +18,17 @@ namespace Rain.Renderer.Direct2D
         private SpreadMethod _spreadMethod;
 
         public RadialGradientBrush(
-            RenderTarget target, IEnumerable<GradientStop> stops, RawVector2 center,
-            RawVector2 radii, RawVector2 focus) : base(target, stops)
+            RenderTarget target, IEnumerable<GradientStop> stops, RawVector2 center, RawVector2 radii, RawVector2 focus)
+            : base(target, stops)
         {
             NativeBrush = new SharpDX.Direct2D1.RadialGradientBrush(target,
-                                                                    new
-                                                                        RadialGradientBrushProperties
-                                                                        {
-                                                                            Center = center,
-                                                                            GradientOriginOffset =
-                                                                                focus,
-                                                                            RadiusX = radii.X,
-                                                                            RadiusY = radii.Y
-                                                                        },
+                                                                    new RadialGradientBrushProperties
+                                                                    {
+                                                                        Center = center,
+                                                                        GradientOriginOffset = focus,
+                                                                        RadiusX = radii.X,
+                                                                        RadiusY = radii.Y
+                                                                    },
                                                                     ConvertStops());
         }
 
@@ -58,22 +56,16 @@ namespace Rain.Renderer.Direct2D
             var old = NativeBrush;
             NativeBrushLock.EnterWriteLock();
             NativeBrush = new SharpDX.Direct2D1.RadialGradientBrush(Target,
-                                                                    new
-                                                                        RadialGradientBrushProperties
-                                                                        {
-                                                                            Center =
-                                                                                new RawVector2(
-                                                                                    CenterX,
-                                                                                    CenterY),
-                                                                            GradientOriginOffset =
-                                                                                new RawVector2(
-                                                                                    FocusX -
-                                                                                    CenterX,
-                                                                                    FocusY -
-                                                                                    CenterY),
-                                                                            RadiusX = RadiusX,
-                                                                            RadiusY = RadiusY
-                                                                        },
+                                                                    new RadialGradientBrushProperties
+                                                                    {
+                                                                        Center = new RawVector2(CenterX, CenterY),
+                                                                        GradientOriginOffset =
+                                                                            new RawVector2(
+                                                                                FocusX - CenterX,
+                                                                                FocusY - CenterY),
+                                                                        RadiusX = RadiusX,
+                                                                        RadiusY = RadiusY
+                                                                    },
                                                                     ConvertStops());
             NativeBrushLock.ExitWriteLock();
             old.Dispose();
@@ -86,8 +78,7 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center.X;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center =
-                    new RawVector2(value, CenterY);
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center = new RawVector2(value, CenterY);
                 RaisePropertyChanged();
             }
         }
@@ -97,16 +88,14 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center.Y;
             set
             {
-                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center =
-                    new RawVector2(CenterX, value);
+                ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).Center = new RawVector2(CenterX, value);
                 RaisePropertyChanged();
             }
         }
 
         public float FocusX
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.X +
-                   CenterX;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.X + CenterX;
             set
             {
                 ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset =
@@ -117,8 +106,7 @@ namespace Rain.Renderer.Direct2D
 
         public float FocusY
         {
-            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.Y +
-                   CenterY;
+            get => ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset.Y + CenterY;
             set
             {
                 ((SharpDX.Direct2D1.RadialGradientBrush) NativeBrush).GradientOriginOffset =

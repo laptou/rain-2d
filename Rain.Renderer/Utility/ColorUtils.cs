@@ -10,8 +10,7 @@ namespace Rain.Renderer.Utility
 {
     public static class ColorUtils
     {
-        public static (double Hue, double Saturation, double Lightness, double Alpha) ColorToHsla(
-            Color color)
+        public static (double Hue, double Saturation, double Lightness, double Alpha) ColorToHsla(Color color)
         {
             var (r, g, b, a) = ColorToRgba(color);
 
@@ -25,14 +24,14 @@ namespace Rain.Renderer.Utility
 
         public static Color HslaToColor(double h, double s, double l, double alpha)
         {
-            (double r, double g, double b) = HslToRgb(h, s, l);
+            var (r, g, b) = HslToRgb(h, s, l);
 
             return RgbaToColor(r, g, b, alpha);
         }
 
         public static Color HslToColor(double h, double s, double l)
         {
-            (double r, double g, double b) = HslToRgb(h, s, l);
+            var (r, g, b) = HslToRgb(h, s, l);
 
             return RgbToColor(r, g, b);
         }
@@ -71,8 +70,7 @@ namespace Rain.Renderer.Utility
             };
         }
 
-        public static (double h, double s, double l, double a) RgbaToHsla(
-            double r, double g, double b, double a)
+        public static (double h, double s, double l, double a) RgbaToHsla(double r, double g, double b, double a)
         {
             double max = MathUtils.Max(r, g, b), min = MathUtils.Min(r, g, b);
             double h, s, l = (max + min) / 2;
@@ -97,10 +95,7 @@ namespace Rain.Renderer.Utility
             return (h * 360f, s, l, a);
         }
 
-        public static Color RgbToColor(double r, double g, double b)
-        {
-            return RgbaToColor(r, g, b, 1);
-        }
+        public static Color RgbToColor(double r, double g, double b) { return RgbaToColor(r, g, b, 1); }
 
         public static (double h, double s, double l) RgbToHsl(double r, double g, double b)
         {

@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Core.Model;
-using Rain.Core.Model.Effects;
-using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Text;
 using Rain.Native;
-using Rain.Renderer.Direct2D;
 using Rain.Renderer.WIC;
 
 namespace Rain.View.Control
@@ -29,13 +25,11 @@ namespace Rain.View.Control
         public ICaret CreateCaret(int width, int height)
         {
             if (WindowHelper.GetFocus() == _artView.Handle)
-                return new Caret(_artView.Handle,
-                                 width, height);
+                return new Caret(_artView.Handle, width, height);
 
             return null;
         }
 
-        
 
         public void Invalidate() { _artView.InvalidateSurface(); }
 

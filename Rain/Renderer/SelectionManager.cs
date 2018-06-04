@@ -47,22 +47,11 @@ namespace Rain.Renderer
 
         public ObservableList<ILayer> Selection { get; }
 
-        public RectangleF SelectionBounds
-        {
-            get => _selectionBounds;
-            private set
-            {
-                _selectionBounds = value;
-                RaisePropertyChanged(nameof(SelectionBounds));
-            }
-        }
-
         private void OnBoundsChanged(object sender, EventArgs e) { UpdateBounds(); }
 
         private void OnDocumentUpdated(object sender, PropertyChangedEventArgs e)
         {
             if (sender is ILayer layer)
-            {
                 switch (e.PropertyName)
                 {
                     case nameof(ILayer.Selected):
@@ -84,7 +73,6 @@ namespace Rain.Renderer
 
                         break;
                 }
-            }
         }
 
         private void OnHistoryTraversed(object sender, long e) { UpdateBounds(); }
@@ -155,10 +143,7 @@ namespace Rain.Renderer
             context.RaiseDetached(this);
         }
 
-        public Vector2 FromSelectionSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectionTransform);
-        }
+        public Vector2 FromSelectionSpace(Vector2 v) { return Vector2.Transform(v, SelectionTransform); }
 
         public Vector2 ToSelectionSpace(Vector2 v)
         {
@@ -174,13 +159,10 @@ namespace Rain.Renderer
             // order doesn't really matter since only one of 
             // these will be non-default at a time
 
-            var transform = MathUtils.Invert(SelectionTransform) *
-                            Matrix3x2.CreateScale(scale, localOrigin) *
+            var transform = MathUtils.Invert(SelectionTransform) * Matrix3x2.CreateScale(scale, localOrigin) *
                             Matrix3x2.CreateSkew(shear, 0, localOrigin) * SelectionTransform *
-                            Matrix3x2.CreateTranslation(-origin) *
-                            Matrix3x2.CreateRotation(rotate) *
-                            Matrix3x2.CreateTranslation(translate) *
-                            Matrix3x2.CreateTranslation(origin);
+                            Matrix3x2.CreateTranslation(-origin) * Matrix3x2.CreateRotation(rotate) *
+                            Matrix3x2.CreateTranslation(translate) * Matrix3x2.CreateTranslation(origin);
 
             SelectionTransform = SelectionTransform * transform;
 
@@ -188,9 +170,8 @@ namespace Rain.Renderer
 
             var targets = Selection.Where(l => !(l is Clone c && c.Target.Selected));
 
-            var command = new TransformCommand(Context.HistoryManager.Position + 1,
-                                               targets.ToArray(),
-                                               global: transform);
+            var command =
+                new TransformCommand(Context.HistoryManager.Position + 1, targets.ToArray(), global: transform);
 
             Context.HistoryManager.Merge(command, 500);
 
@@ -217,8 +198,7 @@ namespace Rain.Renderer
 
             if (Selection.Count > 1)
             {
-                SelectionBounds = Selection.Select(Context.CacheManager.GetAbsoluteBounds)
-                                           .Aggregate(RectangleF.Union);
+                SelectionBounds = Selection.Select(Context.CacheManager.GetAbsoluteBounds).Aggregate(RectangleF.Union);
                 SelectionTransform = Matrix3x2.Identity;
             }
 
@@ -228,6 +208,16 @@ namespace Rain.Renderer
         }
 
         public IArtContext Context { get; }
+
+        public RectangleF SelectionBounds
+        {
+            get => _selectionBounds;
+            private set
+            {
+                _selectionBounds = value;
+                RaisePropertyChanged(nameof(SelectionBounds));
+            }
+        }
 
         public Matrix3x2 SelectionTransform
         {

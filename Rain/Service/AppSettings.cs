@@ -9,9 +9,16 @@ namespace Rain.Service
 {
     public class AppSettings : Settings
     {
+        private static Task _loadTask;
         public static AppSettings Current { get; private set; }
 
         public ThemeSettings Theme { get; private set; }
+
+        public static void BeginLoadDefault() { _loadTask = LoadDefaultAsync(); }
+
+        public static void EndLoadDefault() { _loadTask.Wait(); }
+
+        public static Task GetLoadTask() { return _loadTask; }
 
         public static void LoadDefault()
         {
@@ -31,8 +38,7 @@ namespace Rain.Service
 
         protected override Stream GetReadStream()
         {
-            var defaultUri = new Uri("/Rain;component/settings.default.json",
-                                     UriKind.Relative);
+            var defaultUri = new Uri("/Rain;component/settings.default.json", UriKind.Relative);
 
             if (App.IsDesigner)
                 return Application.GetResourceStream(defaultUri)?.Stream;
@@ -63,13 +69,5 @@ namespace Rain.Service
                              FileAccess.Write,
                              FileShare.Read);
         }
-
-        private static Task _loadTask;
-
-        public static void BeginLoadDefault() => _loadTask = LoadDefaultAsync();
-
-        public static void EndLoadDefault() => _loadTask.Wait();
-
-        public static Task GetLoadTask() => _loadTask;
     }
 }

@@ -14,8 +14,7 @@ namespace Rain.Renderer.WPF
 {
     internal class LinearGradientBrush : GradientBrush, ILinearGradientBrush
     {
-        public LinearGradientBrush(IEnumerable<GradientStop> stops, Point start, Point end) :
-            base(stops)
+        public LinearGradientBrush(IEnumerable<GradientStop> stops, Point start, Point end) : base(stops)
         {
             WpfBrush = new System.Windows.Media.LinearGradientBrush(ConvertStops(), start, end)
             {
@@ -29,8 +28,7 @@ namespace Rain.Renderer.WPF
         {
             get =>
                 (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
-            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
-                   (GradientSpreadMethod) value;
+            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod = (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(
@@ -46,8 +44,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint.X;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint =
-                    new Point(value, EndY);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint = new Point(value, EndY);
                 RaisePropertyChanged();
             }
         }
@@ -57,8 +54,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint.Y;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint =
-                    new Point(EndX, value);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).EndPoint = new Point(EndX, value);
                 RaisePropertyChanged();
             }
         }
@@ -68,8 +64,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint.X;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint =
-                    new Point(value, StartY);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint = new Point(value, StartY);
                 RaisePropertyChanged();
             }
         }
@@ -79,8 +74,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint.Y;
             set
             {
-                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint =
-                    new Point(StartX, value);
+                ((System.Windows.Media.LinearGradientBrush) WpfBrush).StartPoint = new Point(StartX, value);
                 RaisePropertyChanged();
             }
         }

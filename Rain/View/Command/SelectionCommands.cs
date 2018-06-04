@@ -26,8 +26,8 @@ namespace Rain.View.Command
         public static readonly DelegateCommand<IArtContext> MoveToTopCommand =
             CommandManager.Register<IArtContext>(MoveToTop);
 
-        public static readonly DelegateCommand<IArtContext> MoveUpCommand =
-            CommandManager.Register<IArtContext>(MoveUp);
+        public static readonly DelegateCommand<IArtContext>
+            MoveUpCommand = CommandManager.Register<IArtContext>(MoveUp);
 
         public static readonly DelegateCommand<IArtContext> MoveDownCommand =
             CommandManager.Register<IArtContext>(MoveDown);
@@ -62,8 +62,7 @@ namespace Rain.View.Command
         public static readonly DelegateCommand<IArtContext> AlignCenterYCommand =
             CommandManager.Register<IArtContext>(AlignCenterY);
 
-        public static readonly DelegateCommand<IArtContext> GroupCommand =
-            CommandManager.Register<IArtContext>(Group);
+        public static readonly DelegateCommand<IArtContext> GroupCommand = CommandManager.Register<IArtContext>(Group);
 
         public static readonly DelegateCommand<IArtContext> UngroupCommand =
             CommandManager.Register<IArtContext>(Ungroup);
@@ -82,51 +81,28 @@ namespace Rain.View.Command
             artContext.SelectionManager.UpdateBounds();
         }
 
-        private static void AlignBottom(IArtContext artContext)
-        {
-            Align(artContext, Direction.Down);
-        }
+        private static void AlignBottom(IArtContext artContext) { Align(artContext, Direction.Down); }
 
-        private static void AlignCenterX(IArtContext artContext)
-        {
-            Align(artContext, Direction.Horizontal);
-        }
+        private static void AlignCenterX(IArtContext artContext) { Align(artContext, Direction.Horizontal); }
 
-        private static void AlignCenterY(IArtContext artContext)
-        {
-            Align(artContext, Direction.Vertical);
-        }
+        private static void AlignCenterY(IArtContext artContext) { Align(artContext, Direction.Vertical); }
 
         private static void AlignLeft(IArtContext artContext) { Align(artContext, Direction.Left); }
 
-        private static void AlignRight(IArtContext artContext)
-        {
-            Align(artContext, Direction.Right);
-        }
+        private static void AlignRight(IArtContext artContext) { Align(artContext, Direction.Right); }
 
         private static void AlignTop(IArtContext artContext) { Align(artContext, Direction.Up); }
 
-        private static void DeselectAll(IArtContext artContext)
-        {
-            artContext.SelectionManager.ClearSelection();
-        }
+        private static void DeselectAll(IArtContext artContext) { artContext.SelectionManager.ClearSelection(); }
 
         private static void FlipHorizontal(IArtContext artContext)
         {
-            artContext.SelectionManager.TransformSelection(new Vector2(-1, 1),
-                                                           Vector2.Zero,
-                                                           0,
-                                                           0,
-                                                           Vector2.One * 0.5f);
+            artContext.SelectionManager.TransformSelection(new Vector2(-1, 1), Vector2.Zero, 0, 0, Vector2.One * 0.5f);
         }
 
         private static void FlipVertical(IArtContext artContext)
         {
-            artContext.SelectionManager.TransformSelection(new Vector2(1, -1),
-                                                           Vector2.Zero,
-                                                           0,
-                                                           0,
-                                                           Vector2.One * 0.5f);
+            artContext.SelectionManager.TransformSelection(new Vector2(1, -1), Vector2.Zero, 0, 0, Vector2.One * 0.5f);
         }
 
         private static void Group(IArtContext ctx)
@@ -136,8 +112,7 @@ namespace Rain.View.Command
             if (!selectionManager.Selection.Any())
                 return;
 
-            var command = new GroupCommand(ctx.HistoryManager.Position + 1,
-                                           selectionManager.Selection.ToArray());
+            var command = new GroupCommand(ctx.HistoryManager.Position + 1, selectionManager.Selection.ToArray());
 
             ctx.HistoryManager.Do(command);
         }
@@ -151,9 +126,8 @@ namespace Rain.View.Command
         {
             var history = artContext.SelectionManager.Context.HistoryManager;
 
-            history.Do(new ChangeZIndexCommand(history.Position + 1,
-                                               artContext.SelectionManager.Selection.ToArray(),
-                                               1));
+            history.Do(
+                new ChangeZIndexCommand(history.Position + 1, artContext.SelectionManager.Selection.ToArray(), 1));
         }
 
         private static void MoveToBottom(IArtContext artContext)
@@ -205,9 +179,7 @@ namespace Rain.View.Command
         {
             artContext.SelectionManager.ClearSelection();
 
-            foreach (var layer in artContext
-                                 .SelectionManager.Context.ViewManager.Root.Flatten()
-                                 .Skip(1))
+            foreach (var layer in artContext.SelectionManager.Context.ViewManager.Root.Flatten().Skip(1))
                 layer.Selected = true;
         }
 
@@ -219,9 +191,7 @@ namespace Rain.View.Command
                 return;
 
             var command = new UngroupCommand(ctx.HistoryManager.Position + 1,
-                                             selectionManager
-                                                .Selection.OfType<IContainerLayer>()
-                                                .ToArray());
+                                             selectionManager.Selection.OfType<IContainerLayer>().ToArray());
             ctx.HistoryManager.Do(command);
         }
     }

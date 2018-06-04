@@ -7,12 +7,14 @@ namespace Rain.Core.Model
 {
     public interface IResource : IDisposable
     {
-        ResourceScope Scope { get; set; }
         bool Optimized { get; }
+        int ReferenceCount { get; }
+        ResourceScope Scope { get; set; }
+        event EventHandler Disposed;
 
-        void Optimize(IRenderContext context);
+        event EventHandler Disposing;
+
         void AddReference();
         void RemoveReference();
-        int ReferenceCount { get; }
     }
 }

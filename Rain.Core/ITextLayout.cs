@@ -20,8 +20,7 @@ namespace Rain.Core
         public int   Line;
         public float Left;
 
-        public TextPositionMetric(
-            float top, float left, float baseline, float height, int position, int line)
+        public TextPositionMetric(float top, float left, float baseline, float height, int position, int line)
         {
             Top = top;
             Baseline = baseline;

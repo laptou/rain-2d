@@ -1,14 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Markup;
-
-using Rain.ViewModel;
 
 namespace Rain.View.Utility
 {
@@ -48,20 +44,7 @@ namespace Rain.View.Utility
             return base.SelectTemplate(item, container);
         }
 
-        /// <inheritdoc />
-        public bool Contains(object key) { return _dict.Contains(key); }
-
-        /// <inheritdoc />
-        public void Add(object key, object value) { _dict.Add(key, value); }
-
-        /// <inheritdoc />
-        public void Clear() { _dict.Clear(); }
-
-        /// <inheritdoc />
-        public IDictionaryEnumerator GetEnumerator() { return _dict.GetEnumerator(); }
-
-        /// <inheritdoc />
-        public void Remove(object key) { _dict.Remove(key); }
+        #region IDictionary Members
 
         /// <inheritdoc />
         public object this[object key]
@@ -71,31 +54,48 @@ namespace Rain.View.Utility
         }
 
         /// <inheritdoc />
-        public ICollection Keys => _dict.Keys;
+        public void Add(object key, object value) { _dict.Add(key, value); }
 
         /// <inheritdoc />
-        public ICollection Values => _dict.Values;
+        public void Clear() { _dict.Clear(); }
 
         /// <inheritdoc />
-        public bool IsReadOnly => _dict.IsReadOnly;
-
-        /// <inheritdoc />
-        public bool IsFixedSize => _dict.IsFixedSize;
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _dict).GetEnumerator(); }
+        public bool Contains(object key) { return _dict.Contains(key); }
 
         /// <inheritdoc />
         public void CopyTo(Array array, int index) { _dict.CopyTo(array, index); }
 
         /// <inheritdoc />
+        public IDictionaryEnumerator GetEnumerator() { return _dict.GetEnumerator(); }
+
+        /// <inheritdoc />
+        public void Remove(object key) { _dict.Remove(key); }
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() { return ((IEnumerable) _dict).GetEnumerator(); }
+
+        /// <inheritdoc />
         public int Count => _dict.Count;
+
+        /// <inheritdoc />
+        public bool IsFixedSize => _dict.IsFixedSize;
+
+        /// <inheritdoc />
+        public bool IsReadOnly => _dict.IsReadOnly;
+
+        /// <inheritdoc />
+        public bool IsSynchronized => _dict.IsSynchronized;
+
+        /// <inheritdoc />
+        public ICollection Keys => _dict.Keys;
 
         /// <inheritdoc />
         public object SyncRoot => _dict.SyncRoot;
 
         /// <inheritdoc />
-        public bool IsSynchronized => _dict.IsSynchronized;
+        public ICollection Values => _dict.Values;
+
+        #endregion
     }
 
     public class EnumItemContainerTemplateSelector : ItemContainerTemplateSelector

@@ -24,8 +24,7 @@ namespace Rain.View.Command
             var command = new DelegateCommand<T>(action, null);
             command.PropertyChanged += (sender, args) =>
                                        {
-                                           if (args.PropertyName ==
-                                               nameof(DelegateCommand<T>.Exception))
+                                           if (args.PropertyName == nameof(DelegateCommand<T>.Exception))
                                                Instance.LastError = command.Exception;
                                        };
 
@@ -39,21 +38,14 @@ namespace Rain.View.Command
                                        {
                                            command.Execution.PropertyChanged += (s, a) =>
                                                                                 {
-                                                                                    if (
-                                                                                        a.PropertyName ==
-                                                                                        nameof(
-                                                                                                NotifyTaskCompletion
-                                                                                                   .Exception
-                                                                                            ))
-                                                                                        Instance
-                                                                                               .LastError
-                                                                                            = command
-                                                                                             .Execution
-                                                                                             .Exception;
+                                                                                    if (a.PropertyName ==
+                                                                                        nameof(NotifyTaskCompletion
+                                                                                                  .Exception))
+                                                                                        Instance.LastError =
+                                                                                            command.Execution.Exception;
                                                                                 };
 
-                                           if (args.PropertyName ==
-                                               nameof(AsyncDelegateCommand<T>.Execution))
+                                           if (args.PropertyName == nameof(AsyncDelegateCommand<T>.Execution))
                                                Instance.LastError = command.Execution.Exception;
                                        };
 

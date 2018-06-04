@@ -52,10 +52,7 @@ namespace Rain.Core.Model.DocumentGraph
             }
         }
 
-        public override RectangleF GetBounds(IArtContext ctx)
-        {
-            return new RectangleF(X, Y, Width, Height);
-        }
+        public override RectangleF GetBounds(IArtContext ctx) { return new RectangleF(X, Y, Width, Height); }
 
         public override IGeometry GetGeometry(IArtContext ctx)
         {
@@ -85,7 +82,6 @@ namespace Rain.Core.Model.DocumentGraph
             }
 
             target.Transform(MathUtils.Invert(transform));
-
         }
     }
 }

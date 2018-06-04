@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 
 using Rain.Core;
 using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Text;
-
-using FontStretch = Rain.Core.Model.Text.FontStretch;
-using FontStyle = Rain.Core.Model.Text.FontStyle;
-using FontWeight = Rain.Core.Model.Text.FontWeight;
 
 namespace Rain.Commands
 {
@@ -38,6 +33,27 @@ namespace Rain.Commands
 
         public TextInfoChange Change { get; }
 
+        #region IMergeableOperationCommand Members
+
+        public IOperationCommand Merge(IOperationCommand newCommand)
+        {
+            if (newCommand is ModifyTextCommand cmd)
+                return new ModifyTextCommand(newCommand.Id,
+                                             cmd.Targets[0],
+                                             new TextInfoChange
+                                             {
+                                                 FontFamily = cmd.Change.FontFamily ?? Change.FontFamily,
+                                                 FontSize = cmd.Change.FontSize ?? Change.FontSize,
+                                                 FontStyle = cmd.Change.FontStyle ?? Change.FontStyle,
+                                                 FontWeight = cmd.Change.FontWeight ?? Change.FontWeight,
+                                                 FontStretch = cmd.Change.FontStretch ?? Change.FontStretch
+                                             });
+
+            return null;
+        }
+
+        #endregion
+
         #region IOperationCommand<ITextContainer> Members
 
         public void Do(IArtContext artView)
@@ -56,29 +72,11 @@ namespace Rain.Commands
                     target.TextStyle.FontStretch = (FontStretch) Change.FontStretch;
 
                 if (Change.FontStyle != null)
-                    target.TextStyle.FontStyle = (FontStyle)Change.FontStyle;
+                    target.TextStyle.FontStyle = (FontStyle) Change.FontStyle;
 
                 if (Change.FontWeight != null)
-                    target.TextStyle.FontWeight = (FontWeight)Change.FontWeight;
+                    target.TextStyle.FontWeight = (FontWeight) Change.FontWeight;
             }
-        }
-
-        public IOperationCommand Merge(IOperationCommand newCommand)
-        {
-            if (newCommand is ModifyTextCommand cmd)
-            {
-                return new ModifyTextCommand(newCommand.Id, cmd.Targets[0], 
-                        new TextInfoChange
-                        {
-                            FontFamily = cmd.Change.FontFamily ?? Change.FontFamily,
-                            FontSize = cmd.Change.FontSize ?? Change.FontSize,
-                            FontStyle = cmd.Change.FontStyle ?? Change.FontStyle,
-                            FontWeight = cmd.Change.FontWeight ?? Change.FontWeight,
-                            FontStretch = cmd.Change.FontStretch ?? Change.FontStretch
-                        });
-            }
-
-            return null;
         }
 
         public void Undo(IArtContext artView)

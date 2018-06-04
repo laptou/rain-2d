@@ -8,8 +8,7 @@ namespace Rain.Core.Model.Geometry
 {
     public class QuadraticPathInstruction : CoordinatePathInstruction
     {
-        public QuadraticPathInstruction(float x, float y, float controlX, float controlY) :
-            base(x, y)
+        public QuadraticPathInstruction(float x, float y, float controlX, float controlY) : base(x, y)
         {
             ControlX = controlX;
             ControlY = controlY;

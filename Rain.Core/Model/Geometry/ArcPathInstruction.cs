@@ -7,13 +7,11 @@ using System.Threading.Tasks;
 
 namespace Rain.Core.Model.Geometry
 {
-    [DebuggerDisplay("A {RadiusX} {RadiusY} {Angle} {Clockwise} {LargeArc} {" + nameof(Position) +
-                     "}")]
+    [DebuggerDisplay("A {RadiusX} {RadiusY} {Angle} {Clockwise} {LargeArc} {" + nameof(Position) + "}")]
     public class ArcPathInstruction : CoordinatePathInstruction
     {
         public ArcPathInstruction(
-            float x, float y, float radiusX, float radiusY, float angle, bool clockwise,
-            bool largeArc) : base(x, y)
+            float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc) : base(x, y)
         {
             RadiusX = radiusX;
             RadiusY = radiusY;
@@ -22,8 +20,7 @@ namespace Rain.Core.Model.Geometry
             LargeArc = largeArc;
         }
 
-        public ArcPathInstruction(
-            Vector2 position, Vector2 radii, float angle, bool clockwise, bool largeArc) : this(
+        public ArcPathInstruction(Vector2 position, Vector2 radii, float angle, bool clockwise, bool largeArc) : this(
             position.X,
             position.Y,
             radii.X,

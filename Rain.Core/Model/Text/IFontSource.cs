@@ -7,8 +7,8 @@ namespace Rain.Core.Model.Text
 {
     public interface IFontSource : IDisposable, IEnumerable<IFontFamily>
     {
-        IFontFamily GetFamilyByName(string name);
         IFontFace GetFace(ITextInfo info);
+        IFontFamily GetFamilyByName(string name);
     }
 
     public interface IFontFamily : IDisposable, IEnumerable<IFontFace>

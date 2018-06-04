@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
 
@@ -23,8 +22,7 @@ namespace Rain.Renderer.Direct2D
         private          D2D1.GeometryRealization _fill;
         private          D2D1.Geometry            _geom;
 
-        public Geometry(D2D1.RenderTarget target) : this(target,
-                                                         new D2D1.PathGeometry(target.Factory)) { }
+        public Geometry(D2D1.RenderTarget target) : this(target, new D2D1.PathGeometry(target.Factory)) { }
 
         public Geometry(D2D1.RenderTarget target, D2D1.Geometry source)
         {
@@ -32,12 +30,16 @@ namespace Rain.Renderer.Direct2D
             _geom = source;
         }
 
+        public Geometry(D2D1.RenderTarget target, D2D1.GeometryRealization source)
+        {
+            _target = target;
+            _fill = source;
+        }
+
         public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries) : this(target)
         {
             var nativeGeometries = geometries.Select(g => ((Geometry) g)._geom).ToArray();
-            _geom = new D2D1.GeometryGroup(_target.Factory,
-                                           D2D1.FillMode.Winding,
-                                           nativeGeometries);
+            _geom = new D2D1.GeometryGroup(_target.Factory, D2D1.FillMode.Winding, nativeGeometries);
         }
 
         private D2D1.PathGeometry Path
@@ -56,17 +58,6 @@ namespace Rain.Renderer.Direct2D
         public override bool Equals(object obj) { return Equals(obj as Geometry); }
 
         public override int GetHashCode() { return (int) _geom.NativePointer; }
-
-        public override void Optimize(IRenderContext context)
-        {
-            // maybe do a geometry realization, but that transforms this into a device-dependent
-            // resource
-
-            if(!(context is Direct2DRenderContext d2d))
-                throw new ArgumentException("A Direct2D render context is required to perform this operation.");
-
-            _fill = new D2D1.GeometryRealization(d2d.Target.QueryInterface<D2D1.DeviceContext1>(), _geom, _geom.FlatteningTolerance);
-        }
 
         private IGeometry Combine(IGeometry other, D2D1.CombineMode mode)
         {
@@ -91,13 +82,7 @@ namespace Rain.Renderer.Direct2D
 
                         break;
                     case ArcPathInstruction arc:
-                        sink.Arc(arc.X,
-                                 arc.Y,
-                                 arc.RadiusX,
-                                 arc.RadiusY,
-                                 arc.Angle,
-                                 arc.Clockwise,
-                                 arc.LargeArc);
+                        sink.Arc(arc.X, arc.Y, arc.RadiusX, arc.RadiusY, arc.Angle, arc.Clockwise, arc.LargeArc);
 
                         break;
                     case CubicPathInstruction cubic:
@@ -118,10 +103,7 @@ namespace Rain.Renderer.Direct2D
 
                         break;
                     case QuadraticPathInstruction quadratic:
-                        sink.Quadratic(quadratic.X,
-                                       quadratic.Y,
-                                       quadratic.ControlX,
-                                       quadratic.ControlY);
+                        sink.Quadratic(quadratic.X, quadratic.Y, quadratic.ControlX, quadratic.ControlY);
 
                         break;
                 }
@@ -159,10 +141,7 @@ namespace Rain.Renderer.Direct2D
 
         public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
 
-        public static bool operator !=(Geometry geometry1, Geometry geometry2)
-        {
-            return !(geometry1 == geometry2);
-        }
+        public static bool operator !=(Geometry geometry1, Geometry geometry2) { return !(geometry1 == geometry2); }
 
         #region IEquatable<Geometry> Members
 
@@ -188,10 +167,7 @@ namespace Rain.Renderer.Direct2D
             return geometry;
         }
 
-        public IGeometry Difference(IGeometry other)
-        {
-            return Combine(other, D2D1.CombineMode.Exclude);
-        }
+        public IGeometry Difference(IGeometry other) { return Combine(other, D2D1.CombineMode.Exclude); }
 
         public override void Dispose()
         {
@@ -203,15 +179,9 @@ namespace Rain.Renderer.Direct2D
             base.Dispose();
         }
 
-        public bool FillContains(float x, float y)
-        {
-            return _geom.FillContainsPoint(new RawVector2(x, y));
-        }
+        public bool FillContains(float x, float y) { return _geom.FillContainsPoint(new RawVector2(x, y)); }
 
-        public IGeometry Intersection(IGeometry other)
-        {
-            return Combine(other, D2D1.CombineMode.Intersect);
-        }
+        public IGeometry Intersection(IGeometry other) { return Combine(other, D2D1.CombineMode.Intersect); }
 
         public void Load(IEnumerable<PathInstruction> source)
         {
@@ -268,11 +238,7 @@ namespace Rain.Renderer.Direct2D
 
         public IGeometry Transform(Matrix3x2 transform)
         {
-            return new Geometry(_target,
-                                new D2D1.TransformedGeometry(
-                                    _target.Factory,
-                                    _geom,
-                                    transform.Convert()));
+            return new Geometry(_target, new D2D1.TransformedGeometry(_target.Factory, _geom, transform.Convert()));
         }
 
         public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
@@ -300,8 +266,7 @@ namespace Rain.Renderer.Direct2D
                                                          arc.Size.Width,
                                                          arc.Size.Height,
                                                          arc.RotationAngle,
-                                                         arc.SweepDirection ==
-                                                         D2D1.SweepDirection.Clockwise,
+                                                         arc.SweepDirection == D2D1.SweepDirection.Clockwise,
                                                          arc.ArcSize == D2D1.ArcSize.Large));
             }
 
@@ -339,11 +304,8 @@ namespace Rain.Renderer.Direct2D
 
             public void AddQuadraticBezier(D2D1.QuadraticBezierSegment bezier)
             {
-                _instructions.Add(new QuadraticPathInstruction(
-                                      bezier.Point2.X,
-                                      bezier.Point2.Y,
-                                      bezier.Point1.X,
-                                      bezier.Point1.Y));
+                _instructions.Add(
+                    new QuadraticPathInstruction(bezier.Point2.X, bezier.Point2.Y, bezier.Point1.X, bezier.Point1.Y));
             }
 
             public void AddQuadraticBeziers(D2D1.QuadraticBezierSegment[] beziers)
@@ -412,9 +374,7 @@ namespace Rain.Renderer.Direct2D
 
             #region IGeometrySink Members
 
-            public void Arc(
-                float x, float y, float radiusX, float radiusY, float angle, bool clockwise,
-                bool largeArc)
+            public void Arc(float x, float y, float radiusX, float radiusY, float angle, bool clockwise, bool largeArc)
             {
                 Begin();
 
@@ -424,10 +384,7 @@ namespace Rain.Renderer.Direct2D
                     ArcSize = largeArc ? D2D1.ArcSize.Large : D2D1.ArcSize.Small,
                     Point = new RawVector2(x, y),
                     RotationAngle = angle,
-                    SweepDirection =
-                        clockwise
-                            ? D2D1.SweepDirection.Clockwise
-                            : D2D1.SweepDirection.CounterClockwise
+                    SweepDirection = clockwise ? D2D1.SweepDirection.Clockwise : D2D1.SweepDirection.CounterClockwise
                 });
 
                 (_x, _y) = (x, y);

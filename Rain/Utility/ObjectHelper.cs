@@ -10,8 +10,7 @@ namespace Rain.Utility
 {
     public class ObjectHelper
     {
-        public T CreateObject<T>(IArtContext context, IContainerLayer parent = null)
-            where T : ILayer, new()
+        public T CreateObject<T>(IArtContext context, IContainerLayer parent = null) where T : ILayer, new()
         {
             var layer = new T();
 

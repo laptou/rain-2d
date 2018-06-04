@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 
+using Rain.Renderer.WPF;
 using Rain.Utility;
 
 using System.Threading.Tasks;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 using Rain.Core;
 using Rain.Core.Model.Paint;
 using Rain.Renderer.Utility;
-using Rain.Renderer.WPF;
 
 using WPF = System.Windows.Media;
 
@@ -39,12 +39,7 @@ namespace Rain.ViewModel
         public ColorPickerTarget Mode
         {
             get => Get<ColorPickerTarget>();
-            set => Set(value,
-                       nameof(Mode),
-                       nameof(Hue),
-                       nameof(Saturation),
-                       nameof(Lightness),
-                       nameof(Alpha));
+            set => Set(value, nameof(Mode), nameof(Hue), nameof(Saturation), nameof(Lightness), nameof(Alpha));
         }
 
         private SolidColorBrushInfo Current
@@ -55,8 +50,7 @@ namespace Rain.ViewModel
 
                 var res = Context.BrushManager.Query();
 
-                return (Mode == ColorPickerTarget.Fill ? res.Fill : res.Stroke?.Brush) as
-                       SolidColorBrushInfo;
+                return (Mode == ColorPickerTarget.Fill ? res.Fill : res.Stroke?.Brush) as SolidColorBrushInfo;
             }
         }
 
@@ -73,7 +67,8 @@ namespace Rain.ViewModel
             {
                 Context.BrushManager.Apply(brush);
 
-                if (Current != null && Fill is WPF.SolidColorBrush scb)
+                if (Current != null &&
+                    Fill is WPF.SolidColorBrush scb)
                     scb.Color = Current.Color.Convert();
                 else
                     Fill = brush.CreateWpfBrush();
@@ -87,7 +82,8 @@ namespace Rain.ViewModel
                 pen.Brush = brush;
                 Context.BrushManager.Apply(pen);
 
-                if (Current != null && Stroke is WPF.SolidColorBrush scb)
+                if (Current != null &&
+                    Stroke is WPF.SolidColorBrush scb)
                     scb.Color = Current.Color.Convert();
                 else
                     Stroke = brush.CreateWpfBrush();
@@ -138,8 +134,7 @@ namespace Rain.ViewModel
 
                    if (Fill is WPF.LinearGradientBrush lgb)
                    {
-                       var dir = Vector2.Normalize(
-                           lgb.EndPoint.Convert() - lgb.StartPoint.Convert());
+                       var dir = Vector2.Normalize(lgb.EndPoint.Convert() - lgb.StartPoint.Convert());
 
                        lgb.StartPoint = (new Vector2(0.5f) - dir / 2).Convert();
                        lgb.EndPoint = (new Vector2(0.5f) + dir / 2).Convert();

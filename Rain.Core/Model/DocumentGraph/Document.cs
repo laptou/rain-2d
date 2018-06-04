@@ -57,14 +57,8 @@ namespace Rain.Core.Model.DocumentGraph
 
         public event PropertyChangingEventHandler Updating;
 
-        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Updated?.Invoke(sender, e);
-        }
+        private void RootPropertyChanged(object sender, PropertyChangedEventArgs e) { Updated?.Invoke(sender, e); }
 
-        private void RootPropertyChanging(object sender, PropertyChangingEventArgs e)
-        {
-            Updating?.Invoke(sender, e);
-        }
+        private void RootPropertyChanging(object sender, PropertyChangingEventArgs e) { Updating?.Invoke(sender, e); }
     }
 }

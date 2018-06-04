@@ -1,35 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rain.Formatter.Svg.Utilities;
+
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Rain.Formatter.Svg.Structure;
-using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg
 {
     public sealed class SvgContext
     {
-        private readonly Dictionary<string, IElement>
-            _elements = new Dictionary<string, IElement>();
+        private readonly Dictionary<string, IElement> _elements = new Dictionary<string, IElement>();
 
-        public SvgContext(XElement root)
-        {
-            Root = root;
-        }
+        public SvgContext(XElement root) { Root = root; }
 
-        public SvgContext()
-        {
-            Root = new XElement(SvgNames.Svg);
-        }
+        public SvgContext() { Root = new XElement(SvgNames.Svg); }
 
         public IElement this[string id]
         {
             get =>
-                _elements.TryGetValue(id, out var element)
-                    ? element
-                    : _elements[id] = GetElementById(id);
+                _elements.TryGetValue(id, out var element) ? element : _elements[id] = GetElementById(id);
 
             set => _elements[id] = value;
         }
@@ -40,7 +33,7 @@ namespace Rain.Formatter.Svg
 
         public IElement GetElementByUri(Uri uri)
         {
-            if(uri.IsAbsoluteUri)
+            if (uri.IsAbsoluteUri)
                 throw new NotImplementedException();
 
             return GetElementById(uri.GetFragment());

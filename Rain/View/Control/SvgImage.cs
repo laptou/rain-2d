@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -12,10 +11,7 @@ using System.Xml.Linq;
 using Rain.Core;
 using Rain.Core.Input;
 using Rain.Core.Model.DocumentGraph;
-using Rain.Core.Model.Effects;
-using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Text;
-using Rain.Core.Utility;
 using Rain.Formatter.Svg;
 using Rain.Formatter.Svg.IO;
 using Rain.Renderer;
@@ -63,10 +59,7 @@ namespace Rain.View.Control
             set => SetValue(SourceProperty, value);
         }
 
-        protected override WPF.Size ArrangeOverride(WPF.Size finalSize)
-        {
-            return MeasureOverride(finalSize);
-        }
+        protected override WPF.Size ArrangeOverride(WPF.Size finalSize) { return MeasureOverride(finalSize); }
 
         protected override WPF.Size MeasureOverride(WPF.Size availableSize)
         {
@@ -98,8 +91,7 @@ namespace Rain.View.Control
 
             if (!_prepared) return;
 
-            var scale = (float) Math.Min(ActualWidth / _document.Bounds.Width,
-                                         ActualHeight / _document.Bounds.Height);
+            var scale = (float) Math.Min(ActualWidth / _document.Bounds.Width, ActualHeight / _document.Bounds.Height);
 
             RenderContext.Begin(drawingContext);
 
@@ -129,8 +121,7 @@ namespace Rain.View.Control
             }
         }
 
-        private static void SourceChanged(
-            WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
+        private static void SourceChanged(WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
                 svgImage.Update();
@@ -145,7 +136,9 @@ namespace Rain.View.Control
             XDocument xdoc;
 
             using (var stream = GetStream())
+            {
                 xdoc = XDocument.Load(stream);
+            }
 
             var document = new Formatter.Svg.Structure.Document();
             document.FromXml(xdoc.Root, new SvgContext());
@@ -155,6 +148,7 @@ namespace Rain.View.Control
         }
 
         #region IArtContext Members
+
         /// <inheritdoc />
         public ICaret CreateCaret(int width, int height) { throw new NotImplementedException(); }
 
@@ -168,10 +162,7 @@ namespace Rain.View.Control
 
 
         /// <inheritdoc />
-        public void SetManager<T>(T manager) where T : IArtContextManager
-        {
-            throw new InvalidOperationException();
-        }
+        public void SetManager<T>(T manager) where T : IArtContextManager { throw new InvalidOperationException(); }
 
         public IRenderContext RenderContext { get; } = new WpfRenderContext();
 

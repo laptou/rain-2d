@@ -15,9 +15,6 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
-        public override IBrush CreateBrush(IRenderContext target)
-        {
-            throw new NotImplementedException();
-        }
+        public override IBrush CreateBrush(IRenderContext target) { throw new NotImplementedException(); }
     }
 }

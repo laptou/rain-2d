@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -28,33 +27,15 @@ namespace Rain.Renderer.WPF
         public override float Height { get; }
         public override float Width { get; }
 
-        /// <inheritdoc />
-        public override IFontSource CreateFontSource() { throw new NotImplementedException(); }
-
         public override void Begin(object ctx)
         {
             if (ctx is DrawingContext dc)
                 _ctx = dc;
         }
 
-        public override void Clear(Color color)
-        {
-            _commandQueue.Enqueue(new ClearRenderCommand(color));
-        }
+        public override void Clear(Color color) { _commandQueue.Enqueue(new ClearRenderCommand(color)); }
 
-        /// <inheritdoc />
-        public override IEffectLayer CreateEffectLayer() { throw new NotImplementedException(); }
-
-        /// <inheritdoc />
-        public override IRenderImage GetRenderImage(IImageFrame image)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ISolidColorBrush CreateBrush(Color color)
-        {
-            return new SolidColorBrush(color);
-        }
+        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(color); }
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY)
@@ -63,8 +44,8 @@ namespace Rain.Renderer.WPF
         }
 
         public override IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
-            float radiusY, float focusX, float focusY)
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX, float radiusY, float focusX,
+            float focusY)
         {
             return new RadialGradientBrush(stops,
                                            new Point(centerX, centerY),
@@ -74,10 +55,16 @@ namespace Rain.Renderer.WPF
 
         public override T CreateEffect<T>() { throw new NotImplementedException(); }
 
+        /// <inheritdoc />
+        public override IEffectLayer CreateEffectLayer() { throw new NotImplementedException(); }
+
         public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
             return new Geometry(new EllipseGeometry(new Point(cx, cy), rx, ry));
         }
+
+        /// <inheritdoc />
+        public override IFontSource CreateFontSource() { throw new NotImplementedException(); }
 
         public override IGeometry CreateGeometry() { return new Geometry(); }
 
@@ -85,9 +72,7 @@ namespace Rain.Renderer.WPF
         {
             return new Geometry(new GeometryGroup
             {
-                Children =
-                    new GeometryCollection(
-                        geometries.Select(g => (System.Windows.Media.Geometry) g))
+                Children = new GeometryCollection(geometries.Select(g => (System.Windows.Media.Geometry) g))
             });
         }
 
@@ -97,16 +82,10 @@ namespace Rain.Renderer.WPF
         }
 
         public override IPen CreatePen(
-            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit)
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
+            float miterLimit)
         {
-            return new Pen(width,
-                           brush as Brush,
-                           dashes,
-                           dashOffset,
-                           lineCap,
-                           lineJoin,
-                           miterLimit);
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit);
         }
 
         public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
@@ -116,32 +95,18 @@ namespace Rain.Renderer.WPF
 
         public override ITextLayout CreateTextLayout() { throw new NotImplementedException(); }
 
-        /// <inheritdoc />
-        public override void DrawEffectLayer(IEffectLayer layer)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void Dispose() { _ctx = null; }
 
         /// <inheritdoc />
-        public override void DrawBitmap(
-            IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode)
+        public override void DrawBitmap(IRenderImage bitmap, RectangleF dstRect, ScaleMode scaleMode)
         {
             throw new NotImplementedException();
         }
+
+        public override void DrawBitmap(IRenderImage bitmap) { throw new NotImplementedException(); }
 
         /// <inheritdoc />
-        public override IRenderImage GetRenderImage(
-            IImageFrame image, Vector2 scale, ScaleMode mode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void DrawBitmap(IRenderImage bitmap)
-        {
-            throw new NotImplementedException();
-        }
+        public override void DrawEffectLayer(IEffectLayer layer) { throw new NotImplementedException(); }
 
         public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen)
         {
@@ -149,17 +114,13 @@ namespace Rain.Renderer.WPF
         }
 
         /// <inheritdoc />
-        public override void DrawEllipse(
-            float cx, float cy, float rx, float ry, IPen pen, float penWidth)
+        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen pen, float penWidth)
         {
 #warning This currently ignores the width parameter. See Apply().
             _commandQueue.Enqueue(new EllipseRenderCommand(cx, cy, rx, ry, false, null, pen));
         }
 
-        public override void DrawGeometry(IGeometry geometry, IPen pen)
-        {
-            DrawGeometry(geometry, pen, pen.Width);
-        }
+        public override void DrawGeometry(IGeometry geometry, IPen pen) { DrawGeometry(geometry, pen, pen.Width); }
 
         public override void DrawGeometry(IGeometry geometry, IPen pen, float width)
         {
@@ -172,19 +133,16 @@ namespace Rain.Renderer.WPF
             _commandQueue.Enqueue(new LineRenderCommand(v1, v2, pen));
         }
 
-        public override void DrawRectangle(
-            float left, float top, float width, float height, IPen pen)
+        public override void DrawRectangle(float left, float top, float width, float height, IPen pen)
         {
-            _commandQueue.Enqueue(
-                new RectangleRenderCommand(left, top, height, width, false, null, pen));
+            _commandQueue.Enqueue(new RectangleRenderCommand(left, top, height, width, false, null, pen));
         }
 
         /// <inheritdoc />
         public override void DrawRectangle(RectangleF r, IPen pen, float penWidth)
         {
 #warning This currently ignores the width parameter. See Apply().
-            _commandQueue.Enqueue(
-                new RectangleRenderCommand(r.Left, r.Top, r.Width, r.Height, false, null, pen));
+            _commandQueue.Enqueue(new RectangleRenderCommand(r.Left, r.Top, r.Width, r.Height, false, null, pen));
         }
 
         public override void End()
@@ -210,14 +168,21 @@ namespace Rain.Renderer.WPF
             FillRectangle(rect.Left, rect.Top, rect.Width, rect.Height, brush);
         }
 
-        public override void FillRectangle(
-            float left, float top, float width, float height, IBrush brush)
+        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
         {
-            _commandQueue.Enqueue(
-                new RectangleRenderCommand(left, top, width, height, true, brush, null));
+            _commandQueue.Enqueue(new RectangleRenderCommand(left, top, width, height, true, brush, null));
         }
 
         public override float GetDpi() { return 96; }
+
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image) { throw new NotImplementedException(); }
+
+        /// <inheritdoc />
+        public override IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void Transform(Matrix3x2 transform, bool absolute = false)
         {
@@ -237,9 +202,7 @@ namespace Rain.Renderer.WPF
 
                     break;
                 case GeometryRenderCommand geometry:
-                    _ctx?.DrawGeometry(geometry.Brush as Brush,
-                                       geometry.Pen as Pen,
-                                       geometry.Geometry as Geometry);
+                    _ctx?.DrawGeometry(geometry.Brush as Brush, geometry.Pen as Pen, geometry.Geometry as Geometry);
 
                     break;
                 case RectangleRenderCommand rect:

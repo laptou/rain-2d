@@ -21,10 +21,11 @@ namespace Rain.Commands
             Global = global ?? Matrix3x2.Identity;
         }
 
-        public override string Description => $"Transformed {Targets.Count} layer(s)";
         public Matrix3x2 Global { get; }
 
         public Matrix3x2 Local { get; }
+
+        #region IMergeableOperationCommand Members
 
         public override void Do(IArtContext artView)
         {
@@ -41,10 +42,7 @@ namespace Rain.Commands
 
             var transformCommand = (TransformCommand) newCommand;
 
-            return new TransformCommand(Id,
-                                        Targets,
-                                        Local * transformCommand.Local,
-                                        Global * transformCommand.Global);
+            return new TransformCommand(Id, Targets, Local * transformCommand.Local, Global * transformCommand.Global);
         }
 
         public override void Undo(IArtContext artView)
@@ -55,5 +53,9 @@ namespace Rain.Commands
                     layer.ApplyTransform(MathUtils.Invert(Local), MathUtils.Invert(Global));
                 }
         }
+
+        public override string Description => $"Transformed {Targets.Count} layer(s)";
+
+        #endregion
     }
 }

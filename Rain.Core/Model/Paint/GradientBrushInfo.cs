@@ -4,14 +4,48 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Utility;
 
 namespace Rain.Core.Model.Paint
 {
-    public class GradientBrushInfo : BrushInfo
+    public class GradientBrushInfo : BrushInfo, IGradientBrushInfo
     {
         public GradientBrushInfo() { Stops = new ObservableList<GradientStop>(); }
+
+        #region IGradientBrushInfo Members
+
+        public override IBrush CreateBrush(IRenderContext ctx)
+        {
+            if (Stops.Count == 0) return null;
+
+            IGradientBrush brush;
+
+            switch (Type)
+            {
+                case GradientBrushType.Linear:
+                    brush = ctx.CreateBrush(Stops, StartPoint.X, StartPoint.Y, EndPoint.X, EndPoint.Y);
+
+                    break;
+                case GradientBrushType.Radial:
+                    brush = ctx.CreateBrush(Stops,
+                                            StartPoint.X,
+                                            StartPoint.Y,
+                                            EndPoint.X - StartPoint.X,
+                                            EndPoint.Y - StartPoint.Y,
+                                            FocusOffset.X,
+                                            FocusOffset.Y);
+
+                    break;
+                default:
+
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            brush.Opacity = Opacity;
+            brush.Transform = Transform;
+
+            return brush;
+        }
 
         public Vector2 EndPoint
         {
@@ -55,41 +89,6 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
-        public override IBrush CreateBrush(IRenderContext ctx)
-        {
-            if (Stops.Count == 0) return null;
-
-            IGradientBrush brush;
-
-            switch (Type)
-            {
-                case GradientBrushType.Linear:
-                    brush = ctx.CreateBrush(Stops,
-                                            StartPoint.X,
-                                            StartPoint.Y,
-                                            EndPoint.X,
-                                            EndPoint.Y);
-
-                    break;
-                case GradientBrushType.Radial:
-                    brush = ctx.CreateBrush(Stops,
-                                            StartPoint.X,
-                                            StartPoint.Y,
-                                            EndPoint.X - StartPoint.X,
-                                            EndPoint.Y - StartPoint.Y,
-                                            FocusOffset.X,
-                                            FocusOffset.Y);
-
-                    break;
-                default:
-
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            brush.Opacity = Opacity;
-            brush.Transform = Transform;
-
-            return brush;
-        }
+        #endregion
     }
 }

@@ -25,8 +25,7 @@ namespace Rain.Tools
         private readonly Dictionary<string, string> _statuses = new Dictionary<string, string>
         {
             {
-                "default",
-                "<b>Alt Click</b> to select-behind. " + "<b>Shift Click</b> to multi-select."
+                "default", "<b>Alt Click</b> to select-behind. " + "<b>Shift Click</b> to multi-select."
             },
             {
                 "selection", "<b>{0}</b> layer(s) selected " + "[{1}]"
@@ -87,9 +86,7 @@ namespace Rain.Tools
 
                 foreach (var layer in delete)
                     Context.HistoryManager.Do(
-                        new RemoveLayerCommand(Context.HistoryManager.Position + 1,
-                                               layer.Parent,
-                                               layer));
+                        new RemoveLayerCommand(Context.HistoryManager.Position + 1, layer.Parent, layer));
 
                 return;
             }
@@ -123,8 +120,7 @@ namespace Rain.Tools
             _deltaTranslation = Vector2.Zero;
             _mouse = (pos, true, Time.Now);
 
-            foreach (var handle in GetHandles(SelectionManager.SelectionBounds,
-                                              Context.ViewManager.Zoom))
+            foreach (var handle in GetHandles(SelectionManager.SelectionBounds, Context.ViewManager.Zoom))
                 if (Vector2.Distance(handle.position, pos) < 7.5f)
                 {
                     _handle = handle.handle;
@@ -154,8 +150,7 @@ namespace Rain.Tools
             {
                 Cursor = null;
 
-                foreach (var handle in GetHandles(SelectionManager.SelectionBounds,
-                                                  Context.ViewManager.Zoom))
+                foreach (var handle in GetHandles(SelectionManager.SelectionBounds, Context.ViewManager.Zoom))
                 {
                     if (Vector2.Distance(handle.position, pos) > 7.5f) continue;
 
@@ -212,12 +207,9 @@ namespace Rain.Tools
 
             if (_handle == SelectionHandle.Rotation)
             {
-                var origin =
-                    SelectionManager.FromSelectionSpace(
-                        bounds.TopLeft + bounds.Size * relativeOrigin);
+                var origin = SelectionManager.FromSelectionSpace(bounds.TopLeft + bounds.Size * relativeOrigin);
 
-                rotate = MathUtils.Angle(pos - origin, false) -
-                         MathUtils.Angle(_mouse.position - origin, false);
+                rotate = MathUtils.Angle(pos - origin, false) - MathUtils.Angle(_mouse.position - origin, false);
 
                 #region segmented rotation
 
@@ -226,8 +218,7 @@ namespace Rain.Tools
                     GuideManager.SetGuide(new Guide(0,
                                                     true,
                                                     origin,
-                                                    SelectionManager
-                                                       .SelectionTransform.GetRotation(),
+                                                    SelectionManager.SelectionTransform.GetRotation(),
                                                     GuideType.Rotation));
 
                     rotate = MathUtils.Atan2(pos.Y - origin.Y, pos.X - origin.X);
@@ -350,11 +341,7 @@ namespace Rain.Tools
 
                 var axis = origin - target;
 
-                GuideManager.SetGuide(new Guide(0,
-                                                true,
-                                                origin,
-                                                MathUtils.Angle(axis, true),
-                                                GuideType.Proportion));
+                GuideManager.SetGuide(new Guide(0, true, origin, MathUtils.Angle(axis, true), GuideType.Proportion));
 
                 var snap = GuideManager.LinearSnap(dest, origin, GuideType.Proportion);
 
@@ -416,19 +403,13 @@ namespace Rain.Tools
             // handles
             var handles = GetHandles(rect, view.Zoom).ToDictionary();
 
-            using (var pen =
-                target.CreatePen(2, cache.GetBrush(Colors.SelectionHandleOutline)))
+            using (var pen = target.CreatePen(2, cache.GetBrush(Colors.SelectionHandleOutline)))
             {
-                target.DrawLine(handles[SelectionHandle.Top],
-                                handles[SelectionHandle.Rotation],
-                                pen);
+                target.DrawLine(handles[SelectionHandle.Top], handles[SelectionHandle.Rotation], pen);
 
                 foreach (var v in handles.Values)
                 {
-                    target.FillEllipse(v,
-                                       5f / view.Zoom,
-                                       5f / view.Zoom,
-                                       cache.GetBrush(Colors.SelectionHandle));
+                    target.FillEllipse(v, 5f / view.Zoom, 5f / view.Zoom, cache.GetBrush(Colors.SelectionHandle));
                     target.DrawEllipse(v, 5f / view.Zoom, 5f / view.Zoom, pen);
                 }
             }
@@ -440,17 +421,13 @@ namespace Rain.Tools
             UpdateStatus();
         }
 
-        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(
-            RectangleF rect, float zoom)
+        private IEnumerable<(SelectionHandle handle, Vector2 position)> GetHandles(RectangleF rect, float zoom)
         {
             if (rect.IsEmpty) yield break;
 
             float x1 = rect.Left, y1 = rect.Top, x2 = rect.Right, y2 = rect.Bottom;
 
-            Vector2 Transform(float x, float y)
-            {
-                return SelectionManager.FromSelectionSpace(new Vector2(x, y));
-            }
+            Vector2 Transform(float x, float y) { return SelectionManager.FromSelectionSpace(new Vector2(x, y)); }
 
             yield return (SelectionHandle.TopLeft, Transform(x1, y1));
             yield return (SelectionHandle.TopRight, Transform(x2, y1));
@@ -481,9 +458,7 @@ namespace Rain.Tools
                 {
                     var names = Selection.Select(l => l.Name ?? l.DefaultName).ToArray();
 
-                    var msg = string.Format(_statuses["selection"],
-                                            names.Length,
-                                            string.Join(", ", names));
+                    var msg = string.Format(_statuses["selection"], names.Length, string.Join(", ", names));
 
                     Manager.RaiseStatus(new Status(Status.StatusType.Info, msg));
                 }

@@ -156,17 +156,12 @@ namespace Rain.View.Utility
 
         #region IMultiValueConverter Members
 
-        public object Convert(
-            object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return Convert(values[0],
-                           targetType,
-                           values.ElementAtOrDefault(1) ?? parameter,
-                           culture);
+            return Convert(values[0], targetType, values.ElementAtOrDefault(1) ?? parameter, culture);
         }
 
-        public object[] ConvertBack(
-            object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             return new[]
             {
@@ -200,8 +195,7 @@ namespace Rain.View.Utility
             throw new ArgumentException();
         }
 
-        public object ConvertBack(
-            object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var unit = parameter as Unit? ?? BaseUnit;
 

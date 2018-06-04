@@ -19,9 +19,7 @@ namespace Rain.Model
             Type = type;
         }
 
-        public Guide(
-            int id, bool @virtual, Vector2 origin, float angle, int divisions,
-            GuideType type) : this()
+        public Guide(int id, bool @virtual, Vector2 origin, float angle, int divisions, GuideType type) : this()
         {
             Id = id;
             Virtual = @virtual;

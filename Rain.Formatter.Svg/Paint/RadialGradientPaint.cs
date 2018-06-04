@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -11,9 +10,7 @@ namespace Rain.Formatter.Svg.Paint
 {
     public class RadialGradientPaint : GradientPaint
     {
-        public RadialGradientPaint()
-        {
-        }
+        public RadialGradientPaint() { }
 
         public RadialGradientPaint(string id, IEnumerable<GradientStop> stops)
         {

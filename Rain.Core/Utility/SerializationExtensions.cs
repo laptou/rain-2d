@@ -13,9 +13,6 @@ namespace Rain.Core.Utility
             return (Guid) si.GetValue(name, typeof(Guid));
         }
 
-        public static T GetValue<T>(this SerializationInfo si, string name)
-        {
-            return (T) si.GetValue(name, typeof(T));
-        }
+        public static T GetValue<T>(this SerializationInfo si, string name) { return (T) si.GetValue(name, typeof(T)); }
     }
 }

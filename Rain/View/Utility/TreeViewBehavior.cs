@@ -24,17 +24,13 @@ namespace Rain.View.Utility
         ///     The dependency property definition for the SelectedItems property.
         /// </summary>
         public static readonly DependencyProperty SelectedItemsProperty =
-            DependencyProperty.Register("SelectedItems",
-                                        typeof(IList),
-                                        typeof(TreeViewMultipleSelectionBehavior));
+            DependencyProperty.Register("SelectedItems", typeof(IList), typeof(TreeViewMultipleSelectionBehavior));
 
         /// <summary>
         ///     The dependency property definition for the AnchorItem property.
         /// </summary>
         private static readonly DependencyProperty AnchorItemProperty =
-            DependencyProperty.Register("AnchorItem",
-                                        typeof(TreeViewItem),
-                                        typeof(TreeViewMultipleSelectionBehavior));
+            DependencyProperty.Register("AnchorItem", typeof(TreeViewItem), typeof(TreeViewMultipleSelectionBehavior));
 
         /// <summary>
         ///     The dependency property definition for the IsItemSelected attached property.
@@ -43,8 +39,7 @@ namespace Rain.View.Utility
             DependencyProperty.RegisterAttached("IsItemSelected",
                                                 typeof(bool),
                                                 typeof(TreeViewMultipleSelectionBehavior),
-                                                new FrameworkPropertyMetadata(
-                                                    OnIsItemSelectedChanged));
+                                                new FrameworkPropertyMetadata(OnIsItemSelectedChanged));
 
         /// <summary>
         ///     Gets or sets the selected items.
@@ -157,9 +152,7 @@ namespace Rain.View.Utility
         {
             base.OnAttached();
 
-            AssociatedObject.AddHandler(UIElement.KeyDownEvent,
-                                        new KeyEventHandler(OnTreeViewItemKeyDown),
-                                        true);
+            AssociatedObject.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown), true);
             AssociatedObject.AddHandler(UIElement.MouseLeftButtonUpEvent,
                                         new MouseButtonEventHandler(OnTreeViewItemMouseUp),
                                         true);
@@ -173,8 +166,7 @@ namespace Rain.View.Utility
         {
             base.OnDetaching();
 
-            AssociatedObject.RemoveHandler(UIElement.KeyDownEvent,
-                                           new KeyEventHandler(OnTreeViewItemKeyDown));
+            AssociatedObject.RemoveHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTreeViewItemKeyDown));
             AssociatedObject.RemoveHandler(UIElement.MouseLeftButtonUpEvent,
                                            new MouseButtonEventHandler(OnTreeViewItemMouseUp));
         }
@@ -215,8 +207,7 @@ namespace Rain.View.Utility
         /// <typeparam name="T">The type of item to retrieve.</typeparam>
         /// <param name="parentItem">The parent item.</param>
         /// <returns>The list of items within the parent item, may be empty.</returns>
-        private static IList<T> GetItemsRecursively<T>(ItemsControl parentItem)
-            where T : ItemsControl
+        private static IList<T> GetItemsRecursively<T>(ItemsControl parentItem) where T : ItemsControl
         {
             if (parentItem == null)
                 throw new ArgumentNullException(nameof(parentItem));
@@ -273,8 +264,7 @@ namespace Rain.View.Utility
         ///     The <see cref="System.Windows.DependencyPropertyChangedEventArgs" /> instance containing the event
         ///     data.
         /// </param>
-        private static void OnIsItemSelectedChanged(
-            DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        private static void OnIsItemSelectedChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             var treeViewItem = obj as TreeViewItem;
             var treeView = treeViewItem?.FindVisualAncestor<TreeView>();
@@ -436,8 +426,7 @@ namespace Rain.View.Utility
         /// <typeparam name="T">The type of the child.</typeparam>
         /// <param name="obj">The object to search.</param>
         /// <returns>The matching visual children, may be null.</returns>
-        public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject obj)
-            where T : DependencyObject
+        public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject obj) where T : DependencyObject
         {
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {

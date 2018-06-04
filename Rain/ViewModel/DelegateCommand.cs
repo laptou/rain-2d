@@ -26,9 +26,9 @@ namespace Rain.ViewModel
 
         public event EventHandler CanExecuteChanged;
 
-        public bool CanExecute(object parameter) => true;
+        public bool CanExecute(object parameter) { return true; }
 
-        public void Execute(object parameter) => Action?.Invoke();
+        public void Execute(object parameter) { Action?.Invoke(); }
 
         #endregion
     }
@@ -81,9 +81,7 @@ namespace Rain.ViewModel
         public bool CanExecute(object parameter)
         {
             return _action != null &&
-                   _predicate?.Invoke(default(T) != null && parameter == null
-                                          ? default
-                                          : (T) parameter) != false;
+                   _predicate?.Invoke(default(T) != null && parameter == null ? default : (T) parameter) != false;
         }
 
         public void Execute(object parameter)
@@ -108,8 +106,7 @@ namespace Rain.ViewModel
 
         public AsyncDelegateCommand(Func<T, Task> task) { _task = task; }
 
-        public AsyncDelegateCommand(Action<T> task) : this(
-            p => System.Threading.Tasks.Task.Run(() => task(p))) { }
+        public AsyncDelegateCommand(Action<T> task) : this(p => System.Threading.Tasks.Task.Run(() => task(p))) { }
 
         public NotifyTaskCompletion Execution { get; private set; }
 

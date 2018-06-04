@@ -12,14 +12,15 @@ namespace Rain.Native
         public AccentState AccentState;
 
         /// <summary>
-        /// Set to 2 to use custom colour if possible.
+        ///     Set to 2 to use custom colour if possible.
         /// </summary>
-        public int         AccentFlags;
+        public int AccentFlags;
 
         /// <summary>
-        /// Colour in ARGB format.
+        ///     Colour in ARGB format.
         /// </summary>
-        public uint         GradientColor;
-        public int         AnimationId;
+        public uint GradientColor;
+
+        public int AnimationId;
     }
 }

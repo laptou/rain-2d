@@ -39,8 +39,7 @@ namespace Rain.Formatter.Svg.Shapes
                         break;
                     case ArcPathInstruction an:
                         pathData += $"A{an.RadiusX} {an.RadiusY} {an.Angle} " +
-                                    $"{(an.LargeArc ? 1 : 0)} {(an.Clockwise ? 1 : 0)} " +
-                                    $"{an.X} {an.Y}";
+                                    $"{(an.LargeArc ? 1 : 0)} {(an.Clockwise ? 1 : 0)} " + $"{an.X} {an.Y}";
 
                         break;
                     case QuadraticPathInstruction qn:
@@ -48,8 +47,8 @@ namespace Rain.Formatter.Svg.Shapes
 
                         break;
                     case CubicPathInstruction cn:
-                        pathData += $"C{cn.Control1.X},{cn.Control1.Y} " +
-                                    $"{cn.Control2.X},{cn.Control2.Y} " + $"{cn.X},{cn.Y} ";
+                        pathData += $"C{cn.Control1.X},{cn.Control1.Y} " + $"{cn.Control2.X},{cn.Control2.Y} " +
+                                    $"{cn.X},{cn.Y} ";
 
                         break;
                     case LinePathInstruction ln:

@@ -39,9 +39,7 @@ namespace Rain.Renderer
                 Position = 0;
             }
 
-            CollectionChanged?.Invoke(this,
-                                      new NotifyCollectionChangedEventArgs(
-                                          NotifyCollectionChangedAction.Reset));
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <inheritdoc />
@@ -89,7 +87,10 @@ namespace Rain.Renderer
                         if (newCmd != null)
                             Replace(newCmd);
                     }
-                    else Push(command);
+                    else
+                    {
+                        Push(command);
+                    }
 
                     Context.Invalidate();
                 }
@@ -113,8 +114,7 @@ namespace Rain.Renderer
                 result = _undo.Pop();
 
                 CollectionChanged?.Invoke(this,
-                                          new NotifyCollectionChangedEventArgs(
-                                              NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
@@ -132,8 +132,7 @@ namespace Rain.Renderer
                 _undo.Push(command);
 
                 CollectionChanged?.Invoke(this,
-                                          new NotifyCollectionChangedEventArgs(
-                                              NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
@@ -152,8 +151,7 @@ namespace Rain.Renderer
                 _undo.Push(command);
 
                 CollectionChanged?.Invoke(this,
-                                          new NotifyCollectionChangedEventArgs(
-                                              NotifyCollectionChangedAction.Reset));
+                                          new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
                 RaisePropertyChanged(nameof(Current));
                 RaisePropertyChanged(nameof(NextId));
@@ -221,10 +219,7 @@ namespace Rain.Renderer
             return EqualityComparer<TK>.Default.Equals(x.Key, y.Key);
         }
 
-        public int GetHashCode(KeyValuePair<TK, TV> obj)
-        {
-            return EqualityComparer<TK>.Default.GetHashCode(obj.Key);
-        }
+        public int GetHashCode(KeyValuePair<TK, TV> obj) { return EqualityComparer<TK>.Default.GetHashCode(obj.Key); }
 
         #endregion
     }

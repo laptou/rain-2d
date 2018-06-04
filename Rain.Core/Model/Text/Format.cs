@@ -91,8 +91,7 @@ namespace Rain.Core.Model.Text
         {
             var f = this;
 
-            return $"{f.Range.Index} + {f.Range.Length}" +
-                   $" -> {f.Range.Index + f.Range.Length}: " +
+            return $"{f.Range.Index} + {f.Range.Length}" + $" -> {f.Range.Index + f.Range.Length}: " +
                    $"{f.Fill?.ToString() ?? "none"} {f.FontStyle} {f.FontWeight}";
         }
 

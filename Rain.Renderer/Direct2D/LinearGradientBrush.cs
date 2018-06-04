@@ -18,26 +18,20 @@ namespace Rain.Renderer.Direct2D
         private SpreadMethod _spreadMethod;
 
         public LinearGradientBrush(
-            RenderTarget target, IEnumerable<GradientStop> stops, RawVector2 start, RawVector2 end)
-            : base(target, stops)
+            RenderTarget target, IEnumerable<GradientStop> stops, RawVector2 start, RawVector2 end) : base(
+            target,
+            stops)
         {
             using (var nativeStops = ConvertStops())
             {
                 NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
-                                                                        new
-                                                                            LinearGradientBrushProperties
-                                                                            {
-                                                                                StartPoint =
-                                                                                    new RawVector2(
-                                                                                        start.X,
-                                                                                        start.Y),
-                                                                                EndPoint =
-                                                                                    new RawVector2(
-                                                                                        end.X,
-                                                                                        end.Y)
-                                                                            },
+                                                                        new LinearGradientBrushProperties
+                                                                        {
+                                                                            StartPoint =
+                                                                                new RawVector2(start.X, start.Y),
+                                                                            EndPoint = new RawVector2(end.X, end.Y)
+                                                                        },
                                                                         nativeStops);
-                
             }
         }
 
@@ -68,18 +62,11 @@ namespace Rain.Renderer.Direct2D
             using (var nativeStops = ConvertStops())
             {
                 NativeBrush = new SharpDX.Direct2D1.LinearGradientBrush(Target,
-                                                                        new
-                                                                            LinearGradientBrushProperties
-                                                                            {
-                                                                                StartPoint =
-                                                                                    new RawVector2(
-                                                                                        StartX,
-                                                                                        StartY),
-                                                                                EndPoint =
-                                                                                    new RawVector2(
-                                                                                        EndX,
-                                                                                        EndY)
-                                                                            },
+                                                                        new LinearGradientBrushProperties
+                                                                        {
+                                                                            StartPoint = new RawVector2(StartX, StartY),
+                                                                            EndPoint = new RawVector2(EndX, EndY)
+                                                                        },
                                                                         nativeStops);
             }
 
@@ -115,8 +102,7 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint.X;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint =
-                    new RawVector2(value, EndY);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint = new RawVector2(value, EndY);
                 RaisePropertyChanged();
             }
         }
@@ -126,8 +112,7 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint.Y;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint =
-                    new RawVector2(EndX, value);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).EndPoint = new RawVector2(EndX, value);
                 RaisePropertyChanged();
             }
         }
@@ -137,8 +122,7 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint.X;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint =
-                    new RawVector2(value, StartY);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint = new RawVector2(value, StartY);
                 RaisePropertyChanged();
             }
         }
@@ -148,8 +132,7 @@ namespace Rain.Renderer.Direct2D
             get => ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint.Y;
             set
             {
-                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint =
-                    new RawVector2(StartX, value);
+                ((SharpDX.Direct2D1.LinearGradientBrush) NativeBrush).StartPoint = new RawVector2(StartX, value);
                 RaisePropertyChanged();
             }
         }

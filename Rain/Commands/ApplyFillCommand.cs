@@ -18,10 +18,10 @@ namespace Rain.Commands
             NewFill = @new?.Clone<IBrushInfo>();
         }
 
-        public override string Description => $"Filled {Targets.Count} layer(s)";
-
         public IBrushInfo NewFill { get; }
         public IBrushInfo[] OldFills { get; }
+
+        #region IMergeableOperationCommand Members
 
         public override void Do(IArtContext artView)
         {
@@ -49,5 +49,9 @@ namespace Rain.Commands
                     Targets[i].Fill = OldFills[i];
                 }
         }
+
+        public override string Description => $"Filled {Targets.Count} layer(s)";
+
+        #endregion
     }
 }

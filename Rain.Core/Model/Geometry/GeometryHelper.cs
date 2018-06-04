@@ -7,8 +7,7 @@ namespace Rain.Core.Model.Geometry
 {
     public static class GeometryHelper
     {
-        public static IEnumerable<PathInstruction> InstructionsFromNodes(
-            IEnumerable<PathNode> nodes)
+        public static IEnumerable<PathInstruction> InstructionsFromNodes(IEnumerable<PathNode> nodes)
         {
             var first = true;
             PathNode? previous = null;
@@ -18,21 +17,20 @@ namespace Rain.Core.Model.Geometry
                 if (first)
                 {
                     yield return new MovePathInstruction(node.Position);
+
                     previous = node;
                     first = false;
+
                     continue;
                 }
 
                 if (node.IncomingControl != null)
                     if (previous?.OutgoingControl != null)
-                        yield return new CubicPathInstruction(
-                            node.Position,
-                            previous.Value.OutgoingControl.Value,
-                            node.IncomingControl.Value);
+                        yield return new CubicPathInstruction(node.Position,
+                                                              previous.Value.OutgoingControl.Value,
+                                                              node.IncomingControl.Value);
                     else
-                        yield return new QuadraticPathInstruction(
-                            node.Position,
-                            node.IncomingControl.Value);
+                        yield return new QuadraticPathInstruction(node.Position, node.IncomingControl.Value);
                 else
                     yield return new LinePathInstruction(node.Position);
 
@@ -47,8 +45,7 @@ namespace Rain.Core.Model.Geometry
             }
         }
 
-        public static IEnumerable<PathNode> NodesFromInstructions(
-            IEnumerable<PathInstruction> instructions)
+        public static IEnumerable<PathNode> NodesFromInstructions(IEnumerable<PathInstruction> instructions)
         {
             // NOTE: this method WILL break if you pass anything other than cubics and line segments
 
@@ -80,9 +77,7 @@ namespace Rain.Core.Model.Geometry
                                                         previousNode.Position,
                                                         previousNode.IncomingControl,
                                                         previousNode.OutgoingControl,
-                                                        close.Open
-                                                            ? PathFigureEnd.Open
-                                                            : PathFigureEnd.Closed);
+                                                        close.Open ? PathFigureEnd.Open : PathFigureEnd.Closed);
 
                             break;
                     }
@@ -115,9 +110,9 @@ namespace Rain.Core.Model.Geometry
             }
         }
 
-        public static IEnumerable<PathNode> ToNodes(this IEnumerable<PathInstruction> instructions)
+        public static IEnumerable<PathInstruction> ToInstructions(this IEnumerable<PathNode> nodes)
         {
-            return NodesFromInstructions(instructions);
+            return InstructionsFromNodes(nodes);
         }
 
         public static IList<PathNode> ToNodeList(this IEnumerable<PathInstruction> instructions)
@@ -125,9 +120,9 @@ namespace Rain.Core.Model.Geometry
             return NodesFromInstructions(instructions).ToList();
         }
 
-        public static IEnumerable<PathInstruction> ToInstructions(this IEnumerable<PathNode> nodes)
+        public static IEnumerable<PathNode> ToNodes(this IEnumerable<PathInstruction> instructions)
         {
-            return InstructionsFromNodes(nodes);
+            return NodesFromInstructions(instructions);
         }
     }
 }

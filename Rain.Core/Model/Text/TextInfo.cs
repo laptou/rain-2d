@@ -19,6 +19,20 @@ namespace Rain.Core.Model.Text
         #region ITextInfo Members
 
         /// <inheritdoc />
+        public ITextInfo ApplyFormat(Format format)
+        {
+            return new TextInfo
+            {
+                Baseline = Baseline,
+                FontFamily = format?.FontFamily ?? FontFamily,
+                FontSize = format?.FontSize ?? FontSize,
+                FontStretch = format?.FontStretch ?? FontStretch,
+                FontStyle = format?.FontStyle ?? FontStyle,
+                FontWeight = format?.FontWeight ?? FontWeight
+            };
+        }
+
+        /// <inheritdoc />
         public float Baseline
         {
             get => Get<float>();
@@ -58,20 +72,6 @@ namespace Rain.Core.Model.Text
         {
             get => Get<FontWeight>();
             set => Set(value);
-        }
-
-        /// <inheritdoc />
-        public ITextInfo ApplyFormat(Format format)
-        {
-            return new TextInfo
-            {
-                Baseline = Baseline,
-                FontFamily = format?.FontFamily ?? FontFamily,
-                FontSize = format?.FontSize ?? FontSize,
-                FontStretch = format?.FontStretch ?? FontStretch,
-                FontStyle = format?.FontStyle ?? FontStyle,
-                FontWeight = format?.FontWeight ?? FontWeight
-            };
         }
 
         #endregion

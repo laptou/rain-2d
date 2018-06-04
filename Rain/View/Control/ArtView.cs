@@ -93,8 +93,7 @@ namespace Rain.View.Control
                         if (factor < 0)
                             factor = 2 - Math.Abs(factor);
 
-                        var transform = ac.ViewManager.Transform *
-                                        Matrix3x2.CreateScale(factor, position);
+                        var transform = ac.ViewManager.Transform * Matrix3x2.CreateScale(factor, position);
 
                         ac.ViewManager.Pan = transform.Translation;
                         ac.ViewManager.Zoom = transform.GetScale().X;
@@ -103,11 +102,9 @@ namespace Rain.View.Control
                     {
                         if (scrollEvent.ModifierState.Shift ||
                             scrollEvent.Direction == ScrollDirection.Horizontal)
-                            ac.ViewManager.Pan +=
-                                new Vector2(scrollEvent.Delta * ac.ViewManager.Zoom / 6, 0);
+                            ac.ViewManager.Pan += new Vector2(scrollEvent.Delta * ac.ViewManager.Zoom / 6, 0);
                         else
-                            ac.ViewManager.Pan +=
-                                new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
+                            ac.ViewManager.Pan += new Vector2(0, scrollEvent.Delta * ac.ViewManager.Zoom / 6);
                     }
 
                     ac.Invalidate();
@@ -122,61 +119,7 @@ namespace Rain.View.Control
             }
         }
 
-        private async Task OnDropEvent(DropEvent dropEvent)
-        {
-            await Task.Run(() =>
-                           {
-                               var ctx = ArtContext;
-                               ctx.SelectionManager.ClearSelection();
-
-                               var root = ctx.ViewManager.Root;
-                               var failCount = 0;
-
-                               foreach (var fn in dropEvent.FileNames)
-                               {
-                                   try
-                                   {
-                                       var image = ctx.ResourceContext.LoadImageFromFilename(fn);
-                                       var pic = new Picture {Image = image};
-                                       var center =
-                                           new Vector2(pic.Image.Frames[0].Width,
-                                                       pic.Image.Frames[0].Height) / 2;
-                                       pic.ApplyTransform(
-                                           Matrix3x2.CreateTranslation(-center + dropEvent.Position));
-                                       root.Add(pic, 0);
-                                       pic.Selected = true;
-                                   }
-                                   catch
-                                   {
-                                       failCount++;
-                                   }
-                               }
-
-                               switch (failCount)
-                               {
-                                   case 0:
-                                       ArtContext.Status =
-                                           new Status(Status.StatusType.Success, "Images loaded.");
-
-                                       break;
-                                   case 1:
-                                       ArtContext.Status = new Status(
-                                           Status.StatusType.Error,
-                                           "1 file failed to load.");
-
-                                       break;
-                                   default:
-                                       ArtContext.Status = new Status(
-                                           Status.StatusType.Error,
-                                           $"{failCount} file failed to load.");
-
-                                       break;
-                               }
-                           });
-        }
-
-        protected override IntPtr OnMessage(
-            IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
+        protected override IntPtr OnMessage(IntPtr hWnd, WindowMessage msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
@@ -224,6 +167,52 @@ namespace Rain.View.Control
                 uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
 
             return CursorHelper.CreateCursor(uri, MathUtils.PiOverFour);
+        }
+
+        private async Task OnDropEvent(DropEvent dropEvent)
+        {
+            await Task.Run(() =>
+                           {
+                               var ctx = ArtContext;
+                               ctx.SelectionManager.ClearSelection();
+
+                               var root = ctx.ViewManager.Root;
+                               var failCount = 0;
+
+                               foreach (var fn in dropEvent.FileNames)
+                                   try
+                                   {
+                                       var image = ctx.ResourceContext.LoadImageFromFilename(fn);
+                                       var pic = new Picture {Image = image};
+                                       var center = new Vector2(pic.Image.Frames[0].Width, pic.Image.Frames[0].Height) /
+                                                    2;
+                                       pic.ApplyTransform(Matrix3x2.CreateTranslation(-center + dropEvent.Position));
+                                       root.Add(pic, 0);
+                                       pic.Selected = true;
+                                   }
+                                   catch
+                                   {
+                                       failCount++;
+                                   }
+
+                               switch (failCount)
+                               {
+                                   case 0:
+                                       ArtContext.Status = new Status(Status.StatusType.Success, "Images loaded.");
+
+                                       break;
+                                   case 1:
+                                       ArtContext.Status =
+                                           new Status(Status.StatusType.Error, "1 file failed to load.");
+
+                                       break;
+                                   default:
+                                       ArtContext.Status =
+                                           new Status(Status.StatusType.Error, $"{failCount} file failed to load.");
+
+                                       break;
+                               }
+                           });
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

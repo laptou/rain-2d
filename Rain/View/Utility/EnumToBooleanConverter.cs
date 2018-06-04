@@ -16,8 +16,7 @@ namespace Rain.View.Utility
             return Equals(value, parameter);
         }
 
-        public object ConvertBack(
-            object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return Equals(value, true) ? parameter : Binding.DoNothing;
         }

@@ -9,7 +9,8 @@ using Rain.Core.Model.Imaging;
 
 using SharpDX.Direct2D1;
 
-namespace Rain.Renderer.Direct2D {
+namespace Rain.Renderer.Direct2D
+{
     public class ScaleEffect : Effect, IScaleEffect
     {
         private readonly SharpDX.Direct2D1.Effect _effect;
@@ -58,8 +59,7 @@ namespace Rain.Renderer.Direct2D {
         /// <inheritdoc />
         public ScaleMode ScaleMode
         {
-            get => (ScaleMode) _effect.GetEnumValue<ScaleInterpolationMode>(
-                (int) ScaleProperties.InterpolationMode);
+            get => (ScaleMode) _effect.GetEnumValue<ScaleInterpolationMode>((int) ScaleProperties.InterpolationMode);
             set =>
                 _effect.SetEnumValue((int) ScaleProperties.InterpolationMode, (ScaleInterpolationMode) value);
         }
@@ -67,10 +67,8 @@ namespace Rain.Renderer.Direct2D {
         /// <inheritdoc />
         public bool SoftBorder
         {
-            get => _effect.GetEnumValue<BorderMode>((int) ScaleProperties.BorderMode) ==
-                   BorderMode.Soft;
-            set => _effect.SetEnumValue((int) ScaleProperties.BorderMode,
-                                        value ? BorderMode.Soft : BorderMode.Hard);
+            get => _effect.GetEnumValue<BorderMode>((int) ScaleProperties.BorderMode) == BorderMode.Soft;
+            set => _effect.SetEnumValue((int) ScaleProperties.BorderMode, value ? BorderMode.Soft : BorderMode.Hard);
         }
 
         #endregion

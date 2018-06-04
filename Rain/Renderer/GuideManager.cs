@@ -14,8 +14,7 @@ namespace Rain.Renderer
 {
     public class GuideManager
     {
-        private readonly Dictionary<(int, GuideType), Guide> _guides =
-            new Dictionary<(int, GuideType), Guide>();
+        private readonly Dictionary<(int, GuideType), Guide> _guides = new Dictionary<(int, GuideType), Guide>();
 
         public bool VirtualGuidesActive => _guides.Any(g => g.Value.Virtual);
 
@@ -35,23 +34,30 @@ namespace Rain.Renderer
             return LinearSnap(position, origin, 0);
         }
 
-        public (Vector2 Point, Guide? Guide) LinearSnap(
-            Vector2 position, Vector2 origin, GuideType type)
+        public (Vector2 Point, Guide? Guide) LinearSnap(Vector2 position, Vector2 origin, GuideType type)
         {
             var candidates = GetGuides(type);
             var delta = position - origin;
 
-            var results = candidates.Select<Guide, (Vector2 Position, float Loss, Guide? Guide)>(
-                                         g =>
-                                         {
-                                             var newDelta =
-                                                 MathUtils.Project(delta, MathUtils.Angle(g.Angle));
+            var results = candidates.Select<Guide, (Vector2 Position, float Loss, Guide? Guide)>(g =>
+                                                                                                 {
+                                                                                                     var newDelta =
+                                                                                                         MathUtils
+                                                                                                            .Project(
+                                                                                                                 delta,
+                                                                                                                 MathUtils
+                                                                                                                    .Angle(
+                                                                                                                         g.Angle));
 
-                                             return (newDelta + origin,
-                                                        Vector2.Distance(
-                                                            newDelta + origin,
-                                                            position), g);
-                                         })
+                                                                                                     return
+                                                                                                         (newDelta + origin,
+                                                                                                             Vector2
+                                                                                                                .Distance(
+                                                                                                                     newDelta +
+                                                                                                                     origin,
+                                                                                                                     position),
+                                                                                                             g);
+                                                                                                 })
                                     .OrderBy(r => r.Loss)
                                     .ToList();
 
@@ -60,16 +66,13 @@ namespace Rain.Renderer
             return (result.Position, result.Guide);
         }
 
-        public (Vector2 Point, Guide? Guide) RadialSnap(
-            Vector2 position, Vector2 origin, GuideType type)
+        public (Vector2 Point, Guide? Guide) RadialSnap(Vector2 position, Vector2 origin, GuideType type)
         {
             var angle = MathUtils.Wrap(MathUtils.Angle(position - origin, false), MathUtils.Pi);
 
             var candidates = GetGuides(type);
 
-            var results = candidates
-                         .OrderBy(g => Math.Abs(MathUtils.Wrap(g.Angle, MathUtils.Pi) - angle))
-                         .ToList();
+            var results = candidates.OrderBy(g => Math.Abs(MathUtils.Wrap(g.Angle, MathUtils.Pi) - angle)).ToList();
 
             if (results.Count == 0) return (position, null);
 
@@ -109,14 +112,12 @@ namespace Rain.Renderer
 
                     if (slope > diagonal)
                     {
-                        p1 = new Vector2((float) (origin.X + (origin.Y - target.Height) / slope),
-                                         target.Height);
+                        p1 = new Vector2((float) (origin.X + (origin.Y - target.Height) / slope), target.Height);
                         p2 = new Vector2((float) (origin.X + origin.Y / slope), 0);
                     }
                     else
                     {
-                        p1 = new Vector2(target.Width,
-                                         (float) (origin.Y + (origin.X - target.Width) * slope));
+                        p1 = new Vector2(target.Width, (float) (origin.Y + (origin.X - target.Width) * slope));
                         p2 = new Vector2(0, (float) (origin.Y + origin.X * slope));
                     }
 
@@ -128,17 +129,14 @@ namespace Rain.Renderer
                     var origin = guide.Origin;
                     var axes = new[]
                     {
-                        guide.Angle, guide.Angle + MathUtils.PiOverFour * 1,
-                        guide.Angle + MathUtils.PiOverFour * 2,
+                        guide.Angle, guide.Angle + MathUtils.PiOverFour * 1, guide.Angle + MathUtils.PiOverFour * 2,
                         guide.Angle + MathUtils.PiOverFour * 3
                     };
 
                     target.DrawEllipse(origin, 20, 20, pen);
 
                     foreach (var x in axes)
-                        target.DrawLine(origin + MathUtils.Angle(x) * 20,
-                                        origin - MathUtils.Angle(x) * 20,
-                                        pen);
+                        target.DrawLine(origin + MathUtils.Angle(x) * 20, origin - MathUtils.Angle(x) * 20, pen);
 
                     target.DrawLine(origin - MathUtils.Angle(-axes[2]) * 25, origin, pen);
                 }

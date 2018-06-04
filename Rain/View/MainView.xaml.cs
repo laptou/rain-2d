@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+
+using Rain.Native;
+
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
-using Rain.Native;
 using Rain.Service;
 using Rain.ViewModel;
 
@@ -43,11 +44,16 @@ namespace Rain.View
                                                    (s, e) => e.CanExecute = true));
             CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand,
                                                    (s, e) => WindowState =
-                                                                 WindowState ==
-                                                                 WindowState.Maximized
+                                                                 WindowState == WindowState.Maximized
                                                                      ? WindowState.Normal
                                                                      : WindowState.Maximized,
                                                    (s, e) => e.CanExecute = true));
+        }
+
+        public MainViewModel ViewModel
+        {
+            get => DataContext as MainViewModel;
+            set => DataContext = value;
         }
 
         /// <inheritdoc />
@@ -62,10 +68,12 @@ namespace Rain.View
             }
         }
 
-        public MainViewModel ViewModel
+        /// <inheritdoc />
+        protected override void OnContentRendered(EventArgs e)
         {
-            get => DataContext as MainViewModel;
-            set => DataContext = value;
+            App.LogEvent("MainView.OnContentRendered() called.");
+
+            base.OnContentRendered(e);
         }
 
         /// <inheritdoc />
@@ -102,24 +110,13 @@ namespace Rain.View
                     SizeOfData = ptr.Size
                 };
 
-                var hr = WindowHelper.SetWindowCompositionAttribute(
-                    interop.EnsureHandle(),
-                    ref cdata);
+                var hr = WindowHelper.SetWindowCompositionAttribute(interop.EnsureHandle(), ref cdata);
 
                 if (hr != 0)
                     NativeHelper.CheckError();
             }
 
             App.LogEvent("Blur-behind initialized.");
-        }
-
-        /// <inheritdoc />
-        protected override void OnContentRendered(EventArgs e)
-        {
-
-            App.LogEvent("MainView.OnContentRendered() called.");
-
-            base.OnContentRendered(e);
         }
     }
 }

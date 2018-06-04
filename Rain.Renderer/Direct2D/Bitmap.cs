@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 
-using Rain.Core;
 using Rain.Core.Model;
-using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
 using Rain.Renderer.WIC;
 
@@ -55,11 +52,6 @@ namespace Rain.Renderer.Direct2D
         }
 
         public T Unwrap<T>() where T : class { return _bmp as T; }
-
-        public override void Optimize(IRenderContext context)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <inheritdoc />
         public bool Alpha { get; }

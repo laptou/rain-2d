@@ -71,8 +71,7 @@ namespace Ibinimator.Test
                 times2.Add(sw.Elapsed.TotalMilliseconds);
             }
 
-            TestContext.WriteLine($"SharpDX: {times1.Average()}ms\n" +
-                                  $"System.Numerics: {times2.Average()}ms");
+            TestContext.WriteLine($"SharpDX: {times1.Average()}ms\n" + $"System.Numerics: {times2.Average()}ms");
             TestContext.WriteLine($"HW Acceleration: {Vector.IsHardwareAccelerated}");
             TestContext.WriteLine($"64-Bit CPU: {Environment.Is64BitOperatingSystem}");
             TestContext.WriteLine($"64-Bit Process: {Environment.Is64BitProcess}");

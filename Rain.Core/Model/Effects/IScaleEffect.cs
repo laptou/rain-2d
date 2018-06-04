@@ -8,9 +8,9 @@ namespace Rain.Core.Model.Effects
 {
     public interface IScaleEffect : IEffect
     {
-        ScaleMode ScaleMode { get; set; }
         Vector2 Factor { get; set; }
         Vector2 Origin { get; set; }
+        ScaleMode ScaleMode { get; set; }
         bool SoftBorder { get; set; }
     }
 
@@ -21,6 +21,6 @@ namespace Rain.Core.Model.Effects
         Cubic,
         MultiSampleLinear,
         Anisotropic,
-        HighQualityCubic,
+        HighQualityCubic
     }
 }

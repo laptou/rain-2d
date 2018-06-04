@@ -33,26 +33,7 @@ namespace Rain
     {
         private static StreamWriter log;
 
-        [STAThread]
-        public static void Main()
-        {
-            _startTime = Stopwatch.GetTimestamp();
-
-            log = new StreamWriter(File.Open("rain.log",
-                                             FileMode.Create,
-                                             FileAccess.ReadWrite,
-                                             FileShare.Read));
-
-            LogEvent("App.Main() called.");
-
-            var app = new App();
-            app.InitializeComponent();
-            app.Run();
-
-            LogEvent("App shutting down.");
-
-            log.Flush();
-        }
+        private static long _startTime;
 
         public App()
         {
@@ -69,14 +50,42 @@ namespace Rain
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         }
 
-        private static long _startTime;
+        public new static App Current => Application.Current as App;
 
         public static Dispatcher CurrentDispatcher => Current.Dispatcher;
 
-        public new static App Current => Application.Current as App;
-
         public static bool IsDesigner =>
             LicenseManager.UsageMode == LicenseUsageMode.Designtime;
+
+        public static void LogEvent(string evt)
+        {
+            var time = Stopwatch.GetTimestamp() - _startTime;
+            var seconds = time / (double) Stopwatch.Frequency;
+
+            #if DEBUG
+            Trace.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}", "Event");
+            #else
+            log.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}");
+            #endif
+        }
+
+        [STAThread]
+        public static void Main()
+        {
+            _startTime = Stopwatch.GetTimestamp();
+
+            log = new StreamWriter(File.Open("rain.log", FileMode.Create, FileAccess.ReadWrite, FileShare.Read));
+
+            LogEvent("App.Main() called.");
+
+            var app = new App();
+            app.InitializeComponent();
+            app.Run();
+
+            LogEvent("App shutting down.");
+
+            log.Flush();
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -91,23 +100,11 @@ namespace Rain
             LogEvent("App.OnStartup() completed.");
         }
 
-        public static void LogEvent(string evt)
-        {
-            var time = Stopwatch.GetTimestamp() - _startTime;
-            var seconds = time / (double) Stopwatch.Frequency;
-
-            #if DEBUG
-            Trace.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}", "Event");
-            #else
-            log.WriteLine($"Event [{DateTime.Now}, {seconds * 1000:F2}ms]: {evt}");
-            #endif
-        }
-
         private static async Task LogError(object o, int level)
         {
             var indent = new string('\t', level - 1);
             var time = Stopwatch.GetTimestamp() - _startTime;
-            var seconds = time / (double)Stopwatch.Frequency;
+            var seconds = time / (double) Stopwatch.Frequency;
 
             await log.WriteLineAsync(indent + $"Error [{DateTime.Now}, {seconds * 1000:F2}ms]");
 
@@ -120,8 +117,7 @@ namespace Rain
                 await log.WriteLineAsync(indent + $"HResult: 0x{ex.HResult:X}");
                 await log.WriteLineAsync(indent + $"Source: {ex.Source}");
 
-                var stack =
-                    ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indent);
+                var stack = ex.StackTrace.Replace(Environment.NewLine, Environment.NewLine + indent);
 
                 await log.WriteLineAsync(indent + $"Stack Trace:\r\n{stack}");
 
@@ -148,14 +144,11 @@ namespace Rain
 
         private void SetDefaultFont()
         {
-            var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute),
-                                      "./Resources/Font/#Roboto");
+            var font = new FontFamily(new Uri("pack://application:,,,/", UriKind.Absolute), "./Resources/Font/#Roboto");
 
-            TextElement.FontFamilyProperty.OverrideMetadata(typeof(TextElement),
-                                                            new FrameworkPropertyMetadata(font));
+            TextElement.FontFamilyProperty.OverrideMetadata(typeof(TextElement), new FrameworkPropertyMetadata(font));
 
-            TextBlock.FontFamilyProperty.OverrideMetadata(typeof(TextBlock),
-                                                          new FrameworkPropertyMetadata(font));
+            TextBlock.FontFamilyProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(font));
         }
     }
 }

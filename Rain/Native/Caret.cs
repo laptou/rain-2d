@@ -40,13 +40,13 @@ namespace Rain.Native
             if (!_visible) return new Vector2(_x, _y);
 
             return App.CurrentDispatcher.Invoke(() =>
-                                         {
-                                             var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
-                                             if (!CaretHelper.GetCaretPos(out var pt))
-                                                 NativeHelper.CheckError();
+                                                {
+                                                    var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
+                                                    if (!CaretHelper.GetCaretPos(out var pt))
+                                                        NativeHelper.CheckError();
 
-                                             return new Vector2(pt.x / scale, pt.y / scale);
-                                         });
+                                                    return new Vector2(pt.x / scale, pt.y / scale);
+                                                });
         }
 
         public bool Hide()
@@ -54,18 +54,18 @@ namespace Rain.Native
             if (!_visible) return true;
 
             return App.CurrentDispatcher.Invoke(() =>
-                                         {
-                                             if (!CaretHelper.HideCaret(_hWnd))
-                                             {
-                                                 NativeHelper.CheckError();
+                                                {
+                                                    if (!CaretHelper.HideCaret(_hWnd))
+                                                    {
+                                                        NativeHelper.CheckError();
 
-                                                 return false;
-                                             }
+                                                        return false;
+                                                    }
 
-                                             _visible = false;
+                                                    _visible = false;
 
-                                             return true;
-                                         });
+                                                    return true;
+                                                });
         }
 
         public void SetPosition(float x, float y)
@@ -75,14 +75,12 @@ namespace Rain.Native
             (_x, _y) = (x, y);
 
             App.CurrentDispatcher.Invoke(() =>
-                                  {
-                                      var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
+                                         {
+                                             var scale = WindowHelper.GetDpiForWindow(_hWnd) / 96f;
 
-                                      if (!CaretHelper.SetCaretPos(
-                                              (int) (x * scale),
-                                              (int) (y * scale)))
-                                          NativeHelper.CheckError();
-                                  });
+                                             if (!CaretHelper.SetCaretPos((int) (x * scale), (int) (y * scale)))
+                                                 NativeHelper.CheckError();
+                                         });
         }
 
         public bool Show()
@@ -90,30 +88,30 @@ namespace Rain.Native
             if (_visible) return true;
 
             return App.CurrentDispatcher.Invoke(() =>
-                                         {
-                                             if (!CaretHelper.ShowCaret(_hWnd))
-                                             {
-                                                 NativeHelper.CheckError();
+                                                {
+                                                    if (!CaretHelper.ShowCaret(_hWnd))
+                                                    {
+                                                        NativeHelper.CheckError();
 
-                                                 return false;
-                                             }
+                                                        return false;
+                                                    }
 
-                                             if (GetPosition() != new Vector2(_x, _y))
-                                                 SetPosition(_x, _y);
+                                                    if (GetPosition() != new Vector2(_x, _y))
+                                                        SetPosition(_x, _y);
 
-                                             _visible = true;
+                                                    _visible = true;
 
-                                             return true;
-                                         });
+                                                    return true;
+                                                });
         }
 
         private void ReleaseUnmanagedResources()
         {
             App.CurrentDispatcher.Invoke(() =>
-                                  {
-                                      if (!CaretHelper.DestroyCaret())
-                                          NativeHelper.CheckError();
-                                  });
+                                         {
+                                             if (!CaretHelper.DestroyCaret())
+                                                 NativeHelper.CheckError();
+                                         });
         }
 
         #region ICaret Members
@@ -123,6 +121,13 @@ namespace Rain.Native
             _disposed = true;
             ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
+        }
+
+        /// <inheritdoc />
+        public long BlinkPeriod
+        {
+            get => CaretHelper.GetCaretBlinkTime();
+            set => CaretHelper.SetCaretBlinkTime((uint) value);
         }
 
         /// <inheritdoc />
@@ -142,13 +147,6 @@ namespace Rain.Native
                 if (value) Show();
                 else Hide();
             }
-        }
-
-        /// <inheritdoc />
-        public long BlinkPeriod
-        {
-            get => CaretHelper.GetCaretBlinkTime();
-            set => CaretHelper.SetCaretBlinkTime((uint)value);
         }
 
         #endregion

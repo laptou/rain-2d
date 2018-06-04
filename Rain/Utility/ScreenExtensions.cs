@@ -22,8 +22,7 @@ namespace Rain.Utility
             return (x, y);
         }
 
-        public static (uint x, uint y) GetDpiForWindow(
-            this Screen screen, DpiType type, Window window)
+        public static (uint x, uint y) GetDpiForWindow(this Screen screen, DpiType type, Window window)
         {
             var wih = new WindowInteropHelper(window);
 

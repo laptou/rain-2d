@@ -18,20 +18,9 @@ namespace Rain.Renderer.Direct2D
             return new Color4(color.Red, color.Green, color.Blue, color.Alpha);
         }
 
-        public static Color Convert(this RawColor4 color)
-        {
-            return new Color(color.R, color.G, color.B, color.A);
-        }
+        public static Color Convert(this RawColor4 color) { return new Color(color.R, color.G, color.B, color.A); }
 
-        public static Vector2 Convert(this System.Numerics.Vector2 vec)
-        {
-            return new Vector2(vec.X, vec.Y);
-        }
-
-        public static RawVector2 ConvertRaw(this System.Numerics.Vector2 vec)
-        {
-            return new RawVector2(vec.X, vec.Y);
-        }
+        public static Vector2 Convert(this System.Numerics.Vector2 vec) { return new Vector2(vec.X, vec.Y); }
 
         public static System.Numerics.Vector2 Convert(this Vector2 vec)
         {
@@ -43,10 +32,7 @@ namespace Rain.Renderer.Direct2D
             return new System.Numerics.Vector2(vec.X, vec.Y);
         }
 
-        public static Matrix3x2 Convert(this RawMatrix3x2 mat)
-        {
-            return Convert((SharpDX.Matrix3x2) mat);
-        }
+        public static Matrix3x2 Convert(this RawMatrix3x2 mat) { return Convert((SharpDX.Matrix3x2) mat); }
 
         public static SharpDX.Matrix3x2 Convert(this Matrix3x2 mat)
         {
@@ -58,14 +44,16 @@ namespace Rain.Renderer.Direct2D
             return new Matrix3x2(mat.M11, mat.M12, mat.M21, mat.M22, mat.M31, mat.M32);
         }
 
-        public static RectangleF Convert(this Rain.Core.Model.RectangleF r)
+        public static RectangleF Convert(this Core.Model.RectangleF r)
         {
             return new RectangleF(r.Left, r.Top, r.Width, r.Height);
         }
 
-        public static Rain.Core.Model.RectangleF Convert(this RectangleF r)
+        public static Core.Model.RectangleF Convert(this RectangleF r)
         {
-            return new Rain.Core.Model.RectangleF(r.Left, r.Top, r.Width, r.Height);
+            return new Core.Model.RectangleF(r.Left, r.Top, r.Width, r.Height);
         }
+
+        public static RawVector2 ConvertRaw(this System.Numerics.Vector2 vec) { return new RawVector2(vec.X, vec.Y); }
     }
 }

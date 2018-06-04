@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-
-
 using System.Linq;
+
+using Rain.Core.Utility;
+
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Rain.Core.Utility;
 
 namespace Ibinimator.Test
 {

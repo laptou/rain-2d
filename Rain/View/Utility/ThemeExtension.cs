@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+using Rain.Renderer.WPF;
+
 using System.Threading.Tasks;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-using Rain.Renderer.WPF;
 using Rain.Service;
 
 using Color = Rain.Core.Model.Color;
@@ -15,9 +17,8 @@ namespace Rain.View.Utility
 {
     public class ThemeExtension : MarkupExtension
     {
-        private static readonly Regex Func =
-            new Regex(@"^([A-Za-z0-9\-_]+)\(([A-Za-z0-9_\-\.]+)\)$",
-                      RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex Func = new Regex(@"^([A-Za-z0-9\-_]+)\(([A-Za-z0-9_\-\.]+)\)$",
+                                                       RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public ThemeExtension(string path) { Path = path; }
 

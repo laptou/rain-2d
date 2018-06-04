@@ -13,8 +13,7 @@ namespace Rain.Commands
 {
     public class AlignCommand : LayerCommandBase<ILayer>
     {
-        private readonly Dictionary<ILayer, Matrix3x2> _transformations =
-            new Dictionary<ILayer, Matrix3x2>();
+        private readonly Dictionary<ILayer, Matrix3x2> _transformations = new Dictionary<ILayer, Matrix3x2>();
 
         public AlignCommand(long id, ILayer[] targets, Direction direction) : base(id, targets)
         {
@@ -28,8 +27,7 @@ namespace Rain.Commands
 
         public override void Do(IArtContext artContext)
         {
-            var totalBounds = Targets.Select(artContext.CacheManager.GetAbsoluteBounds)
-                                     .Aggregate(RectangleF.Union);
+            var totalBounds = Targets.Select(artContext.CacheManager.GetAbsoluteBounds).Aggregate(RectangleF.Union);
 
             foreach (var target in Targets)
             {

@@ -21,8 +21,7 @@ namespace Rain.ViewModel
 
         public void ShowView() { ShowRequested?.Invoke(); }
 
-        protected async Task<T> DesignOrRunTimeAsync<T>(
-            Func<Task<T>> designTime, Func<Task<T>> runTime)
+        protected async Task<T> DesignOrRunTimeAsync<T>(Func<Task<T>> designTime, Func<Task<T>> runTime)
         {
             if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
                 return await designTime();
@@ -56,9 +55,6 @@ namespace Rain.ViewModel
 
         protected void Ui(Action action) { Application.Current.Dispatcher.Invoke(action); }
 
-        protected async Task UiAsync(Action action)
-        {
-            await Application.Current.Dispatcher.InvokeAsync(action);
-        }
+        protected async Task UiAsync(Action action) { await Application.Current.Dispatcher.InvokeAsync(action); }
     }
 }

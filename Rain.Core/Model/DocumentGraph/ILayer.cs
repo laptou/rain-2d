@@ -11,7 +11,6 @@ namespace Rain.Core.Model.DocumentGraph
     {
         bool Selected { get; set; }
 
-
         event EventHandler BoundsChanged;
 
         RectangleF GetBounds(IArtContext ctx);

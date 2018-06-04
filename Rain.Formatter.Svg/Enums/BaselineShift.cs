@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rain.Formatter.Svg.Utilities;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Measurement;
-using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Enums
 {
@@ -25,9 +27,6 @@ namespace Rain.Formatter.Svg.Enums
 
         public Length Length { get; set; }
 
-        public override string ToString()
-        {
-            return Length != default ? Length.ToString() : Enum.Svgify();
-        }
+        public override string ToString() { return Length != default ? Length.ToString() : Enum.Svgify(); }
     }
 }

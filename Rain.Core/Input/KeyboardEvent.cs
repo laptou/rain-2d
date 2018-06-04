@@ -19,8 +19,8 @@ namespace Rain.Core.Input
 
         public ModifierState ModifierState { get; }
 
-        public bool State { get; }
-
         public bool Repeat { get; }
+
+        public bool State { get; }
     }
 }

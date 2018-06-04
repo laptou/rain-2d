@@ -113,8 +113,7 @@ namespace Rain.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TOut Reinterpret<TIn, TOut>(TIn curValue)
-            where TIn : struct where TOut : struct
+        public static TOut Reinterpret<TIn, TOut>(TIn curValue) where TIn : struct where TOut : struct
         {
             return Reinterpret<TIn, TOut>(curValue, SizeOf<TIn>());
         }
@@ -189,10 +188,7 @@ namespace Rain.Native
             }
         }
 
-        public static IntPtr ToPtr<T>(this T valueType) where T : struct
-        {
-            return valueType.ToPtr(out _);
-        }
+        public static IntPtr ToPtr<T>(this T valueType) where T : struct { return valueType.ToPtr(out _); }
 
         public static IntPtr ToPtr(this ValueType valueType) { return valueType.ToPtr(out _); }
 
@@ -214,15 +210,9 @@ namespace Rain.Native
             return ptr;
         }
 
-        public static SmartPtr ToSmartPtr<T>(this T valueType) where T : struct
-        {
-            return SmartPtr.Alloc(valueType);
-        }
+        public static SmartPtr ToSmartPtr<T>(this T valueType) where T : struct { return SmartPtr.Alloc(valueType); }
 
-        public static SmartPtr ToSmartPtr(this ValueType valueType)
-        {
-            return SmartPtr.Alloc(valueType);
-        }
+        public static SmartPtr ToSmartPtr(this ValueType valueType) { return SmartPtr.Alloc(valueType); }
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern int WaitForSingleObjectEx(
@@ -248,15 +238,9 @@ namespace Rain.Native
             return new SmartPtr(value.ToPtr(out var size), size);
         }
 
-        public static SmartPtr Alloc(ValueType value)
-        {
-            return new SmartPtr(value.ToPtr(out var size), size);
-        }
+        public static SmartPtr Alloc(ValueType value) { return new SmartPtr(value.ToPtr(out var size), size); }
 
-        public static SmartPtr Alloc(int size)
-        {
-            return new SmartPtr(Marshal.AllocHGlobal(size), size);
-        }
+        public static SmartPtr Alloc(int size) { return new SmartPtr(Marshal.AllocHGlobal(size), size); }
 
         public static implicit operator IntPtr(SmartPtr ptr) { return ptr.Pointer; }
 

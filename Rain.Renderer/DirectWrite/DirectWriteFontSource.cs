@@ -2,17 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
+using Rain.Renderer.Direct2D;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Text;
-using Rain.Renderer.Direct2D;
 
 using DW = SharpDX.DirectWrite;
 
 namespace Rain.Renderer.DirectWrite
 {
-    class DirectWriteFontSource : IFontSource
+    internal class DirectWriteFontSource : IFontSource
     {
         private readonly DW.Factory        _factory;
         private readonly DW.FontCollection _fc;
@@ -22,6 +23,8 @@ namespace Rain.Renderer.DirectWrite
             _factory = factory;
             _fc = _factory.GetSystemFontCollection(true);
         }
+
+        #region IFontSource Members
 
         /// <inheritdoc />
         public void Dispose() { _fc?.Dispose(); }
@@ -34,23 +37,27 @@ namespace Rain.Renderer.DirectWrite
         }
 
         /// <inheritdoc />
+        public IFontFace GetFace(ITextInfo info)
+        {
+            using (var family = GetFamilyByName(info.FontFamily))
+            {
+                return family.GetFontFace(info.FontWeight, info.FontStyle, info.FontStretch);
+            }
+        }
+
+        /// <inheritdoc />
         public IFontFamily GetFamilyByName(string name)
         {
             return new DirectWriteFontFamily(_factory, _fc.GetFamilyByName(name));
         }
 
         /// <inheritdoc />
-        public IFontFace GetFace(ITextInfo info)
-        {
-            using (var family = GetFamilyByName(info.FontFamily))
-                return family.GetFontFace(info.FontWeight, info.FontStyle, info.FontStretch);
-        }
-
-        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
+        #endregion
     }
 
-    class DirectWriteFontFamily : IFontFamily
+    internal class DirectWriteFontFamily : IFontFamily
     {
         private readonly DW.Factory    _factory;
         private readonly DW.FontFamily _ff;
@@ -63,8 +70,20 @@ namespace Rain.Renderer.DirectWrite
             Name = fontFamily.FamilyNames.ToCurrentCulture();
         }
 
+        #region IFontFamily Members
+
         /// <inheritdoc />
         public void Dispose() { _ff?.Dispose(); }
+
+        /// <inheritdoc />
+        public IFontFace GetClosestFontFace(FontWeight weight, FontStyle style, FontStretch stretch)
+        {
+            using (var fonts =
+                _ff.GetMatchingFonts((DW.FontWeight) weight, (DW.FontStretch) stretch, (DW.FontStyle) style))
+            {
+                return fonts.FontCount == 0 ? null : new DirectWriteFontFace(fonts.GetFont(0));
+            }
+        }
 
         /// <inheritdoc />
         public IEnumerator<IFontFace> GetEnumerator()
@@ -74,31 +93,23 @@ namespace Rain.Renderer.DirectWrite
         }
 
         /// <inheritdoc />
+        public IFontFace GetFontFace(FontWeight weight, FontStyle style, FontStretch stretch)
+        {
+            using (var font =
+                _ff.GetFirstMatchingFont((DW.FontWeight) weight, (DW.FontStretch) stretch, (DW.FontStyle) style))
+
+            {
+                return new DirectWriteFontFace(font);
+            }
+        }
+
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         /// <inheritdoc />
         public string Name { get; }
 
-        /// <inheritdoc />
-        public IFontFace GetClosestFontFace(FontWeight weight, FontStyle style, FontStretch stretch)
-        {
-            using (var fonts = _ff.GetMatchingFonts((DW.FontWeight) weight,
-                                                    (DW.FontStretch) stretch,
-                                                    (DW.FontStyle) style))
-            {
-                return fonts.FontCount == 0 ? null : new DirectWriteFontFace(fonts.GetFont(0));
-            }
-        }
-
-        /// <inheritdoc />
-        public IFontFace GetFontFace(FontWeight weight, FontStyle style, FontStretch stretch)
-        {
-            using (var font = _ff.GetFirstMatchingFont((DW.FontWeight) weight,
-                                                       (DW.FontStretch) stretch,
-                                                       (DW.FontStyle) style))
-
-                return new DirectWriteFontFace(font);
-        }
+        #endregion
     }
 
     public class DirectWriteFontFace : IFontFace
@@ -122,6 +133,11 @@ namespace Rain.Renderer.DirectWrite
             XHeight = metrics.XHeight / (float) metrics.DesignUnitsPerEm;
             LineGap = metrics.LineGap / (float) metrics.DesignUnitsPerEm;
         }
+
+        #region IFontFace Members
+
+        /// <inheritdoc />
+        public void Dispose() { _ff?.Dispose(); }
 
         /// <inheritdoc />
         public float Ascent { get; }
@@ -150,7 +166,6 @@ namespace Rain.Renderer.DirectWrite
         /// <inheritdoc />
         public float XHeight { get; }
 
-        /// <inheritdoc />
-        public void Dispose() { _ff?.Dispose(); }
+        #endregion
     }
 }

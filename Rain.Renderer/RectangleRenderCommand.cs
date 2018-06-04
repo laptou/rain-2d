@@ -10,8 +10,10 @@ namespace Rain.Renderer
     internal class RectangleRenderCommand : GeometricRenderCommand
     {
         public RectangleRenderCommand(
-            float left, float top, float width, float height, bool fill, IBrush brush, IPen pen) :
-            base(fill, brush, pen)
+            float left, float top, float width, float height, bool fill, IBrush brush, IPen pen) : base(
+            fill,
+            brush,
+            pen)
         {
             Top = top;
             Left = left;

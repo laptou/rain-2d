@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
@@ -44,8 +43,8 @@ namespace Rain.Renderer.Direct2D
             target) { }
 
         public Pen(
-            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit, RenderTarget target)
+            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
+            float miterLimit, RenderTarget target)
         {
             Width = width;
             Brush = brush;
@@ -74,8 +73,6 @@ namespace Rain.Renderer.Direct2D
         }
 
         public StrokeStyle1 Style { get; private set; }
-
-        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
 
         private void RecreateStyle()
         {

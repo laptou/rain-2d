@@ -9,9 +9,9 @@ namespace Rain.Core.Model.DocumentGraph
 {
     public interface IContainerLayer : ILayer
     {
-        ObservableList<ILayer> SubLayers { get; }
         ILayer this[int index] { get; }
         ILayer this[Guid id] { get; }
+        ObservableList<ILayer> SubLayers { get; }
 
         event EventHandler<ILayer> LayerAdded;
         event EventHandler<ILayer> LayerRemoved;

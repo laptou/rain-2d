@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 
+using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Utility;
 
 using System.Threading.Tasks;
@@ -11,7 +13,6 @@ using System.Windows;
 
 using Rain.Core;
 using Rain.Core.Model;
-using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Imaging;
 using Rain.Core.Model.Paint;
@@ -21,73 +22,150 @@ namespace Rain.Renderer
 {
     public class CacheManager : Core.Model.Model, ICacheManager
     {
-        private readonly Dictionary<string, IRenderImage> _bitmaps =
-            new Dictionary<string, IRenderImage>();
-
-        private readonly Dictionary<ILayer, RectangleF> _bounds =
-            new Dictionary<ILayer, RectangleF>();
-
-        private readonly Dictionary<IBrushInfo, (ILayer layer, IBrush brush)> _brushBindings =
-            new Dictionary<IBrushInfo, (ILayer, IBrush)>();
-
-        private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
-
-        private readonly Dictionary<IFilledLayer, IBrush> _fills =
-            new Dictionary<IFilledLayer, IBrush>();
-
-        private readonly Dictionary<IGeometricLayer, IGeometry> _geometries =
-            new Dictionary<IGeometricLayer, IGeometry>();
-
-        private readonly Dictionary<IImageLayer, IRenderImage> _images =
-            new Dictionary<IImageLayer, IRenderImage>();
-
-        private readonly Dictionary<(string, int), IPen> _pens =
-            new Dictionary<(string, int), IPen>();
-
         private readonly ReaderWriterLockSlim _renderLock =
             new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
-        private readonly Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)> _strokeBindings =
-            new Dictionary<IPenInfo, (IStrokedLayer layer, IPen stroke)>();
-
-        private readonly Dictionary<IStrokedLayer, IPen> _strokes =
-            new Dictionary<IStrokedLayer, IPen>();
-
-        private readonly Dictionary<ITextLayer, ITextLayout> _texts =
-            new Dictionary<ITextLayer, ITextLayout>();
-
-        private bool _suppressed;
+        private bool  _suppressed;
+        private Timer _timer;
 
         public CacheManager(IArtContext context) { Context = context; }
 
-        public IBrush BindBrush(ILayer shape, IBrushInfo brush)
+        public IBrush BindBrush(IBrushInfo fill)
         {
-            if (brush == null) return null;
+            if (fill == null) return null;
 
-            var fill = brush.CreateBrush(Context.RenderContext);
+            var brush = fill.CreateBrush(Context.RenderContext);
+            var subscriptions = new LinkedList<IDisposable>();
 
-            brush.PropertyChanged += OnBrushPropertyChanged;
+            subscriptions.AddLast(fill.CreateOpacityObservable()
+                                      .Subscribe(opacity =>
+                                                 {
+                                                     brush.Opacity = opacity;
+                                                     Context.Invalidate();
+                                                 }));
 
-            lock (_brushBindings)
+            subscriptions.AddLast(fill.CreateTransformObservable()
+                                      .Subscribe(transform =>
+                                                 {
+                                                     brush.Transform = transform;
+                                                     Context.Invalidate();
+                                                 }));
+
+            if (fill is ISolidColorBrushInfo color &&
+                brush is ISolidColorBrush colorBrush)
+                subscriptions.AddLast(color.CreateColorObservable()
+                                           .Subscribe(c =>
+                                                      {
+                                                          colorBrush.Color = c;
+                                                          Context.Invalidate();
+                                                      }));
+
+            if (fill is IGradientBrushInfo gradient &&
+                brush is IGradientBrush gradientBrush)
             {
-                _brushBindings[brush] = (shape, fill);
+                subscriptions.AddLast(gradient.CreateStopsObservable()
+                                              .Subscribe(stops =>
+                                                         {
+                                                             gradientBrush.Stops.ReplaceRange(stops);
+                                                             Context.Invalidate();
+                                                         }));
+
+                if (brush is ILinearGradientBrush linear)
+                {
+                    subscriptions.AddLast(gradient.CreateStartPointObservable()
+                                                  .Subscribe(start =>
+                                                             {
+                                                                 (linear.StartX, linear.StartY) = start;
+                                                                 Context.Invalidate();
+                                                             }));
+                    subscriptions.AddLast(gradient.CreateEndPointObservable()
+                                                  .Subscribe(end =>
+                                                             {
+                                                                 (linear.EndX, linear.EndY) = end;
+                                                                 Context.Invalidate();
+                                                             }));
+                }
+
+                if (brush is IRadialGradientBrush radial)
+                {
+                    subscriptions.AddLast(gradient.CreateStartPointObservable()
+                                                  .Subscribe(start =>
+                                                             {
+                                                                 (radial.CenterX, radial.CenterY) = start;
+                                                                 Context.Invalidate();
+                                                             }));
+
+                    subscriptions.AddLast(gradient.CreateEndPointObservable()
+                                                  .Subscribe(end =>
+                                                             {
+                                                                 (radial.RadiusX, radial.RadiusY) =
+                                                                     end - gradient.StartPoint;
+                                                                 Context.Invalidate();
+                                                             }));
+                }
             }
 
-            return fill;
+            brush.Disposed += (s, e) =>
+                              {
+                                  foreach (var subscription in subscriptions) subscription.Dispose();
+                              };
+
+            return brush;
         }
 
-        public IPen BindStroke(IStrokedLayer layer, IPenInfo info)
+        public IPen BindStroke(IPenInfo info)
         {
             if (info == null) return default;
 
-            info.PropertyChanged += OnStrokePropertyChanged;
-
             var pen = info.CreatePen(Context.RenderContext);
+            var subscriptions = new LinkedList<IDisposable>();
 
-            lock (_strokeBindings)
-            {
-                _strokeBindings[info] = (layer, pen);
-            }
+            subscriptions.AddLast(info.CreateBrushObservable()
+                                      .Subscribe(brush =>
+                                                 {
+                                                     pen.Brush = BindBrush(brush);
+                                                     Context.Invalidate();
+                                                 }));
+
+            subscriptions.AddLast(info.CreateWidthObservable()
+                                      .Subscribe(width =>
+                                                 {
+                                                     pen.Width = width;
+                                                     Context.Invalidate();
+                                                 }));
+
+            subscriptions.AddLast(info.CreateDashesObservable()
+                                      .Subscribe(dashes =>
+                                                 {
+                                                     pen.Dashes.ReplaceAll(dashes);
+                                                     Context.Invalidate();
+                                                 }));
+
+            subscriptions.AddLast(info.CreateDashOffsetObservable()
+                                      .Subscribe(offset =>
+                                                 {
+                                                     pen.DashOffset = offset;
+                                                     Context.Invalidate();
+                                                 }));
+
+            subscriptions.AddLast(info.CreateLineCapObservable()
+                                      .Subscribe(cap =>
+                                                 {
+                                                     pen.LineCap = cap;
+                                                     Context.Invalidate();
+                                                 }));
+
+            subscriptions.AddLast(info.CreateLineJoinObservable()
+                                      .Subscribe(join =>
+                                                 {
+                                                     pen.LineJoin = join;
+                                                     Context.Invalidate();
+                                                 }));
+
+            pen.Disposed += (s, e) =>
+                            {
+                                foreach (var subscription in subscriptions) subscription.Dispose();
+                            };
 
             return pen;
         }
@@ -105,7 +183,7 @@ namespace Rain.Renderer
             EnterReadLock();
 
             var exists = dict.TryGetValue(key, out var value) && value != null;
-            var valid = (value as ResourceBase)?.Disposed != true;
+            var valid = (value as ResourceBase)?.IsDisposed != true;
 
             ExitReadLock();
 
@@ -125,7 +203,6 @@ namespace Rain.Renderer
         {
             var uri = new Uri($"./Resources/Icon/{name}.png", UriKind.Relative);
 
-
             if (target.GetDpi() > 96)
                 uri = new Uri($"./Resources/Icon/{name}@2x.png", UriKind.Relative);
 
@@ -140,84 +217,9 @@ namespace Rain.Renderer
             }
         }
 
-        private void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var info = (IBrushInfo) sender;
-            var (shape, fill) = Get(_brushBindings, info, k => (null, null));
-
-            if (fill == null) return;
-
-            GradientBrushInfo gradInfo;
-
-            switch (fill)
-            {
-                case IBrush _ when e.PropertyName == nameof(BrushInfo.Opacity):
-                    fill.Opacity = info.Opacity;
-
-                    break;
-                case IBrush _ when e.PropertyName == nameof(BrushInfo.Transform):
-                    fill.Transform = info.Transform;
-
-                    break;
-                case ISolidColorBrush solid
-                    when e.PropertyName == nameof(SolidColorBrushInfo.Color):
-                    var solidInfo = (SolidColorBrushInfo) info;
-                    solid.Color = solidInfo.Color;
-
-                    break;
-                case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Stops):
-                    gradInfo = (GradientBrushInfo) info;
-                    grad.Stops.ReplaceRange(gradInfo.Stops);
-
-                    break;
-                case IGradientBrush grad when e.PropertyName == nameof(GradientBrushInfo.Type):
-
-                    // let the brush be recreated on the next frame
-                    grad.Dispose();
-                    _brushBindings.Remove(info);
-
-                    break;
-                case ILinearGradientBrush grad
-                    when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
-                    gradInfo = (GradientBrushInfo) info;
-                    grad.StartX = gradInfo.StartPoint.X;
-                    grad.StartY = gradInfo.StartPoint.Y;
-
-                    break;
-                case ILinearGradientBrush grad
-                    when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
-                    gradInfo = (GradientBrushInfo) info;
-                    grad.EndX = gradInfo.EndPoint.X;
-                    grad.EndY = gradInfo.EndPoint.Y;
-
-                    break;
-                case IRadialGradientBrush grad
-                    when e.PropertyName == nameof(GradientBrushInfo.StartPoint):
-                    gradInfo = (GradientBrushInfo) info;
-                    grad.CenterX = gradInfo.StartPoint.X;
-                    grad.CenterY = gradInfo.StartPoint.Y;
-
-                    break;
-                case IRadialGradientBrush grad
-                    when e.PropertyName == nameof(GradientBrushInfo.EndPoint):
-                    gradInfo = (GradientBrushInfo) info;
-                    grad.RadiusX = gradInfo.EndPoint.X - gradInfo.StartPoint.X;
-                    grad.RadiusY = gradInfo.EndPoint.Y - gradInfo.StartPoint.Y;
-
-                    break;
-            }
-
-            if (_suppressed) return;
-
-            Context.Invalidate();
-        }
-
         private void OnManagerAttached(object sender, EventArgs e)
         {
-            if (sender is IViewManager vm)
-            {
-                vm.RootUpdated += OnRootUpdated;
-            }
+            if (sender is IViewManager vm) vm.RootUpdated += OnRootUpdated;
         }
 
         private void OnManagerDetached(object sender, EventArgs e)
@@ -237,62 +239,20 @@ namespace Rain.Renderer
                 BindLayer(Context.ViewManager.Document.Root);
         }
 
-        private void OnStrokePropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void PeriodicUpdate(object state) { }
+
+        private void Release<TKey, TValue>(IDictionary<TKey, TValue> dict) where TValue : IDisposable
         {
-            var info = (IPenInfo) sender;
+            foreach (var (_, value) in dict.AsTuples()) value?.Dispose();
+            dict.Clear();
+        }
 
-            if (info == null) return;
+        private void Release<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key) where TValue : IDisposable
+        {
+            if (!dict.TryGetValue(key, out var value)) return;
 
-            var (layer, stroke) = Get(_strokeBindings, info, k => (null, default));
-
-            if (stroke == null)
-            {
-                BindStroke(layer, info);
-
-                return;
-            }
-
-            switch (e.PropertyName)
-            {
-                case nameof(IPenInfo.Width):
-                    stroke.Width = info.Width;
-
-                    break;
-
-                case nameof(IPenInfo.Dashes):
-                case nameof(IPenInfo.HasDashes):
-                    stroke.Dashes.Clear();
-                    if (info.HasDashes)
-                        foreach (var dash in info.Dashes)
-                            stroke.Dashes.Add(dash);
-
-                    break;
-
-                case nameof(IPenInfo.DashOffset):
-                    stroke.DashOffset = info.DashOffset;
-
-                    break;
-
-
-                case nameof(IPenInfo.LineCap):
-                    stroke.LineCap = info.LineCap;
-
-                    break;
-
-                case nameof(IPenInfo.LineJoin):
-                    stroke.LineJoin = info.LineJoin;
-
-                    break;
-
-                case nameof(IPenInfo.MiterLimit):
-                    stroke.MiterLimit = info.MiterLimit;
-
-                    break;
-            }
-
-            if (_suppressed) return;
-
-            Context.Invalidate();
+            value?.Dispose();
+            dict.Remove(key);
         }
 
         #region ICacheManager Members
@@ -317,78 +277,27 @@ namespace Rain.Renderer
             context.RaiseAttached(this);
         }
 
-        private void PeriodicUpdate(object state)
-        {
-            
-        }
-
         /// <inheritdoc />
         public void BindLayer(ILayer layer)
         {
             EnterWriteLock();
 
-            void BindProperty<K, V>(Action<EventHandler> adder, Dictionary<K, V> d)
-                where K : ILayer where V : IDisposable
-            {
-                adder((s, e) =>
-                      {
-                          EnterWriteLock();
-
-                          if (s is K t)
-                              d.TryGet(t)?.Dispose();
-
-                          ExitWriteLock();
-
-                          if (_suppressed) return;
-
-                          Context.Invalidate();
-                      });
-            }
-
             if (layer is IFilledLayer filled)
-            {
-                lock (_fills)
-                {
-                    _fills.TryGet(filled)?.Dispose();
-                    _fills[filled] = BindBrush(filled, filled.Fill);
-                }
-
-                BindProperty(h => filled.FillChanged += h, _fills);
-            }
+                _fills[filled] = filled.CreateFillObservable().Select(BindBrush).Disposer();
 
             if (layer is IStrokedLayer stroked)
-            {
-                lock (_strokes)
-                {
-                    _strokes.TryGet(stroked)?.Dispose();
-                    _strokes[stroked] = BindStroke(stroked, stroked.Stroke);
-                }
-
-                BindProperty(h => stroked.StrokeChanged += h, _strokes);
-            }
+                _strokes[stroked] = stroked.CreateStrokeObservable().Select(BindStroke).Disposer();
 
             if (layer is ITextLayer text)
-                BindProperty(h => text.LayoutChanged += h, _texts);
+                _texts[text] = text.CreateTextLayoutObservable(Context).Disposer();
 
             if (layer is IImageLayer image)
-                BindProperty(h => image.ImageChanged += h, _images);
+                _images[image] = image.CreateImageObservable(Context).Disposer();
 
             if (layer is IGeometricLayer geometric)
-                BindProperty(h => geometric.GeometryChanged += h, _geometries);
+                _geometries[geometric] = geometric.CreateGeometryObservable(Context).Disposer();
 
-            layer.BoundsChanged += (s, e) =>
-                                   {
-                                       if (s is ILayer l)
-                                       {
-                                           EnterWriteLock();
-                                           _bounds[l] = l.GetBounds(Context);
-                                           ExitWriteLock();
-                                       }
-
-                                       if (_suppressed) return;
-
-                                       Context.Invalidate();
-                                   };
+            _bounds[layer] = new ObservableProperty<RectangleF>(layer.CreateBoundsObservable(Context));
 
             if (layer is IContainerLayer group)
             {
@@ -417,38 +326,30 @@ namespace Rain.Renderer
             return MathUtils.Bounds(GetBounds(layer), layer.AbsoluteTransform);
         }
 
+        /// <inheritdoc />
         public IRenderImage GetBitmap(string key) { return _bitmaps[key]; }
 
         /// <inheritdoc />
-        public RectangleF GetBounds(ILayer layer)
-        {
-            return Get(_bounds, layer, l => l.GetBounds(Context));
-        }
+        public RectangleF GetBounds(ILayer layer) { return _bounds[layer].Value; }
 
+        /// <inheritdoc />
         public IBrush GetBrush(string key) { return _brushes.TryGet(key); }
 
-        public IBrush GetFill(IFilledLayer layer)
-        {
-            return Get(_fills, layer, l => BindBrush(l, l.Fill));
-        }
+        /// <inheritdoc />
+        public IBrush GetFill(IFilledLayer layer) { return _fills[layer].Value; }
 
-        public IGeometry GetGeometry(IGeometricLayer layer)
-        {
-            return Get(_geometries, layer, l => l.GetGeometry(Context));
-        }
+        /// <inheritdoc />
+        public IGeometry GetGeometry(IGeometricLayer layer) { return _geometries[layer].Value; }
 
-        public IRenderImage GetImage(IImageLayer layer)
-        {
-            return Get(_images, layer, t => t.GetImage(Context));
-        }
+        /// <inheritdoc />
+        public IRenderImage GetImage(IImageLayer layer) { return _images[layer].Value; }
 
         /// <inheritdoc />
         public IPen GetPen(string key, int width)
         {
             return Get(_pens,
                        (key, width),
-                       ((string k, int w) p) =>
-                           Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
+                       ((string k, int w) p) => Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
         }
 
         /// <inheritdoc />
@@ -457,16 +358,11 @@ namespace Rain.Renderer
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
         }
 
-        public IPen GetStroke(IStrokedLayer layer)
-        {
-            return Get(_strokes, layer, l => BindStroke(l, l.Stroke));
-        }
+        public IPen GetStroke(IStrokedLayer layer) { return _strokes[layer].Value; }
 
-        public ITextLayout GetTextLayout(ITextLayer layer)
-        {
-            return Get(_texts, layer, t => t.GetLayout(Context));
-        }
+        public ITextLayout GetTextLayout(ITextLayer layer) { return _texts[layer].Value; }
 
+        /// <inheritdoc />
         public void LoadApplicationResources(IRenderContext target)
         {
             _bitmaps["cursor-resize-ns"] = LoadBitmap(target, "cursor-resize-ns");
@@ -485,62 +381,32 @@ namespace Rain.Renderer
             }
         }
 
+        /// <inheritdoc />
         public void ReleaseDeviceResources()
         {
             EnterWriteLock();
 
-            foreach (var (_, brush) in _brushes.AsTuples())
-                brush?.Dispose();
-            _brushes.Clear();
-
-            foreach (var (_, bitmap) in _bitmaps.AsTuples()) bitmap?.Dispose();
-            _bitmaps.Clear();
-
-
-            foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
-            {
-                if (brushInfo != null)
-                    brushInfo.PropertyChanged -= OnBrushPropertyChanged;
-                brush?.Dispose();
-            }
-
-            _brushBindings.Clear();
-
-            foreach (var (strokeInfo, (_, stroke)) in _strokeBindings.AsTuples())
-            {
-                if (strokeInfo != null)
-                    strokeInfo.PropertyChanged -= OnStrokePropertyChanged;
-
-                stroke.Dispose();
-            }
-
-            _strokeBindings.Clear();
-
-            foreach (var (_, fill) in _fills.AsTuples()) fill?.Dispose();
-            _fills.Clear();
-
-            foreach (var (_, stroke) in _strokes.AsTuples()) stroke?.Dispose();
-            _strokes.Clear();
-
-            foreach (var (_, image) in _images.AsTuples()) image?.Dispose();
-            _images.Clear();
+            Release(_brushes);
+            Release(_bitmaps);
+            Release(_fills);
+            Release(_strokes);
+            Release(_images);
 
             ExitWriteLock();
         }
 
+        /// <inheritdoc />
         public void ReleaseResources()
         {
-            ReleaseDeviceResources();
-
             EnterWriteLock();
 
-            foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
-            _geometries.Clear();
-
-            foreach (var (_, layout) in _texts.AsTuples())
-                layout.Dispose();
-
-            _texts.Clear();
+            Release(_brushes);
+            Release(_bitmaps);
+            Release(_fills);
+            Release(_strokes);
+            Release(_images);
+            Release(_geometries);
+            Release(_texts);
 
             ExitWriteLock();
         }
@@ -550,40 +416,11 @@ namespace Rain.Renderer
         {
             EnterWriteLock();
 
-            foreach (var (brushInfo, (_, brush)) in _brushBindings.AsTuples())
-            {
-                if (brushInfo != null)
-                    brushInfo.PropertyChanged -= OnBrushPropertyChanged;
-
-                brush?.Dispose();
-            }
-
-            _brushBindings.Clear();
-
-            foreach (var (strokeInfo, (_, stroke)) in _strokeBindings.AsTuples())
-            {
-                if (strokeInfo != null)
-                    strokeInfo.PropertyChanged -= OnStrokePropertyChanged;
-
-                stroke.Dispose();
-            }
-
-            _strokeBindings.Clear();
-
-            foreach (var (_, fill) in _fills.AsTuples()) fill?.Dispose();
-            _fills.Clear();
-
-            foreach (var (_, stroke) in _strokes.AsTuples()) stroke?.Dispose();
-            _strokes.Clear();
-
-            foreach (var (_, geometry) in _geometries.AsTuples()) geometry?.Dispose();
-            _geometries.Clear();
-
-            foreach (var (_, layout) in _texts.AsTuples()) layout?.Dispose();
-            _texts.Clear();
-
-            foreach (var (_, image) in _images.AsTuples()) image?.Dispose();
-            _images.Clear();
+            Release(_fills);
+            Release(_strokes);
+            Release(_geometries);
+            Release(_texts);
+            Release(_images);
 
             ExitWriteLock();
         }
@@ -599,33 +436,12 @@ namespace Rain.Renderer
         {
             EnterWriteLock();
 
-            if (layer is IFilledLayer filled)
-                if (filled.Fill != null)
-                    if (_fills.TryGetValue(filled, out var fill))
-                    {
-                        fill?.Dispose();
-                        _fills.Remove(filled);
-                    }
+            if (layer is IFilledLayer filled) Release(_fills, filled);
+            if (layer is IStrokedLayer stroked) Release(_strokes, stroked);
+            if (layer is IGeometricLayer geometric) Release(_geometries, geometric);
+            if (layer is ITextLayer text) Release(_texts, text);
 
-            if (layer is IStrokedLayer stroked)
-                if (stroked.Stroke != null)
-                    if (_strokes.TryGetValue(stroked, out var stroke))
-                    {
-                        stroke.Dispose();
-                        _strokes.Remove(stroked);
-                    }
-
-            if (layer is IGeometricLayer geometric)
-                if (_geometries.TryGetValue(geometric, out var geometry))
-                {
-                    geometry.Dispose();
-                    _geometries.Remove(geometric);
-                }
-
-            lock (_bounds)
-            {
-                _bounds.Remove(layer);
-            }
+            _bounds.Remove(layer);
 
             ExitWriteLock();
 
@@ -636,7 +452,33 @@ namespace Rain.Renderer
 
         public IArtContext Context { get; set; }
 
-        private Timer _timer;
+        #endregion
+
+        #region Dictionaries
+
+        private readonly Dictionary<string, IRenderImage> _bitmaps = new Dictionary<string, IRenderImage>();
+
+        private readonly Dictionary<ILayer, IObservableProperty<RectangleF>> _bounds =
+            new Dictionary<ILayer, IObservableProperty<RectangleF>>();
+
+        private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
+
+        private readonly Dictionary<IFilledLayer, IObservableProperty<IBrush>> _fills =
+            new Dictionary<IFilledLayer, IObservableProperty<IBrush>>();
+
+        private readonly Dictionary<IGeometricLayer, IObservableProperty<IGeometry>> _geometries =
+            new Dictionary<IGeometricLayer, IObservableProperty<IGeometry>>();
+
+        private readonly Dictionary<IImageLayer, IObservableProperty<IRenderImage>> _images =
+            new Dictionary<IImageLayer, IObservableProperty<IRenderImage>>();
+
+        private readonly Dictionary<(string, int), IPen> _pens = new Dictionary<(string, int), IPen>();
+
+        private readonly Dictionary<IStrokedLayer, IObservableProperty<IPen>> _strokes =
+            new Dictionary<IStrokedLayer, IObservableProperty<IPen>>();
+
+        private readonly Dictionary<ITextLayer, IObservableProperty<ITextLayout>> _texts =
+            new Dictionary<ITextLayer, IObservableProperty<ITextLayout>>();
 
         #endregion
     }

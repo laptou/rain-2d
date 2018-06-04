@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
-using Rain.Core.Model.Paint;
+
+using SharpDX.Direct2D1;
 
 namespace Rain.Renderer.Direct2D
 {
     public abstract class Effect : IEffect
     {
-        public abstract SharpDX.Direct2D1.Image GetOutput();
+        public abstract Image GetOutput();
 
         #region IEffect Members
 

@@ -14,24 +14,21 @@ namespace Rain.View.Control
             DependencyProperty.Register("Inverted",
                                         typeof(bool),
                                         typeof(Icon),
-                                        new FrameworkPropertyMetadata(
-                                            false,
-                                            FrameworkPropertyMetadataOptions.AffectsRender,
-                                            IconChanged));
+                                        new FrameworkPropertyMetadata(false,
+                                                                      FrameworkPropertyMetadataOptions.AffectsRender,
+                                                                      IconChanged));
 
         public static readonly DependencyProperty IconNameProperty =
             DependencyProperty.Register("IconName",
                                         typeof(string),
                                         typeof(Icon),
-                                        new FrameworkPropertyMetadata(
-                                            null,
-                                            FrameworkPropertyMetadataOptions.AffectsRender,
-                                            IconChanged));
+                                        new FrameworkPropertyMetadata(null,
+                                                                      FrameworkPropertyMetadataOptions.AffectsRender,
+                                                                      IconChanged));
 
         static Icon()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(Icon),
-                                                     new FrameworkPropertyMetadata(typeof(Icon)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(typeof(Icon)));
         }
 
         public string IconName
@@ -54,7 +51,6 @@ namespace Rain.View.Control
                 var theme = AppSettings.Current.GetString("theme");
 
                 if (icon.Inverted)
-                {
                     switch (theme)
                     {
                         case "dark":
@@ -66,14 +62,11 @@ namespace Rain.View.Control
 
                             break;
                     }
-                }
 
-                if(string.IsNullOrWhiteSpace(theme))
+                if (string.IsNullOrWhiteSpace(theme))
                     throw new Exception();
 
-                icon.Source =
-                    new Uri($"/Rain;component/Resources/Icon/{icon.IconName}-{theme}.svg",
-                            UriKind.Relative);
+                icon.Source = new Uri($"/Rain;component/Resources/Icon/{icon.IconName}-{theme}.svg", UriKind.Relative);
             }
         }
     }

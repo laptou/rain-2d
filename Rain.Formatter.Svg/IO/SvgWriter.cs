@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rain.Formatter.Svg.Paint;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model;
@@ -8,16 +11,15 @@ using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
-using Rain.Formatter.Svg.Paint;
 using Rain.Formatter.Svg.Shapes;
 using Rain.Formatter.Svg.Structure;
 using Rain.Formatter.Svg.Utilities;
 
 using Document = Rain.Formatter.Svg.Structure.Document;
-using Ellipse = Rain.Formatter.Svg.Shapes.Ellipse;
+using Ellipse = Rain.Core.Model.DocumentGraph.Ellipse;
 using Group = Rain.Formatter.Svg.Structure.Group;
-using Path = Rain.Formatter.Svg.Shapes.Path;
-using Rectangle = Rain.Formatter.Svg.Shapes.Rectangle;
+using Path = Rain.Core.Model.DocumentGraph.Path;
+using Rectangle = Rain.Core.Model.DocumentGraph.Rectangle;
 using Text = Rain.Formatter.Svg.Shapes.Text;
 
 namespace Rain.Formatter.Svg.IO
@@ -42,7 +44,7 @@ namespace Rain.Formatter.Svg.IO
             };
 
             foreach (var node in nodes)
-            {
+
                 // nodes will always be listed after their parent,
                 // which means you can trust that the last parent posted
                 // is the parent of the current node
@@ -62,13 +64,12 @@ namespace Rain.Formatter.Svg.IO
                         previousNode = node;
                     }
                 }
-            }
 
             svgDoc.Viewbox = doc.Bounds;
 
             return svgDoc;
         }
-        
+
         private static bool RequiresDef(Node node)
         {
             if (node.Target is GradientBrushInfo)
@@ -149,8 +150,8 @@ namespace Rain.Formatter.Svg.IO
             if (node.Target is IGeometricLayer geomLayer)
                 switch (geomLayer)
                 {
-                    case Core.Model.DocumentGraph.Ellipse ellipse:
-                        element = new Ellipse
+                    case Ellipse ellipse:
+                        element = new Shapes.Ellipse
                         {
                             CenterX = new Length(ellipse.CenterX, LengthUnit.Pixels),
                             CenterY = new Length(ellipse.CenterY, LengthUnit.Pixels),
@@ -159,15 +160,15 @@ namespace Rain.Formatter.Svg.IO
                         };
 
                         break;
-                    case Core.Model.DocumentGraph.Path path:
-                        element = new Path
+                    case Path path:
+                        element = new Shapes.Path
                         {
                             Data = path.Instructions.ToArray()
                         };
 
                         break;
-                    case Core.Model.DocumentGraph.Rectangle rectangle:
-                        element = new Rectangle
+                    case Rectangle rectangle:
+                        element = new Shapes.Rectangle
                         {
                             X = new Length(rectangle.X, LengthUnit.Pixels),
                             Y = new Length(rectangle.Y, LengthUnit.Pixels),

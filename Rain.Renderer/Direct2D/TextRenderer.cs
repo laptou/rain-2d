@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Geometry;
 using Rain.Core.Model.Paint;
 
@@ -16,9 +15,8 @@ namespace Rain.Renderer.Direct2D
     internal class TextRenderer : TextRendererBase
     {
         public override Result DrawGlyphRun(
-            object clientDrawingContext, float baselineOriginX, float baselineOriginY,
-            MeasuringMode measuringMode, GlyphRun glyphRun, GlyphRunDescription glyphRunDescription,
-            ComObject clientDrawingEffect)
+            object clientDrawingContext, float baselineOriginX, float baselineOriginY, MeasuringMode measuringMode,
+            GlyphRun glyphRun, GlyphRunDescription glyphRunDescription, ComObject clientDrawingEffect)
         {
             var context = (Context) clientDrawingContext;
             var format = (Format) clientDrawingEffect;
@@ -38,17 +36,14 @@ namespace Rain.Renderer.Direct2D
 
             var geometry = new TransformedGeometry(context.RenderContext.FactoryD2D,
                                                    path,
-                                                   Matrix3x2.Translation(
-                                                       baselineOriginX,
-                                                       baselineOriginY));
+                                                   Matrix3x2.Translation(baselineOriginX, baselineOriginY));
 
             context.Geometries.Add(new Geometry(context.RenderContext.Target, geometry));
             context.Brushes.Add(format?.Fill?.CreateBrush(context.RenderContext));
             context.Pens.Add(format?.Stroke?.CreatePen(context.RenderContext));
 
             context.GlyphCount += glyphRun.Indices.Length;
-            context.CharactersForGeometry.Add(context.GeometryCount,
-                                              glyphRunDescription.Text.Length);
+            context.CharactersForGeometry.Add(context.GeometryCount, glyphRunDescription.Text.Length);
             context.GeometryCount++;
 
             return Result.Ok;
@@ -69,6 +64,8 @@ namespace Rain.Renderer.Direct2D
 
             public Direct2DRenderContext RenderContext { get; }
 
+            #region IDisposable Members
+
             public void Dispose()
             {
                 foreach (var brush in Brushes)
@@ -85,8 +82,9 @@ namespace Rain.Renderer.Direct2D
                 Pens.Clear();
                 CharactersForGeometry.Clear();
                 GeometryCount = GlyphCount = 0;
-
             }
+
+            #endregion
         }
 
         #endregion

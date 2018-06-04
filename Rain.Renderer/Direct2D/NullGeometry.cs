@@ -11,6 +11,8 @@ namespace Rain.Renderer.Direct2D
 {
     public class NullGeometry : IGeometry
     {
+        public void Optimize() { throw new NotImplementedException(); }
+
         #region IGeometry Members
 
         public RectangleF Bounds() { return RectangleF.Empty; }
@@ -20,14 +22,9 @@ namespace Rain.Renderer.Direct2D
         public bool FillContains(float x, float y) { return false; }
         public IGeometry Intersection(IGeometry other) { return new NullGeometry(); }
 
-        public void Load(IEnumerable<PathInstruction> source)
-        {
-            throw new InvalidOperationException();
-        }
+        public void Load(IEnumerable<PathInstruction> source) { throw new InvalidOperationException(); }
 
         public IGeometrySink Open() { throw new InvalidOperationException(); }
-
-        public void Optimize() { throw new NotImplementedException(); }
 
         public IGeometry Outline(float width) { return new NullGeometry(); }
 

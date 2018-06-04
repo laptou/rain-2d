@@ -10,8 +10,7 @@ namespace Rain.Renderer
 {
     internal class GeometryRenderCommand : GeometricRenderCommand
     {
-        public GeometryRenderCommand(IGeometry geometry, bool fill, IBrush brush, IPen pen) :
-            base(fill, brush, pen)
+        public GeometryRenderCommand(IGeometry geometry, bool fill, IBrush brush, IPen pen) : base(fill, brush, pen)
         {
             Geometry = geometry;
         }

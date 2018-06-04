@@ -24,6 +24,12 @@ namespace Rain.Core
 
         public string Id { get; }
 
+        public string Label
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
+
         public float Maximum
         {
             get => Get<float>();
@@ -33,12 +39,6 @@ namespace Rain.Core
         public float Minimum
         {
             get => Get<float>();
-            set => Set(value);
-        }
-
-        public string Label
-        {
-            get => Get<string>();
             set => Set(value);
         }
 

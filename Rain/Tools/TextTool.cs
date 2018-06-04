@@ -42,15 +42,14 @@ namespace Rain.Tools
         private (int index, int length)                                     _selection;
 
         private RectangleF[] _selectionRects = new RectangleF[0];
-        private bool         _updatingOptions;
 
         private Timer _timer;
+        private bool  _updatingOptions;
 
         public TextTool(IToolManager manager) : base(manager)
         {
             Type = ToolType.Text;
-            Status = "<b>Double Click</b> on canvas to create new text object. " +
-                     "<b>Single Click</b> to select.";
+            Status = "<b>Double Click</b> on canvas to create new text object. " + "<b>Single Click</b> to select.";
 
             _fontSource = manager.Context.RenderContext.CreateFontSource();
 
@@ -144,7 +143,7 @@ namespace Rain.Tools
             context.Text += OnText;
             context.GainedFocus += OnGainedFocus;
             context.LostFocus += OnLostFocus;
-            
+
             base.Attach(context);
         }
 
@@ -174,8 +173,7 @@ namespace Rain.Tools
                     #region Navigation
 
                     case Key.Left:
-                        Select(_selection.index - 1,
-                               evt.ModifierState.Shift ? _selection.length + 1 : 0);
+                        Select(_selection.index - 1, evt.ModifierState.Shift ? _selection.length + 1 : 0);
 
                         break;
                     case Key.Right:
@@ -405,11 +403,9 @@ namespace Rain.Tools
 
                 var layout = Context.CacheManager.GetTextLayout(textLayer);
 
-                var selectionStart = layout.GetPosition(start, out var isTrailingHit) +
-                                     (isTrailingHit ? 1 : 0);
+                var selectionStart = layout.GetPosition(start, out var isTrailingHit) + (isTrailingHit ? 1 : 0);
 
-                var selectionEnd = layout.GetPosition(end, out isTrailingHit) +
-                                   (isTrailingHit ? 1 : 0);
+                var selectionEnd = layout.GetPosition(end, out isTrailingHit) + (isTrailingHit ? 1 : 0);
 
                 _selection.index = Math.Min(selectionStart, selectionEnd);
                 _selection.length = Math.Max(selectionStart, selectionEnd) - _selection.index;
@@ -454,9 +450,7 @@ namespace Rain.Tools
                            Context.ViewManager.Root;
 
                 Manager.Context.HistoryManager.Do(
-                    new AddLayerCommand(Manager.Context.HistoryManager.Position + 1,
-                                        root,
-                                        text));
+                    new AddLayerCommand(Manager.Context.HistoryManager.Position + 1, root, text));
 
                 text.Selected = true;
 
@@ -562,16 +556,15 @@ namespace Rain.Tools
                 foreach (var selectionRect in _selectionRects)
                     target.FillRectangle(selectionRect, cache.GetBrush(Colors.TextHighlight));
 
-            if (_caret != null && _caret.Visible)
+            if (_caret != null &&
+                _caret.Visible)
             {
                 var width = (int) (_caretState.Width + 0.99f);
 
                 if (Time.Now % _caret.BlinkPeriod > _caret.BlinkPeriod / 2)
-                {
                     target.DrawLine(_caretState.Position,
                                     _caretState.Position + new Vector2(0, _caretState.Height),
                                     cache.GetPen(Colors.TextCaret, width));
-                }
 
                 Context.Invalidate();
             }
@@ -597,9 +590,7 @@ namespace Rain.Tools
             if (!(SelectedLayer is ITextLayer textLayer)) return;
 
             var history = Context.HistoryManager;
-            var cmd = new ApplyFormatCommand(Context.HistoryManager.Position + 1,
-                                             textLayer,
-                                             format);
+            var cmd = new ApplyFormatCommand(Context.HistoryManager.Position + 1, textLayer, format);
 
             if (merge) history.Merge(cmd, Time.DoubleClick);
             else history.Do(cmd);
@@ -608,9 +599,7 @@ namespace Rain.Tools
         private void Format(TextInfoChange format, bool merge = false)
         {
             var history = Context.HistoryManager;
-            var cmd = new ModifyTextCommand(Context.HistoryManager.Position + 1,
-                                            SelectedLayer,
-                                            format);
+            var cmd = new ModifyTextCommand(Context.HistoryManager.Position + 1, SelectedLayer, format);
 
             if (merge) history.Merge(cmd, Time.DoubleClick);
             else history.Do(cmd);
@@ -625,7 +614,9 @@ namespace Rain.Tools
 
             foreach (var fontFace in family)
                 using (fontFace)
+                {
                     yield return new FontFace(fontFace.Stretch, fontFace.Style, fontFace.Weight);
+                }
         }
 
 
@@ -635,8 +626,7 @@ namespace Rain.Tools
             if (!(SelectedLayer is ITextLayer textLayer)) return;
 
             var history = Context.HistoryManager;
-            var current =
-                new InsertTextCommand(Context.HistoryManager.Position + 1, textLayer, text, index);
+            var current = new InsertTextCommand(Context.HistoryManager.Position + 1, textLayer, text, index);
 
             history.Do(current);
         }
@@ -777,8 +767,7 @@ namespace Rain.Tools
 
                 _selection = (start, length);
                 _selection.index = MathUtils.Clamp(0, maxLength, _selection.index);
-                _selection.length =
-                    MathUtils.Clamp(0, maxLength - _selection.index, _selection.length);
+                _selection.length = MathUtils.Clamp(0, maxLength - _selection.index, _selection.length);
 
                 Update();
             }
@@ -938,8 +927,7 @@ namespace Rain.Tools
             face.Dispose();
         }
 
-        private void UpdateOptions(
-            string family, float size, FontStretch stretch, FontWeight weight, FontStyle style)
+        private void UpdateOptions(string family, float size, FontStretch stretch, FontWeight weight, FontStyle style)
         {
             if (_updatingOptions) return;
 
@@ -953,11 +941,7 @@ namespace Rain.Tools
             Options.GetOption<FontStretch>("font-stretch").SetValues(stretches);
             Options.Set("font-stretch", stretch);
 
-            var weights = GetFontFaces()
-                         .Where(f => f.Stretch == stretch)
-                         .Select(f => f.Weight)
-                         .Distinct()
-                         .ToArray();
+            var weights = GetFontFaces().Where(f => f.Stretch == stretch).Select(f => f.Weight).Distinct().ToArray();
 
             Options.GetOption<FontWeight>("font-weight").SetValues(weights);
             Options.Set("font-weight", weight);
@@ -1031,10 +1015,7 @@ namespace Rain.Tools
                 return string.Join(" ", G(this));
             }
 
-            public static bool operator ==(FontFace face1, FontFace face2)
-            {
-                return face1.Equals(face2);
-            }
+            public static bool operator ==(FontFace face1, FontFace face2) { return face1.Equals(face2); }
 
             public static implicit operator (FontStretch, FontStyle, FontWeight)(FontFace face)
             {
@@ -1046,10 +1027,7 @@ namespace Rain.Tools
                 return new FontFace(face.Item1, face.Item2, face.Item3);
             }
 
-            public static bool operator !=(FontFace face1, FontFace face2)
-            {
-                return !(face1 == face2);
-            }
+            public static bool operator !=(FontFace face1, FontFace face2) { return !(face1 == face2); }
 
             #region IEquatable<FontFace> Members
 

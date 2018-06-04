@@ -7,10 +7,7 @@ namespace Rain.Core.Utility
 {
     public static class TypeExtensions
     {
-        public static bool IsElementary(this Type type)
-        {
-            return Type.GetTypeCode(type) != TypeCode.Object;
-        }
+        public static bool IsElementary(this Type type) { return Type.GetTypeCode(type) != TypeCode.Object; }
 
         public static bool IsNumeric(this Type type)
         {

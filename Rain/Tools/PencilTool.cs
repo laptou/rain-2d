@@ -89,8 +89,7 @@ namespace Rain.Tools
                     }
                 };
 
-                Context.HistoryManager.Do(
-                    new AddLayerCommand(Context.HistoryManager.Position + 1, Root, path));
+                Context.HistoryManager.Do(new AddLayerCommand(Context.HistoryManager.Position + 1, Root, path));
 
                 path.Selected = true;
                 _start = null;
@@ -115,12 +114,11 @@ namespace Rain.Tools
                             // click on start node = close figure
                             if (node.Index == 0 ||
                                 _nodes[node.Index - 1].FigureEnd != null)
-                                Context.HistoryManager.Do(
-                                    new ModifyPathCommand(
-                                        Context.HistoryManager.Position + 1,
-                                        SelectedLayer,
-                                        new[] {_nodes.Count - 1},
-                                        ModifyPathCommand.NodeOperation.EndFigureClosed));
+                                Context.HistoryManager.Do(new ModifyPathCommand(Context.HistoryManager.Position + 1,
+                                                                                SelectedLayer,
+                                                                                new[] {_nodes.Count - 1},
+                                                                                ModifyPathCommand
+                                                                                   .NodeOperation.EndFigureClosed));
                         }
                     }
 
@@ -132,11 +130,10 @@ namespace Rain.Tools
                 {
                     var tpos = FromWorldSpace(_mouse.pos);
 
-                    Context.HistoryManager.Do(new ModifyPathCommand(
-                                                  Context.HistoryManager.Position + 1,
-                                                  SelectedLayer,
-                                                  new[] {new PathNode(_nodes.Count, tpos)},
-                                                  _nodes.Count));
+                    Context.HistoryManager.Do(new ModifyPathCommand(Context.HistoryManager.Position + 1,
+                                                                    SelectedLayer,
+                                                                    new[] {new PathNode(_nodes.Count, tpos)},
+                                                                    _nodes.Count));
                 }
             }
 
@@ -153,10 +150,7 @@ namespace Rain.Tools
             Context.Invalidate();
         }
 
-        public override void MouseUp(IArtContext context, ClickEvent evt)
-        {
-            Context.Invalidate();
-        }
+        public override void MouseUp(IArtContext context, ClickEvent evt) { Context.Invalidate(); }
 
         public override void Render(IRenderContext target, ICacheManager cache, IViewManager view)
         {
@@ -171,10 +165,7 @@ namespace Rain.Tools
             {
                 target.DrawLine(_start.Value, _mouse.pos, nOutline);
 
-                var rect = new RectangleF(_start.Value.X - radius,
-                                          _start.Value.Y - radius,
-                                          radius * 2,
-                                          radius * 2);
+                var rect = new RectangleF(_start.Value.X - radius, _start.Value.Y - radius, radius * 2, radius * 2);
 
                 target.FillRectangle(rect, GetBrush(false, false));
                 target.DrawRectangle(rect, sOutline);
@@ -232,8 +223,7 @@ namespace Rain.Tools
             Context.HistoryManager.Do(new ModifyPathCommand(Context.HistoryManager.Position + 1,
                                                             SelectedLayer,
                                                             new[] {index},
-                                                            ModifyPathCommand
-                                                               .NodeOperation.Remove));
+                                                            ModifyPathCommand.NodeOperation.Remove));
 
             _nodes = GetGeometricNodes().ToList();
         }

@@ -26,18 +26,15 @@ namespace Rain.View.Control
             DependencyProperty.Register("SelectedIndex",
                                         typeof(int),
                                         typeof(SegmentButton),
-                                        new FrameworkPropertyMetadata(
-                                            0,
-                                            FrameworkPropertyMetadataOptions.AffectsRender,
-                                            SelectedIndexChanged));
+                                        new FrameworkPropertyMetadata(0,
+                                                                      FrameworkPropertyMetadataOptions.AffectsRender,
+                                                                      SelectedIndexChanged));
 
         public static readonly DependencyProperty SelectedSegmentProperty =
             DependencyProperty.Register("SelectedSegment",
                                         typeof(Segment),
                                         typeof(SegmentButton),
-                                        new FrameworkPropertyMetadata(
-                                            null,
-                                            SelectedSegmentChanged));
+                                        new FrameworkPropertyMetadata(null, SelectedSegmentChanged));
 
         public static readonly DependencyProperty SegmentsProperty =
             DependencyProperty.Register("Segments",
@@ -50,8 +47,7 @@ namespace Rain.View.Control
         static SegmentButton()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(SegmentButton),
-                                                     new FrameworkPropertyMetadata(
-                                                         typeof(SegmentButton)));
+                                                     new FrameworkPropertyMetadata(typeof(SegmentButton)));
         }
 
         public SegmentButton()
@@ -84,8 +80,7 @@ namespace Rain.View.Control
             set => SetValue(SelectedValueProperty, value);
         }
 
-        private static void OnSegmentsChanged(
-            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSegmentsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var sb = (SegmentButton) d;
 
@@ -130,22 +125,19 @@ namespace Rain.View.Control
             }
         }
 
-        private static void SelectedIndexChanged(
-            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void SelectedIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is SegmentButton segmentButton)) return;
 
             if (segmentButton._selectionChanging) return;
 
             segmentButton._selectionChanging = true;
-            segmentButton.SelectedSegment =
-                segmentButton.Segments.ElementAtOrDefault(segmentButton.SelectedIndex);
+            segmentButton.SelectedSegment = segmentButton.Segments.ElementAtOrDefault(segmentButton.SelectedIndex);
             segmentButton.SelectedValue = segmentButton.SelectedSegment?.Value;
             segmentButton._selectionChanging = false;
         }
 
-        private static void SelectedSegmentChanged(
-            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void SelectedSegmentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is SegmentButton segmentButton)) return;
 
@@ -156,14 +148,12 @@ namespace Rain.View.Control
             if (segmentButton._selectionChanging) return;
 
             segmentButton._selectionChanging = true;
-            segmentButton.SelectedIndex =
-                segmentButton.Segments.IndexOf(segmentButton.SelectedSegment);
+            segmentButton.SelectedIndex = segmentButton.Segments.IndexOf(segmentButton.SelectedSegment);
             segmentButton.SelectedValue = segmentButton.SelectedSegment?.Value;
             segmentButton._selectionChanging = false;
         }
 
-        private static void SelectedValueChanged(
-            DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void SelectedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is SegmentButton segmentButton)) return;
 
@@ -172,8 +162,7 @@ namespace Rain.View.Control
             segmentButton._selectionChanging = true;
             var segment = segmentButton.Segments.FirstOrDefault(
                 s => segmentButton.SelectedValue == s.Value ||
-                     segmentButton.SelectedValue?.Equals(s.Value) ==
-                     true);
+                     segmentButton.SelectedValue?.Equals(s.Value) == true);
 
             if (segment != null)
             {

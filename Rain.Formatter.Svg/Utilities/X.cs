@@ -105,12 +105,11 @@ namespace Rain.Formatter.Svg.Utilities
 
                 foreach (Match transformMatch in transformMatches)
                 {
-                    var groups = transformMatch
-                                .Groups.OfType<System.Text.RegularExpressions.Group>()
-                                .Skip(1)
-                                .SelectMany(g => g.Captures.OfType<Capture>().Select(c => c.Value))
-                                .Where(g => !string.IsNullOrWhiteSpace(g))
-                                .ToArray();
+                    var groups = transformMatch.Groups.OfType<System.Text.RegularExpressions.Group>()
+                                               .Skip(1)
+                                               .SelectMany(g => g.Captures.OfType<Capture>().Select(c => c.Value))
+                                               .Where(g => !string.IsNullOrWhiteSpace(g))
+                                               .ToArray();
 
                     switch (groups[0])
                     {
@@ -125,58 +124,49 @@ namespace Rain.Formatter.Svg.Utilities
                             break;
                         case "scale":
                             if (groups.Length == 2)
-                                transform = Matrix3x2.CreateScale(float.Parse(groups[1])) *
-                                            transform;
+                                transform = Matrix3x2.CreateScale(float.Parse(groups[1])) * transform;
 
                             if (groups.Length == 3)
-                                transform =
-                                    Matrix3x2.CreateScale(float.Parse(groups[1]),
-                                                          float.Parse(groups[2])) * transform;
+                                transform = Matrix3x2.CreateScale(float.Parse(groups[1]), float.Parse(groups[2])) *
+                                            transform;
 
                             break;
 
                         case "translate":
                             if (groups.Length == 2)
                                 transform =
-                                    Matrix3x2.CreateTranslation(
-                                        float.Parse(groups[1]),
-                                        float.Parse(groups[1])) * transform;
+                                    Matrix3x2.CreateTranslation(float.Parse(groups[1]), float.Parse(groups[1])) *
+                                    transform;
 
                             if (groups.Length == 3)
                                 transform =
-                                    Matrix3x2.CreateTranslation(
-                                        float.Parse(groups[1]),
-                                        float.Parse(groups[2])) * transform;
+                                    Matrix3x2.CreateTranslation(float.Parse(groups[1]), float.Parse(groups[2])) *
+                                    transform;
 
                             break;
 
                         case "rotate":
                             if (groups.Length == 2)
-                                transform =
-                                    Matrix3x2.CreateRotation(
-                                        float.Parse(groups[1]) / 180 * (float) Math.PI) * transform;
+                                transform = Matrix3x2.CreateRotation(float.Parse(groups[1]) / 180 * (float) Math.PI) *
+                                            transform;
 
                             if (groups.Length == 4)
-                                transform =
-                                    Matrix3x2.CreateRotation(
-                                        float.Parse(groups[1]) / 180 * (float) Math.PI,
-                                        new Vector2(float.Parse(groups[2]),
-                                                    float.Parse(groups[3]))) * transform;
+                                transform = Matrix3x2.CreateRotation(float.Parse(groups[1]) / 180 * (float) Math.PI,
+                                                                     new Vector2(
+                                                                         float.Parse(groups[2]),
+                                                                         float.Parse(groups[3]))) * transform;
 
                             break;
 
                         case "skewX":
-                            transform =
-                                Matrix3x2.CreateSkew(float.Parse(groups[1]) / 180 * (float) Math.PI,
-                                                     0) * transform;
+                            transform = Matrix3x2.CreateSkew(float.Parse(groups[1]) / 180 * (float) Math.PI, 0) *
+                                        transform;
 
                             break;
 
                         case "skewY":
-                            transform =
-                                Matrix3x2.CreateSkew(0,
-                                                     float.Parse(groups[1]) / 180 *
-                                                     (float) Math.PI) * transform;
+                            transform = Matrix3x2.CreateSkew(0, float.Parse(groups[1]) / 180 * (float) Math.PI) *
+                                        transform;
 
                             break;
                     }

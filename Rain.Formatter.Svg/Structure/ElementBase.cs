@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+
+using Rain.Formatter.Svg.Utilities;
+
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Measurement;
-using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
     public abstract class ElementBase : IElement
     {
-        public Document Document => Parent is Document doc ? doc : Parent?.Document;
-
         protected string LazyGet(XElement element, XName name, bool inherit = false)
         {
             if (inherit)
@@ -26,8 +26,7 @@ namespace Rain.Formatter.Svg.Structure
             return (string) element.Attribute(name);
         }
 
-        protected T LazyGet<T>(
-            XElement element, XName name, T @default = default, bool inherit = false)
+        protected T LazyGet<T>(XElement element, XName name, T @default = default, bool inherit = false)
         {
             var value = LazyGet(element, name, inherit);
 
@@ -35,10 +34,7 @@ namespace Rain.Formatter.Svg.Structure
             {
                 if (string.IsNullOrWhiteSpace(value)) return @default;
 
-                var pascalCase = string.Join("",
-                                             value.Split('-')
-                                                  .Select(s => char.ToUpper(s[0]) +
-                                                               s.Substring(1)));
+                var pascalCase = string.Join("", value.Split('-').Select(s => char.ToUpper(s[0]) + s.Substring(1)));
 
                 return (T) Enum.Parse(typeof(T), pascalCase);
             }
@@ -48,7 +44,7 @@ namespace Rain.Formatter.Svg.Structure
                 if (string.IsNullOrWhiteSpace(value)) return (T) (object) new float[0];
 
                 return (T) (object) value.Split(',', ' ')
-                                         .Where(s => float.TryParse(s, out var _))
+                                         .Where(s => float.TryParse(s, out _))
                                          .Select(float.Parse)
                                          .ToArray();
             }
@@ -72,17 +68,10 @@ namespace Rain.Formatter.Svg.Structure
                 if (value != null)
                 {
                     var values = value.Split('\u0020', '\u000A', '\u000D', '\u0009')
-                                      .Select(s => float.TryParse(s, out var result)
-                                                       ? result
-                                                       : float.NaN)
+                                      .Select(s => float.TryParse(s, out var result) ? result : float.NaN)
                                       .ToArray();
 
-                    return (T) (object) new Matrix3x2(values[0],
-                                                      values[1],
-                                                      values[2],
-                                                      values[3],
-                                                      values[4],
-                                                      values[5]);
+                    return (T) (object) new Matrix3x2(values[0], values[1], values[2], values[3], values[4], values[5]);
                 }
 
             if (typeof(T) == typeof(string))
@@ -91,10 +80,7 @@ namespace Rain.Formatter.Svg.Structure
             return @default;
         }
 
-        protected void LazySet<T>(XElement element, XName name, T value)
-        {
-            LazySet(element, name, value, default);
-        }
+        protected void LazySet<T>(XElement element, XName name, T value) { LazySet(element, name, value, default); }
 
         protected void LazySet<T>(XElement element, XName name, T value, T @default)
         {
@@ -113,21 +99,19 @@ namespace Rain.Formatter.Svg.Structure
 
                     break;
                 case RectangleF rect:
-                    element.SetAttributeValue(name,
-                                              $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
+                    element.SetAttributeValue(name, $"{rect.Left} {rect.Top} {rect.Width} {rect.Height}");
 
                     break;
                 case Matrix3x2 mat:
                     element.SetAttributeValue(name,
-                                              $"matrix(" + 
-                                              $"{mat.M11},{mat.M12},{mat.M21}," +
+                                              $"matrix(" + $"{mat.M11},{mat.M12},{mat.M21}," +
                                               $"{mat.M22},{mat.M31},{mat.M32})");
 
                     break;
                 case Color color:
                     element.SetAttributeValue(name,
-                                              $"rgb({color.Red * 100}%," +
-                                              $"{color.Green * 100}%," + $"{color.Blue * 100}%)");
+                                              $"rgb({color.Red * 100}%," + $"{color.Green * 100}%," +
+                                              $"{color.Blue * 100}%)");
 
                     break;
                 default:
@@ -148,10 +132,8 @@ namespace Rain.Formatter.Svg.Structure
 
             if (style != null)
             {
-                var rules =
-                    from Match match in Regex.Matches(style,
-                                                      @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.\, _]+);?")
-                    select (name: match.Groups[1].Value, value: match.Groups[2].Value);
+                var rules = from Match match in Regex.Matches(style, @"([a-z-]+):([a-zA-Z0-9""'#\(\)\.\, _]+);?")
+                            select (name: match.Groups[1].Value, value: match.Groups[2].Value);
 
                 foreach (var rule in rules)
                     if (element.Attribute(rule.name) == null)
@@ -171,6 +153,8 @@ namespace Rain.Formatter.Svg.Structure
 
             return element;
         }
+
+        public Document Document => Parent is Document doc ? doc : Parent?.Document;
 
         public string Id { get; set; }
 

@@ -18,9 +18,7 @@ namespace Rain.Renderer.Direct2D
 
         public static FontFamily GetFamilyByName(this FontCollection collection, string name)
         {
-            return collection.FindFamilyName(name, out var index)
-                       ? collection.GetFontFamily(index)
-                       : null;
+            return collection.FindFamilyName(name, out var index) ? collection.GetFontFamily(index) : null;
         }
 
         public static string ToCurrentCulture(this LocalizedStrings ls)

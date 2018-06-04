@@ -10,10 +10,7 @@ namespace Rain.Renderer.WPF
 {
     internal class SolidColorBrush : Brush, ISolidColorBrush
     {
-        public SolidColorBrush(Color color)
-        {
-            WpfBrush = new System.Windows.Media.SolidColorBrush(color.Convert());
-        }
+        public SolidColorBrush(Color color) { WpfBrush = new System.Windows.Media.SolidColorBrush(color.Convert()); }
 
         #region ISolidColorBrush Members
 

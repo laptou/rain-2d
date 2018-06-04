@@ -68,8 +68,7 @@ namespace Rain.Renderer
             // ViewManager doesn't subscribe to events from any other managers.
 
             if (context != Context)
-                throw new InvalidOperationException(
-                    "A new ViewManager must be created for each ArtContext.");
+                throw new InvalidOperationException("A new ViewManager must be created for each ArtContext.");
 
             Context.RaiseAttached(this);
         }
@@ -80,8 +79,7 @@ namespace Rain.Renderer
             // ViewManager doesn't subscribe to events from any other managers.
 
             if (context != Context)
-                throw new InvalidOperationException(
-                    "This ViewManager is not attached to that ArtContext.");
+                throw new InvalidOperationException("This ViewManager is not attached to that ArtContext.");
 
             Context.RaiseDetached(this);
         }
@@ -104,15 +102,9 @@ namespace Rain.Renderer
             }
         }
 
-        public RectangleF ToArtSpace(RectangleF v)
-        {
-            return MathUtils.Bounds(v, MathUtils.Invert(Transform));
-        }
+        public RectangleF ToArtSpace(RectangleF v) { return MathUtils.Bounds(v, MathUtils.Invert(Transform)); }
 
-        public Vector2 ToArtSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, MathUtils.Invert(Transform));
-        }
+        public Vector2 ToArtSpace(Vector2 v) { return Vector2.Transform(v, MathUtils.Invert(Transform)); }
 
         public IArtContext Context { get; }
 
@@ -143,9 +135,7 @@ namespace Rain.Renderer
             get => Get<Vector2>();
             set
             {
-                Set(Vector2.Clamp(value,
-                                  -Document.Bounds.Size * Zoom,
-                                  Document.Bounds.Size * Zoom));
+                Set(Vector2.Clamp(value, -Document.Bounds.Size * Zoom, Document.Bounds.Size * Zoom));
                 RaisePropertyChanged(nameof(Transform));
             }
         }

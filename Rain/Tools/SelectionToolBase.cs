@@ -17,8 +17,7 @@ using Rain.Utility;
 
 namespace Rain.Tools
 {
-    public abstract class SelectionToolBase<T> : Core.Model.Model, ITool
-        where T : class, ILayer
+    public abstract class SelectionToolBase<T> : Core.Model.Model, ITool where T : class, ILayer
     {
         private   int                                      _depth = 1;
         private   (Vector2 position, bool down, long time) _mouse = (Vector2.Zero, false, 0);
@@ -128,10 +127,7 @@ namespace Rain.Tools
             return Vector2.Transform(v, MathUtils.Invert(SelectedLayer.AbsoluteTransform));
         }
 
-        protected Vector2 ToWorldSpace(Vector2 v)
-        {
-            return Vector2.Transform(v, SelectedLayer.AbsoluteTransform);
-        }
+        protected Vector2 ToWorldSpace(Vector2 v) { return Vector2.Transform(v, SelectedLayer.AbsoluteTransform); }
 
         #endregion
 
@@ -151,15 +147,9 @@ namespace Rain.Tools
 
         public abstract void MouseMove(IArtContext context, PointerEvent evt);
 
-        public virtual void KeyDown(IArtContext context, KeyboardEvent evt)
-        {
-            State = evt.ModifierState;
-        }
+        public virtual void KeyDown(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
 
-        public virtual void KeyUp(IArtContext context, KeyboardEvent evt)
-        {
-            State = evt.ModifierState;
-        }
+        public virtual void KeyUp(IArtContext context, KeyboardEvent evt) { State = evt.ModifierState; }
 
         public virtual void MouseDown(IArtContext context, ClickEvent evt)
         {
@@ -198,8 +188,7 @@ namespace Rain.Tools
 
         #region Rendering
 
-        protected void RenderBoundingBoxes(
-            IRenderContext target, ICacheManager cache, IViewManager view)
+        protected void RenderBoundingBoxes(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             var outline = cache.GetPen(Colors.SelectionOutline, 1);
             var outlineRef = cache.GetPen(Colors.SelectionReferenceOutline, 1);
@@ -229,8 +218,7 @@ namespace Rain.Tools
             }
         }
 
-        protected void RenderPathOutlines(
-            IRenderContext target, ICacheManager cache, IViewManager view)
+        protected void RenderPathOutlines(IRenderContext target, ICacheManager cache, IViewManager view)
         {
             var outline = cache.GetPen(Colors.SelectionOutline, 1);
 

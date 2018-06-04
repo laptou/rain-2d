@@ -24,10 +24,7 @@ namespace Rain.Core.Utility
         /// </summary>
         public ObservableList() { _suspendCollectionChangeNotification = false; }
 
-        public ObservableList(IEnumerable<T> items) : base(items)
-        {
-            _suspendCollectionChangeNotification = false;
-        }
+        public ObservableList(IEnumerable<T> items) : base(items) { _suspendCollectionChangeNotification = false; }
 
         /// <summary>
         ///     This event is overriden CollectionChanged event of the observable collection.
@@ -101,8 +98,8 @@ namespace Rain.Core.Utility
         }
 
         /// <summary>
-        /// Replaces all of the items in this ObservableList with
-        /// the items given.
+        ///     Replaces all of the items in this ObservableList with
+        ///     the items given.
         /// </summary>
         public void ReplaceRange(IEnumerable<T> items)
         {
@@ -119,18 +116,12 @@ namespace Rain.Core.Utility
         /// <summary>
         ///     Resumes collection changed notification.
         /// </summary>
-        public void ResumeCollectionChangeNotification()
-        {
-            _suspendCollectionChangeNotification = false;
-        }
+        public void ResumeCollectionChangeNotification() { _suspendCollectionChangeNotification = false; }
 
         /// <summary>
         ///     Suspends collection changed notification.
         /// </summary>
-        public void SuspendCollectionChangeNotification()
-        {
-            _suspendCollectionChangeNotification = true;
-        }
+        public void SuspendCollectionChangeNotification() { _suspendCollectionChangeNotification = true; }
 
         /// <inheritdoc />
         /// <summary>
@@ -162,11 +153,7 @@ namespace Rain.Core.Utility
 
                     if (handler.Target is DispatcherObject dispatcherObject &&
                         !dispatcherObject.CheckAccess())
-                        dispatcherObject.Dispatcher.BeginInvoke(
-                            DispatcherPriority.DataBind,
-                            handler,
-                            this,
-                            e);
+                        dispatcherObject.Dispatcher.BeginInvoke(DispatcherPriority.DataBind, handler, this, e);
                     else
                         handler(this, e);
                 }

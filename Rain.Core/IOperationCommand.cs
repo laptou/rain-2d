@@ -30,8 +30,7 @@ namespace Rain.Core
         IOperationCommand Merge(IOperationCommand newCommand);
     }
 
-    public interface IMergeableOperationCommand<T>
-        : IOperationCommand<T>, IMergeableOperationCommand
+    public interface IMergeableOperationCommand<T> : IOperationCommand<T>, IMergeableOperationCommand
     {
         IOperationCommand<T> Merge(IOperationCommand<T> newCommand);
     }

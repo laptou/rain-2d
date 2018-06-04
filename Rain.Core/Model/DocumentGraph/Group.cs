@@ -19,9 +19,7 @@ namespace Rain.Core.Model.DocumentGraph
 
             if (subLayer != null) return subLayer;
 
-            return SubLayers.OfType<Group>()
-                            .Select(layer => layer.Find(id))
-                            .FirstOrDefault(l => l != null);
+            return SubLayers.OfType<Group>().Select(layer => layer.Find(id)).FirstOrDefault(l => l != null);
         }
 
         private void OnBoundsChanged(object sender, EventArgs e) { RaiseBoundsChanged(); }

@@ -18,8 +18,7 @@ namespace Rain.Core.Utility
 
             var commands = Regex.Matches(data ?? "",
                                          @"([MLHVCTSAZmlhvctsaz]){1}\s*(?:,?(\s*(?:[-+]?(?:(?:[0-9]*\.[0-9]+)|(?:[0-9]+))(?:[Ee][-+]?[0-9]+)?)\s*))*");
-            var (start, pos, control, control2) =
-                (Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero);
+            var (start, pos, control, control2) = (Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero);
             var lastInstruction = PathDataInstruction.Close;
 
             foreach (Match command in commands)

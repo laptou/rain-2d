@@ -11,8 +11,7 @@ namespace Rain.Core.Model.Geometry
     public class CubicPathInstruction : CoordinatePathInstruction
     {
         public CubicPathInstruction(
-            float x, float y, float control1X, float control1Y, float control2X,
-            float control2Y) : base(x, y)
+            float x, float y, float control1X, float control1Y, float control2X, float control2Y) : base(x, y)
         {
             Control1X = control1X;
             Control1Y = control1Y;

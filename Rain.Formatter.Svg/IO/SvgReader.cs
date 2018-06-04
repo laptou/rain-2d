@@ -1,33 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+
+using Rain.Core.Model.Measurement;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model;
-
-using DG = Rain.Core.Model.DocumentGraph;
-
 using Rain.Core.Model.Geometry;
-using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 using Rain.Core.Model.Text;
 using Rain.Core.Utility;
-
-using SVG = Rain.Formatter.Svg;
-
 using Rain.Formatter.Svg.Paint;
 using Rain.Formatter.Svg.Shapes;
 using Rain.Formatter.Svg.Structure;
-using Rain.Formatter.Svg.Utilities;
 
-using Document = Rain.Formatter.Svg.Structure.Document;
-using Ellipse = Rain.Formatter.Svg.Shapes.Ellipse;
+using DG = Rain.Core.Model.DocumentGraph;
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
-using Group = Rain.Formatter.Svg.Structure.Group;
-using Path = Rain.Formatter.Svg.Shapes.Path;
-using Rectangle = Rain.Formatter.Svg.Shapes.Rectangle;
-using Text = Rain.Formatter.Svg.Shapes.Text;
+using SVG = Rain.Formatter.Svg;
 
 namespace Rain.Formatter.Svg.IO
 {
@@ -46,16 +36,13 @@ namespace Rain.Formatter.Svg.IO
 
             var resolved = new Dictionary<string, object>();
 
-            foreach (var child in svgDocument
-                                 .OfType<IGraphicalElement>()
-                                 .Select(g => FromSvg(g, resolved)))
+            foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(g => FromSvg(g, resolved)))
                 doc.Root.Add(child, 0);
 
             return doc;
         }
 
-        private static DG.ILayer FromSvg(
-            IGraphicalElement element, IDictionary<string, object> resolved)
+        private static DG.ILayer FromSvg(IGraphicalElement element, IDictionary<string, object> resolved)
         {
             if (element.Id != null &&
                 resolved.TryGetValue(element.Id, out var resolvedObject) &&
@@ -68,9 +55,7 @@ namespace Rain.Formatter.Svg.IO
             {
                 var group = new DG.Group();
 
-                foreach (var child in containerElement
-                                     .OfType<IGraphicalElement>()
-                                     .Select(g => FromSvg(g, resolved)))
+                foreach (var child in containerElement.OfType<IGraphicalElement>().Select(g => FromSvg(g, resolved)))
                     group.Add(child, 0);
 
                 layer = group;
@@ -106,14 +91,12 @@ namespace Rain.Formatter.Svg.IO
                         var linePath = new DG.Path();
 
                         linePath.Instructions.Add(
-                            new MovePathInstruction(
-                                line.X1.To(LengthUnit.Pixels),
-                                line.Y1.To(LengthUnit.Pixels)));
+                            new MovePathInstruction(line.X1.To(LengthUnit.Pixels),
+                                                    line.Y1.To(LengthUnit.Pixels)));
 
                         linePath.Instructions.Add(
-                            new LinePathInstruction(
-                                line.X2.To(LengthUnit.Pixels),
-                                line.Y2.To(LengthUnit.Pixels)));
+                            new LinePathInstruction(line.X2.To(LengthUnit.Pixels),
+                                                    line.Y2.To(LengthUnit.Pixels)));
 
                         shape = linePath;
 
@@ -129,8 +112,7 @@ namespace Rain.Formatter.Svg.IO
                     case Polygon polygon:
                         var polygonPath = new DG.Path();
 
-                        polygonPath.Instructions.AddItems(
-                            polygon.Points.Select(v => new LinePathInstruction(v)));
+                        polygonPath.Instructions.AddItems(polygon.Points.Select(v => new LinePathInstruction(v)));
 
                         polygonPath.Instructions.Add(new ClosePathInstruction(false));
 
@@ -140,8 +122,7 @@ namespace Rain.Formatter.Svg.IO
                     case Polyline polyline:
                         var polylinePath = new DG.Path();
 
-                        polylinePath.Instructions.AddItems(
-                            polyline.Points.Select(v => new LinePathInstruction(v)));
+                        polylinePath.Instructions.AddItems(polyline.Points.Select(v => new LinePathInstruction(v)));
 
                         polylinePath.Instructions.Add(new ClosePathInstruction(true));
 
@@ -190,10 +171,7 @@ namespace Rain.Formatter.Svg.IO
                 // ReSharper restore RedundantNameQualifier
 
 
-                shape.Fill = FromSvg(shapeElement.Fill,
-                                     shapeElement.FillOpacity,
-                                     resolved,
-                                     shapeElement.Document);
+                shape.Fill = FromSvg(shapeElement.Fill, shapeElement.FillOpacity, resolved, shapeElement.Document);
                 shape.Stroke = FromSvg(shapeElement.Stroke,
                                        shapeElement.StrokeOpacity,
                                        shapeElement.StrokeWidth.To(LengthUnit.Pixels),
@@ -214,16 +192,15 @@ namespace Rain.Formatter.Svg.IO
 
                 layer.Name = element.Name ?? element.Id;
 
-                if(layer.Name != null)
-                resolved[layer.Name] = layer;
+                if (layer.Name != null)
+                    resolved[layer.Name] = layer;
             }
 
             return layer;
         }
 
         private static IBrushInfo FromSvg(
-            Paint.Paint paint, float opacity, IDictionary<string, object> resolved,
-            Document svgDocument)
+            Paint.Paint paint, float opacity, IDictionary<string, object> resolved, Document svgDocument)
         {
             IBrushInfo brush;
 
@@ -241,19 +218,13 @@ namespace Rain.Formatter.Svg.IO
 
                     brush = new GradientBrushInfo
                     {
-                        Stops = new ObservableList<GradientStop>(
-                            linearGradient.Stops.Select(s => new GradientStop
-                            {
-                                Color = new Color(s.Color.Red,
-                                                  s.Color.Green,
-                                                  s.Color.Blue,
-                                                  s.Color.Alpha * s.Opacity),
-                                Offset = s.Offset.To(LengthUnit.Number, 1)
-                            })),
-                        StartPoint =
-                           (linearGradient.X1, linearGradient.Y1).To(LengthUnit.Pixels, 1),
-                        EndPoint =
-                            (linearGradient.X2, linearGradient.Y2).To(LengthUnit.Pixels, 1),
+                        Stops = new ObservableList<GradientStop>(linearGradient.Stops.Select(s => new GradientStop
+                        {
+                            Color = new Color(s.Color.Red, s.Color.Green, s.Color.Blue, s.Color.Alpha * s.Opacity),
+                            Offset = s.Offset.To(LengthUnit.Number, 1)
+                        })),
+                        StartPoint = (linearGradient.X1, linearGradient.Y1).To(LengthUnit.Pixels, 1),
+                        EndPoint = (linearGradient.X2, linearGradient.Y2).To(LengthUnit.Pixels, 1),
                         Name = linearGradient.Name ?? linearGradient.Id,
                         Transform = linearGradient.Transform,
                         SpreadMethod = linearGradient.SpreadMethod,
@@ -271,12 +242,9 @@ namespace Rain.Formatter.Svg.IO
                         Offset = s.Offset.To(LengthUnit.Number, 1)
                     });
 
-                    var start =
-                        (radialGradient.CenterX, radialGradient.CenterY).To(LengthUnit.Pixels, 1);
-                    var focus =
-                        (radialGradient.FocusX, radialGradient.FocusX).To(LengthUnit.Pixels, 1);
-                    var radius =
-                        (radialGradient.Radius, radialGradient.Radius).To(LengthUnit.Pixels, 1);
+                    var start = (radialGradient.CenterX, radialGradient.CenterY).To(LengthUnit.Pixels, 1);
+                    var focus = (radialGradient.FocusX, radialGradient.FocusX).To(LengthUnit.Pixels, 1);
+                    var radius = (radialGradient.Radius, radialGradient.Radius).To(LengthUnit.Pixels, 1);
 
                     brush = new GradientBrushInfo
                     {
@@ -296,10 +264,7 @@ namespace Rain.Formatter.Svg.IO
 
                 case ReferencePaint reference:
 
-                    return FromSvg(svgDocument.ResolveDef<Paint.Paint>(reference.Reference),
-                                   1,
-                                   resolved,
-                                   svgDocument);
+                    return FromSvg(svgDocument.ResolveDef<Paint.Paint>(reference.Reference), 1, resolved, svgDocument);
 
                 case null:
 
@@ -319,9 +284,8 @@ namespace Rain.Formatter.Svg.IO
         }
 
         private static IPenInfo FromSvg(
-            Paint.Paint paint, float opacity, float width, IEnumerable<float> dashes,
-            float dashOffset, LineCap lineCap, LineJoin lineJoin, float miterLimit,
-            IDictionary<string, object> resolved, Document svgDocument)
+            Paint.Paint paint, float opacity, float width, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
+            LineJoin lineJoin, float miterLimit, IDictionary<string, object> resolved, Document svgDocument)
         {
             var stroke = new PenInfo
             {

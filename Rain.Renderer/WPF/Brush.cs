@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-using Rain.Core;
 using Rain.Core.Model;
 using Rain.Core.Model.Paint;
 
@@ -15,10 +14,7 @@ namespace Rain.Renderer.WPF
     {
         protected System.Windows.Media.Brush WpfBrush { get; set; }
 
-        public static implicit operator System.Windows.Media.Brush(Brush brush)
-        {
-            return brush?.WpfBrush;
-        }
+        public static implicit operator System.Windows.Media.Brush(Brush brush) { return brush?.WpfBrush; }
 
         #region IBrush Members
 
@@ -28,8 +24,6 @@ namespace Rain.Renderer.WPF
 
             base.Dispose();
         }
-
-        public override void Optimize(IRenderContext context) { WpfBrush.Freeze(); }
 
         public T Unwrap<T>() where T : class { return WpfBrush as T; }
 

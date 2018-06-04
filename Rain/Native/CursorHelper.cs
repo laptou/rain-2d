@@ -43,13 +43,11 @@ namespace Rain.Native
         public static extern bool GetIconInfo(IntPtr hIcon, ref IconInfo pIconInfo);
 
         [DllImport("user32.dll")]
-        public static extern IntPtr LoadCursor(
-            [In] [Optional] IntPtr hInstance, IntPtr lpCursorName);
+        public static extern IntPtr LoadCursor([In] [Optional] IntPtr hInstance, IntPtr lpCursorName);
 
         [DllImport("user32.dll")]
         public static extern IntPtr LoadCursor(
-            [In] [Optional] IntPtr hInstance,
-            [MarshalAs(UnmanagedType.LPTStr)] string lpCursorName);
+            [In] [Optional] IntPtr hInstance, [MarshalAs(UnmanagedType.LPTStr)] string lpCursorName);
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetCursor([In] [Optional] IntPtr hCursor);

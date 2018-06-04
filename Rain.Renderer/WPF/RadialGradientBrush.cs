@@ -14,8 +14,7 @@ namespace Rain.Renderer.WPF
 {
     internal class RadialGradientBrush : GradientBrush, IRadialGradientBrush
     {
-        public RadialGradientBrush(
-            IEnumerable<GradientStop> stops, Point center, Size radii, Point focus) : base(stops)
+        public RadialGradientBrush(IEnumerable<GradientStop> stops, Point center, Size radii, Point focus) : base(stops)
         {
             WpfBrush = new System.Windows.Media.RadialGradientBrush(ConvertStops())
             {
@@ -33,8 +32,7 @@ namespace Rain.Renderer.WPF
         {
             get =>
                 (SpreadMethod) ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod;
-            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod =
-                   (GradientSpreadMethod) value;
+            set => ((System.Windows.Media.LinearGradientBrush) WpfBrush).SpreadMethod = (GradientSpreadMethod) value;
         }
 
         protected override void OnStopsChanged(
@@ -50,8 +48,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center.X;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center =
-                    new Point(value, CenterY);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center = new Point(value, CenterY);
                 RaisePropertyChanged();
             }
         }
@@ -61,8 +58,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center.Y;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center =
-                    new Point(CenterX, value);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).Center = new Point(CenterX, value);
                 RaisePropertyChanged();
             }
         }
@@ -72,8 +68,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin.X;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin =
-                    new Point(value, FocusY);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin = new Point(value, FocusY);
                 RaisePropertyChanged();
             }
         }
@@ -83,8 +78,7 @@ namespace Rain.Renderer.WPF
             get => (float) ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin.Y;
             set
             {
-                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin =
-                    new Point(FocusX, value);
+                ((System.Windows.Media.RadialGradientBrush) WpfBrush).GradientOrigin = new Point(FocusX, value);
                 RaisePropertyChanged();
             }
         }

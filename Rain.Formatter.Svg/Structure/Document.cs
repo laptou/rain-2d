@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rain.Formatter.Svg.Utilities;
+
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Measurement;
-using Rain.Formatter.Svg.Utilities;
 
 namespace Rain.Formatter.Svg.Structure
 {
@@ -30,10 +32,7 @@ namespace Rain.Formatter.Svg.Structure
 
             if ((string) element.Attribute("viewBox") != null)
             {
-                var vb = ((string) element.Attribute("viewBox"))
-                        .Split(' ')
-                        .Select(float.Parse)
-                        .ToArray();
+                var vb = ((string) element.Attribute("viewBox")).Split(' ').Select(float.Parse).ToArray();
 
                 Viewbox = new RectangleF(vb[0], vb[1], vb[2], vb[3]);
             }
@@ -48,22 +47,6 @@ namespace Rain.Formatter.Svg.Structure
                 Height = height;
         }
 
-        public override XElement ToXml(SvgContext context)
-        {
-            var element = base.ToXml(context);
-
-            element.Name = SvgNames.Svg;
-            element.Add(
-                new XAttribute(XNamespace.Xmlns + "rain", SvgNames.Rain2D.NamespaceName));
-
-            LazySet(element, "viewBox", Viewbox);
-            LazySet(element, "version", Version);
-            LazySet(element, "width", Width);
-            LazySet(element, "height", Height);
-
-            return element;
-        }
-
         public T Resolve<T>(Uri uri) where T : class, IElement
         {
             var id = uri.GetFragment();
@@ -76,6 +59,21 @@ namespace Rain.Formatter.Svg.Structure
             var id = uri.GetFragment();
 
             return Defs[id] as T;
+        }
+
+        public override XElement ToXml(SvgContext context)
+        {
+            var element = base.ToXml(context);
+
+            element.Name = SvgNames.Svg;
+            element.Add(new XAttribute(XNamespace.Xmlns + "rain", SvgNames.Rain2D.NamespaceName));
+
+            LazySet(element, "viewBox", Viewbox);
+            LazySet(element, "version", Version);
+            LazySet(element, "width", Width);
+            LazySet(element, "height", Height);
+
+            return element;
         }
     }
 }

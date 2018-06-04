@@ -57,10 +57,7 @@ namespace Rain.Core.Model
 
             if (rgbMatch.Success)
             {
-                var values = rgbMatch.Groups.OfType<Regex.Group>()
-                                     .Skip(1)
-                                     .Select(c => c.Value)
-                                     .ToArray();
+                var values = rgbMatch.Groups.OfType<Regex.Group>().Skip(1).Select(c => c.Value).ToArray();
 
                 color = new Color(float.Parse(values[0]) / 256f,
                                   float.Parse(values[1]) / 256f,
@@ -73,10 +70,7 @@ namespace Rain.Core.Model
 
             if (rgbaMatch.Success)
             {
-                var values = rgbaMatch.Groups.OfType<Regex.Group>()
-                                      .Skip(1)
-                                      .Select(c => c.Value)
-                                      .ToArray();
+                var values = rgbaMatch.Groups.OfType<Regex.Group>().Skip(1).Select(c => c.Value).ToArray();
 
                 color = new Color(float.Parse(values[0]) / 256f,
                                   float.Parse(values[1]) / 256f,
@@ -90,10 +84,7 @@ namespace Rain.Core.Model
 
             if (percentMatch.Success)
             {
-                var values = percentMatch.Groups.OfType<Regex.Group>()
-                                         .Skip(1)
-                                         .Select(c => c.Value)
-                                         .ToArray();
+                var values = percentMatch.Groups.OfType<Regex.Group>().Skip(1).Select(c => c.Value).ToArray();
 
                 color = new Color(float.Parse(values[0]) / 100f,
                                   float.Parse(values[1]) / 100f,
@@ -106,11 +97,7 @@ namespace Rain.Core.Model
 
             if (percentWithAlphaMatch.Success)
             {
-                var values = percentWithAlphaMatch
-                            .Groups.OfType<Regex.Group>()
-                            .Skip(1)
-                            .Select(c => c.Value)
-                            .ToArray();
+                var values = percentWithAlphaMatch.Groups.OfType<Regex.Group>().Skip(1).Select(c => c.Value).ToArray();
 
                 color = new Color(float.Parse(values[0]) / 100f,
                                   float.Parse(values[1]) / 100f,
@@ -293,9 +280,9 @@ namespace Rain.Core.Model
             }
         }
 
-        private static readonly Regex.Regex Hex = new Regex.Regex(
-            "(?:#(?:([0-9A-F]{2}){3,4}|[0-9A-F]{3}))",
-            Regex.RegexOptions.Compiled | Regex.RegexOptions.IgnoreCase);
+        private static readonly Regex.Regex Hex = new Regex.Regex("(?:#(?:([0-9A-F]{2}){3,4}|[0-9A-F]{3}))",
+                                                                  Regex.RegexOptions.Compiled |
+                                                                  Regex.RegexOptions.IgnoreCase);
 
         private static readonly Regex.Regex Rgb = new Regex.Regex(
             @"^(?:rgb\(([+-]?(?:[0-9]*[.])?[0-9]+)[\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)[\u0020\u0009\u000D\u000A]*,[\u0020\u0009\u000D\u000A]*([+-]?(?:[0-9]*[.])?[0-9]+)\))",
@@ -338,17 +325,11 @@ namespace Rain.Core.Model
 
         public static Color operator +(Color c, Vector4 v) { return new Color(c.AsVector() + v); }
 
-        public static Vector4 operator -(Color c1, Color c2)
-        {
-            return c1.AsVector() - c2.AsVector();
-        }
+        public static Vector4 operator -(Color c1, Color c2) { return c1.AsVector() - c2.AsVector(); }
 
         public static Color operator +(Color c1, Color c2)
         {
-            return new Color(c1.Red + c2.Red,
-                             c1.Green + c2.Green,
-                             c1.Blue + c2.Blue,
-                             c1.Alpha + c2.Alpha);
+            return new Color(c1.Red + c2.Red, c1.Green + c2.Green, c1.Blue + c2.Blue, c1.Alpha + c2.Alpha);
         }
 
         public static Color operator -(Color c, Vector4 v) { return new Color(c.AsVector() - v); }

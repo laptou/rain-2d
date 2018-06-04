@@ -5,7 +5,5 @@ using System.Threading.Tasks;
 
 namespace Rain.Formatter.Xml.IO
 {
-    class RainXmlWriter
-    {
-    }
+    internal class RainXmlWriter { }
 }

@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 
 using Rain.Core.Model;
-using Rain.Core.Model.DocumentGraph;
 using Rain.Core.Model.Measurement;
 using Rain.Core.Model.Paint;
 
@@ -79,9 +78,9 @@ namespace Rain.Formatter.Svg.Paint
                         FocusX = (focus.X, LengthUnit.Pixels),
                         FocusY = (focus.Y, LengthUnit.Pixels),
                         Radius = (radii.X, LengthUnit.Pixels),
-                        Transform = Matrix3x2.CreateScale(1, radii.Y / radii.X, brush.StartPoint) *
-                                    brush.Transform
+                        Transform = Matrix3x2.CreateScale(1, radii.Y / radii.X, brush.StartPoint) * brush.Transform
                     };
+
                     break;
             }
 

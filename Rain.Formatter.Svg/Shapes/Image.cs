@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Rain.Core.Model.Measurement;
@@ -12,19 +13,18 @@ namespace Rain.Formatter.Svg.Shapes
     public class Image : GraphicalElementBase, IImageElement
     {
         /// <inheritdoc />
-        public Length Height { get; set; }
+        public override void FromXml(XElement element, SvgContext context)
+        {
+            base.FromXml(element, context);
 
-        /// <inheritdoc />
-        public Length Width { get; set; }
+            X = LazyGet(element, "x", Length.Zero);
+            Y = LazyGet(element, "y", Length.Zero);
+            Width = LazyGet(element, "width", Length.Zero);
+            Height = LazyGet(element, "height", Length.Zero);
 
-        /// <inheritdoc />
-        public Length X { get; set; }
-
-        /// <inheritdoc />
-        public Length Y { get; set; }
-
-        /// <inheritdoc />
-        public Uri Href { get; set; }
+            if (UriHelper.TryParse(LazyGet(element, SvgNames.HRef), out var href))
+                Href = href;
+        }
 
         /// <inheritdoc />
         public override XElement ToXml(SvgContext context)
@@ -42,27 +42,32 @@ namespace Rain.Formatter.Svg.Shapes
             return element;
         }
 
+        #region IImageElement Members
+
         /// <inheritdoc />
-        public override void FromXml(XElement element, SvgContext context)
-        {
-            base.FromXml(element, context);
+        public Length Height { get; set; }
 
-            X = LazyGet(element, "x", Length.Zero);
-            Y = LazyGet(element, "y", Length.Zero);
-            Width = LazyGet(element, "width", Length.Zero);
-            Height = LazyGet(element, "height", Length.Zero);
+        /// <inheritdoc />
+        public Uri Href { get; set; }
 
-            if (UriHelper.TryParse(LazyGet(element, SvgNames.HRef), out var href))
-                Href = href;
-        }
+        /// <inheritdoc />
+        public Length Width { get; set; }
+
+        /// <inheritdoc />
+        public Length X { get; set; }
+
+        /// <inheritdoc />
+        public Length Y { get; set; }
+
+        #endregion
     }
 
     public interface IImageElement
     {
         Length Height { get; set; }
+        Uri Href { get; set; }
         Length Width { get; set; }
         Length X { get; set; }
         Length Y { get; set; }
-        Uri Href { get; set; }
     }
 }

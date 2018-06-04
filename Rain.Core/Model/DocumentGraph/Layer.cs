@@ -23,11 +23,12 @@ namespace Rain.Core.Model.DocumentGraph
 
         public override int GetHashCode() { return Id.GetHashCode(); }
 
-        protected void RaiseBoundsChanged()
+        /// <inheritdoc />
+        public override void RestoreNotifications()
         {
-            if (_suppressed) return;
+            _suppressed = false;
 
-            BoundsChanged?.Invoke(this, null);
+            base.RestoreNotifications();
         }
 
         /// <inheritdoc />
@@ -38,12 +39,11 @@ namespace Rain.Core.Model.DocumentGraph
             base.SuppressNotifications();
         }
 
-        /// <inheritdoc />
-        public override void RestoreNotifications()
+        protected void RaiseBoundsChanged()
         {
-            _suppressed = false;
+            if (_suppressed) return;
 
-            base.RestoreNotifications();
+            BoundsChanged?.Invoke(this, null);
         }
 
         #region ILayer Members
@@ -52,8 +52,8 @@ namespace Rain.Core.Model.DocumentGraph
 
         public virtual void ApplyTransform(Matrix3x2? local = null, Matrix3x2? global = null)
         {
-            Transform = (local ?? Matrix3x2.Identity) * Transform * WorldTransform *
-                        (global ?? Matrix3x2.Identity) * MathUtils.Invert(WorldTransform);
+            Transform = (local ?? Matrix3x2.Identity) * Transform * WorldTransform * (global ?? Matrix3x2.Identity) *
+                        MathUtils.Invert(WorldTransform);
         }
 
         public virtual IEnumerable<ILayer> Flatten(int depth)
@@ -73,22 +73,13 @@ namespace Rain.Core.Model.DocumentGraph
 
         public abstract RectangleF GetBounds(IArtContext ctx);
 
-        public abstract T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
-            where T : ILayer;
+        public abstract T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth) where T : ILayer;
 
         public abstract void Render(IRenderContext target, ICacheManager cache, IViewManager view);
 
         public virtual string DefaultName => "Layer";
 
         public virtual int Depth => Parent?.Depth + 1 ?? 0;
-
-        
-
-        public float Opacity
-        {
-            get => Get<float>();
-            set => Set(value);
-        }
 
         public virtual int Order => Parent?.Order + Parent?.SubLayers.IndexOf(this) + 1 ?? 0;
 
@@ -101,13 +92,6 @@ namespace Rain.Core.Model.DocumentGraph
         /// <inheritdoc />
         public virtual int Size => 1;
 
-        public Matrix3x2 Transform
-        {
-            get => Get<Matrix3x2>();
-            protected set => Set(value);
-        }
-
-        
 
         public Matrix3x2 AbsoluteTransform => Transform * WorldTransform;
 
@@ -131,10 +115,23 @@ namespace Rain.Core.Model.DocumentGraph
             set => Set(value);
         }
 
+
+        public float Opacity
+        {
+            get => Get<float>();
+            set => Set(value);
+        }
+
         public IContainerLayer Parent
         {
             get => Get<Group>();
             set => Set(value);
+        }
+
+        public Matrix3x2 Transform
+        {
+            get => Get<Matrix3x2>();
+            protected set => Set(value);
         }
 
         public bool Visible

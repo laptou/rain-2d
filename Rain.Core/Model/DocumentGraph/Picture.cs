@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
-using System.Reactive.Linq;
+
+using Rain.Core.Utility;
+
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Effects;
 using Rain.Core.Model.Imaging;
-using Rain.Core.Utility;
 
 namespace Rain.Core.Model.DocumentGraph
 {
     public class Picture : Layer, IImageLayer
     {
-        /// <inheritdoc />
-        public override string DefaultName => $"Image, {Image.Frames[0].Width}×{Image.Frames[0].Height}";
-
         public int Frame
         {
             get => Get<int>();
@@ -29,10 +27,7 @@ namespace Rain.Core.Model.DocumentGraph
             set => Set(value, RaiseImageChanged);
         }
 
-        private void RaiseImageChanged(object sender, PropertyChangedEventArgs e)
-        {
-            RaiseImageChanged();
-        }
+        private void RaiseImageChanged(object sender, PropertyChangedEventArgs e) { RaiseImageChanged(); }
 
         private void RaiseImageChanged() { ImageChanged?.Invoke(this, null); }
 
@@ -48,10 +43,7 @@ namespace Rain.Core.Model.DocumentGraph
         }
 
         /// <inheritdoc />
-        public IRenderImage GetImage(IArtContext ctx)
-        {
-            return ctx.RenderContext.GetRenderImage(Image.Frames[Frame]);
-        }
+        public IRenderImage GetImage(IArtContext ctx) { return ctx.RenderContext.GetRenderImage(Image.Frames[Frame]); }
 
         /// <inheritdoc />
         public override T HitTest<T>(ICacheManager cache, Vector2 point, int minimumDepth)
@@ -79,15 +71,16 @@ namespace Rain.Core.Model.DocumentGraph
             target.Transform(transform);
 
             var factor = transform.GetScale();
-            var mode = factor.Length() < MathUtils.Sqrt2
-                           ? ScaleMode.HighQualityCubic
-                           : ScaleMode.MultiSampleLinear;
+            var mode = factor.Length() < MathUtils.Sqrt2 ? ScaleMode.HighQualityCubic : ScaleMode.MultiSampleLinear;
 
 
             target.DrawBitmap(image, new RectangleF(0, 0, Image.Frames[Frame].Width, Image.Frames[Frame].Height), mode);
 
             target.Transform(MathUtils.Invert(transform));
         }
+
+        /// <inheritdoc />
+        public override string DefaultName => $"Image, {Image.Frames[0].Width}×{Image.Frames[0].Height}";
 
         #endregion
     }

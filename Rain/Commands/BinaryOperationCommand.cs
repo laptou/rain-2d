@@ -17,8 +17,7 @@ namespace Rain.Commands
         private readonly Dictionary<ILayer, (IContainerLayer parent, int index)> _parents =
             new Dictionary<ILayer, (IContainerLayer, int)>();
 
-        public BinaryOperationCommand(
-            long id, IEnumerable<IGeometricLayer> targets, CombineMode operation) : base(
+        public BinaryOperationCommand(long id, IEnumerable<IGeometricLayer> targets, CombineMode operation) : base(
             id,
             targets.OrderByDescending(l => l.Order).ToArray())
         {

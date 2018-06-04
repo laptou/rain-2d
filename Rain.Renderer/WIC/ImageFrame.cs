@@ -7,15 +7,16 @@ using Rain.Core.Model.Imaging;
 
 using SharpDX.WIC;
 
-namespace Rain.Renderer.WIC {
+namespace Rain.Renderer.WIC
+{
     public class ImageFrame : IImageFrame
     {
-        private readonly SharpDX.WIC.Bitmap _img;
+        private readonly Bitmap _img;
 
         public ImageFrame(ImagingFactory fac, IImage image, BitmapSource img)
         {
             Factory = fac;
-            _img = new SharpDX.WIC.Bitmap(fac, img, BitmapCreateCacheOption.CacheOnDemand);
+            _img = new Bitmap(fac, img, BitmapCreateCacheOption.CacheOnDemand);
             Image = image;
             Width = img.Size.Width;
             Height = img.Size.Height;
@@ -24,7 +25,7 @@ namespace Rain.Renderer.WIC {
         internal ImagingFactory Factory { get; }
 
 
-        internal SharpDX.WIC.Bitmap GetWicBitmap() { return _img; }
+        internal Bitmap GetWicBitmap() { return _img; }
 
         #region IImageFrame Members
 
@@ -32,16 +33,10 @@ namespace Rain.Renderer.WIC {
         public void Dispose() { _img?.Dispose(); }
 
         /// <inheritdoc />
-        public IImageLock GetReadLock()
-        {
-            return new ImageFrameLock(this, GetWicBitmap(), BitmapLockFlags.Read);
-        }
+        public IImageLock GetReadLock() { return new ImageFrameLock(this, GetWicBitmap(), BitmapLockFlags.Read); }
 
         /// <inheritdoc />
-        public IImageLock GetWriteLock()
-        {
-            return new ImageFrameLock(this, GetWicBitmap(), BitmapLockFlags.Write);
-        }
+        public IImageLock GetWriteLock() { return new ImageFrameLock(this, GetWicBitmap(), BitmapLockFlags.Write); }
 
         /// <inheritdoc />
         public int Height { get; }

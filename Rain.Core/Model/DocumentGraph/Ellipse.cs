@@ -59,11 +59,7 @@ namespace Rain.Core.Model.DocumentGraph
 
         public override IGeometry GetGeometry(IArtContext ctx)
         {
-            return ctx.RenderContext.CreateEllipseGeometry(
-                CenterX,
-                CenterY,
-                RadiusX,
-                RadiusY);
+            return ctx.RenderContext.CreateEllipseGeometry(CenterX, CenterY, RadiusX, RadiusY);
         }
 
         /// <inheritdoc />

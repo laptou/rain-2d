@@ -4,9 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
-using static System.Math;
-
 using Rain.Core.Model;
+
+using static System.Math;
 
 namespace Rain.Core.Utility
 {
@@ -25,37 +25,28 @@ namespace Rain.Core.Utility
         public static readonly float InverseSqrt3 = 1 / (float) Math.Sqrt(3);
         public static readonly float InverseSqrt2 = 1 / (float) Math.Sqrt(2);
 
-        public static Vector2 Abs(Vector2 v) => Vector2.Abs(v);
+        public static Vector2 Abs(Vector2 v) { return Vector2.Abs(v); }
 
-        public static double AbsMax(double min, double x)
-        {
-            return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
-        }
+        public static double AbsMax(double min, double x) { return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1); }
 
-        public static float AbsMax(float min, float x)
-        {
-            return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1);
-        }
+        public static float AbsMax(float min, float x) { return Math.Max(min, Math.Abs(x)) * (x < 0 ? -1 : 1); }
 
-        public static float AbsSqrt(float f)
-        {
-            return (float) Math.Sqrt(Math.Abs(f)) * Math.Sign(f);
-        }
+        public static float AbsSqrt(float f) { return (float) Math.Sqrt(Math.Abs(f)) * Math.Sign(f); }
 
-        public static float Angle(Vector2 pos, bool reverse)
-        {
-            return Atan2(reverse ? -pos.Y : pos.Y, pos.X);
-        }
+        public static float Angle(Vector2 pos, bool reverse) { return Atan2(reverse ? -pos.Y : pos.Y, pos.X); }
 
-        public static Vector2 Angle(float a)
-        {
-            return new Vector2((float) Cos(a), -(float) Sin(a));
-        }
+        public static Vector2 Angle(float a) { return new Vector2((float) Cos(a), -(float) Sin(a)); }
 
         public static float Atan2(float y, float x) { return (float) Math.Atan2(y, x); }
 
-        public static (float left, float top, float right, float bottom) Bounds(
-            RectangleF rect, Matrix3x2 m)
+        public static float Average(params float[] f) { return f.Average(); }
+
+        public static Color Average(params Color[] f)
+        {
+            return new Color(f.Aggregate((a, b) => a + b).AsVector() / f.Length);
+        }
+
+        public static (float left, float top, float right, float bottom) Bounds(RectangleF rect, Matrix3x2 m)
         {
             Vector2 p0 = Vector2.Transform(rect.TopLeft, m),
                     p1 = Vector2.Transform(rect.TopRight, m),
@@ -85,11 +76,9 @@ namespace Rain.Core.Utility
             return new[] {mat.M11, mat.M12, mat.M21, mat.M22, mat.M31, mat.M32}.Any(float.IsNaN);
         }
 
-        public static (Vector2, Vector2) CrossSection(
-            Vector2 ray, Vector2 origin, RectangleF bounds)
+        public static (Vector2, Vector2) CrossSection(Vector2 ray, Vector2 origin, RectangleF bounds)
         {
-            bounds = (bounds.Left - origin.X, bounds.Top - origin.Y, bounds.Right - origin.X,
-                         bounds.Bottom - origin.Y);
+            bounds = (bounds.Left - origin.X, bounds.Top - origin.Y, bounds.Right - origin.X, bounds.Bottom - origin.Y);
 
             Vector2 v1;
             Vector2 v2;
@@ -112,25 +101,18 @@ namespace Rain.Core.Utility
             return (v2, v1);
         }
 
-        public static (Matrix3x2 scale, Matrix3x2 rotate, Matrix3x2 translate) Decompose(
-            this Matrix3x2 m)
+        public static (Matrix3x2 scale, Matrix3x2 rotate, Matrix3x2 translate) Decompose(this Matrix3x2 m)
         {
             var scale = m.GetScale() * Sign((m.M11, m.M22));
             var s = new Matrix3x2(scale.X, 0, 0, scale.Y, 0, 0);
-            var r = new Matrix3x2(m.M11 / scale.X,
-                                  m.M12 / scale.X,
-                                  m.M21 / scale.Y,
-                                  m.M22 / scale.Y,
-                                  0,
-                                  0);
+            var r = new Matrix3x2(m.M11 / scale.X, m.M12 / scale.X, m.M21 / scale.Y, m.M22 / scale.Y, 0, 0);
 
             return (s, r, Matrix3x2.CreateTranslation(m.M31, m.M32));
         }
 
         public static float Degrees(float radians) { return radians / Pi * 180; }
 
-        public static (Vector2 scale, float rotation, Vector2 translation, float skew) Extract(
-            this Matrix3x2 m)
+        public static (Vector2 scale, float rotation, Vector2 translation, float skew) Extract(this Matrix3x2 m)
         {
             var scale = m.GetScale();
             var translation = m.Translation;
@@ -143,10 +125,7 @@ namespace Rain.Core.Utility
             return (scale, rotation, translation, -skew);
         }
 
-        public static float GetRotation(this Matrix3x2 m)
-        {
-            return Wrap(Atan2(m.M12, m.M11), -Pi, Pi);
-        }
+        public static float GetRotation(this Matrix3x2 m) { return Wrap(Atan2(m.M12, m.M11), -Pi, Pi); }
 
         public static Vector2 GetScale(this Matrix3x2 m)
         {
@@ -174,10 +153,7 @@ namespace Rain.Core.Utility
 
         public static float NonZeroSign(float f) { return f >= 0 ? 1 : -1; }
 
-        public static Vector2 NonZeroSign(Vector2 v)
-        {
-            return new Vector2(NonZeroSign(v.X), NonZeroSign(v.Y));
-        }
+        public static Vector2 NonZeroSign(Vector2 v) { return new Vector2(NonZeroSign(v.X), NonZeroSign(v.Y)); }
 
         /// <summary>
         ///     Returns the projection of vector <paramref name="a" />
@@ -186,10 +162,7 @@ namespace Rain.Core.Utility
         /// <param name="a">The vector to project.</param>
         /// <param name="b">The vector to project onto.</param>
         /// <returns>The projection of a onto b.</returns>
-        public static Vector2 Project(Vector2 a, Vector2 b)
-        {
-            return Vector2.Dot(a, b) / Vector2.Dot(b, b) * b;
-        }
+        public static Vector2 Project(Vector2 a, Vector2 b) { return Vector2.Dot(a, b) / Vector2.Dot(b, b) * b; }
 
         /// <summary>
         ///     Rotates vector <paramref name="v" /> by
@@ -218,10 +191,7 @@ namespace Rain.Core.Utility
         /// <param name="c">The center of rotation.</param>
         /// <param name="theta">The angle to rotate the vector by.</param>
         /// <returns>The rotated vector.</returns>
-        public static Vector2 Rotate(Vector2 v, Vector2 c, float theta)
-        {
-            return Rotate(v - c, theta) + c;
-        }
+        public static Vector2 Rotate(Vector2 v, Vector2 c, float theta) { return Rotate(v - c, theta) + c; }
 
         public static float Round(float rotate, float floor, float ceiling)
         {
@@ -237,40 +207,20 @@ namespace Rain.Core.Utility
             return new Vector2(v.X + (float) Tan(theta) * v.Y, v.Y);
         }
 
-        public static Vector2 ShearX(Vector2 v, Vector2 c, float theta)
-        {
-            return ShearX(v - c, theta) + c;
-        }
+        public static Vector2 ShearX(Vector2 v, Vector2 c, float theta) { return ShearX(v - c, theta) + c; }
 
-        public static Vector2 Sign(Vector2 v)
-        {
-            return new Vector2(Math.Sign(v.X), Math.Sign(v.Y));
-        }
+        public static Vector2 Sign(Vector2 v) { return new Vector2(Math.Sign(v.X), Math.Sign(v.Y)); }
 
-        public static Vector2 Sign((float X, float Y) v)
-        {
-            return new Vector2(Math.Sign(v.X), Math.Sign(v.Y));
-        }
+        public static Vector2 Sign((float X, float Y) v) { return new Vector2(Math.Sign(v.X), Math.Sign(v.Y)); }
 
         public static Vector2 Sqrt(Vector2 v) { return new Vector2(AbsSqrt(v.X), AbsSqrt(v.Y)); }
 
-        public static Vector2 UnitVector(float angle)
-        {
-            return new Vector2((float) Cos(angle), (float) Sin(angle));
-        }
+        public static Vector2 UnitVector(float angle) { return new Vector2((float) Cos(angle), (float) Sin(angle)); }
 
-        public static float Wrap(float f, float r) => Wrap(f, 0, r);
+        public static float Wrap(float f, float r) { return Wrap(f, 0, r); }
 
-        public static float Wrap(float f, float min, float max)
-        {
-            return Math.Abs(f - min) % (max - min) + min;
-        }
+        public static float Wrap(float f, float min, float max) { return Math.Abs(f - min) % (max - min) + min; }
 
-        public static int Wrap(int f, int r) => (f % r + r) % r;
-
-        public static float Average(params float[] f) => f.Average();
-
-        public static Color Average(params Color[] f) =>
-            new Color(f.Aggregate((a, b) => a + b).AsVector() / f.Length);
+        public static int Wrap(int f, int r) { return (f % r + r) % r; }
     }
 }

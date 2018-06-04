@@ -15,10 +15,7 @@ namespace Rain.Renderer.WIC
     {
         private WICStream _stream;
 
-        public Image()
-        {
-            Factory = new ImagingFactory();
-        }
+        public Image() { Factory = new ImagingFactory(); }
 
         internal ImagingFactory Factory { get; }
 
@@ -26,15 +23,19 @@ namespace Rain.Renderer.WIC
         {
             _stream?.Dispose();
             _stream = new WICStream(Factory, stream);
+
             using (var decoder = new BitmapDecoder(Factory, _stream, DecodeOptions.CacheOnLoad))
+            {
                 Decode(decoder);
+            }
         }
 
         internal void Load(string fn)
         {
-            using (var decoder =
-                new BitmapDecoder(Factory, fn, NativeFileAccess.Read, DecodeOptions.CacheOnLoad))
+            using (var decoder = new BitmapDecoder(Factory, fn, NativeFileAccess.Read, DecodeOptions.CacheOnLoad))
+            {
                 Decode(decoder);
+            }
         }
 
         private void Decode(BitmapDecoder decoder)
@@ -51,8 +52,7 @@ namespace Rain.Renderer.WIC
                     {
                         foreach (var path in metadataReader.QueryPaths)
                         {
-                            var result =
-                                metadataReader.TryGetMetadataByName(path, out var metadata);
+                            var result = metadataReader.TryGetMetadataByName(path, out var metadata);
                         }
                     }
 

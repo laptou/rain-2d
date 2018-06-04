@@ -6,7 +6,8 @@
               xmlns:documentGraph="clr-namespace:Rain.Core.Model.DocumentGraph;assembly=Rain.Core"
               xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-              xmlns:renderer="clr-namespace:Rain.Renderer;assembly=Rain.Renderer" xmlns:service="clr-namespace:Rain.Service"
+              xmlns:renderer="clr-namespace:Rain.Renderer;assembly=Rain.Renderer"
+              xmlns:service="clr-namespace:Rain.Service"
               xmlns:utility="clr-namespace:Rain.View.Utility"
               d:DataContext="{d:DesignInstance core:IViewManager}" d:DesignHeight="300" d:DesignWidth="300"
               FocusManager.IsFocusScope="True"
@@ -28,7 +29,8 @@
                                         Background="Transparent">
                                     <control:Icon x:Name="ExpandPath"
                                                   Width="12" Height="12"
-                                                  Cursor="Hand" IconName="icon-expander" RenderTransformOrigin="0.5,0.5">
+                                                  Cursor="Hand" IconName="icon-expander"
+                                                  RenderTransformOrigin="0.5,0.5">
                                         <control:Icon.RenderTransform>
                                             <RotateTransform Angle="-90" />
                                         </control:Icon.RenderTransform>
@@ -50,20 +52,23 @@
                 </Style>
             </TreeView.Resources>
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type documentGraph:IContainerLayer}" ItemsSource="{Binding SubLayers}">
+                <HierarchicalDataTemplate DataType="{x:Type documentGraph:IContainerLayer}"
+                                          ItemsSource="{Binding SubLayers}">
                     <TextBlock x:Name="layerName"
                                FontWeight="Bold" Text="{Binding Name}" />
                     <HierarchicalDataTemplate.Triggers>
                         <DataTrigger Binding="{Binding Name}" Value="{x:Null}">
                             <Setter TargetName="layerName" Property="FontWeight" Value="Normal" />
-                            <Setter TargetName="layerName" Property="Text" Value="{Binding DefaultName, StringFormat=(\{0\})}" />
+                            <Setter TargetName="layerName" Property="Text"
+                                    Value="{Binding DefaultName, StringFormat=(\{0\})}" />
                         </DataTrigger>
                     </HierarchicalDataTemplate.Triggers>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="SelectedItemChanged">
-                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}" CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
+                    <i:InvokeCommandAction Command="{Binding SelectLayerCommand, Mode=OneWay}"
+                                           CommandParameter="{Binding SelectedValue, ElementName=LayerTree, Mode=OneWay}" />
                 </i:EventTrigger>
             </i:Interaction.Triggers>
             <TreeView.ItemContainerStyle>
@@ -77,7 +82,8 @@
                             <ControlTemplate TargetType="{x:Type TreeViewItem}">
                                 <Border x:Name="Bd"
                                         Margin="-19,0,0,0" Padding="{TemplateBinding Padding}"
-                                        Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
                                     <Grid Margin="19,0,0,0" VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
@@ -90,7 +96,8 @@
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <ToggleButton x:Name="Expander"
-                                                      ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      ClickMode="Press"
+                                                      IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                                                       Style="{StaticResource ExpandCollapseToggleStyle}" />
 
                                         <Separator Grid.ColumnSpan="3"
@@ -99,7 +106,8 @@
                                         <ContentPresenter x:Name="PART_Header"
                                                           Grid.Column="1"
                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                          ContentSource="Header" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                                          ContentSource="Header"
+                                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
 
                                         <CheckBox Grid.Column="2"
                                                   HorizontalAlignment="Right"
@@ -121,13 +129,15 @@
                                         <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
                                     </Trigger>
                                     <DataTrigger Binding="{Binding Selected}" Value="true">
-                                        <Setter TargetName="Bd" Property="Background" Value="{utility:Theme background-1}" />
+                                        <Setter TargetName="Bd" Property="Background"
+                                                Value="{utility:Theme background-1}" />
                                     </DataTrigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
-                    <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                    <Setter Property="VerticalContentAlignment"
+                            Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
                     <Style.Triggers>
                         <Trigger Property="VirtualizingPanel.IsVirtualizing" Value="true">
                             <Setter Property="ItemsPanel">

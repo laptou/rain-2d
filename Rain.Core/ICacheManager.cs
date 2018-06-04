@@ -13,6 +13,11 @@ namespace Rain.Core
 {
     public interface ICacheManager : IArtContextManager
     {
+        void LoadApplicationResources(IRenderContext target);
+        void RestoreInvalidation();
+
+        void SuppressInvalidation();
+
         #region Retrieval
 
         IRenderImage GetBitmap(string key);
@@ -27,11 +32,6 @@ namespace Rain.Core
         ITextLayout GetTextLayout(ITextLayer layer);
 
         #endregion
-
-        void LoadApplicationResources(IRenderContext target);
-
-        void SuppressInvalidation();
-        void RestoreInvalidation();
 
         #region Resource Management
 

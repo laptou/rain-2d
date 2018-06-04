@@ -29,15 +29,11 @@ namespace Rain.Renderer.Direct2D
 {
     public class Direct2DEffectLayer : Direct2DRenderContext, IEffectLayer, IRenderImage
     {
+        private readonly Bitmap                 _bmp;
         private readonly D2D.BitmapRenderTarget _target;
-        private readonly Bitmap _bmp;
         private          Effect                 _effect;
 
-
-        public IEffect GetEffect() => _effect;
-
-        internal Direct2DEffectLayer(Direct2DRenderContext ctx) :
-            base(CreateTarget(ctx))
+        internal Direct2DEffectLayer(Direct2DRenderContext ctx) : base(CreateTarget(ctx))
         {
             _target = (D2D.BitmapRenderTarget) base.Target;
             _bmp = new Bitmap(_target.Bitmap);
@@ -51,10 +47,9 @@ namespace Rain.Renderer.Direct2D
             return new D2D.BitmapRenderTarget(ctx.Target, D2D.CompatibleRenderTargetOptions.None);
         }
 
-        public void ClearEffect()
-        {
-            _effect = null;
-        }
+        #region IEffectLayer Members
+
+        public void ClearEffect() { _effect = null; }
 
         /// <inheritdoc />
         public override void Dispose()
@@ -62,6 +57,9 @@ namespace Rain.Renderer.Direct2D
             _bmp.Dispose();
             base.Dispose();
         }
+
+
+        public IEffect GetEffect() { return _effect; }
 
         public void PushEffect(IEffect effect)
         {
@@ -75,6 +73,13 @@ namespace Rain.Renderer.Direct2D
                 _effect = fx;
         }
 
+        #endregion
+
+        #region IRenderImage Members
+
+        /// <inheritdoc />
+        public T Unwrap<T>() where T : class { return _target.Bitmap as T; }
+
         /// <inheritdoc />
         public bool Alpha => true;
 
@@ -87,8 +92,7 @@ namespace Rain.Renderer.Direct2D
         /// <inheritdoc />
         public int PixelWidth => _target.PixelSize.Width;
 
-        /// <inheritdoc />
-        public T Unwrap<T>() where T : class { return _target.Bitmap as T; }
+        #endregion
     }
 
 
@@ -96,11 +100,7 @@ namespace Rain.Renderer.Direct2D
     {
         private readonly D2D.RenderTarget _target;
 
-        internal virtual D2D.RenderTarget Target => _target;
-
-        public Direct2DRenderContext(D2D.RenderTarget target) : this(
-            target,
-            new DW.Factory(DW.FactoryType.Shared)) { }
+        public Direct2DRenderContext(D2D.RenderTarget target) : this(target, new DW.Factory(DW.FactoryType.Shared)) { }
 
         public Direct2DRenderContext(D2D.RenderTarget target, DW.Factory factory)
         {
@@ -116,11 +116,7 @@ namespace Rain.Renderer.Direct2D
 
         public override float Width => _target.Size.Width;
 
-        /// <inheritdoc />
-        public override IFontSource CreateFontSource()
-        {
-            return new DirectWriteFontSource(FactoryDW);
-        }
+        internal virtual D2D.RenderTarget Target => _target;
 
         public override void Begin(object ctx)
         {
@@ -131,27 +127,18 @@ namespace Rain.Renderer.Direct2D
 
         public override void Clear(Color color) { Target.Clear(color.Convert()); }
 
-        /// <inheritdoc />
-        public override IEffectLayer CreateEffectLayer() { return new Direct2DEffectLayer(this); }
 
-
-        public override ISolidColorBrush CreateBrush(Color color)
-        {
-            return new SolidColorBrush(Target, color);
-        }
+        public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(Target, color); }
 
         public override ILinearGradientBrush CreateBrush(
             IEnumerable<GradientStop> stops, float startX, float startY, float endX, float endY)
         {
-            return new LinearGradientBrush(Target,
-                                           stops,
-                                           new RawVector2(startX, startY),
-                                           new RawVector2(endX, endY));
+            return new LinearGradientBrush(Target, stops, new RawVector2(startX, startY), new RawVector2(endX, endY));
         }
 
         public override IRadialGradientBrush CreateBrush(
-            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX,
-            float radiusY, float focusX, float focusY)
+            IEnumerable<GradientStop> stops, float centerX, float centerY, float radiusX, float radiusY, float focusX,
+            float focusY)
         {
             return new RadialGradientBrush(Target,
                                            stops,
@@ -175,18 +162,20 @@ namespace Rain.Renderer.Direct2D
             return default;
         }
 
+        /// <inheritdoc />
+        public override IEffectLayer CreateEffectLayer() { return new Direct2DEffectLayer(this); }
+
         public override IGeometry CreateEllipseGeometry(float cx, float cy, float rx, float ry)
         {
             return new Geometry(Target,
-                                new D2D.EllipseGeometry(FactoryD2D,
-                                                        new D2D.Ellipse(
-                                                            new RawVector2(cx, cy),
-                                                            rx,
-                                                            ry))
+                                new D2D.EllipseGeometry(FactoryD2D, new D2D.Ellipse(new RawVector2(cx, cy), rx, ry))
                                 {
                                     FlatteningTolerance = 0.01f
                                 });
         }
+
+        /// <inheritdoc />
+        public override IFontSource CreateFontSource() { return new DirectWriteFontSource(FactoryDW); }
 
         public override IGeometry CreateGeometry() { return new Geometry(Target); }
 
@@ -205,38 +194,18 @@ namespace Rain.Renderer.Direct2D
         }
 
         public override IPen CreatePen(
-            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit)
+            float width, IBrush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
+            float miterLimit)
         {
-            return new Pen(width,
-                           brush as Brush,
-                           dashes,
-                           dashOffset,
-                           lineCap,
-                           lineJoin,
-                           miterLimit,
-                           _target);
+            return new Pen(width, brush as Brush, dashes, dashOffset, lineCap, lineJoin, miterLimit, _target);
         }
 
         public override IGeometry CreateRectangleGeometry(float x, float y, float w, float h)
         {
-            return new Geometry(Target,
-                                new D2D.RectangleGeometry(FactoryD2D,
-                                                          new RawRectangleF(x, y, x + w, y + h)));
+            return new Geometry(Target, new D2D.RectangleGeometry(FactoryD2D, new RawRectangleF(x, y, x + w, y + h)));
         }
 
         public override ITextLayout CreateTextLayout() { return new DirectWriteTextLayout(this); }
-
-        /// <inheritdoc />
-        public override void DrawEffectLayer(IEffectLayer layer)
-        {
-            var native = layer.GetEffect().Unwrap<D2D.Effect>();
-
-            if (native == null) return;
-
-            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
-                dc.DrawImage(native);
-        }
 
         public override void Dispose()
         {
@@ -252,31 +221,32 @@ namespace Rain.Renderer.Direct2D
             if (native == null) return;
 
             using (var dc = Target.QueryInterface<D2D.DeviceContext>())
-            dc.DrawBitmap(native,
-                              dstRect.Convert(),
-                              1,
-                              (D2D.InterpolationMode) scaleMode,
-                              null,
-                              null);
-        }
-        
-        /// <inheritdoc />
-        public override void DrawEllipse(
-            float cx, float cy, float rx, float ry, IPen iPen, float penWidth)
-        {
-            if (iPen is Pen pen)
             {
-                Target.DrawEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry),
-                               pen.Brush,
-                               penWidth,
-                               pen.Style);
+                dc.DrawBitmap(native, dstRect.Convert(), 1, (D2D.InterpolationMode) scaleMode, null, null);
             }
         }
 
-        public override void DrawGeometry(IGeometry geometry, IPen iPen)
+        /// <inheritdoc />
+        public override void DrawEffectLayer(IEffectLayer layer)
         {
-            DrawGeometry(geometry, iPen, iPen.Width);
+            var native = layer.GetEffect().Unwrap<D2D.Effect>();
+
+            if (native == null) return;
+
+            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+            {
+                dc.DrawImage(native);
+            }
         }
+
+        /// <inheritdoc />
+        public override void DrawEllipse(float cx, float cy, float rx, float ry, IPen iPen, float penWidth)
+        {
+            if (iPen is Pen pen)
+                Target.DrawEllipse(new D2D.Ellipse(new RawVector2(cx, cy), rx, ry), pen.Brush, penWidth, pen.Style);
+        }
+
+        public override void DrawGeometry(IGeometry geometry, IPen iPen) { DrawGeometry(geometry, iPen, iPen.Width); }
 
         public override void DrawGeometry(IGeometry geometry, IPen iPen, float width)
         {
@@ -300,12 +270,9 @@ namespace Rain.Renderer.Direct2D
         /// <inheritdoc />
         public override void DrawRectangle(RectangleF rect, IPen iPen, float penWidth)
         {
-            var pen = (Pen)iPen;
+            var pen = (Pen) iPen;
 
-            Target.DrawRectangle(rect.Convert(),
-                                 pen.Brush,
-                                 penWidth,
-                                 pen.Style);
+            Target.DrawRectangle(rect.Convert(), pen.Brush, penWidth, pen.Style);
         }
 
         public override void End() { Target.EndDraw(); }
@@ -323,8 +290,7 @@ namespace Rain.Renderer.Direct2D
             Target.FillGeometry(geometry as Geometry, brush as Brush);
         }
 
-        public override void FillRectangle(
-            float left, float top, float width, float height, IBrush brush)
+        public override void FillRectangle(float left, float top, float width, float height, IBrush brush)
         {
             Target.FillRectangle(new SharpDX.RectangleF(left, top, width, height), brush as Brush);
         }
@@ -341,18 +307,13 @@ namespace Rain.Renderer.Direct2D
         }
 
         /// <inheritdoc />
-        public override IRenderImage GetRenderImage(
-            IImageFrame image, Vector2 scale, ScaleMode mode)
+        public override IRenderImage GetRenderImage(IImageFrame image, Vector2 scale, ScaleMode mode)
         {
             var size = new Size2F((int) (image.Width * scale.X), (int) (image.Height * scale.Y));
 
             using (var bmp = GetRenderImage(image))
             {
-                using (var target =
-                        new D2D.BitmapRenderTarget(Target,
-                                                   D2D.CompatibleRenderTargetOptions.None,
-                                                   size)
-                    )
+                using (var target = new D2D.BitmapRenderTarget(Target, D2D.CompatibleRenderTargetOptions.None, size))
                 {
                     using (var effect = new ScaleEffect(Target.QueryInterface<D2D.DeviceContext>()))
                     {
@@ -362,8 +323,12 @@ namespace Rain.Renderer.Direct2D
                         effect.SetInput(0, bmp);
                         var img = effect.GetOutput();
                         target.BeginDraw();
-            using (var dc = Target.QueryInterface<D2D.DeviceContext>())
-                        dc.DrawImage(img);
+
+                        using (var dc = Target.QueryInterface<D2D.DeviceContext>())
+                        {
+                            dc.DrawImage(img);
+                        }
+
                         target.EndDraw();
                     }
 

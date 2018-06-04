@@ -20,6 +20,8 @@ namespace Rain.ViewModel
             AddDashCommand = new DelegateCommand<object>(OnAddDash, null);
         }
 
+        public DelegateCommand<object> AddDashCommand { get; }
+
         public IArtContext Context
         {
             get => Get<IArtContext>();
@@ -123,14 +125,9 @@ namespace Rain.ViewModel
             }
         }
 
-        public DelegateCommand<object> AddDashCommand { get; }
-
-        private void OnAddDash(object obj)
-        {
-            Dashes.Add(0);
-        }
-
         private void Apply() { Context.BrushManager.Apply(Current); }
+
+        private void OnAddDash(object obj) { Dashes.Add(0); }
 
         private void OnContextChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -150,10 +147,7 @@ namespace Rain.ViewModel
             Context.SelectionManager.SelectionChanged -= OnSelectionChanged;
         }
 
-        private void OnHistoryChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            Update();
-        }
+        private void OnHistoryChanged(object sender, NotifyCollectionChangedEventArgs e) { Update(); }
 
         private void OnSelectionChanged(object sender, EventArgs e) { Update(); }
 
