@@ -14,8 +14,7 @@ namespace Rain.Core.Utility
             return enumerable1.Skip(elements).Concat(enumerable1.Take(elements - 1));
         }
 
-        public static IEnumerable<T> Replace<T>(
-            this IEnumerable<T> enumerable, T oldItem, T newItem)
+        public static IEnumerable<T> Replace<T>(this IEnumerable<T> enumerable, T oldItem, T newItem)
         {
             foreach (var item in enumerable)
                 if (item.Equals(oldItem))
@@ -24,8 +23,7 @@ namespace Rain.Core.Utility
                     yield return item;
         }
 
-        public static IEnumerable<T> SkipUntil<T>(
-            this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        public static IEnumerable<T> SkipUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
         {
             var yielding = false;
 
@@ -38,8 +36,7 @@ namespace Rain.Core.Utility
             }
         }
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(
-            this IEnumerable<T> enumerable, Func<T, int, bool> predicate)
+        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Func<T, int, bool> predicate)
         {
             var set = new List<T>();
             var index = 0;
@@ -68,20 +65,17 @@ namespace Rain.Core.Utility
                 yield return set;
         }
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(
-            this IEnumerable<T> enumerable, Predicate<T> predicate)
+        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, Predicate<T> predicate)
         {
             return enumerable.Split((t, i) => predicate(t));
         }
 
-        public static IEnumerable<IEnumerable<T>> Split<T>(
-            this IEnumerable<T> enumerable, T element)
+        public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> enumerable, T element)
         {
             return enumerable.Split((t, i) => t.Equals(element));
         }
 
-        public static IEnumerable<T> TakeUntil<T>(
-            this IEnumerable<T> enumerable, Func<T, bool> predicate)
+        public static IEnumerable<T> TakeUntil<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
         {
             foreach (var element in enumerable)
             {
@@ -97,8 +91,7 @@ namespace Rain.Core.Utility
             return source.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
-        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(
-            this IEnumerable<(TKey, TElement)> source)
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<(TKey, TElement)> source)
         {
             return source.ToDictionary(kv => kv.Item1, kv => kv.Item2);
         }

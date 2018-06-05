@@ -17,10 +17,6 @@ namespace Rain.Core.Model.Paint
             Name = _nextId++.ToString();
         }
 
-        /// <param name="context"></param>
-        /// <inheritdoc />
-        public override void Optimize(IRenderContext context) { throw new NotImplementedException(); }
-
         #region IBrushInfo Members
 
         public abstract IBrush CreateBrush(IRenderContext target);

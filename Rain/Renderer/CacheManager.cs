@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
 
 using Rain.Core.Model.DocumentGraph;
@@ -35,80 +36,77 @@ namespace Rain.Renderer
             if (fill == null) return null;
 
             var brush = fill.CreateBrush(Context.RenderContext);
-            var subscriptions = new LinkedList<IDisposable>();
+            var disposable = new CompositeDisposable();
 
-            subscriptions.AddLast(fill.CreateOpacityObservable()
-                                      .Subscribe(opacity =>
-                                                 {
-                                                     brush.Opacity = opacity;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(fill.CreateOpacityObservable()
+                               .Subscribe(opacity =>
+                                          {
+                                              brush.Opacity = opacity;
+                                              Invalidate();
+                                          }));
 
-            subscriptions.AddLast(fill.CreateTransformObservable()
-                                      .Subscribe(transform =>
-                                                 {
-                                                     brush.Transform = transform;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(fill.CreateTransformObservable()
+                               .Subscribe(transform =>
+                                          {
+                                              brush.Transform = transform;
+                                              Invalidate();
+                                          }));
 
             if (fill is ISolidColorBrushInfo color &&
                 brush is ISolidColorBrush colorBrush)
-                subscriptions.AddLast(color.CreateColorObservable()
-                                           .Subscribe(c =>
-                                                      {
-                                                          colorBrush.Color = c;
-                                                          Context.Invalidate();
-                                                      }));
+                disposable.Add(color.CreateColorObservable()
+                                    .Subscribe(c =>
+                                               {
+                                                   colorBrush.Color = c;
+                                                   Invalidate();
+                                               }));
 
             if (fill is IGradientBrushInfo gradient &&
                 brush is IGradientBrush gradientBrush)
             {
-                subscriptions.AddLast(gradient.CreateStopsObservable()
-                                              .Subscribe(stops =>
-                                                         {
-                                                             gradientBrush.Stops.ReplaceRange(stops);
-                                                             Context.Invalidate();
-                                                         }));
+                disposable.Add(gradient.CreateStopsObservable()
+                                       .Subscribe(stops =>
+                                                  {
+                                                      gradientBrush.Stops.ReplaceRange(stops);
+                                                      Invalidate();
+                                                  }));
 
                 if (brush is ILinearGradientBrush linear)
                 {
-                    subscriptions.AddLast(gradient.CreateStartPointObservable()
-                                                  .Subscribe(start =>
-                                                             {
-                                                                 (linear.StartX, linear.StartY) = start;
-                                                                 Context.Invalidate();
-                                                             }));
-                    subscriptions.AddLast(gradient.CreateEndPointObservable()
-                                                  .Subscribe(end =>
-                                                             {
-                                                                 (linear.EndX, linear.EndY) = end;
-                                                                 Context.Invalidate();
-                                                             }));
+                    disposable.Add(gradient.CreateStartPointObservable()
+                                           .Subscribe(start =>
+                                                      {
+                                                          (linear.StartX, linear.StartY) = start;
+                                                          Invalidate();
+                                                      }));
+
+                    disposable.Add(gradient.CreateEndPointObservable()
+                                           .Subscribe(end =>
+                                                      {
+                                                          (linear.EndX, linear.EndY) = end;
+                                                          Invalidate();
+                                                      }));
                 }
 
                 if (brush is IRadialGradientBrush radial)
                 {
-                    subscriptions.AddLast(gradient.CreateStartPointObservable()
-                                                  .Subscribe(start =>
-                                                             {
-                                                                 (radial.CenterX, radial.CenterY) = start;
-                                                                 Context.Invalidate();
-                                                             }));
+                    disposable.Add(gradient.CreateStartPointObservable()
+                                           .Subscribe(start =>
+                                                      {
+                                                          (radial.CenterX, radial.CenterY) = start;
+                                                          Invalidate();
+                                                      }));
 
-                    subscriptions.AddLast(gradient.CreateEndPointObservable()
-                                                  .Subscribe(end =>
-                                                             {
-                                                                 (radial.RadiusX, radial.RadiusY) =
-                                                                     end - gradient.StartPoint;
-                                                                 Context.Invalidate();
-                                                             }));
+                    disposable.Add(gradient.CreateEndPointObservable()
+                                           .Subscribe(end =>
+                                                      {
+                                                          (radial.RadiusX, radial.RadiusY) = end - gradient.StartPoint;
+                                                          Invalidate();
+                                                      }));
                 }
             }
 
-            brush.Disposed += (s, e) =>
-                              {
-                                  foreach (var subscription in subscriptions) subscription.Dispose();
-                              };
+            brush.Disposed += (s, e) => disposable.Dispose();
 
             return brush;
         }
@@ -118,56 +116,59 @@ namespace Rain.Renderer
             if (info == null) return default;
 
             var pen = info.CreatePen(Context.RenderContext);
-            var subscriptions = new LinkedList<IDisposable>();
+            var disposable = new CompositeDisposable();
 
-            subscriptions.AddLast(info.CreateBrushObservable()
-                                      .Subscribe(brush =>
-                                                 {
-                                                     pen.Brush = BindBrush(brush);
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateBrushObservable()
+                               .Subscribe(brush =>
+                                          {
+                                              pen.Brush = BindBrush(brush);
+                                              
+Invalidate();
+                                          }));
 
-            subscriptions.AddLast(info.CreateWidthObservable()
-                                      .Subscribe(width =>
-                                                 {
-                                                     pen.Width = width;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateWidthObservable()
+                               .Subscribe(width =>
+                                          {
+                                              pen.Width = width;
+                                              Invalidate();
+                                          }));
 
-            subscriptions.AddLast(info.CreateDashesObservable()
-                                      .Subscribe(dashes =>
-                                                 {
-                                                     pen.Dashes.ReplaceAll(dashes);
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateDashesObservable()
+                               .Subscribe(dashes =>
+                                          {
+                                              pen.Dashes.ReplaceAll(dashes);
+                                              Invalidate();
+                                          }));
 
-            subscriptions.AddLast(info.CreateDashOffsetObservable()
-                                      .Subscribe(offset =>
-                                                 {
-                                                     pen.DashOffset = offset;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateDashOffsetObservable()
+                               .Subscribe(offset =>
+                                          {
+                                              pen.DashOffset = offset;
+                                              Invalidate();
+                                          }));
 
-            subscriptions.AddLast(info.CreateLineCapObservable()
-                                      .Subscribe(cap =>
-                                                 {
-                                                     pen.LineCap = cap;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateLineCapObservable()
+                               .Subscribe(cap =>
+                                          {
+                                              pen.LineCap = cap;
+                                              Invalidate();
+                                          }));
 
-            subscriptions.AddLast(info.CreateLineJoinObservable()
-                                      .Subscribe(join =>
-                                                 {
-                                                     pen.LineJoin = join;
-                                                     Context.Invalidate();
-                                                 }));
+            disposable.Add(info.CreateLineJoinObservable()
+                               .Subscribe(join =>
+                                          {
+                                              pen.LineJoin = join;
+                                              Invalidate();
+                                          }));
 
-            pen.Disposed += (s, e) =>
-                            {
-                                foreach (var subscription in subscriptions) subscription.Dispose();
-                            };
+            pen.Disposed += (s, e) => disposable.Dispose();
 
             return pen;
+        }
+
+        private void Invalidate()
+        {
+            if(!_suppressed) Context.Invalidate();
         }
 
         public void EnterReadLock() { _renderLock.EnterReadLock(); }
@@ -283,21 +284,21 @@ namespace Rain.Renderer
             EnterWriteLock();
 
             if (layer is IFilledLayer filled)
-                _fills[filled] = filled.CreateFillObservable().Select(BindBrush).Disposer();
+                _fills[filled] = new SerialDisposerProperty<IBrush>(filled.CreateFillObservable().Select(BindBrush));
 
             if (layer is IStrokedLayer stroked)
-                _strokes[stroked] = stroked.CreateStrokeObservable().Select(BindStroke).Disposer();
+                _strokes[stroked] = new SerialDisposerProperty<IPen>(stroked.CreateStrokeObservable().Select(BindStroke));
 
             if (layer is ITextLayer text)
-                _texts[text] = text.CreateTextLayoutObservable(Context).Disposer();
+                _texts[text] = new SerialDisposerProperty<ITextLayout>(text.CreateTextLayoutObservable(Context));
 
             if (layer is IImageLayer image)
-                _images[image] = image.CreateImageObservable(Context).Disposer();
+                _images[image] = new SerialDisposerProperty<IRenderImage>(image.CreateImageObservable(Context));
 
             if (layer is IGeometricLayer geometric)
-                _geometries[geometric] = geometric.CreateGeometryObservable(Context).Disposer();
+                _geometries[geometric] = new SerialDisposerProperty<IGeometry>(geometric.CreateGeometryObservable(Context));
 
-            _bounds[layer] = new ObservableProperty<RectangleF>(layer.CreateBoundsObservable(Context));
+            _bounds[layer] = new SerialProperty<RectangleF>(layer.CreateBoundsObservable(Context));
 
             if (layer is IContainerLayer group)
             {
@@ -330,19 +331,25 @@ namespace Rain.Renderer
         public IRenderImage GetBitmap(string key) { return _bitmaps[key]; }
 
         /// <inheritdoc />
-        public RectangleF GetBounds(ILayer layer) { return _bounds[layer].Value; }
+        public RectangleF GetBounds(ILayer layer) { return _bounds.TryGet(layer)?.Value ?? layer.GetBounds(Context); }
 
         /// <inheritdoc />
         public IBrush GetBrush(string key) { return _brushes.TryGet(key); }
 
         /// <inheritdoc />
-        public IBrush GetFill(IFilledLayer layer) { return _fills[layer].Value; }
+        public IBrush GetFill(IFilledLayer layer) { return _fills.TryGet(layer)?.Value ?? BindBrush(layer.Fill); }
 
         /// <inheritdoc />
-        public IGeometry GetGeometry(IGeometricLayer layer) { return _geometries[layer].Value; }
+        public IGeometry GetGeometry(IGeometricLayer layer)
+        {
+            return _geometries.TryGet(layer)?.Value ?? layer.GetGeometry(Context);
+        }
 
         /// <inheritdoc />
-        public IRenderImage GetImage(IImageLayer layer) { return _images[layer].Value; }
+        public IRenderImage GetImage(IImageLayer layer)
+        {
+            return _images.TryGet(layer)?.Value ?? layer.GetImage(Context);
+        }
 
         /// <inheritdoc />
         public IPen GetPen(string key, int width)
@@ -358,9 +365,12 @@ namespace Rain.Renderer
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
         }
 
-        public IPen GetStroke(IStrokedLayer layer) { return _strokes[layer].Value; }
+        public IPen GetStroke(IStrokedLayer layer) { return _strokes.TryGet(layer)?.Value ?? BindStroke(layer.Stroke); }
 
-        public ITextLayout GetTextLayout(ITextLayer layer) { return _texts[layer].Value; }
+        public ITextLayout GetTextLayout(ITextLayer layer)
+        {
+            return _texts.TryGet(layer)?.Value ?? layer.GetLayout(Context);
+        }
 
         /// <inheritdoc />
         public void LoadApplicationResources(IRenderContext target)
@@ -458,27 +468,27 @@ namespace Rain.Renderer
 
         private readonly Dictionary<string, IRenderImage> _bitmaps = new Dictionary<string, IRenderImage>();
 
-        private readonly Dictionary<ILayer, IObservableProperty<RectangleF>> _bounds =
-            new Dictionary<ILayer, IObservableProperty<RectangleF>>();
+        private readonly Dictionary<ILayer, ISerialProperty<RectangleF>> _bounds =
+            new Dictionary<ILayer, ISerialProperty<RectangleF>>();
 
         private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
 
-        private readonly Dictionary<IFilledLayer, IObservableProperty<IBrush>> _fills =
-            new Dictionary<IFilledLayer, IObservableProperty<IBrush>>();
+        private readonly Dictionary<IFilledLayer, ISerialProperty<IBrush>> _fills =
+            new Dictionary<IFilledLayer, ISerialProperty<IBrush>>();
 
-        private readonly Dictionary<IGeometricLayer, IObservableProperty<IGeometry>> _geometries =
-            new Dictionary<IGeometricLayer, IObservableProperty<IGeometry>>();
+        private readonly Dictionary<IGeometricLayer, ISerialProperty<IGeometry>> _geometries =
+            new Dictionary<IGeometricLayer, ISerialProperty<IGeometry>>();
 
-        private readonly Dictionary<IImageLayer, IObservableProperty<IRenderImage>> _images =
-            new Dictionary<IImageLayer, IObservableProperty<IRenderImage>>();
+        private readonly Dictionary<IImageLayer, ISerialProperty<IRenderImage>> _images =
+            new Dictionary<IImageLayer, ISerialProperty<IRenderImage>>();
 
         private readonly Dictionary<(string, int), IPen> _pens = new Dictionary<(string, int), IPen>();
 
-        private readonly Dictionary<IStrokedLayer, IObservableProperty<IPen>> _strokes =
-            new Dictionary<IStrokedLayer, IObservableProperty<IPen>>();
+        private readonly Dictionary<IStrokedLayer, ISerialProperty<IPen>> _strokes =
+            new Dictionary<IStrokedLayer, ISerialProperty<IPen>>();
 
-        private readonly Dictionary<ITextLayer, IObservableProperty<ITextLayout>> _texts =
-            new Dictionary<ITextLayer, IObservableProperty<ITextLayout>>();
+        private readonly Dictionary<ITextLayer, ISerialProperty<ITextLayout>> _texts =
+            new Dictionary<ITextLayer, ISerialProperty<ITextLayout>>();
 
         #endregion
     }

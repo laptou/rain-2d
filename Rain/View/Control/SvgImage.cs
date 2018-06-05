@@ -132,6 +132,7 @@ namespace Rain.View.Control
             if (Source == null) return;
 
             _prepared = false;
+            _cache.ReleaseSceneResources();
 
             XDocument xdoc;
 
@@ -144,6 +145,7 @@ namespace Rain.View.Control
             document.FromXml(xdoc.Root, new SvgContext());
 
             _document = SvgReader.FromSvg(document);
+            _cache.BindLayer(_document.Root);
             _prepared = true;
         }
 

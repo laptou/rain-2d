@@ -26,18 +26,16 @@ namespace Rain.Tools
         private readonly ISet<int> _selection = new HashSet<int>();
 
         private (Vector2 start, Vector2 end)? _drag;
+        private bool                          _end, _start;
 
         private (bool down, bool moved, Vector2 pos) _mouse;
         private bool                                 _updatingOptions;
-        private bool                                 _end, _start;
 
         public GradientTool(IToolManager toolManager) : base(toolManager)
         {
             Type = ToolType.Gradient;
 
-            Options.Create<Action>("add-stop", ToolOptionType.Button, "Add Stop")
-                   .SetIcon("icon-add")
-                   .Set(Add);
+            Options.Create<Action>("add-stop", ToolOptionType.Button, "Add Stop").SetIcon("icon-add").Set(Add);
 
             Options.Create<Action>("remove-stop", ToolOptionType.Button, "Remove Stop")
                    .SetIcon("icon-remove")
@@ -50,47 +48,11 @@ namespace Rain.Tools
             Options.OptionChanged += OnOptionChanged;
         }
 
-        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (_updatingOptions) return;
-
-            var option = (ToolOptionBase) sender;
-
-            if (SelectedBrush == null) return;
-
-            switch (option)
-            {
-                case ToolOption<GradientBrushType> gradientType when option.Id == "type":
-
-                    SelectedBrush.Type = gradientType.Value;
-
-                    break;
-            }
-        }
-
-
-        /// <inheritdoc />
-        protected override void OnSelectionChanged(object sender, EventArgs args)
-        {
-            UpdateOptions();
-            base.OnSelectionChanged(sender, args);
-        }
-
-        private void UpdateOptions()
-        {
-            _updatingOptions = true;
-
-            Options.Set("type", SelectedBrush?.Type ?? GradientBrushType.Linear);
-
-            _updatingOptions = false;
-        }
-
         public GradientBrushInfo SelectedBrush =>
             SelectedLayer?.Fill as GradientBrushInfo;
 
         public string Status =>
-            "<b>Click</b> to select, " + "<b>Alt Click</b> to delete, " +
-            "<b>Shift Click</b> to multi-select.";
+            "<b>Click</b> to select, " + "<b>Alt Click</b> to delete, " + "<b>Shift Click</b> to multi-select.";
 
         public override void ApplyFill(IBrushInfo brush)
         {
@@ -98,9 +60,7 @@ namespace Rain.Tools
                 foreach (var handle in _selection)
                     Context.HistoryManager.Merge(
                         new ModifyGradientCommand(Context.HistoryManager.Position + 1,
-                                                  solid.Color - SelectedBrush
-                                                               .Stops[handle]
-                                                               .Color,
+                                                  solid.Color - SelectedBrush.Stops[handle].Color,
                                                   new[] {handle},
                                                   SelectedBrush),
                         Time.DoubleClick);
@@ -151,10 +111,9 @@ namespace Rain.Tools
             if (SelectedBrush != null)
             {
                 var zoom = Context.ViewManager.Zoom;
-                var t = new Func<float, Vector2>(
-                    o => Vector2.Transform(
-                        Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, o),
-                        SelectedBrush.Transform * SelectedLayer.AbsoluteTransform));
+                var t = new Func<float, Vector2>(o => Vector2.Transform(
+                                                     Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, o),
+                                                     SelectedBrush.Transform * SelectedLayer.AbsoluteTransform));
 
                 (GradientStop stop, int index)? target = null;
                 var index = 0;
@@ -214,9 +173,8 @@ namespace Rain.Tools
                 _selection.Any())
             {
                 var stop = SelectedBrush.Stops[_selection.First()];
-                var localStopPos =
-                    Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, stop.Offset) +
-                    localDelta;
+                var localStopPos = Vector2.Lerp(SelectedBrush.StartPoint, SelectedBrush.EndPoint, stop.Offset) +
+                                   localDelta;
 
                 if (IsEndpoint(stop) &&
                     _selection.Count == 1 &&
@@ -225,16 +183,9 @@ namespace Rain.Tools
                     var delta = localDelta;
 
                     if (evt.ModifierState.Shift)
-                    {
-                        delta = MathUtils.Project(delta,
-                                                  SelectedBrush.EndPoint -
-                                                  SelectedBrush.StartPoint);
-                    }
+                        delta = MathUtils.Project(delta, SelectedBrush.EndPoint - SelectedBrush.StartPoint);
 
-                    Move(delta,
-                         Equals(stop, SelectedBrush.Stops[0])
-                             ? GradientOp.ChangeStart
-                             : GradientOp.ChangeEnd);
+                    Move(delta, Equals(stop, SelectedBrush.Stops[0]) ? GradientOp.ChangeStart : GradientOp.ChangeEnd);
                 }
                 else
                 {
@@ -242,12 +193,10 @@ namespace Rain.Tools
 
                     localStopPos =
                         MathUtils.Project(localStopPos - SelectedBrush.StartPoint,
-                                          SelectedBrush.EndPoint - SelectedBrush.StartPoint) +
-                        SelectedBrush.StartPoint;
+                                          SelectedBrush.EndPoint - SelectedBrush.StartPoint) + SelectedBrush.StartPoint;
 
                     var newOffset = Vector2.Distance(SelectedBrush.StartPoint, localStopPos) /
-                                    Vector2.Distance(SelectedBrush.StartPoint,
-                                                     SelectedBrush.EndPoint);
+                                    Vector2.Distance(SelectedBrush.StartPoint, SelectedBrush.EndPoint);
 
                     if (localStopPos.X < SelectedBrush.StartPoint.X)
                         newOffset = -newOffset;
@@ -284,8 +233,7 @@ namespace Rain.Tools
                     {
                         Stops = new ObservableList<GradientStop>(new[]
                         {
-                            new GradientStop(lastColor.Color, 0),
-                            new GradientStop(lastColor.Color, 1)
+                            new GradientStop(lastColor.Color, 0), new GradientStop(lastColor.Color, 1)
                         })
                     };
 
@@ -319,9 +267,7 @@ namespace Rain.Tools
         {
             if (_drag != null)
             {
-                target.DrawLine(_drag.Value.start,
-                                _drag.Value.end,
-                                cache.GetPen(Colors.GradientHandleOutline, 1));
+                target.DrawLine(_drag.Value.start, _drag.Value.end, cache.GetPen(Colors.GradientHandleOutline, 1));
 
                 return;
             }
@@ -387,9 +333,7 @@ namespace Rain.Tools
 
                         fxLayer.FillCircle(pos, radius * 1.25f, fill);
 
-                        fxLayer.DrawCircle(pos,
-                                           radius * 1.25f,
-                                           _selection.Contains(i) ? outlineSel : outline);
+                        fxLayer.DrawCircle(pos, radius * 1.25f, _selection.Contains(i) ? outlineSel : outline);
 
                         using (var brush = fxLayer.CreateBrush(stop.Color))
                         {
@@ -404,6 +348,14 @@ namespace Rain.Tools
             }
         }
 
+
+        /// <inheritdoc />
+        protected override void OnSelectionChanged(object sender, EventArgs args)
+        {
+            UpdateOptions();
+            base.OnSelectionChanged(sender, args);
+        }
+
         private void Add(Color color, int index)
         {
             var prev = SelectedBrush.Stops[index - 1];
@@ -415,10 +367,7 @@ namespace Rain.Tools
                 _selection.Remove(i);
 
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
-                                          index,
-                                          stop,
-                                          SelectedBrush),
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1, index, stop, SelectedBrush),
                 Time.DoubleClick);
 
             foreach (var i in gt)
@@ -455,32 +404,51 @@ namespace Rain.Tools
         private void Move(Vector2 delta, GradientOp operation)
         {
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
-                                          delta,
-                                          operation,
-                                          SelectedBrush),
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1, delta, operation, SelectedBrush),
                 Time.DoubleClick);
         }
 
         private void Move(IReadOnlyList<int> indices, float delta)
         {
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
-                                          delta,
-                                          indices,
-                                          SelectedBrush),
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1, delta, indices, SelectedBrush),
                 Time.DoubleClick);
+        }
+
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_updatingOptions) return;
+
+            var option = (ToolOptionBase) sender;
+
+            if (SelectedBrush == null) return;
+
+            switch (option)
+            {
+                case ToolOption<GradientBrushType> gradientType when option.Id == "type":
+
+                    SelectedBrush.Type = gradientType.Value;
+
+                    break;
+            }
         }
 
         private void Remove(IReadOnlyList<int> indices)
         {
             Context.HistoryManager.Merge(
-                new ModifyGradientCommand(Context.HistoryManager.Position + 1,
-                                          indices,
-                                          SelectedBrush),
+                new ModifyGradientCommand(Context.HistoryManager.Position + 1, indices, SelectedBrush),
                 Time.DoubleClick);
         }
 
         private void Remove() { Remove(_selection.ToArray()); }
+
+        private void UpdateOptions()
+        {
+            _updatingOptions = true;
+
+            Options.Set("type", SelectedBrush?.Type ?? GradientBrushType.Linear);
+
+            _updatingOptions = false;
+        }
     }
 }

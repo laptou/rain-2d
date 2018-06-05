@@ -11,7 +11,7 @@ namespace Rain.Renderer.WPF
 {
     using WPF = System.Windows.Media;
 
-    internal class Pen : PropertyChangedBase, IPen
+    internal class Pen : ResourceBase, IPen
     {
         private Brush    _brush;
         private float    _dashOffset;
@@ -34,8 +34,8 @@ namespace Rain.Renderer.WPF
             4) { }
 
         public Pen(
-            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap,
-            LineJoin lineJoin, float miterLimit)
+            float width, Brush brush, IEnumerable<float> dashes, float dashOffset, LineCap lineCap, LineJoin lineJoin,
+            float miterLimit)
         {
             Width = width;
             Brush = brush;
@@ -75,7 +75,11 @@ namespace Rain.Renderer.WPF
 
         #region IPen Members
 
-        public void Dispose() { Brush.Dispose(); }
+        public override void Dispose()
+        {
+            Brush?.Dispose();
+            base.Dispose();
+        }
 
         public IList<float> Dashes { get; }
 
