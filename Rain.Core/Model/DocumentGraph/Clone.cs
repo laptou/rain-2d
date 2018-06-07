@@ -110,6 +110,9 @@ namespace Rain.Core.Model.DocumentGraph
 
             // scope the variables to avoid naming conflicts
             {
+                if (Target is IModel model)
+                    model.SuppressNotifications();
+
                 if (Target is IFilled filled)
                 {
                     fill = filled.Fill;
@@ -128,19 +131,18 @@ namespace Rain.Core.Model.DocumentGraph
                         stroked.Stroke = Stroke;
                 }
             }
-
-            cache.RestoreInvalidation();
-
+            
             Target.Render(target, cache, view);
-
-            cache.SuppressInvalidation();
-
+            
             {
                 if (Target is IFilled filled)
                     filled.Fill = fill;
 
                 if (Target is IStroked stroked)
                     stroked.Stroke = stroke;
+
+                if (Target is IModel model)
+                    model.RestoreNotifications();
             }
 
             cache.RestoreInvalidation();

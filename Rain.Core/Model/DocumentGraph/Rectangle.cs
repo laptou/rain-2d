@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Paint;
 using Rain.Core.Utility;
 
 namespace Rain.Core.Model.DocumentGraph
@@ -73,11 +74,11 @@ namespace Rain.Core.Model.DocumentGraph
             // but using specific Fill<Shape> should be faster than using
             // FillGeometry
             if (Fill != null)
-                target.FillRectangle(new RectangleF(X, Y, Width, Height), cache.GetFill(this));
+                target.FillRectangle(new RectangleF(X, Y, Width, Height), cache.GetBrush(Fill));
 
             if (Stroke?.Brush != null)
             {
-                var pen = cache.GetStroke(this);
+                var pen = cache.GetPen(Stroke);
                 target.DrawRectangle(new RectangleF(X, Y, Width, Height), pen, pen.Width * view.Zoom);
             }
 

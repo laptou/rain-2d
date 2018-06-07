@@ -24,6 +24,7 @@ namespace Rain.ViewModel
 
         #region ICommand Members
 
+        /// <inheritdoc />
         public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter) { return true; }

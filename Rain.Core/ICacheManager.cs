@@ -13,28 +13,23 @@ namespace Rain.Core
 {
     public interface ICacheManager : IArtContextManager
     {
-        void LoadApplicationResources(IRenderContext target);
         void RestoreInvalidation();
-
         void SuppressInvalidation();
 
         #region Retrieval
 
         IRenderImage GetBitmap(string key);
-
-        IBrush GetBrush(string key);
-        IPen GetPen(string key, int width);
-
-        IBrush GetFill(IFilledLayer layer);
+        IBrush GetBrush(IBrushInfo layer);
         IRenderImage GetImage(IImageLayer layer);
         IGeometry GetGeometry(IGeometricLayer layer);
-        IPen GetStroke(IStrokedLayer layer);
+        IPen GetPen(IPenInfo pen);
         ITextLayout GetTextLayout(ITextLayer layer);
 
         #endregion
 
         #region Resource Management
 
+        void LoadApplicationResources(IRenderContext target);
         void ReleaseDeviceResources();
         void ReleaseResources();
         void ReleaseSceneResources();

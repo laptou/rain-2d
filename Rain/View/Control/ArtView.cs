@@ -21,7 +21,6 @@ namespace Rain.View.Control
     public class ArtView : D2DImage
     {
         private readonly Dictionary<string, IntPtr> _cursors = new Dictionary<string, IntPtr>();
-        private          bool                       _middle  = false;
 
         public ArtView()
         {

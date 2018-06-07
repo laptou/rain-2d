@@ -26,7 +26,6 @@ namespace Rain.Tools
         private readonly ISet<int> _selection = new HashSet<int>();
 
         private (Vector2 start, Vector2 end)? _drag;
-        private bool                          _end, _start;
 
         private (bool down, bool moved, Vector2 pos) _mouse;
         private bool                                 _updatingOptions;
@@ -267,7 +266,7 @@ namespace Rain.Tools
         {
             if (_drag != null)
             {
-                target.DrawLine(_drag.Value.start, _drag.Value.end, cache.GetPen(Colors.GradientHandleOutline, 1));
+                target.DrawLine(_drag.Value.start, _drag.Value.end, cache.GetPen(Pens.GradientHandleOutline));
 
                 return;
             }
@@ -277,9 +276,9 @@ namespace Rain.Tools
 
             var fill = cache.GetBrush(Colors.Node);
             var fillAlt = cache.GetBrush(Colors.NodeSpecial);
-            var outline = cache.GetPen(Colors.GradientHandleOutline, 1);
-            var outlineSel = cache.GetPen(Colors.GradientHandleSelectedOutline, 1);
-            var outlineAlt = cache.GetPen(Colors.NodeSpecialOutline, 1);
+            var outline = cache.GetPen(Pens.GradientHandleOutline);
+            var outlineSel = cache.GetPen(Pens.GradientHandleSelectedOutline);
+            var outlineAlt = cache.GetPen(Pens.NodeSpecialOutline);
 
             var transform = SelectedBrush.Transform * SelectedLayer.AbsoluteTransform;
             var t = new Func<Vector2, Vector2>(v => Vector2.Transform(v, transform));

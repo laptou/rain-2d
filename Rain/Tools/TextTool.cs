@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 
 using Rain.Core.Utility;
 
@@ -43,7 +42,6 @@ namespace Rain.Tools
 
         private RectangleF[] _selectionRects = new RectangleF[0];
 
-        private Timer _timer;
         private bool  _updatingOptions;
 
         public TextTool(IToolManager manager) : base(manager)
@@ -564,7 +562,7 @@ namespace Rain.Tools
                 if (Time.Now % _caret.BlinkPeriod > _caret.BlinkPeriod / 2)
                     target.DrawLine(_caretState.Position,
                                     _caretState.Position + new Vector2(0, _caretState.Height),
-                                    cache.GetPen(Colors.TextCaret, width));
+                                    cache.GetPen(Pens.TextCaret));
 
                 Context.Invalidate();
             }

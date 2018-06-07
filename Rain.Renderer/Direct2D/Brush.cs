@@ -10,8 +10,34 @@ using Rain.Core.Model.Paint;
 
 namespace Rain.Renderer.Direct2D
 {
-    internal abstract class Brush : ResourceBase, IBrush
+    internal abstract class Brush : ResourceBase, IBrush, IEquatable<Brush>
     {
+        /// <inheritdoc />
+        public bool Equals(Brush other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return Equals(NativeBrush, other.NativeBrush);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+
+            var other = obj as Brush;
+
+            return other != null && Equals(other);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return NativeBrush != null ? NativeBrush.GetHashCode() : 0;
+        }
+
         protected SharpDX.Direct2D1.Brush NativeBrush { get; set; }
         protected ReaderWriterLockSlim NativeBrushLock { get; } = new ReaderWriterLockSlim();
 

@@ -11,6 +11,10 @@ namespace Rain.Core.Model.Paint
 
         public SolidColorBrushInfo(Color color) { Color = color; }
 
+        public SolidColorBrushInfo(float r, float g, float b) : this(new Color(r, g, b)) { }
+
+        public SolidColorBrushInfo(float r, float g, float b, float a) : this(new Color(r, g, b, a)) { }
+
         public override string ToString() { return $"Color: {Color}, Opacity: {Opacity}"; }
 
         #region ISolidColorBrushInfo Members

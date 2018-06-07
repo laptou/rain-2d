@@ -325,8 +325,8 @@ namespace Rain.Core.Model.DocumentGraph
             for (var i = 0; i < layout.GetGlyphCount(); i += layout.GetGlyphCountForGeometry(i))
             {
                 var geom = layout.GetGeometryForGlyphRun(i);
-                var fill = layout.GetBrushForGlyph(i) ?? cache.GetFill(this);
-                var pen = layout.GetPenForGlyph(i) ?? cache.GetStroke(this);
+                var fill = layout.GetBrushForGlyph(i) ?? cache.GetBrush(Fill);
+                var pen = layout.GetPenForGlyph(i) ?? cache.GetPen(Stroke);
 
                 if (fill != null)
                     target.FillGeometry(geom, fill);

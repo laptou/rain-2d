@@ -31,28 +31,29 @@ namespace Rain.Renderer
 
         public CacheManager(IArtContext context) { Context = context; }
 
-        public IBrush BindBrush(IBrushInfo fill)
+        public IBrush BindBrush(IBrushInfo info)
         {
-            if (fill == null) return null;
+            if (info == null) return null;
+            if (_brushes.ContainsKey(info)) return _brushes[info];
 
-            var brush = fill.CreateBrush(Context.RenderContext);
+            var brush = info.CreateBrush(Context.RenderContext);
             var disposable = new CompositeDisposable();
 
-            disposable.Add(fill.CreateOpacityObservable()
+            disposable.Add(info.CreateOpacityObservable()
                                .Subscribe(opacity =>
                                           {
                                               brush.Opacity = opacity;
                                               Invalidate();
                                           }));
 
-            disposable.Add(fill.CreateTransformObservable()
+            disposable.Add(info.CreateTransformObservable()
                                .Subscribe(transform =>
                                           {
                                               brush.Transform = transform;
                                               Invalidate();
                                           }));
 
-            if (fill is ISolidColorBrushInfo color &&
+            if (info is ISolidColorBrushInfo color &&
                 brush is ISolidColorBrush colorBrush)
                 disposable.Add(color.CreateColorObservable()
                                     .Subscribe(c =>
@@ -61,7 +62,7 @@ namespace Rain.Renderer
                                                    Invalidate();
                                                }));
 
-            if (fill is IGradientBrushInfo gradient &&
+            if (info is IGradientBrushInfo gradient &&
                 brush is IGradientBrush gradientBrush)
             {
                 disposable.Add(gradient.CreateStopsObservable()
@@ -106,7 +107,13 @@ namespace Rain.Renderer
                 }
             }
 
-            brush.Disposed += (s, e) => disposable.Dispose();
+            _brushes[info] = brush;
+
+            brush.Disposed += (s, e) =>
+                              {
+                                  _brushes.Remove(info);
+                                  disposable.Dispose();
+                              };
 
             return brush;
         }
@@ -114,6 +121,7 @@ namespace Rain.Renderer
         public IPen BindStroke(IPenInfo info)
         {
             if (info == null) return default;
+            if (_pens.ContainsKey(info)) return _pens[info];
 
             var pen = info.CreatePen(Context.RenderContext);
             var disposable = new CompositeDisposable();
@@ -122,8 +130,8 @@ namespace Rain.Renderer
                                .Subscribe(brush =>
                                           {
                                               pen.Brush = BindBrush(brush);
-                                              
-Invalidate();
+
+                                              Invalidate();
                                           }));
 
             disposable.Add(info.CreateWidthObservable()
@@ -161,14 +169,20 @@ Invalidate();
                                               Invalidate();
                                           }));
 
-            pen.Disposed += (s, e) => disposable.Dispose();
+            _pens[info] = pen;
+
+            pen.Disposed += (s, e) =>
+                            {
+                                _pens.Remove(info);
+                                disposable.Dispose();
+                            };
 
             return pen;
         }
 
         private void Invalidate()
         {
-            if(!_suppressed) Context.Invalidate();
+            if (!_suppressed) Context.Invalidate();
         }
 
         public void EnterReadLock() { _renderLock.EnterReadLock(); }
@@ -220,7 +234,12 @@ Invalidate();
 
         private void OnManagerAttached(object sender, EventArgs e)
         {
-            if (sender is IViewManager vm) vm.RootUpdated += OnRootUpdated;
+            if (sender is IViewManager vm)
+            {
+                vm.RootUpdated += OnRootUpdated;
+
+                if(vm.Root != null) BindLayer(vm.Root);
+            }
         }
 
         private void OnManagerDetached(object sender, EventArgs e)
@@ -244,7 +263,9 @@ Invalidate();
 
         private void Release<TKey, TValue>(IDictionary<TKey, TValue> dict) where TValue : IDisposable
         {
-            foreach (var (_, value) in dict.AsTuples()) value?.Dispose();
+            foreach (var value in dict.Values.ToArray())
+                value?.Dispose();
+
             dict.Clear();
         }
 
@@ -284,10 +305,10 @@ Invalidate();
             EnterWriteLock();
 
             if (layer is IFilledLayer filled)
-                _fills[filled] = new SerialDisposerProperty<IBrush>(filled.CreateFillObservable().Select(BindBrush));
+                filled.CreateFillObservable().Subscribe(info => BindBrush(info));
 
             if (layer is IStrokedLayer stroked)
-                _strokes[stroked] = new SerialDisposerProperty<IPen>(stroked.CreateStrokeObservable().Select(BindStroke));
+                stroked.CreateStrokeObservable().Subscribe(info => BindStroke(info));
 
             if (layer is ITextLayer text)
                 _texts[text] = new SerialDisposerProperty<ITextLayout>(text.CreateTextLayoutObservable(Context));
@@ -296,7 +317,8 @@ Invalidate();
                 _images[image] = new SerialDisposerProperty<IRenderImage>(image.CreateImageObservable(Context));
 
             if (layer is IGeometricLayer geometric)
-                _geometries[geometric] = new SerialDisposerProperty<IGeometry>(geometric.CreateGeometryObservable(Context));
+                _geometries[geometric] =
+                    new SerialDisposerProperty<IGeometry>(geometric.CreateGeometryObservable(Context));
 
             _bounds[layer] = new SerialProperty<RectangleF>(layer.CreateBoundsObservable(Context));
 
@@ -334,10 +356,7 @@ Invalidate();
         public RectangleF GetBounds(ILayer layer) { return _bounds.TryGet(layer)?.Value ?? layer.GetBounds(Context); }
 
         /// <inheritdoc />
-        public IBrush GetBrush(string key) { return _brushes.TryGet(key); }
-
-        /// <inheritdoc />
-        public IBrush GetFill(IFilledLayer layer) { return _fills.TryGet(layer)?.Value ?? BindBrush(layer.Fill); }
+        public IBrush GetBrush(IBrushInfo brush) { return _brushes.TryGet(brush) ?? BindBrush(brush); }
 
         /// <inheritdoc />
         public IGeometry GetGeometry(IGeometricLayer layer)
@@ -352,20 +371,12 @@ Invalidate();
         }
 
         /// <inheritdoc />
-        public IPen GetPen(string key, int width)
-        {
-            return Get(_pens,
-                       (key, width),
-                       ((string k, int w) p) => Context.RenderContext.CreatePen(p.w, GetBrush(p.k)));
-        }
-
-        /// <inheritdoc />
         public RectangleF GetRelativeBounds(ILayer layer)
         {
             return MathUtils.Bounds(GetBounds(layer), layer.Transform);
         }
 
-        public IPen GetStroke(IStrokedLayer layer) { return _strokes.TryGet(layer)?.Value ?? BindStroke(layer.Stroke); }
+        public IPen GetPen(IPenInfo pen) { return _pens.TryGet(pen) ?? BindStroke(pen); }
 
         public ITextLayout GetTextLayout(ITextLayer layer)
         {
@@ -386,8 +397,10 @@ Invalidate();
                 if (!Color.TryParse(key.Value as string, out var color)) continue;
 
                 var brush = target.CreateBrush(color);
-                _brushes[key.Key] = brush;
-                _pens[(key.Key, 1)] = target.CreatePen(1, brush);
+
+                // TODO: Fix this
+                //_brushes[key.Key] = brush;
+                //_pens[(key.Key, 1)] = target.CreatePen(1, brush);
             }
         }
 
@@ -398,8 +411,8 @@ Invalidate();
 
             Release(_brushes);
             Release(_bitmaps);
-            Release(_fills);
-            Release(_strokes);
+            Release(_brushes);
+            Release(_pens);
             Release(_images);
 
             ExitWriteLock();
@@ -412,8 +425,8 @@ Invalidate();
 
             Release(_brushes);
             Release(_bitmaps);
-            Release(_fills);
-            Release(_strokes);
+            Release(_brushes);
+            Release(_pens);
             Release(_images);
             Release(_geometries);
             Release(_texts);
@@ -426,8 +439,8 @@ Invalidate();
         {
             EnterWriteLock();
 
-            Release(_fills);
-            Release(_strokes);
+            Release(_brushes);
+            Release(_pens);
             Release(_geometries);
             Release(_texts);
             Release(_images);
@@ -446,8 +459,6 @@ Invalidate();
         {
             EnterWriteLock();
 
-            if (layer is IFilledLayer filled) Release(_fills, filled);
-            if (layer is IStrokedLayer stroked) Release(_strokes, stroked);
             if (layer is IGeometricLayer geometric) Release(_geometries, geometric);
             if (layer is ITextLayer text) Release(_texts, text);
 
@@ -471,10 +482,7 @@ Invalidate();
         private readonly Dictionary<ILayer, ISerialProperty<RectangleF>> _bounds =
             new Dictionary<ILayer, ISerialProperty<RectangleF>>();
 
-        private readonly Dictionary<string, IBrush> _brushes = new Dictionary<string, IBrush>();
-
-        private readonly Dictionary<IFilledLayer, ISerialProperty<IBrush>> _fills =
-            new Dictionary<IFilledLayer, ISerialProperty<IBrush>>();
+        private readonly Dictionary<IBrushInfo, IBrush> _brushes = new Dictionary<IBrushInfo, IBrush>();
 
         private readonly Dictionary<IGeometricLayer, ISerialProperty<IGeometry>> _geometries =
             new Dictionary<IGeometricLayer, ISerialProperty<IGeometry>>();
@@ -482,10 +490,7 @@ Invalidate();
         private readonly Dictionary<IImageLayer, ISerialProperty<IRenderImage>> _images =
             new Dictionary<IImageLayer, ISerialProperty<IRenderImage>>();
 
-        private readonly Dictionary<(string, int), IPen> _pens = new Dictionary<(string, int), IPen>();
-
-        private readonly Dictionary<IStrokedLayer, ISerialProperty<IPen>> _strokes =
-            new Dictionary<IStrokedLayer, ISerialProperty<IPen>>();
+        private readonly Dictionary<IPenInfo, IPen> _pens = new Dictionary<IPenInfo, IPen>();
 
         private readonly Dictionary<ITextLayer, ISerialProperty<ITextLayout>> _texts =
             new Dictionary<ITextLayer, ISerialProperty<ITextLayout>>();

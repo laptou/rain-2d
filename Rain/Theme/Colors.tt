@@ -9,6 +9,7 @@
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ output extension=".cs" #>
+using Rain.Core.Model.Paint;
 
 namespace Rain.Theme 
 {
@@ -30,9 +31,15 @@ namespace Rain.Theme
 
 		foreach(var color in colors.Properties())
 		{
-			var csharpName = string.Join("", color.Name.Split('-').Select(capitalizer));
+			var name = string.Join("", color.Name.Split('-').Select(capitalizer));
+            var val = (string)((JValue)color.Value).Value;
+            while(val.StartsWith("@colors."))
+                val = (string)((JValue)colors.Property(val.Substring(8)).Value).Value;
+            var red = Convert.ToByte(val.Substring(1, 2), 16) / 255.0f;
+            var green = Convert.ToByte(val.Substring(3, 2), 16) / 255.0f;
+            var blue = Convert.ToByte(val.Substring(5, 2), 16) / 255.0f;
 	#>
-		public const string <#= csharpName #> = "<#= color.Name #>";
+		public static readonly IBrushInfo <#= name #> = new SolidColorBrushInfo(<#= red #>f, <#= green #>f, <#= blue #>f);
 	<#
 		}
 	#>

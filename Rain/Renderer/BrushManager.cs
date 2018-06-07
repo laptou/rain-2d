@@ -18,12 +18,6 @@ namespace Rain.Renderer
             _brushHistory = new Stack<IBrushInfo>();
         }
 
-        /// <inheritdoc />
-        public event EventHandler Attached;
-
-        /// <inheritdoc />
-        public event EventHandler Detached;
-
         #region IBrushManager Members
 
         public void Apply(IBrushInfo fill) { Context.ToolManager.Tool.ApplyFill(fill); }

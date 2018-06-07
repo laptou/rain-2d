@@ -106,11 +106,11 @@ namespace Rain.Core.Model.DocumentGraph
             target.Transform(transform);
 
             if (Fill != null)
-                target.FillGeometry(cache.GetGeometry(this), cache.GetFill(this));
+                target.FillGeometry(cache.GetGeometry(this), cache.GetBrush(Fill));
 
             if (Stroke?.Brush != null)
             {
-                var pen = cache.GetStroke(this);
+                var pen = cache.GetPen(Stroke);
                 target.DrawGeometry(cache.GetGeometry(this), pen, pen.Width * view.Zoom);
             }
 
