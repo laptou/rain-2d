@@ -101,7 +101,7 @@ namespace Rain.Renderer
 
             foreach (var guide in guides)
             {
-                var pen = cache.GetPen(Colors.Guide, 2);
+                var pen = cache.GetPen(Pens.Guide);
 
                 if (guide.Type.HasFlag(GuideType.Linear))
                 {

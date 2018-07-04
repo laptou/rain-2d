@@ -83,7 +83,7 @@ namespace Rain.Core.Model.DocumentGraph
 
             if (!bounds.Contains(pt)) return default;
 
-            var geometry = cache.GetGeometry(this);
+            var geometry = cache.GetFillGeometry(this);
 
             if (Fill != null &&
                 geometry.FillContains(pt.X, pt.Y))
@@ -106,12 +106,12 @@ namespace Rain.Core.Model.DocumentGraph
             target.Transform(transform);
 
             if (Fill != null)
-                target.FillGeometry(cache.GetGeometry(this), cache.GetBrush(Fill));
+                target.FillGeometry(cache.GetFillGeometry(this), cache.GetBrush(Fill));
 
             if (Stroke?.Brush != null)
             {
                 var pen = cache.GetPen(Stroke);
-                target.DrawGeometry(cache.GetGeometry(this), pen, pen.Width * view.Zoom);
+                target.DrawGeometry(cache.GetFillGeometry(this), pen, pen.Width * view.Zoom);
             }
 
             target.Transform(MathUtils.Invert(transform));

@@ -33,6 +33,8 @@ namespace Rain.Renderer.WPF
                 _ctx = dc;
         }
 
+        public void SetDrawingContext(DrawingContext ctx) { _ctx = ctx; }
+
         public override void Clear(Color color) { _commandQueue.Enqueue(new ClearRenderCommand(color)); }
 
         public override ISolidColorBrush CreateBrush(Color color) { return new SolidColorBrush(color); }

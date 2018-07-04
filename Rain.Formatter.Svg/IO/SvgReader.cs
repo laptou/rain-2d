@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using Rain.Core.Model.Measurement;
 
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
@@ -17,29 +19,45 @@ using Rain.Formatter.Svg.Structure;
 
 using DG = Rain.Core.Model.DocumentGraph;
 using GradientStop = Rain.Core.Model.Paint.GradientStop;
+using Path = Rain.Formatter.Svg.Shapes.Path;
 using SVG = Rain.Formatter.Svg;
 
 namespace Rain.Formatter.Svg.IO
 {
     public static class SvgReader
     {
-        public static DG.Document FromSvg(Document svgDocument)
+        public static DG.Document FromSvg(Document svg)
         {
             var doc = new DG.Document
             {
                 Root = new DG.Group(),
-                Bounds = new RectangleF(svgDocument.Viewbox.Left,
-                                        svgDocument.Viewbox.Top,
-                                        svgDocument.Viewbox.Width,
-                                        svgDocument.Viewbox.Height)
+                Bounds = new RectangleF(svg.Viewbox.Left,
+                                        svg.Viewbox.Top,
+                                        svg.Viewbox.Width,
+                                        svg.Viewbox.Height)
             };
 
             var resolved = new Dictionary<string, object>();
 
-            foreach (var child in svgDocument.OfType<IGraphicalElement>().Select(g => FromSvg(g, resolved)))
+            foreach (var child in svg.OfType<IGraphicalElement>().Select(g => FromSvg(g, resolved)))
                 doc.Root.Add(child, 0);
 
             return doc;
+        }
+
+        public static DG.Document FromSvg(XDocument xml)
+        {
+            var document = new Document();
+            document.FromXml(xml.Root, new SvgContext());
+
+            return FromSvg(document);
+        }
+
+        public static DG.Document FromSvg(Stream stream)
+        {
+            var xml = XDocument.Load(stream);
+
+            return FromSvg(xml);
         }
 
         private static DG.ILayer FromSvg(IGraphicalElement element, IDictionary<string, object> resolved)

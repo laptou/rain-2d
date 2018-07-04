@@ -88,7 +88,7 @@ namespace Rain.Renderer
 
         public Vector2 FromArtSpace(Vector2 v) { return Vector2.Transform(v, Transform); }
 
-        public void Render(RenderContext target, ICacheManager cache)
+        public void Render(IRenderContext target, ICacheManager cache)
         {
             using (var brush = target.CreateBrush(new Color(0.9f)))
             using (var pen = target.CreatePen(1, brush))

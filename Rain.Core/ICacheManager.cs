@@ -21,7 +21,8 @@ namespace Rain.Core
         IRenderImage GetBitmap(string key);
         IBrush GetBrush(IBrushInfo layer);
         IRenderImage GetImage(IImageLayer layer);
-        IGeometry GetGeometry(IGeometricLayer layer);
+        IGeometry GetFillGeometry(IGeometricLayer layer);
+        IGeometry GetStrokeGeometry(IGeometricLayer layer);
         IPen GetPen(IPenInfo pen);
         ITextLayout GetTextLayout(ITextLayer layer);
 

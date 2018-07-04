@@ -233,6 +233,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Colors.tt</DependentUpon>
     </Compile>
+    <Compile Include="Theme\Pens.cs" />
     <Compile Include="Tools\GradientTool.cs" />
     <Compile Include="Tools\NodeTool.cs" />
     <Compile Include="Tools\SelectionToolBase.cs" />

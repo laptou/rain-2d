@@ -76,33 +76,23 @@ namespace Rain.Renderer.Direct2D
 
         private void RecreateStyle()
         {
+            var factory = _target.Factory.QueryInterface<Factory1>();
+            var props = new StrokeStyleProperties1
+            {
+                TransformType = StrokeTransformType.Fixed,
+                DashCap = (CapStyle) LineCap,
+                StartCap = (CapStyle) LineCap,
+                EndCap = (CapStyle) LineCap,
+                LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
+                DashStyle = Dashes.Count == 0 ? DashStyle.Solid : DashStyle.Custom,
+                DashOffset = DashOffset,
+                MiterLimit = MiterLimit
+            };
+
             if (Dashes.Count == 0)
-                Style = new StrokeStyle1(_target.Factory.QueryInterface<Factory1>(),
-                                         new StrokeStyleProperties1
-                                         {
-                                             TransformType = StrokeTransformType.Fixed,
-                                             DashCap = (CapStyle) LineCap,
-                                             StartCap = (CapStyle) LineCap,
-                                             EndCap = (CapStyle) LineCap,
-                                             LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
-                                             DashStyle = DashStyle.Solid,
-                                             DashOffset = DashOffset,
-                                             MiterLimit = MiterLimit
-                                         });
+                Style = new StrokeStyle1(factory, props);
             else
-                Style = new StrokeStyle1(_target.Factory.QueryInterface<Factory1>(),
-                                         new StrokeStyleProperties1
-                                         {
-                                             TransformType = StrokeTransformType.Fixed,
-                                             DashCap = (CapStyle) LineCap,
-                                             StartCap = (CapStyle) LineCap,
-                                             EndCap = (CapStyle) LineCap,
-                                             LineJoin = (SharpDX.Direct2D1.LineJoin) LineJoin,
-                                             DashStyle = DashStyle.Custom,
-                                             DashOffset = DashOffset,
-                                             MiterLimit = MiterLimit
-                                         },
-                                         Dashes.ToArray());
+                Style = new StrokeStyle1(factory, props, Dashes.ToArray());
         }
 
         #region IPen Members
@@ -112,6 +102,9 @@ namespace Rain.Renderer.Direct2D
             Style.Dispose();
             base.Dispose();
         }
+
+        /// <inheritdoc />
+        public override bool Optimized => false;
 
         public IList<float> Dashes { get; }
 

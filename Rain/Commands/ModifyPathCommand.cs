@@ -108,7 +108,7 @@ namespace Rain.Commands
             IReadOnlyList<PathNode> targetNodes, Vector2 delta)
         {
             var target = Targets[0];
-            var geom = context.CacheManager.GetGeometry(target);
+            var geom = context.CacheManager.GetFillGeometry(target);
             var nodes = geom.ReadNodes().ToList();
 
             switch (operation)

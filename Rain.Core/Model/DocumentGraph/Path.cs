@@ -17,7 +17,7 @@ namespace Rain.Core.Model.DocumentGraph
 
         public ObservableList<PathInstruction> Instructions { get; } = new ObservableList<PathInstruction>();
 
-        public override RectangleF GetBounds(IArtContext ctx) { return ctx.CacheManager.GetGeometry(this).Bounds(); }
+        public override RectangleF GetBounds(IArtContext ctx) { return ctx.CacheManager.GetFillGeometry(this).Bounds(); }
 
         public override IGeometry GetGeometry(IArtContext ctx)
         {

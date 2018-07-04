@@ -121,31 +121,31 @@ namespace Rain.View.Control
             }
         }
 
-        private static void SourceChanged(WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
+        private static async void SourceChanged(WPF.DependencyObject d, WPF.DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgImage svgImage)
-                svgImage.Update();
+                await svgImage.UpdateAsync();
         }
 
-        private void Update()
+        private async Task UpdateAsync()
         {
             if (Source == null) return;
 
             _prepared = false;
-            _cache.ReleaseSceneResources();
 
-            XDocument xdoc;
+            var stream = GetStream();
 
-            using (var stream = GetStream())
-            {
-                xdoc = XDocument.Load(stream);
-            }
+            await Task.Run(() =>
+                     {
+                         _cache.ReleaseSceneResources();
+                          
+                         _document = SvgReader.FromSvg(stream);
 
-            var document = new Formatter.Svg.Structure.Document();
-            document.FromXml(xdoc.Root, new SvgContext());
+                         stream.Dispose();
 
-            _document = SvgReader.FromSvg(document);
-            _cache.BindLayer(_document.Root);
+                         _cache.BindLayer(_document.Root);
+                     });
+
             _prepared = true;
         }
 
@@ -154,7 +154,15 @@ namespace Rain.View.Control
         /// <inheritdoc />
         public ICaret CreateCaret(int width, int height) { throw new NotImplementedException(); }
 
-        public void Invalidate() { InvalidateVisual(); }
+        public void Invalidate()
+        {
+            if (!_prepared) return;
+
+            if (CheckAccess())
+                InvalidateVisual();
+            else
+                Dispatcher.Invoke(InvalidateVisual);
+        }
 
         /// <inheritdoc />
         public void RaiseAttached(IArtContextManager mgr) { throw new NotImplementedException(); }

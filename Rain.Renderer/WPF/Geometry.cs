@@ -1,57 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Paint;
 
 namespace Rain.Renderer.WPF
 {
     using WPF = System.Windows.Media;
 
-    internal class Geometry : IGeometry
+    internal class Geometry : ResourceBase, IGeometry, IOptimizedGeometry
     {
-        private WPF.PathGeometry _geometry;
-
-        public Geometry() { _geometry = new WPF.PathGeometry(); }
+        public Geometry()
+        {
+            Path = new WPF.PathGeometry();
+        }
 
         public Geometry(WPF.Geometry geometry)
         {
-            _geometry = geometry.GetFlattenedPathGeometry(double.Epsilon, WPF.ToleranceType.Relative);
+            Path = geometry.GetFlattenedPathGeometry(double.Epsilon, WPF.ToleranceType.Relative);
         }
-
-        public void Optimize() { _geometry.Freeze(); }
 
         private IGeometry Combine(IGeometry other, WPF.GeometryCombineMode mode)
         {
-            return new Geometry(new WPF.CombinedGeometry(mode, _geometry, (other as Geometry)?._geometry));
+            return new Geometry(new WPF.CombinedGeometry(mode, Path, ((Geometry) other).Path));
         }
 
-        public static implicit operator WPF.Geometry(Geometry geometry) { return geometry._geometry; }
+        public static implicit operator WPF.Geometry(Geometry geometry) { return geometry.Path; }
 
         #region IGeometry Members
 
-        public RectangleF Bounds() { return _geometry.Bounds.Convert(); }
+        public RectangleF Bounds() { return Path.Bounds.Convert(); }
 
-        public IGeometry Copy() { return new Geometry(_geometry.Clone()); }
+        public IGeometry Copy() { return new Geometry(Path.Clone()); }
 
         public IGeometry Difference(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Exclude); }
 
-        public void Dispose() { _geometry = null; }
+        public override void Dispose() { Path = null; }
+
+        /// <inheritdoc />
+        public override bool Optimized => false;
+
+        protected WPF.PathGeometry Path { get; set; }
 
         public bool FillContains(float x, float y)
         {
-            return _geometry.FillContains(new Point(x, y), double.Epsilon, WPF.ToleranceType.Relative);
+            return Path.FillContains(new Point(x, y), double.Epsilon, WPF.ToleranceType.Relative);
         }
 
         public IGeometry Intersection(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Intersect); }
 
         public void Load(IEnumerable<PathInstruction> source)
         {
-            _geometry = new WPF.PathGeometry();
+            Path = new WPF.PathGeometry();
 
             var figure = new WPF.PathFigure();
             foreach (var instruction in source)
@@ -61,7 +68,7 @@ namespace Rain.Renderer.WPF
                         figure.IsClosed = !close.Open;
 
                         if (figure.Segments.Count > 0)
-                            _geometry.Figures.Add(figure);
+                            Path.Figures.Add(figure);
 
                         figure = new WPF.PathFigure {IsFilled = true};
 
@@ -90,7 +97,7 @@ namespace Rain.Renderer.WPF
                         break;
                     case MovePathInstruction move:
                         if (figure.Segments.Count > 0)
-                            _geometry.Figures.Add(figure);
+                            Path.Figures.Add(figure);
 
                         figure = new WPF.PathFigure
                         {
@@ -109,19 +116,19 @@ namespace Rain.Renderer.WPF
                 }
 
             if (figure.Segments.Count > 0)
-                _geometry.Figures.Add(figure);
+                Path.Figures.Add(figure);
         }
 
-        public IGeometrySink Open() { return new Sink(_geometry); }
+        public IGeometrySink Open() { return new Sink(Path); }
 
         public IGeometry Outline(float width)
         {
-            return new Geometry(_geometry.GetWidenedPathGeometry(new WPF.Pen(null, width)));
+            return new Geometry(Path.GetWidenedPathGeometry(new WPF.Pen(null, width)));
         }
 
         public IEnumerable<PathInstruction> Read()
         {
-            foreach (var figure in _geometry.Figures)
+            foreach (var figure in Path.Figures)
             {
                 yield return new MovePathInstruction((float) figure.StartPoint.X, (float) figure.StartPoint.Y);
 
@@ -181,10 +188,10 @@ namespace Rain.Renderer.WPF
 
         public bool StrokeContains(float x, float y, float width)
         {
-            return _geometry.StrokeContains(new WPF.Pen(null, width),
-                                            new Point(x, y),
-                                            double.Epsilon,
-                                            WPF.ToleranceType.Relative);
+            return Path.StrokeContains(new WPF.Pen(null, width),
+                                       new Point(x, y),
+                                       double.Epsilon,
+                                       WPF.ToleranceType.Relative);
         }
 
         public IGeometry Transform(Matrix3x2 transform) { throw new NotImplementedException(); }
@@ -192,6 +199,22 @@ namespace Rain.Renderer.WPF
         public IGeometry Union(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Union); }
 
         public IGeometry Xor(IGeometry other) { return Combine(other, WPF.GeometryCombineMode.Xor); }
+
+        /// <inheritdoc />
+        public virtual IOptimizedGeometry Optimize()
+        {
+            return this;
+
+            // return new FreezeGeometry(Path);
+        }
+
+        /// <inheritdoc />
+        public virtual IOptimizedGeometry Optimize(IPenInfo pen)
+        {
+            return this;
+
+            // return new FreezeGeometry(Path);
+        }
 
         #endregion
 
@@ -313,5 +336,29 @@ namespace Rain.Renderer.WPF
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public GeometryOptimizationMode OptimizationMode =>
+            GeometryOptimizationMode.Fill | GeometryOptimizationMode.Stroke;
+    }
+
+    internal sealed class FreezeGeometry : Geometry, IOptimizedGeometry
+    {
+        public FreezeGeometry(WPF.Geometry geometry) : base(geometry.GetAsFrozen() as WPF.Geometry)
+        {
+            OptimizationMode = GeometryOptimizationMode.Fill | GeometryOptimizationMode.Stroke;
+        }
+
+        /// <inheritdoc />
+        public GeometryOptimizationMode OptimizationMode { get; }
+
+        /// <inheritdoc />
+        public override bool Optimized => true;
+
+        /// <inheritdoc />
+        public override IOptimizedGeometry Optimize() { return this; }
+
+        /// <inheritdoc />
+        public override IOptimizedGeometry Optimize(IPenInfo pen) { return this; }
     }
 }

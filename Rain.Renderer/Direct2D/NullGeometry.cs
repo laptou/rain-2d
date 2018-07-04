@@ -6,19 +6,18 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Paint;
 
 namespace Rain.Renderer.Direct2D
 {
-    public class NullGeometry : IGeometry
+    public class NullGeometry : ResourceBase, IGeometry
     {
-        public void Optimize() { throw new NotImplementedException(); }
 
         #region IGeometry Members
 
         public RectangleF Bounds() { return RectangleF.Empty; }
         public IGeometry Copy() { return new NullGeometry(); }
         public IGeometry Difference(IGeometry other) { return new NullGeometry(); }
-        public void Dispose() { }
         public bool FillContains(float x, float y) { return false; }
         public IGeometry Intersection(IGeometry other) { return new NullGeometry(); }
 
@@ -38,6 +37,12 @@ namespace Rain.Renderer.Direct2D
         public IGeometry Union(IGeometry other) { return other.Copy(); }
 
         public IGeometry Xor(IGeometry other) { return other.Copy(); }
+
+        /// <inheritdoc />
+        public IOptimizedGeometry Optimize() { throw new InvalidOperationException(); }
+
+        /// <inheritdoc />
+        public IOptimizedGeometry Optimize(IPenInfo pen) { throw new InvalidOperationException(); }
 
         #endregion
     }

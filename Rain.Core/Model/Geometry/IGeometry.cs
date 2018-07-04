@@ -4,9 +4,11 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
+using Rain.Core.Model.Paint;
+
 namespace Rain.Core.Model.Geometry
 {
-    public interface IGeometry : IDisposable
+    public interface IGeometry : IResource
     {
         RectangleF Bounds();
         IGeometry Copy();
@@ -23,5 +25,19 @@ namespace Rain.Core.Model.Geometry
         IGeometry Transform(Matrix3x2 transform);
         IGeometry Union(IGeometry other);
         IGeometry Xor(IGeometry other);
+        IOptimizedGeometry Optimize();
+        IOptimizedGeometry Optimize(IPenInfo pen);
+    }
+
+    public interface IOptimizedGeometry : IGeometry
+    {
+        GeometryOptimizationMode OptimizationMode { get; }
+    }
+
+    [Flags]
+    public enum GeometryOptimizationMode
+    {
+        Stroke = 1 << 0,
+        Fill   = 1 << 1
     }
 }

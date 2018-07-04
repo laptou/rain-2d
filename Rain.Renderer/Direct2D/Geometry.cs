@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Rain.Core.Model;
 using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Paint;
 
 using SharpDX;
 using SharpDX.Mathematics.Interop;
@@ -18,9 +19,8 @@ namespace Rain.Renderer.Direct2D
 {
     internal class Geometry : ResourceBase, IGeometry, IEquatable<Geometry>
     {
-        private readonly D2D1.RenderTarget        _target;
-        private          D2D1.GeometryRealization _fill;
-        private          D2D1.Geometry            _geom;
+        private readonly D2D1.RenderTarget _target;
+        private          D2D1.Geometry     _geom;
 
         public Geometry(D2D1.RenderTarget target) : this(target, new D2D1.PathGeometry(target.Factory)) { }
 
@@ -28,12 +28,6 @@ namespace Rain.Renderer.Direct2D
         {
             _target = target;
             _geom = source;
-        }
-
-        public Geometry(D2D1.RenderTarget target, D2D1.GeometryRealization source)
-        {
-            _target = target;
-            _fill = source;
         }
 
         public Geometry(D2D1.RenderTarget target, IEnumerable<IGeometry> geometries) : this(target)
@@ -137,11 +131,17 @@ namespace Rain.Renderer.Direct2D
             }
         }
 
-        public static bool operator ==(Geometry g1, Geometry g2) { return g1?._geom == g2?._geom; }
+        public static bool operator ==(Geometry g1, Geometry g2)
+        {
+            return g1?._geom == g2?._geom;
+        }
 
-        public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry._geom; }
+        public static implicit operator D2D1.Geometry(Geometry geometry) { return geometry?._geom; }
 
-        public static bool operator !=(Geometry geometry1, Geometry geometry2) { return !(geometry1 == geometry2); }
+        public static bool operator !=(Geometry geometry1, Geometry geometry2)
+        {
+            return !(geometry1 == geometry2);
+        }
 
         #region IEquatable<Geometry> Members
 
@@ -244,6 +244,18 @@ namespace Rain.Renderer.Direct2D
         public IGeometry Union(IGeometry other) { return Combine(other, D2D1.CombineMode.Union); }
 
         public IGeometry Xor(IGeometry other) { return Combine(other, D2D1.CombineMode.Xor); }
+
+        /// <inheritdoc />
+        public IOptimizedGeometry Optimize()
+        {
+            return new RealizedGeometry(_target, _geom);
+        }
+
+        /// <inheritdoc />
+        public IOptimizedGeometry Optimize(IPenInfo pen)
+        {
+            return new RealizedGeometry(_target, _geom, pen);
+        }
 
         #endregion
 
@@ -448,5 +460,8 @@ namespace Rain.Renderer.Direct2D
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public override bool Optimized => false;
     }
 }

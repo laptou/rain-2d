@@ -98,13 +98,13 @@ namespace Rain.Renderer.Direct2D
 
     public class Direct2DRenderContext : RenderContext
     {
-        private readonly D2D.RenderTarget _target;
+        private readonly D2D.DeviceContext1 _target;
 
         public Direct2DRenderContext(D2D.RenderTarget target) : this(target, new DW.Factory(DW.FactoryType.Shared)) { }
 
         public Direct2DRenderContext(D2D.RenderTarget target, DW.Factory factory)
         {
-            _target = target;
+            _target = target.QueryInterface<D2D.DeviceContext1>();
             FactoryDW = factory;
         }
 
@@ -253,7 +253,15 @@ namespace Rain.Renderer.Direct2D
             var pen = iPen as Pen;
 
             if (geometry == null ||
-                iPen == null) return;
+                pen == null) return;
+
+            if (geometry is RealizedGeometry optimized)
+            {
+                Target.QueryInterface<D2D.DeviceContext1>()
+                      .DrawGeometryRealization(optimized, pen.Brush);
+
+                return;
+            }
 
             Target.DrawGeometry(geometry as Geometry, pen.Brush, width, pen.Style);
         }
@@ -286,6 +294,14 @@ namespace Rain.Renderer.Direct2D
         {
             if (geometry == null ||
                 brush == null) return;
+
+            if (geometry is RealizedGeometry optimized)
+            {
+                Target.QueryInterface<D2D.DeviceContext1>()
+                      .DrawGeometryRealization(optimized, brush as Brush);
+
+                return;
+            }
 
             Target.FillGeometry(geometry as Geometry, brush as Brush);
         }

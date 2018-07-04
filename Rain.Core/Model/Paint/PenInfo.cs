@@ -15,6 +15,9 @@ namespace Rain.Core.Model.Paint
             MiterLimit = 4f;
         }
 
+        public PenInfo(float width) : this() { Width = width; }
+        public PenInfo(float width, IBrushInfo brush) : this(width) { Brush = brush; }
+
         #region IPenInfo Members
 
         public IPen CreatePen(IRenderContext renderCtx)
@@ -77,5 +80,8 @@ namespace Rain.Core.Model.Paint
         }
 
         #endregion
+
+        /// <inheritdoc />
+        public override bool Optimized => false;
     }
 }

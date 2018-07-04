@@ -18,7 +18,7 @@ namespace Rain.Core
         Matrix3x2 Transform { get; }
         float Zoom { get; set; }
 
-        void Render(RenderContext target, ICacheManager cache);
+        void Render(IRenderContext target, ICacheManager cache);
 
         #region Updates
 

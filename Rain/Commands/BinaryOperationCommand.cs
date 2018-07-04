@@ -42,8 +42,8 @@ namespace Rain.Commands
 
                 _parents[operand2] = (operand2.Parent, operand2.Parent.SubLayers.IndexOf(operand2));
 
-                var xg = artContext.CacheManager.GetGeometry(operand1);
-                var yg = artContext.CacheManager.GetGeometry(operand2);
+                var xg = artContext.CacheManager.GetFillGeometry(operand1);
+                var yg = artContext.CacheManager.GetFillGeometry(operand2);
 
                 var z = new Path
                 {

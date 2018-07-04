@@ -35,7 +35,7 @@ namespace Rain.Core.Model
             ReferenceCount--;
         }
 
-        public virtual bool Optimized { get; protected set; }
+        public virtual bool Optimized => false;
 
         /// <inheritdoc />
         public int ReferenceCount { get; private set; }

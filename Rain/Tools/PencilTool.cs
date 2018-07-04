@@ -156,8 +156,8 @@ namespace Rain.Tools
         {
             var zoom = view.Zoom;
 
-            var nOutline = cache.GetPen(Colors.NodeOutline, 1);
-            var sOutline = cache.GetPen(Colors.SelectionOutline, 1);
+            var nOutline = cache.GetPen(Pens.NodeOutline);
+            var sOutline = cache.GetPen(Pens.SelectionOutline);
 
             var radius = 4f / zoom;
 
@@ -178,7 +178,7 @@ namespace Rain.Tools
 
             target.Transform(transform);
 
-            target.DrawGeometry(cache.GetGeometry(SelectedLayer), sOutline);
+            target.DrawGeometry(cache.GetFillGeometry(SelectedLayer), sOutline);
 
             target.Transform(MathUtils.Invert(transform));
 
@@ -215,7 +215,7 @@ namespace Rain.Tools
         {
             if (SelectedLayer == null) return Enumerable.Empty<PathNode>();
 
-            return Context.CacheManager.GetGeometry(SelectedLayer).ReadNodes();
+            return Context.CacheManager.GetFillGeometry(SelectedLayer).ReadNodes();
         }
 
         private void Remove(int index)

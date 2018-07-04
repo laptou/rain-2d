@@ -221,9 +221,9 @@ namespace Rain.Tools
             var transform = SelectedLayer.AbsoluteTransform;
             var zoom = view.Zoom;
 
-            var nOutline = cache.GetPen(Colors.NodeOutline, 1);
-            var nOutlineAlt = cache.GetPen(Colors.NodeOutlineAlt, 1);
-            var sOutline = cache.GetPen(Colors.SelectionOutline, 1);
+            var nOutline = cache.GetPen(Pens.NodeOutline);
+            var nOutlineAlt = cache.GetPen(Pens.NodeOutlineAlt);
+            var sOutline = cache.GetPen(Pens.SelectionOutline);
 
             IBrush GetBrush(bool over, bool down, bool selected)
             {
@@ -319,7 +319,7 @@ namespace Rain.Tools
         {
             if (SelectedLayer == null) return Enumerable.Empty<PathNode>();
 
-            return Context.CacheManager.GetGeometry(SelectedLayer).ReadNodes();
+            return Context.CacheManager.GetFillGeometry(SelectedLayer).ReadNodes();
         }
 
         private void MergeCommands(ModifyPathCommand newCmd)

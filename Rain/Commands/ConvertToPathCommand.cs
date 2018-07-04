@@ -31,7 +31,7 @@ namespace Rain.Commands
                 parents.Add(target.Parent);
 
                 var path = new Path();
-                var geometry = artContext.CacheManager.GetGeometry(target);
+                var geometry = artContext.CacheManager.GetFillGeometry(target);
 
                 path.Instructions.AddItems(geometry.Read());
 

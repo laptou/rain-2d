@@ -1,23 +1,20 @@
-﻿using System;
-using System.Reactive.Linq;
+﻿using Rain.Core;
+using Rain.Core.Model;
+using Rain.Core.Model.DocumentGraph;
+using Rain.Core.Model.Geometry;
+using Rain.Core.Model.Imaging;
+using Rain.Core.Model.Paint;
+using Rain.Core.Utility;
+using Rain.Service;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
-
-using Rain.Core.Model.DocumentGraph;
-using Rain.Core.Utility;
-
-using System.Threading.Tasks;
 using System.Windows;
-
-using Rain.Core;
-using Rain.Core.Model;
-using Rain.Core.Model.Geometry;
-using Rain.Core.Model.Imaging;
-using Rain.Core.Model.Paint;
-using Rain.Service;
 
 namespace Rain.Renderer
 {
@@ -238,7 +235,7 @@ namespace Rain.Renderer
             {
                 vm.RootUpdated += OnRootUpdated;
 
-                if(vm.Root != null) BindLayer(vm.Root);
+                if (vm.Root != null) BindLayer(vm.Root);
             }
         }
 
@@ -317,8 +314,26 @@ namespace Rain.Renderer
                 _images[image] = new SerialDisposerProperty<IRenderImage>(image.CreateImageObservable(Context));
 
             if (layer is IGeometricLayer geometric)
-                _geometries[geometric] =
-                    new SerialDisposerProperty<IGeometry>(geometric.CreateGeometryObservable(Context));
+            {
+                var window = TimeSpan.FromSeconds(5);
+
+                var geometry = geometric.CreateGeometryObservable(Context)
+                                        .Throttle(window)
+                                        .Where(g => g != null && !g.IsDisposed);
+
+
+                var optimizedFill = geometry.Select(g => g.Optimize());
+
+                var pen = geometric.CreateStrokeObservable();
+
+                //var optimizedStroke = geometry.CombineLatest(pen.Throttle(window), (g, p) => g.Optimize(p))
+                //                              .Merge(optimizedFill.Where(
+                //                                         f => f.OptimizationMode.HasFlag(
+                //                                             GeometryOptimizationMode.Stroke)));
+
+                _fillGeometries[geometric] = new SerialDisposerProperty<IGeometry>(optimizedFill.Merge(geometry));
+                _strokeGeometries[geometric] = new SerialDisposerProperty<IGeometry>(geometry);
+            }
 
             _bounds[layer] = new SerialProperty<RectangleF>(layer.CreateBoundsObservable(Context));
 
@@ -359,9 +374,15 @@ namespace Rain.Renderer
         public IBrush GetBrush(IBrushInfo brush) { return _brushes.TryGet(brush) ?? BindBrush(brush); }
 
         /// <inheritdoc />
-        public IGeometry GetGeometry(IGeometricLayer layer)
+        public IGeometry GetFillGeometry(IGeometricLayer layer)
         {
-            return _geometries.TryGet(layer)?.Value ?? layer.GetGeometry(Context);
+            return _fillGeometries.TryGet(layer)?.Value ?? layer.GetGeometry(Context);
+        }
+
+        /// <inheritdoc />
+        public IGeometry GetStrokeGeometry(IGeometricLayer layer)
+        {
+            return _strokeGeometries.TryGet(layer)?.Value ?? layer.GetGeometry(Context);
         }
 
         /// <inheritdoc />
@@ -428,7 +449,8 @@ namespace Rain.Renderer
             Release(_brushes);
             Release(_pens);
             Release(_images);
-            Release(_geometries);
+            Release(_fillGeometries);
+            Release(_strokeGeometries);
             Release(_texts);
 
             ExitWriteLock();
@@ -441,7 +463,8 @@ namespace Rain.Renderer
 
             Release(_brushes);
             Release(_pens);
-            Release(_geometries);
+            Release(_fillGeometries);
+            Release(_strokeGeometries);
             Release(_texts);
             Release(_images);
 
@@ -459,7 +482,12 @@ namespace Rain.Renderer
         {
             EnterWriteLock();
 
-            if (layer is IGeometricLayer geometric) Release(_geometries, geometric);
+            if (layer is IGeometricLayer geometric)
+            {
+                Release(_fillGeometries, geometric);
+                Release(_strokeGeometries, geometric);
+            }
+
             if (layer is ITextLayer text) Release(_texts, text);
 
             _bounds.Remove(layer);
@@ -484,7 +512,10 @@ namespace Rain.Renderer
 
         private readonly Dictionary<IBrushInfo, IBrush> _brushes = new Dictionary<IBrushInfo, IBrush>();
 
-        private readonly Dictionary<IGeometricLayer, ISerialProperty<IGeometry>> _geometries =
+        private readonly Dictionary<IGeometricLayer, ISerialProperty<IGeometry>> _fillGeometries =
+            new Dictionary<IGeometricLayer, ISerialProperty<IGeometry>>();
+
+        private readonly Dictionary<IGeometricLayer, ISerialProperty<IGeometry>> _strokeGeometries =
             new Dictionary<IGeometricLayer, ISerialProperty<IGeometry>>();
 
         private readonly Dictionary<IImageLayer, ISerialProperty<IRenderImage>> _images =

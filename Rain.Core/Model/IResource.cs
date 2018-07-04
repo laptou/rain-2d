@@ -10,9 +10,10 @@ namespace Rain.Core.Model
         bool Optimized { get; }
         int ReferenceCount { get; }
         ResourceScope Scope { get; set; }
-        event EventHandler Disposed;
 
+        event EventHandler Disposed;
         event EventHandler Disposing;
+        bool IsDisposed { get; }
 
         void AddReference();
         void RemoveReference();

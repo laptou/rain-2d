@@ -39,6 +39,8 @@ namespace Rain.Core.Model.Paint
             set => Set(value);
         }
 
+        public override bool Optimized => false;
+
         #endregion
     }
 }
