@@ -125,14 +125,12 @@
                             <Setter Property="InputGestureText" Value="{Binding Shortcut}" />
                             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Type}"
-                                             Value="{x:Static viewmodel:MenuItemType.Separator}">
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static viewmodel:MenuItemType.Separator}">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
                                                 <Separator Margin="0,4"
-                                                           BorderBrush="{utility:Theme divider}" BorderThickness="1"
-                                                           Opacity="0.25" />
+                                                           BorderBrush="{utility:Theme divider}" BorderThickness="1" Opacity="0.25" />
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -141,8 +139,7 @@
                         </Style>
                     </Menu.ItemContainerStyle>
                     <Menu.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type viewmodel:MenuItem}"
-                                                  ItemsSource="{Binding Path=SubMenus}">
+                        <HierarchicalDataTemplate DataType="{x:Type viewmodel:MenuItem}" ItemsSource="{Binding Path=SubMenus}">
                             <Grid>
                                 <TextBlock Text="{Binding Name}" />
                             </Grid>
@@ -153,20 +150,17 @@
                             Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Height="30"
                             Padding="12,6"
-                            Command="{x:Static SystemCommands.MinimizeWindowCommand}"
-                            Style="{StaticResource ToolbarButton}">
+                            Command="{x:Static SystemCommands.MinimizeWindowCommand}" Style="{StaticResource ToolbarButton}">
                         <control:Icon IconName="icon-minimize" />
                     </Button>
                     <Button Height="30"
                             Padding="12,6"
-                            Command="{x:Static SystemCommands.RestoreWindowCommand}"
-                            Style="{StaticResource ToolbarButton}">
+                            Command="{x:Static SystemCommands.RestoreWindowCommand}" Style="{StaticResource ToolbarButton}">
                         <control:Icon IconName="icon-restore" />
                     </Button>
                     <Button Height="30"
                             Padding="12,6"
-                            Command="{x:Static SystemCommands.CloseWindowCommand}"
-                            Style="{StaticResource ToolbarButton}">
+                            Command="{x:Static SystemCommands.CloseWindowCommand}" Style="{StaticResource ToolbarButton}">
                         <control:Icon IconName="icon-close" />
                     </Button>
                 </StackPanel>
@@ -182,16 +176,13 @@
             </ToolBar.ItemsPanel>
             <ToolBar.ItemTemplateSelector>
                 <utility:EnumDataTemplateSelector PropertyName="Type">
-                    <DataTemplate x:Key="{x:Static viewmodel:ToolbarItemType.Button}"
-                                  DataType="{x:Type viewmodel:ToolbarItem}">
-                        <Button Command="{Binding Command}" CommandParameter="{Binding ArtContext}"
-                                Style="{StaticResource ToolbarButton}"
+                    <DataTemplate x:Key="{x:Static viewmodel:ToolbarItemType.Button}" DataType="{x:Type viewmodel:ToolbarItem}">
+                        <Button Command="{Binding Command}" CommandParameter="{Binding ArtContext}" Style="{StaticResource ToolbarButton}"
                                 ToolTip="{Binding Name}">
                             <control:Icon IconName="{Binding Icon}" />
                         </Button>
                     </DataTemplate>
-                    <DataTemplate x:Key="{x:Static viewmodel:ToolbarItemType.Space}"
-                                  DataType="{x:Type viewmodel:ToolbarItem}">
+                    <DataTemplate x:Key="{x:Static viewmodel:ToolbarItemType.Space}" DataType="{x:Type viewmodel:ToolbarItem}">
                         <Border Width="50" />
                     </DataTemplate>
                 </utility:EnumDataTemplateSelector>
@@ -201,8 +192,7 @@
                     Background="{utility:Theme background-3}" Orientation="Horizontal">
             <TextBlock Margin="24,0" VerticalAlignment="Center"
                        DockPanel.Dock="Left" FontWeight="Bold" Text="{Binding ToolManager.Tool.Type}" />
-            <ItemsControl utility:Helper.Accent="{utility:Theme color(accent-4-inverse)}"
-                          ItemsSource="{Binding ToolManager.Tool.Options}">
+            <ItemsControl utility:Helper.Accent="{utility:Theme color(accent-4-inverse)}" ItemsSource="{Binding ToolManager.Tool.Options}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel Orientation="Horizontal" />
@@ -210,15 +200,13 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplateSelector>
                     <utility:EnumDataTemplateSelector PropertyName="Type">
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}"
-                                      DataType="{x:Type core:ToolOption`1}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Dropdown}" DataType="{x:Type core:ToolOption`1}">
                             <StackPanel Margin="8,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Label}" /><Run Text=":" />
                                 </TextBlock>
                                 <ComboBox Margin="8,0"
-                                          utility:Helper.Accent="{utility:Theme color(accent-4)}"
-                                          ItemsSource="{Binding Values}"
+                                          utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}">
                                     <ComboBox.ItemsPanel>
                                         <ItemsPanelTemplate>
@@ -228,27 +216,23 @@
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}"
-                                      DataType="{x:Type core:ToolOption`1}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Segment}" DataType="{x:Type core:ToolOption`1}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Label}" /><Run Text=":" />
                                 </TextBlock>
                                 <control:SegmentButton Margin="8,0"
-                                                       utility:Helper.Accent="{utility:Theme color(accent-4)}"
-                                                       ItemsSource="{Binding Values}"
+                                                       utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
                                                        SelectedValue="{Binding Value}" />
                             </StackPanel>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}"
-                                      DataType="{x:Type core:ToolOption`1}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Font}" DataType="{x:Type core:ToolOption`1}">
                             <StackPanel Margin="8,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Label}" /><Run Text=":" />
                                 </TextBlock>
                                 <ComboBox Margin="8,0"
-                                          utility:Helper.Accent="{utility:Theme color(accent-4)}"
-                                          ItemsSource="{Binding Values}"
+                                          utility:Helper.Accent="{utility:Theme color(accent-4)}" ItemsSource="{Binding Values}"
                                           SelectedValue="{Binding Value}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
@@ -263,8 +247,7 @@
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}"
-                                      DataType="{x:Type core:ToolOption`1}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Length}" DataType="{x:Type core:ToolOption`1}">
                             <StackPanel Margin="16,0" Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Label}" /><Run Text=":" />
@@ -273,8 +256,7 @@
                                           Margin="8,0"
                                           IsEditable="True" ItemsSource="{Binding Values}">
                                     <ComboBox.Text>
-                                        <MultiBinding Converter="{StaticResource PointConverter}"
-                                                      UpdateSourceTrigger="LostFocus">
+                                        <MultiBinding Converter="{StaticResource PointConverter}" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="Value" />
                                             <Binding Mode="OneWay" Path="Unit" />
                                         </MultiBinding>
@@ -282,16 +264,14 @@
                                 </ComboBox>
                             </StackPanel>
                         </DataTemplate>
-                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}"
-                                      DataType="{x:Type core:ToolOption`1}">
+                        <DataTemplate x:Key="{x:Static coremodel:ToolOptionType.Button}" DataType="{x:Type core:ToolOption`1}">
                             <Button Margin="4" Padding="8,0"
                                     DataContext="{Binding}">
                                 <Button.Resources>
                                     <utility:BindingProxy x:Key="hack" Data="{Binding}" />
                                 </Button.Resources>
                                 <Button.Command>
-                                    <viewmodel:BindableDelegateCommand
-                                        Action="{Binding Data.Value, Mode=OneWay, Source={StaticResource hack}}" />
+                                    <viewmodel:BindableDelegateCommand Action="{Binding Data.Value, Mode=OneWay, Source={StaticResource hack}}" />
                                 </Button.Command>
                                 <StackPanel Orientation="Horizontal">
                                     <control:Icon Width="12" Height="12"
@@ -330,23 +310,19 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TabControl utility:Helper.Accent="{utility:Theme color(accent-2-inverse)}">
-                    <control:Pane DataContext="{Binding ColorViewModel}" Header="Fill"
-                                  Source="Rain;component/View/Panes/ColorPane.xaml" />
+                    <control:Pane DataContext="{Binding ColorViewModel}" Header="Fill" Source="Rain;component/View/Panes/ColorPane.xaml" />
                     <TabItem Header="Swatches" />
-                    <control:Pane DataContext="{Binding StrokeViewModel}" Header="Stroke"
-                                  Source="Rain;component/View/Panes/StrokePane.xaml" />
+                    <control:Pane DataContext="{Binding StrokeViewModel}" Header="Stroke" Source="Rain;component/View/Panes/StrokePane.xaml" />
                 </TabControl>
                 <TabControl Grid.Row="1" utility:Helper.Accent="{utility:Theme color(accent-1-inverse)}">
-                    <control:Pane DataContext="{Binding ViewManager}" Header="Layers"
-                                  Source="Rain;component/View/Panes/LayerPane.xaml" />
+                    <control:Pane DataContext="{Binding ViewManager}" Header="Layers" Source="Rain;component/View/Panes/LayerPane.xaml" />
                     <TabItem Header="Effects" />
                 </TabControl>
                 <TabControl Grid.Row="2" utility:Helper.Accent="{utility:Theme color(accent-3-inverse)}">
                     <control:Pane DataContext="{Binding TransformViewModel}" Header="Transform"
                                   Source="Rain;component/View/Panes/TransformPane.xaml" />
 
-                    <control:Pane DataContext="{Binding HistoryManager}" Header="History"
-                                  Source="Rain;component/View/Panes/HistoryPane.xaml" />
+                    <control:Pane DataContext="{Binding HistoryManager}" Header="History" Source="Rain;component/View/Panes/HistoryPane.xaml" />
                 </TabControl>
             </Grid>
             <StatusBar Grid.Row="1" Grid.Column="0"
@@ -393,8 +369,7 @@
                     </Style>
                 </StatusBar.Style>
 
-                <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}"
-                           DockPanel.Dock="Left">
+                <TextBlock utility:TextBlockHelper.FormattedText="{Binding ArtContext.Status.Message, Mode=OneWay}" DockPanel.Dock="Left">
                     <TextBlock.Style>
                         <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
                             <Style.Triggers>

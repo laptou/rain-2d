@@ -250,6 +250,8 @@ namespace Rain.View.Control
                     {
                         RenderContext.Dispose();
 
+                        _target?.Dispose();
+
                         _swapChain.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.FrameLatencyWaitAbleObject);
 
                         var targetProps = new D2D.RenderTargetProperties(

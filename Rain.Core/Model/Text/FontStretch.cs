@@ -7,7 +7,7 @@ namespace Rain.Core.Model.Text
 {
     public enum FontStretch
     {
-        Normal         = 5,
+        Normal         = Medium,
         UltraCondensed = 1,
         ExtraCondensed = 2,
         Condensed      = 3,

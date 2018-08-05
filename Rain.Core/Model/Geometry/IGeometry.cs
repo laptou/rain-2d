@@ -10,23 +10,54 @@ namespace Rain.Core.Model.Geometry
 {
     public interface IGeometry : IResource
     {
+        #region Measure
+
         RectangleF Bounds();
+
+        #endregion
+
+        IOptimizedGeometry Optimize();
+        IOptimizedGeometry Optimize(IPenInfo pen);
+
+        #region Operations
+
         IGeometry Copy();
+        IGeometry Outline(float width);
+
+        IGeometry Transform(Matrix3x2 transform);
+
+        #endregion
+
+        #region Boolean Operations
+
         IGeometry Difference(IGeometry other);
-        bool FillContains(float x, float y);
+        IGeometry Union(IGeometry other);
         IGeometry Intersection(IGeometry other);
+        IGeometry Xor(IGeometry other);
+
+        #endregion
+
+        #region Hit Testing
+
+        bool FillContains(float x, float y);
+        bool StrokeContains(float x, float y, float width);
+
+        #endregion
+
+        #region Writing
+
         void Load(IEnumerable<PathInstruction> source);
         IGeometrySink Open();
-        IGeometry Outline(float width);
+
+        #endregion
+
+        #region Reading
+
         IEnumerable<PathInstruction> Read();
         void Read(IGeometrySink sink);
         IEnumerable<PathNode> ReadNodes();
-        bool StrokeContains(float x, float y, float width);
-        IGeometry Transform(Matrix3x2 transform);
-        IGeometry Union(IGeometry other);
-        IGeometry Xor(IGeometry other);
-        IOptimizedGeometry Optimize();
-        IOptimizedGeometry Optimize(IPenInfo pen);
+
+        #endregion
     }
 
     public interface IOptimizedGeometry : IGeometry
